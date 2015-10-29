@@ -1,0 +1,26 @@
+{
+  "name": "sanctuary-def",
+  "version": "0.0.0",
+  "description": "Define strict, curried functions",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/plaid/sanctuary-def.git"
+  },
+  "dependencies": {
+    "ramda": "0.18.x"
+  },
+  "devDependencies": {
+    "istanbul": "0.4.x",
+    "jscs": "2.4.x",
+    "jshint": "2.8.x",
+    "mocha": "2.x.x",
+    "xyz": "0.5.x"
+  },
+  "files": [
+    "/LICENSE",
+    "/README.md",
+    "/index.js",
+    "/package.json"
+  ]
+}
