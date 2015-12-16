@@ -1,0 +1,25 @@
+{
+  "name": "sanctuary-def",
+  "version": "0.0.0",
+  "description": "Run-time type system for JavaScript",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/plaid/sanctuary-def.git"
+  },
+  "dependencies": {},
+  "devDependencies": {
+    "istanbul": "0.4.x",
+    "jscs": "2.7.x",
+    "jshint": "2.8.x",
+    "mocha": "2.x.x",
+    "ramda": "0.18.x",
+    "xyz": "0.5.x"
+  },
+  "files": [
+    "/LICENSE",
+    "/README.md",
+    "/index.js",
+    "/package.json"
+  ]
+}

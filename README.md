@@ -1,0 +1,503 @@
+# sanctuary-def
+
+sanctuary-def is a run-time type system for JavaScript. It facilitates the
+definition of curried JavaScript functions which are explicit about the number
+of arguments to which they may be applied and the types of those arguments.
+
+It is conventional to import the package as `$`:
+
+```javascript
+const $ = require('sanctuary-def');
+```
+
+The next step is to define an environment. An environment is a list of
+[types](#types) such as `$.Number` and `$.String`. `$.env` is a default
+environment, which may be augmented with custom types:
+
+```javascript
+//    Integer :: Type
+const Integer = ...;
+
+//    NonZeroInteger :: Type
+const NonZeroInteger = ...;
+
+//    env :: [Type]
+const env = $.env.concat([Integer, NonZeroInteger]);
+```
+
+The next step is to define a `def` function for the environment:
+
+```javascript
+const def = $.create(env);
+```
+
+`def` is a function for defining functions. For example:
+
+```javascript
+//    add :: Number -> Number -> Number
+const add =
+def('add', {}, [$.Number, $.Number, $.Number], (x, y) => x + y);
+```
+
+`[$.Number, $.Number, $.Number]` specifies that `add` takes two arguments of
+type `Number` and returns a value of type `Number`.
+
+Applying `add` to two arguments gives the expected result:
+
+```javascript
+add(2, 2);
+// => 4
+```
+
+Applying `add` to greater than two arguments results in an exception being
+thrown:
+
+```javascript
+add(2, 2, 2);
+// ! TypeError: ‘add’ requires two arguments; received three arguments
+```
+
+Applying `add` to fewer than two arguments results in a function awaiting the
+remaining arguments. This is known as partial application. Partial application
+is convenient as it allows more specific functions to be defined in terms of
+more general ones:
+
+```javascript
+//    inc :: Number -> Number
+const inc = add(1);
+
+inc(7);
+// => 8
+```
+
+One may wish to partially apply a function whose parameters are in the "wrong"
+order. All functions defined via sanctuary-def accommodate this by accepting
+"placeholders". A placeholder is an object with a `'@@functional/placeholder'`
+property whose value is `true`. [`R.__`][1] is one such object. A placeholder
+indicates an argument yet to be provided. For example:
+
+```javascript
+//    _ :: Placeholder
+const _ = {'@@functional/placeholder': true};
+
+//    concatS :: String -> String -> String
+const concatS =
+def('concatS', {}, [$.String, $.String, $.String], (x, y) => x + y);
+
+//    exclaim :: String -> String
+const exclaim = concatS(_, '!');
+
+exclaim('ahoy');
+// => 'ahoy!'
+```
+
+JavaScript's implicit type coercion often obfuscates the source of type errors.
+Consider the following function:
+
+```javascript
+//    _add :: (Number, Number) -> Number
+const _add = (x, y) => x + y;
+```
+
+The type signature indicates that `_add` takes two arguments of type `Number`,
+but this is not enforced. This allows type errors to be silently ignored:
+
+```javascript
+_add('2', '2');
+// => '22'
+```
+
+`add`, on the other hand, throws if applied to arguments of the wrong types:
+
+```javascript
+add('2', '2');
+// ! TypeError: ‘add’ expected a value of type Number as its first argument; received "2"
+```
+
+Type checking is performed as arguments are provided (rather than once all
+arguments have been provided), so type errors are reported early:
+
+```javascript
+add('X');
+// ! TypeError: ‘add’ expected a value of type Number as its first argument; received "X"
+```
+
+### Types
+
+sanctuary-def defines `Type` values for JavaScript's built-in types:
+
+  - `$.Array :: Type -> Type`
+  - `$.Boolean :: Type`
+  - `$.Date :: Type`
+  - `$.Error :: Type`
+  - `$.Function :: Type`
+  - `$.Null :: Type`
+  - `$.Number :: Type`
+  - `$.Object :: Type`
+  - `$.RegExp :: Type`
+  - `$.String :: Type`
+  - `$.Undefined :: Type`
+
+sanctuary-def also defines `$.Any`, the type of which every JavaScript value
+is a member.
+
+### Type constructors
+
+sanctuary-def provides several functions for defining types.
+
+#### `TypeVariable`
+
+Polymorphism is powerful. Not being able to define a function for all types
+would be very limiting indeed: one couldn't even define the identity function!
+
+```haskell
+TypeVariable :: String -> Type
+```
+
+Before defining a polymorphic function one must define one or more type
+variables:
+
+```javascript
+const a = $.TypeVariable('a');
+const b = $.TypeVariable('b');
+
+//    id :: a -> a
+const id = def('id', {}, [a, a], x => x);
+
+id(42);
+// => 42
+
+id(null);
+// => null
+```
+
+The same type variable may be used in multiple positions, creating a
+constraint:
+
+```javascript
+//    cmp :: a -> a -> Number
+const cmp =
+def('cmp', {}, [a, a, $.Number], (x, y) => x < y ? -1 : x > y ? 1 : 0);
+
+cmp(42, 42);
+// => 0
+
+cmp('a', 'z');
+// => -1
+
+cmp('z', 'a');
+// => 1
+
+cmp(0, '1');
+// ! TypeError: ‘cmp’ expected a value of type Number as its second argument; received "1"
+```
+
+#### `NullaryType`
+
+`NullaryType` is used to construct types with no type variables. `$.Number` is
+defined via `NullaryType`, as are many of the other exported types exported by
+sanctuary-def.
+
+To define a nullary type `t` one must provide:
+
+  - the name of `t` (exposed as `t.name`); and
+
+  - a predicate which accepts any JavaScript value and returns `true` if
+    (and only if) the value is a member of `t` (exposed as `t.test`).
+
+```haskell
+NullaryType :: String -> (Any -> Boolean) -> Type
+```
+
+For example:
+
+```javascript
+//    Integer :: Type
+const Integer = $.NullaryType(
+  'my-package/Integer',
+  x => Object.prototype.toString.call(x) === '[object Number]' &&
+       Math.floor(x) === Number(x) &&
+       x >= Number.MIN_SAFE_INTEGER &&
+       x <= Number.MAX_SAFE_INTEGER
+);
+
+//    NonZeroInteger :: Type
+const NonZeroInteger = $.NullaryType(
+  'my-package/NonZeroInteger',
+  x => Integer.test(x) && Number(x) !== 0
+);
+
+//    rem :: Integer -> NonZeroInteger -> Integer
+const rem =
+def('rem', {}, [Integer, NonZeroInteger, Integer], (x, y) => x % y);
+
+rem(42, 5);
+// => 2
+
+rem(0.5);
+// ! TypeError: ‘rem’ expected a value of type Integer as its first argument; received 0.5
+
+rem(42, 0);
+// ! TypeError: ‘rem’ expected a value of type NonZeroInteger as its second argument; received 0
+```
+
+#### `UnaryType`
+
+`UnaryType` is used to construct types with one type variable. `$.Array` is
+defined via `UnaryType`.
+
+```javascript
+//    sum :: [Number] -> Number
+const sum =
+def('sum', {}, [$.Array($.Number), $.Number], xs => xs.reduce((x, y) => x + y, 0));
+
+sum([1, 2, 3, 4]);
+// => 10
+
+sum(['1', '2', '3', '4']);
+// ! TypeError: ‘sum’ expected a value of type (Array Number) as its first argument; received ["1", "2", "3", "4"]
+```
+
+To define a unary type `t a` one must provide:
+
+  - the name of `t` (exposed as `t.name`);
+
+  - a predicate which accepts any JavaScript value and returns `true`
+    if (and only if) the value is a member of `t x` for some type `x`
+    (exposed as `t.test`);
+
+  - a function which takes any value of type `t a` and returns an array
+    of the values of type `a` contained in the `t` (exposed as `t._1`); and
+
+  - the type of `a` (exposed as `t.$1`).
+
+```haskell
+UnaryType :: String -> (Any -> Boolean) -> (t a -> [a]) -> Type -> Type
+```
+
+For example:
+
+```javascript
+//    Maybe :: Type -> Type
+const Maybe = $.UnaryType(
+  'my-package/Maybe',
+  x => x != null && x['@@type'] === 'my-package/Maybe',
+  maybe => maybe.isJust ? [maybe.value] : []
+);
+
+//    Nothing :: Maybe a
+const Nothing = {
+  '@@type': 'my-package/Maybe',
+  'isJust': false,
+  'isNothing': true,
+  'toString': () => 'Nothing',
+};
+
+//    Just :: a -> Maybe a
+const Just = x => ({
+  '@@type': 'my-package/Maybe',
+  'isJust': true,
+  'isNothing': false,
+  'toString': () => 'Just(' + JSON.stringify(x) + ')',
+  'value': x,
+});
+
+//    fromMaybe :: a -> Maybe a -> a
+const fromMaybe =
+def('fromMaybe', {}, [a, Maybe(a), a], (x, m) => m.isJust ? m.value : x);
+
+fromMaybe(0, Just(42));
+// => 42
+
+fromMaybe(0, Nothing);
+// => 0
+
+fromMaybe(0, Just('XXX'));
+// ! TypeError: ‘fromMaybe’ expected a value of type (Maybe Number) as its second argument; received Just("XXX")
+```
+
+#### `BinaryType`
+
+`BinaryType` is used to construct types with two type variables.
+
+To define a binary type `t a b` one must provide:
+
+  - the name of `t` (exposed as `t.name`);
+
+  - a predicate which accepts any JavaScript value and returns `true`
+    if (and only if) the value is a member of `t x y` for some types
+    `x` and `y` (exposed as `t.test`);
+
+  - a function which takes any value of type `t a b` and returns an array
+    of the values of type `a` contained in the `t` (exposed as `t._1`);
+
+  - a function which takes any value of type `t a b` and returns an array
+    of the values of type `b` contained in the `t` (exposed as `t._2`);
+
+  - the type of `a` (exposed as `t.$1`); and
+
+  - the type of `b` (exposed as `t.$2`).
+
+```haskell
+BinaryType :: String -> (Any -> Boolean) -> (t a b -> [a]) -> (t a b -> [b]) -> Type -> Type -> Type
+```
+
+For example:
+
+```javascript
+//    $Pair :: Type -> Type -> Type
+const $Pair = $.BinaryType(
+  'my-package/Pair',
+  x => x != null && x['@@type'] === 'my-package/Pair',
+  pair => [pair[0]],
+  pair => [pair[1]]
+);
+
+//    Pair :: a -> b -> Pair a b
+const Pair = def('Pair', {}, [a, b, $Pair(a, b)], (x, y) => ({
+  '0': x,
+  '1': y,
+  '@@type': 'my-package/Pair',
+  'length': 2,
+  'toString': () => 'Pair(' + JSON.stringify(x) + ', ' + JSON.stringify(y) + ')',
+}));
+
+//    Rank :: Type
+const Rank = $.NullaryType(
+  'my-package/Rank',
+  x => typeof x === 'string' && /^([A23456789JQK]|10)$/.test(x),
+  'A'
+);
+
+//    Suit :: Type
+const Suit = $.NullaryType(
+  'my-package/Suit',
+  x => typeof x === 'string' && /^[\u2660\u2663\u2665\u2666]$/.test(x),
+  '\u2660'
+);
+
+//    Card :: Type
+const Card = $Pair(Rank, Suit);
+
+//    showCard :: Card -> String
+const showCard =
+def('showCard', {}, [Card, $.String], card => card[0] + card[1]);
+
+showCard(Pair('A', '♠'));
+// => 'A♠'
+
+showCard(Pair('X', '♠'));
+// ! TypeError: ‘showCard’ expected a value of type (Pair Rank Suit) as its first argument; received Pair("X", "♠")
+```
+
+#### `RecordType`
+
+`RecordType` is used to construct record types. The type definition specifies
+the name and type of each required field.
+
+To define a record type one must provide:
+
+  - an object mapping field name to type.
+
+```haskell
+RecordType :: {Type} -> Type
+```
+
+For example:
+
+```javascript
+//    FiniteNumber :: Type
+const FiniteNumber = $.NullaryType(
+  'my-package/FiniteNumber',
+  x => Object.prototype.toString.call(x) === '[object Number]' && isFinite(x)
+);
+
+//    Point :: Type
+const Point = $.RecordType({x: FiniteNumber, y: FiniteNumber});
+
+//    dist :: Point -> Point -> FiniteNumber
+const dist =
+def('dist', {}, [Point, Point, FiniteNumber],
+    (p, q) => Math.sqrt(Math.pow(p.x - q.x, 2) + Math.pow(p.y - q.y, 2)));
+
+dist({x: 0, y: 0}, {x: 3, y: 4});
+// => 5
+
+dist({x: 0, y: 0}, {x: 3, y: 4, color: 'red'});
+// => 5
+
+dist({x: 0, y: 0}, {x: NaN, y: NaN});
+// ! TypeError: ‘dist’ expected a value of type { x :: FiniteNumber, y :: FiniteNumber } as its second argument; received {"x": NaN, "y": NaN}
+
+dist(0);
+// ! TypeError: ‘dist’ expected a value of type { x :: FiniteNumber, y :: FiniteNumber } as its first argument; received 0
+```
+
+### Type classes
+
+`concatS`, defined earlier, is a function which concatenates two strings.
+This is overly restrictive, since other types support concatenation (Array,
+for example).
+
+One could use a type variable to define a polymorphic "concat" function:
+
+```javascript
+//    _concat :: a -> a -> a
+const _concat =
+def('_concat', {}, [a, a, a], (x, y) => x.concat(y));
+
+_concat('fizz', 'buzz');
+// => 'fizzbuzz'
+
+_concat([1, 2], [3, 4]);
+// => [1, 2, 3, 4]
+
+_concat([1, 2], 'buzz');
+// ! TypeError: ‘_concat’ expected a value of type (Array Number) as its second argument; received "buzz"
+```
+
+The type of `_concat` is misleading: it suggests that it can operate on any
+two values of *any* one type. In fact there's an implicit constraint, since
+the type must support concatenation (in [mathematical][2] terms, the type
+must have a [semigroup][3]). The run-time type errors that result when this
+constraint is violated are not particularly descriptive:
+
+```javascript
+_concat({}, {});
+// ! TypeError: undefined is not a function
+
+_concat(null, null);
+// ! TypeError: Cannot read property 'concat' of null
+```
+
+The solution is to constrain `a` by first defining a `TypeClass` value, then
+specifying the constraint in the definition of the "concat" function:
+
+```javascript
+//    Semigroup :: TypeClass
+const Semigroup = $.TypeClass(
+  'my-package/Semigroup',
+  x => x != null && typeof x.concat === 'function'
+);
+
+//    concat :: Semigroup a => a -> a -> a
+const concat =
+def('concat', {a: [Semigroup]}, [a, a, a], (x, y) => x.concat(y));
+
+concat([1, 2], [3, 4]);
+// => [1, 2, 3, 4]
+
+concat({}, {});
+// ! TypeError: ‘concat’ requires ‘a’ to implement Semigroup; Object does not
+
+concat(null, null);
+// ! TypeError: ‘concat’ requires ‘a’ to implement Semigroup; Null does not
+```
+
+Multiple constraints may be placed on a type variable by including multiple
+`TypeClass` values in the list (e.g. `{a: [Foo, Bar, Baz]}`).
+
+
+[1]: http://ramdajs.com/docs/#__
+[2]: https://en.wikipedia.org/wiki/Semigroup
+[3]: https://github.com/fantasyland/fantasy-land#semigroup
