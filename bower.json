@@ -1,6 +1,6 @@
 {
   "name": "sanctuary-def",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "description": "Run-time type system for JavaScript",
   "license": "MIT",
   "repository": {
