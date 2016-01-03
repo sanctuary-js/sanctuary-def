@@ -547,6 +547,7 @@ describe('def', function() {
       (function() { return arguments; }(1, 2, 3)),
       new Boolean(false),
       new Date(0),
+      new Date('XXX'),
       new Number(-0),
       new String(''),
       /x/.exec('xyz'),

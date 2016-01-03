@@ -157,7 +157,9 @@
           'new Boolean(' + recur(x.valueOf()) + ')' :
           x.toString();
       case 'Date':
-        return 'new Date(' + quote(x.toISOString()) + ')';
+        return 'new Date(' +
+               (isNaN(x.valueOf()) ? recur(NaN) : quote(x.toISOString())) +
+               ')';
       case 'Null':
         return 'null';
       case 'Number':
