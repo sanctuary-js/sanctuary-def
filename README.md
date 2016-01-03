@@ -433,6 +433,38 @@ dist(0);
 // ! TypeError: ‘dist’ expected a value of type { x :: FiniteNumber, y :: FiniteNumber } as its first argument; received 0
 ```
 
+#### `Nullable`
+
+`Nullable` is used to construct types which include `null` as a member.
+
+To define `t :: Nullable a` one must provide:
+
+  - the type of `a` (exposed as `t.$1`).
+
+```haskell
+Nullable :: Type -> Type
+```
+
+For example:
+
+```javascript
+//    toUpper :: Nullable String -> Nullable String
+const toUpper =
+def('toUpper',
+    {},
+    [$.Nullable($.String), $.Nullable($.String)],
+    nullable => nullable === null ? null : nullable.toUpperCase());
+
+toUpper(null);
+// => null
+
+toUpper('abc');
+// => 'ABC'
+
+toUpper(['abc']);
+// ! TypeError: ‘toUpper’ expected a value of type (Nullable String) as its first argument; received ["abc"]
+```
+
 ### Type classes
 
 `concatS`, defined earlier, is a function which concatenates two strings.

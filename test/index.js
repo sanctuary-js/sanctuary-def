@@ -528,6 +528,23 @@ describe('def', function() {
     eq(id([{x: 0, y: 0}, {x: 1, y: 1}]), [{x: 0, y: 0}, {x: 1, y: 1}]);
   });
 
+  it('supports "nullable" types', function() {
+    //  toUpper :: Nullable String -> Nullable String
+    var toUpper =
+    def('toUpper',
+        {},
+        [$.Nullable($.String), $.Nullable($.String)],
+        R.unless(R.equals(null), R.toUpper));
+
+    eq(toUpper(null), null);
+    eq(toUpper('abc'), 'ABC');
+
+    throws(function() { toUpper(['abc']); },
+           errorEq(TypeError,
+                   '‘toUpper’ expected a value of type (Nullable String) ' +
+                   'as its first argument; received ["abc"]'));
+  });
+
   it('uses R.toString-like string representations', function() {
     //  f :: Null -> Null
     var f = def('f', {}, [$.Null, $.Null], function(x) { return x; });

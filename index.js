@@ -304,6 +304,16 @@
     };
   };
 
+  //  Nullable :: Type -> Type
+  $.Nullable = function($1) {
+    return {
+      type: 'NULLABLE',
+      test: function(x) { return x === null || $1.test(x); },
+      toString: always('(Nullable ' + $1 + ')'),
+      $1: $1
+    };
+  };
+
   //  $$type :: a -> String
   var $$type = function(x) {
     return x != null && typeOf(x['@@type']) === 'String' ?
