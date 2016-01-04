@@ -13,7 +13,7 @@
     "jscs": "2.7.x",
     "jshint": "2.8.x",
     "mocha": "2.x.x",
-    "ramda": "0.18.x",
+    "ramda": "~0.19.1",
     "xyz": "0.5.x"
   },
   "files": [
