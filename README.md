@@ -232,6 +232,14 @@ $.Undefined :: Type
 
 Type whose sole member is `undefined`.
 
+#### `ValidDate`
+
+```haskell
+$.ValidDate :: Type
+```
+
+Type comprising every [`Date`](#date) value except `new Date(NaN)`.
+
 ### `env`
 
 `$.env` is a list of [types](#types):

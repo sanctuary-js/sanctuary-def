@@ -545,6 +545,23 @@ describe('def', function() {
                    'as its first argument; received ["abc"]'));
   });
 
+  it('supports the "ValidDate" type', function() {
+    var def = $.create($.env.concat([$.ValidDate]));
+
+    //  sinceEpoch :: ValidDate -> Number
+    var sinceEpoch = def('sinceEpoch',
+                         {},
+                         [$.ValidDate, $.Number],
+                         function(date) { return date.getTime() / 1000; });
+
+    throws(function() { sinceEpoch(new Date('foo')); },
+           errorEq(TypeError,
+                   '‘sinceEpoch’ expected a value of type ValidDate ' +
+                   'as its first argument; received new Date(NaN)'));
+
+    eq(sinceEpoch(new Date(123456)), 123.456);
+  });
+
   it('uses R.toString-like string representations', function() {
     //  f :: Null -> Null
     var f = def('f', {}, [$.Null, $.Null], function(x) { return x; });
