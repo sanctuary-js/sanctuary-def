@@ -11,8 +11,10 @@ const $ = require('sanctuary-def');
 ```
 
 The next step is to define an environment. An environment is a list of
-[types](#types) such as `$.Number` and `$.String`. `$.env` is a default
-environment, which may be augmented with custom types:
+[types](#types) such as `$.Number` and `$.String`. [`$.env`](#env) is an
+environment containing all the built-in JavaScript types. It may be used
+as the basis for environments which include custom types in addition to
+the built-in types:
 
 ```javascript
 //    Integer :: Type
@@ -124,22 +126,128 @@ add('X');
 
 ### Types
 
-sanctuary-def defines `Type` values for JavaScript's built-in types:
+Conceptually, a type is a set of values. One can think of a value of
+type `Type` as a function of type `Any -> Boolean` which tests values
+for membership in the set (though this is an oversimplification).
 
-  - `$.Array :: Type -> Type`
-  - `$.Boolean :: Type`
-  - `$.Date :: Type`
-  - `$.Error :: Type`
-  - `$.Function :: Type`
-  - `$.Null :: Type`
-  - `$.Number :: Type`
-  - `$.Object :: Type`
-  - `$.RegExp :: Type`
-  - `$.String :: Type`
-  - `$.Undefined :: Type`
+#### `Any`
 
-sanctuary-def also defines `$.Any`, the type of which every JavaScript value
-is a member.
+```haskell
+$.Any :: Type
+```
+
+Type comprising every JavaScript value.
+
+#### `Array`
+
+```haskell
+$.Array :: Type -> Type
+```
+
+Constructor for homogeneous Array types.
+
+#### `Boolean`
+
+```haskell
+$.Boolean :: Type
+```
+
+Type comprising `true` and `false` (and their object counterparts).
+
+#### `Date`
+
+```haskell
+$.Date :: Type
+```
+
+Type comprising every Date value.
+
+#### `Error`
+
+```haskell
+$.Error :: Type
+```
+
+Type comprising every Error value, including values of more specific
+constructors such as [`SyntaxError`][2] and [`TypeError`][3].
+
+#### `Function`
+
+```haskell
+$.Function :: Type
+```
+
+Type comprising every Function value.
+
+#### `Null`
+
+```haskell
+$.Null :: Type
+```
+
+Type whose sole member is `null`.
+
+#### `Number`
+
+```haskell
+$.Number :: Type
+```
+
+Type comprising every Number value (including `NaN` and Number objects).
+
+#### `Object`
+
+```haskell
+$.Object :: Type
+```
+
+Type comprising every "plain" Object value. Specifically, values created via:
+
+  - object literal syntax;
+  - [`Object.create`][4]; or
+  - the `new` operator in conjunction with `Object` or a custom
+    constructor function.
+
+#### `RegExp`
+
+```haskell
+$.RegExp :: Type
+```
+
+Type comprising every RegExp value.
+
+#### `String`
+
+```haskell
+$.String :: Type
+```
+
+Type comprising every String value (including String objects).
+
+#### `Undefined`
+
+```haskell
+$.Undefined :: Type
+```
+
+Type whose sole member is `undefined`.
+
+### `env`
+
+`$.env` is a list of [types](#types):
+
+  - [`$.Any`](#any)
+  - [`$.Array`](#array)
+  - [`$.Boolean`](#boolean)
+  - [`$.Date`](#date)
+  - [`$.Error`](#error)
+  - [`$.Function`](#function)
+  - [`$.Null`](#null)
+  - [`$.Number`](#number)
+  - [`$.Object`](#object)
+  - [`$.RegExp`](#regexp)
+  - [`$.String`](#string)
+  - [`$.Undefined`](#undefined)
 
 ### Type constructors
 
@@ -490,8 +598,8 @@ _concat([1, 2], 'buzz');
 
 The type of `_concat` is misleading: it suggests that it can operate on any
 two values of *any* one type. In fact there's an implicit constraint, since
-the type must support concatenation (in [mathematical][2] terms, the type
-must have a [semigroup][3]). The run-time type errors that result when this
+the type must support concatenation (in [mathematical][5] terms, the type
+must have a [semigroup][6]). The run-time type errors that result when this
 constraint is violated are not particularly descriptive:
 
 ```javascript
@@ -531,5 +639,8 @@ Multiple constraints may be placed on a type variable by including multiple
 
 
 [1]: http://ramdajs.com/docs/#__
-[2]: https://en.wikipedia.org/wiki/Semigroup
-[3]: https://github.com/fantasyland/fantasy-land#semigroup
+[2]: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/SyntaxError
+[3]: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/TypeError
+[4]: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/create
+[5]: https://en.wikipedia.org/wiki/Semigroup
+[6]: https://github.com/fantasyland/fantasy-land#semigroup
