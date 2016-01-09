@@ -171,6 +171,15 @@ $.Error :: Type
 Type comprising every Error value, including values of more specific
 constructors such as [`SyntaxError`][2] and [`TypeError`][3].
 
+#### `FiniteNumber`
+
+```haskell
+$.FiniteNumber :: Type
+```
+
+Type comprising every [`ValidNumber`](#validnumber) value except `Infinity` and 
+`-Infinity` (and their object counterparts). 
+
 #### `Function`
 
 ```haskell
@@ -178,6 +187,24 @@ $.Function :: Type
 ```
 
 Type comprising every Function value.
+
+#### `NonZeroFiniteNumber`
+
+```haskell
+$.NonZeroFiniteNumber :: Type
+```
+
+Type comprising every [`FiniteNumber`](#finitenumber) value except `0` and `-0` 
+(and their object counterparts). 
+
+#### `NonZeroValidNumber`
+
+```haskell
+$.NonZeroValidNumber :: Type
+```
+
+Type comprising every [`ValidNumber`](#validnumber) value except `0` and `-0`
+(and their object counterparts). 
 
 #### `Null`
 
@@ -239,6 +266,15 @@ $.ValidDate :: Type
 ```
 
 Type comprising every [`Date`](#date) value except `new Date(NaN)`.
+
+#### `ValidNumber`
+
+```haskell
+$.ValidNumber :: Type
+```
+
+Type comprising every [`Number`](#number) value except `NaN` (and its object 
+counterpart).
 
 ### `env`
 

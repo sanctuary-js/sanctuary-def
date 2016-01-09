@@ -562,6 +562,124 @@ describe('def', function() {
     eq(sinceEpoch(new Date(123456)), 123.456);
   });
 
+  it('supports the "ValidNumber" type', function() {
+    var def = $.create($.env.concat([$.ValidNumber]));
+
+    //  inc :: ValidNumber -> ValidNumber
+    var inc = def('inc',
+                  {},
+                  [$.ValidNumber, $.ValidNumber],
+                  function(x) { return x + 1; });
+
+    throws(function() { inc(NaN); },
+           errorEq(TypeError,
+                   '‘inc’ expected a value of type ValidNumber ' +
+                   'as its first argument; received NaN'));
+
+    throws(function() { inc(new Number(NaN)); },
+           errorEq(TypeError,
+                   '‘inc’ expected a value of type ValidNumber ' +
+                   'as its first argument; received new Number(NaN)'));
+
+    eq(inc(1), 2);
+  });
+
+  it('supports the "FiniteNumber" type', function() {
+    var def = $.create($.env.concat([$.ValidNumber, $.FiniteNumber]));
+
+    //  div :: ValidNumber -> FiniteNumber -> ValidNumber
+    var div = def('div',
+                  {},
+                  [$.ValidNumber, $.FiniteNumber, $.ValidNumber],
+                  function(a, b) { return a / b; });
+
+    throws(function() { div(3, Infinity); },
+           errorEq(TypeError,
+                   '‘div’ expected a value of type FiniteNumber ' +
+                   'as its second argument; received Infinity'));
+
+    throws(function() { div(3, new Number(Infinity)); },
+           errorEq(TypeError,
+                   '‘div’ expected a value of type FiniteNumber ' +
+                   'as its second argument; received new Number(Infinity)'));
+
+    throws(function() { div(3, -Infinity); },
+           errorEq(TypeError,
+                   '‘div’ expected a value of type FiniteNumber ' +
+                   'as its second argument; received -Infinity'));
+
+    throws(function() { div(3, new Number(-Infinity)); },
+           errorEq(TypeError,
+                   '‘div’ expected a value of type FiniteNumber ' +
+                   'as its second argument; received new Number(-Infinity)'));
+
+    eq(div(4, 2), 2);
+  });
+
+  it('supports the "NonZeroValidNumber" type', function() {
+    var def = $.create($.env.concat([$.ValidNumber, $.NonZeroValidNumber]));
+
+    //  div :: ValidNumber -> NonZeroValidNumber -> ValidNumber
+    var div = def('div',
+                  {},
+                  [$.ValidNumber, $.NonZeroValidNumber, $.ValidNumber],
+                  function(a, b) { return a / b; });
+
+    throws(function() { div(3, 0); },
+           errorEq(TypeError,
+                   '‘div’ expected a value of type NonZeroValidNumber ' +
+                   'as its second argument; received 0'));
+
+    throws(function() { div(3, new Number(0)); },
+           errorEq(TypeError,
+                   '‘div’ expected a value of type NonZeroValidNumber ' +
+                   'as its second argument; received new Number(0)'));
+
+    throws(function() { div(3, -0); },
+           errorEq(TypeError,
+                   '‘div’ expected a value of type NonZeroValidNumber ' +
+                   'as its second argument; received -0'));
+
+    throws(function() { div(3, new Number(-0)); },
+           errorEq(TypeError,
+                   '‘div’ expected a value of type NonZeroValidNumber ' +
+                   'as its second argument; received new Number(-0)'));
+
+    eq(div(4, 2), 2);
+  });
+
+  it('supports the "NonZeroFiniteNumber" type', function() {
+    var def = $.create($.env.concat([$.ValidNumber, $.NonZeroFiniteNumber]));
+
+    //  div :: ValidNumber -> NonZeroFiniteNumber -> ValidNumber
+    var div = def('div',
+                  {},
+                  [$.ValidNumber, $.NonZeroFiniteNumber, $.ValidNumber],
+                  function(a, b) { return a / b; });
+
+    throws(function() { div(3, 0); },
+           errorEq(TypeError,
+                   '‘div’ expected a value of type NonZeroFiniteNumber ' +
+                   'as its second argument; received 0'));
+
+    throws(function() { div(3, new Number(0)); },
+           errorEq(TypeError,
+                   '‘div’ expected a value of type NonZeroFiniteNumber ' +
+                   'as its second argument; received new Number(0)'));
+
+    throws(function() { div(3, -0); },
+           errorEq(TypeError,
+                   '‘div’ expected a value of type NonZeroFiniteNumber ' +
+                   'as its second argument; received -0'));
+
+    throws(function() { div(3, new Number(-0)); },
+           errorEq(TypeError,
+                   '‘div’ expected a value of type NonZeroFiniteNumber ' +
+                   'as its second argument; received new Number(-0)'));
+
+    eq(div(4, 2), 2);
+  });
+
   it('uses R.toString-like string representations', function() {
     //  f :: Null -> Null
     var f = def('f', {}, [$.Null, $.Null], function(x) { return x; });

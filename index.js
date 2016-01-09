@@ -362,6 +362,30 @@
     function(x) { return $.Date.test(x) && !isNaN(x.valueOf()); }
   );
 
+  //  ValidNumber :: Type
+  $.ValidNumber = $.NullaryType(
+    'sanctuary-def/ValidNumber',
+    function(x) { return $.Number.test(x) && !isNaN(x); }
+  );
+
+  //  FiniteNumber :: Type
+  $.FiniteNumber = $.NullaryType(
+    'sanctuary-def/FiniteNumber',
+    function(x) { return $.ValidNumber.test(x) && isFinite(x); }
+  );
+
+  //  NonZeroValidNumber :: Type
+  $.NonZeroValidNumber = $.NullaryType(
+    'sanctuary-def/NonZeroValidNumber',
+    function(x) { return $.ValidNumber.test(x) && Number(x) !== 0; }
+  );
+
+  //  NonZeroFiniteNumber :: Type
+  $.NonZeroFiniteNumber = $.NullaryType(
+    'sanctuary-def/NonZeroFiniteNumber',
+    function(x) { return $.FiniteNumber.test(x) && Number(x) !== 0; }
+  );
+
   //  arity :: (Number, Function) -> Function
   var arity = function(n, f) {
     return (
