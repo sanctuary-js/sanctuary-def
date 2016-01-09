@@ -307,14 +307,11 @@
   };
 
   //  Nullable :: Type -> Type
-  $.Nullable = function($1) {
-    return {
-      type: 'NULLABLE',
-      test: function(x) { return x === null || $1.test(x); },
-      toString: always('(Nullable ' + $1 + ')'),
-      $1: $1
-    };
-  };
+  $.Nullable = UnaryType(
+    'sanctuary-def/Nullable',
+    K(true),
+    function(nullable) { return nullable === null ? [] : [nullable]; }
+  );
 
   //  $$type :: a -> String
   var $$type = function(x) {
@@ -550,6 +547,12 @@
     );
   };
 
+  var invalidValue = function(name, types, value, index) {
+    return isNaN(index) ?
+      invalidReturnValue(name, types, value) :
+      invalidArgument(name, types, value, index);
+  };
+
   var constraintViolation = function(name, typeVarName, typeClasses, _types) {
     var types = chain(_types, rejectInconsistent);
     return new TypeError(
@@ -593,7 +596,7 @@
     var determineActualTypes = function recur(value) {
       return chain(env, function(t) {
         return (
-          !t.test(value) ?
+          t.name === 'sanctuary-def/Nullable' || !t.test(value) ?
             [] :
           t.type === 'UNARY' ?
             map(commonTypes(or(map(t._1(value), recur), [[Unknown]])),
@@ -640,7 +643,7 @@
                 return all(values, t.test) ? [t] : [];
               });
               if (isEmpty(okTypes)) {
-                throw invalidArgument(name, map(types, nest), _value, index);
+                throw invalidValue(name, map(types, nest), _value, index);
               }
             } else {
               okTypes = chain(commonTypes(map(values, determineActualTypes)),
@@ -710,10 +713,10 @@
             if (!expType.test(value) ||
                 isEmpty(satisfactoryTypes(name, constraints, $typeVarMap,
                                           expType, value, index))) {
-              throw invalidArgument(name,
-                                    replaceTypeVars($typeVarMap)(expType),
-                                    value,
-                                    index);
+              throw invalidValue(name,
+                                 replaceTypeVars($typeVarMap)(expType),
+                                 value,
+                                 index);
             }
             values[index] = value;
           } else {
