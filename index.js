@@ -356,6 +356,12 @@
     ($.Undefined  = type0('Undefined'))
   ];
 
+  //  ValidDate :: Type
+  $.ValidDate = $.NullaryType(
+    'sanctuary-def/ValidDate',
+    function(x) { return $.Date.test(x) && !isNaN(x.valueOf()); }
+  );
+
   //  arity :: (Number, Function) -> Function
   var arity = function(n, f) {
     return (
