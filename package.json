@@ -7,6 +7,9 @@
     "type": "git",
     "url": "git://github.com/plaid/sanctuary-def.git"
   },
+  "scripts": {
+    "test": "make test lint"
+  },
   "dependencies": {},
   "devDependencies": {
     "istanbul": "0.4.x",
