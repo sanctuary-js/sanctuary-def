@@ -280,6 +280,22 @@
     });
   };
 
+  //  EnumType :: [Any] -> Type
+  $.EnumType = function(members) {
+    var reprs = map(members, show);
+    return {
+      type: 'ENUM',
+      test: function(x) {
+        var repr = show(x);
+        for (var idx = 0; idx < reprs.length; idx += 1) {
+          if (reprs[idx] === repr) return true;
+        }
+        return false;
+      },
+      toString: always('(' + reprs.join(' | ') + ')')
+    };
+  };
+
   //  RecordType :: {Type} -> Type
   var RecordType = $.RecordType = function(fields) {
     return {
@@ -494,6 +510,8 @@
         return t1.type === t2.type && t1.name === t2.name &&
                equalTypes(t1.$1, t2.$1) &&
                equalTypes(t1.$2, t2.$2);
+      case 'ENUM':
+        return t1.type === t2.type && show(t1) === show(t2);
       case 'RECORD':
         return t1.type === t2.type && show(t1) === show(t2);
       /* istanbul ignore next */
