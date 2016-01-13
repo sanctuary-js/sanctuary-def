@@ -178,7 +178,7 @@ $.FiniteNumber :: Type
 ```
 
 Type comprising every [`ValidNumber`](#validnumber) value except `Infinity` and 
-`-Infinity` (and their object counterparts). 
+`-Infinity` (and their object counterparts).
 
 #### `Function`
 
@@ -188,6 +188,23 @@ $.Function :: Type
 
 Type comprising every Function value.
 
+#### `Integer`
+
+```haskell
+$.Integer :: Type
+```
+
+Type comprising every integer in the range 
+[[`Number.MIN_SAFE_INTEGER`][4] .. [`Number.MAX_SAFE_INTEGER`][5]].
+
+#### `NegativeInteger`
+
+```haskell
+$.NegativeInteger :: Type
+```
+
+Type comprising every [`Integer`](#integer) value less than zero.
+
 #### `NonZeroFiniteNumber`
 
 ```haskell
@@ -195,7 +212,15 @@ $.NonZeroFiniteNumber :: Type
 ```
 
 Type comprising every [`FiniteNumber`](#finitenumber) value except `0` and `-0` 
-(and their object counterparts). 
+(and their object counterparts).
+
+#### `NonZeroInteger`
+
+```haskell
+$.NonZeroInteger :: Type
+```
+
+Type comprising every non-zero [`Integer`](#integer) value.
 
 #### `NonZeroValidNumber`
 
@@ -204,7 +229,7 @@ $.NonZeroValidNumber :: Type
 ```
 
 Type comprising every [`ValidNumber`](#validnumber) value except `0` and `-0`
-(and their object counterparts). 
+(and their object counterparts).
 
 #### `Null`
 
@@ -239,9 +264,17 @@ $.Object :: Type
 Type comprising every "plain" Object value. Specifically, values created via:
 
   - object literal syntax;
-  - [`Object.create`][4]; or
+  - [`Object.create`][6]; or
   - the `new` operator in conjunction with `Object` or a custom
     constructor function.
+
+#### `PositiveInteger`
+
+```haskell
+$.PositiveInteger :: Type
+```
+
+Type comprising every [`Integer`](#integer) value greater than zero.
 
 #### `RegExp`
 
@@ -552,11 +585,11 @@ showCard(Pair('X', '♠'));
 
 #### `EnumType`
 
-`EnumType` is used to construct [enumerated types][5].
+`EnumType` is used to construct [enumerated types][7].
 
 To define an enumerated type one must provide:
 
-  - an array of values with distinct [`R.toString`][6] representations.
+  - an array of values with distinct [`R.toString`][8] representations.
 
 ```haskell
 EnumType :: [Any] -> Type
@@ -659,8 +692,8 @@ _concat([1, 2], 'buzz');
 
 The type of `_concat` is misleading: it suggests that it can operate on any
 two values of *any* one type. In fact there's an implicit constraint, since
-the type must support concatenation (in [mathematical][7] terms, the type
-must have a [semigroup][8]). The run-time type errors that result when this
+the type must support concatenation (in [mathematical][9] terms, the type
+must have a [semigroup][10]). The run-time type errors that result when this
 constraint is violated are not particularly descriptive:
 
 ```javascript
@@ -702,8 +735,10 @@ Multiple constraints may be placed on a type variable by including multiple
 [1]: http://ramdajs.com/docs/#__
 [2]: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/SyntaxError
 [3]: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/TypeError
-[4]: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/create
-[5]: https://en.wikipedia.org/wiki/Enumerated_type
-[6]: http://ramdajs.com/docs/#toString
-[7]: https://en.wikipedia.org/wiki/Semigroup
-[8]: https://github.com/fantasyland/fantasy-land#semigroup
+[4]: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number/MIN_SAFE_INTEGER
+[5]: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number/MAX_SAFE_INTEGER
+[6]: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/create
+[7]: https://en.wikipedia.org/wiki/Enumerated_type
+[8]: http://ramdajs.com/docs/#toString
+[9]: https://en.wikipedia.org/wiki/Semigroup
+[10]: https://github.com/fantasyland/fantasy-land#semigroup

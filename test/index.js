@@ -668,6 +668,7 @@ describe('def', function() {
                    'as its first argument; received new Number(NaN)'));
 
     eq(inc(1), 2);
+    eq(inc(new Number(1)), 2);
   });
 
   it('supports the "FiniteNumber" type', function() {
@@ -700,6 +701,7 @@ describe('def', function() {
                    'as its second argument; received new Number(-Infinity)'));
 
     eq(div(4, 2), 2);
+    eq(div(4, new Number(2)), 2);
   });
 
   it('supports the "NonZeroValidNumber" type', function() {
@@ -732,6 +734,7 @@ describe('def', function() {
                    'as its second argument; received new Number(-0)'));
 
     eq(div(4, 2), 2);
+    eq(div(4, new Number(2)), 2);
   });
 
   it('supports the "NonZeroFiniteNumber" type', function() {
@@ -764,6 +767,146 @@ describe('def', function() {
                    'as its second argument; received new Number(-0)'));
 
     eq(div(4, 2), 2);
+    eq(div(4, new Number(2)), 2);
+  });
+
+  it('supports the "Integer" type', function() {
+    var def = $.create($.env.concat([$.Integer]));
+
+    //  inc :: Integer -> Integer
+    var inc = def('inc',
+                  {},
+                  [$.Integer, $.Integer],
+                  function(x) { return x + 1; });
+
+    throws(function() { inc(3.14); },
+           errorEq(TypeError,
+                   '‘inc’ expected a value of type Integer ' +
+                   'as its first argument; received 3.14'));
+
+    throws(function() { inc(9007199254740992); },
+           errorEq(TypeError,
+                   '‘inc’ expected a value of type Integer ' +
+                   'as its first argument; received 9007199254740992'));
+
+    throws(function() { inc(-9007199254740992); },
+           errorEq(TypeError,
+                   '‘inc’ expected a value of type Integer ' +
+                   'as its first argument; received -9007199254740992'));
+
+    throws(function() { inc(new Number(9007199254740992)); },
+           errorEq(TypeError,
+                   '‘inc’ expected a value of type Integer ' +
+                   'as its first argument; received ' +
+                   'new Number(9007199254740992)'));
+
+    throws(function() { inc(new Number(-9007199254740992)); },
+           errorEq(TypeError,
+                   '‘inc’ expected a value of type Integer ' +
+                   'as its first argument; received ' +
+                   'new Number(-9007199254740992)'));
+
+    eq(inc(1), 2);
+    eq(inc(new Number(1)), 2);
+  });
+
+  it('supports the "NonZeroInteger" type', function() {
+    var def = $.create($.env.concat([$.ValidNumber, $.NonZeroInteger]));
+
+    //  div :: ValidNumber -> NonZeroInteger -> ValidNumber
+    var div = def('div',
+                  {},
+                  [$.ValidNumber, $.NonZeroInteger, $.ValidNumber],
+                  function(a, b) { return a / b; });
+
+    throws(function() { div(3, 0); },
+           errorEq(TypeError,
+                   '‘div’ expected a value of type NonZeroInteger ' +
+                   'as its second argument; received 0'));
+
+    throws(function() { div(3, new Number(0)); },
+           errorEq(TypeError,
+                   '‘div’ expected a value of type NonZeroInteger ' +
+                   'as its second argument; received new Number(0)'));
+
+    throws(function() { div(3, -0); },
+           errorEq(TypeError,
+                   '‘div’ expected a value of type NonZeroInteger ' +
+                   'as its second argument; received -0'));
+
+    throws(function() { div(3, new Number(-0)); },
+           errorEq(TypeError,
+                   '‘div’ expected a value of type NonZeroInteger ' +
+                   'as its second argument; received new Number(-0)'));
+
+    eq(div(4, 2), 2);
+    eq(div(4, new Number(2)), 2);
+  });
+
+  it('supports the "PositiveInteger" type', function() {
+    var def = $.create($.env.concat([$.PositiveInteger]));
+
+    //  inc :: PositiveInteger -> PositiveInteger
+    var inc = def('inc',
+                  {},
+                  [$.PositiveInteger, $.PositiveInteger],
+                  function(x) { return x + 1; });
+
+    throws(function() { inc(1.5); },
+           errorEq(TypeError,
+                   '‘inc’ expected a value of type PositiveInteger ' +
+                   'as its first argument; received 1.5'));
+
+    throws(function() { inc(new Number(1.5)); },
+           errorEq(TypeError,
+                   '‘inc’ expected a value of type PositiveInteger ' +
+                   'as its first argument; received new Number(1.5)'));
+
+    throws(function() { inc(-1); },
+           errorEq(TypeError,
+                   '‘inc’ expected a value of type PositiveInteger ' +
+                   'as its first argument; received -1'));
+
+    throws(function() { inc(new Number(-1)); },
+           errorEq(TypeError,
+                   '‘inc’ expected a value of type PositiveInteger ' +
+                   'as its first argument; received new Number(-1)'));
+
+    eq(inc(1), 2);
+    eq(inc(new Number(1)), 2);
+  });
+
+  it('supports the "NegativeInteger" type', function() {
+    var def = $.create($.env.concat([$.NegativeInteger]));
+
+    //  dec :: NegativeInteger -> NegativeInteger
+    var dec = def('dec',
+                  {},
+                  [$.NegativeInteger, $.NegativeInteger],
+                  function(x) { return x - 1; });
+
+    throws(function() { dec(-1.5); },
+           errorEq(TypeError,
+                   '‘dec’ expected a value of type NegativeInteger ' +
+                   'as its first argument; received -1.5'));
+
+    throws(function() { dec(new Number(-1.5)); },
+           errorEq(TypeError,
+                   '‘dec’ expected a value of type NegativeInteger ' +
+                   'as its first argument; received new Number(-1.5)'));
+
+    throws(function() { dec(1); },
+           errorEq(TypeError,
+                   '‘dec’ expected a value of type NegativeInteger ' +
+                   'as its first argument; received 1'));
+
+    throws(function() { dec(new Number(1)); },
+           errorEq(TypeError,
+                   '‘dec’ expected a value of type NegativeInteger ' +
+                   'as its first argument; received new Number(1)'));
+
+    eq(dec(-1), -2);
+    eq(dec(new Number(-1)), -2);
   });
 
   it('uses R.toString-like string representations', function() {
