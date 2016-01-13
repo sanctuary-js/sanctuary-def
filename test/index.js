@@ -464,6 +464,64 @@ describe('def', function() {
                    'as its first argument; received 0.5'));
   });
 
+  it('supports enumerated types', function() {
+    //  TimeUnit :: Type
+    var TimeUnit = $.EnumType(['milliseconds', 'seconds', 'minutes', 'hours']);
+
+    var def = $.create($.env.concat([TimeUnit, $.ValidDate, $.ValidNumber]));
+
+    //  convertTo :: TimeUnit -> ValidDate -> ValidNumber
+    var convertTo =
+    def('convertTo',
+        {},
+        [TimeUnit, $.ValidDate, $.ValidNumber],
+        function recur(unit, date) {
+          switch (unit) {
+            case 'milliseconds': return date.valueOf();
+            case 'seconds':      return recur('milliseconds', date) / 1000;
+            case 'minutes':      return recur('seconds', date) / 60;
+            case 'hours':        return recur('minutes', date) / 60;
+          }
+        });
+
+    throws(function() { convertTo('days', new Date(0)); },
+           errorEq(TypeError,
+                   '‘convertTo’ expected a value of type ' +
+                   '("milliseconds" | "seconds" | "minutes" | "hours") ' +
+                   'as its first argument; received "days"'));
+
+    eq(convertTo('seconds', new Date(1000)), 1);
+
+    //  SillyType :: Type
+    var SillyType = $.EnumType(['foo', true, 42]);
+
+    var _def = $.create($.env.concat([SillyType]));
+
+    //  id :: a -> a
+    var id = _def('id', {}, [a, a], R.identity);
+
+    eq(id(['foo', true]), ['foo', true]);
+
+    throws(function() { id(['foo', false]); },
+           errorEq(TypeError,
+                   '‘id’ received ["foo", false] as its first argument, ' +
+                   'but this value is not a member of any of the types ' +
+                   'in the environment:\n' +
+                   '\n' +
+                   '  - (Array ???)\n' +
+                   '  - Boolean\n' +
+                   '  - Date\n' +
+                   '  - Error\n' +
+                   '  - Function\n' +
+                   '  - Null\n' +
+                   '  - Number\n' +
+                   '  - Object\n' +
+                   '  - RegExp\n' +
+                   '  - String\n' +
+                   '  - Undefined\n' +
+                   '  - ("foo" | true | 42)'));
+  });
+
   it('supports record types', function() {
     //  Point :: Type
     var Point = $.RecordType({x: $.Number, y: $.Number});
@@ -580,7 +638,7 @@ describe('def', function() {
     var sinceEpoch = def('sinceEpoch',
                          {},
                          [$.ValidDate, $.Number],
-                         function(date) { return date.getTime() / 1000; });
+                         function(date) { return date.valueOf() / 1000; });
 
     throws(function() { sinceEpoch(new Date('foo')); },
            errorEq(TypeError,

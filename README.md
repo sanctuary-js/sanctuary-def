@@ -550,6 +550,47 @@ showCard(Pair('X', '♠'));
 // ! TypeError: ‘showCard’ expected a value of type (Pair Rank Suit) as its first argument; received Pair("X", "♠")
 ```
 
+#### `EnumType`
+
+`EnumType` is used to construct [enumerated types][5].
+
+To define an enumerated type one must provide:
+
+  - an array of values with distinct [`R.toString`][6] representations.
+
+```haskell
+EnumType :: [Any] -> Type
+```
+
+For example:
+
+```javascript
+//    TimeUnit :: Type
+const TimeUnit = $.EnumType(['milliseconds', 'seconds', 'minutes', 'hours']);
+
+const def = $.create($.env.concat([TimeUnit, $.ValidDate, $.ValidNumber]));
+
+//    convertTo :: TimeUnit -> ValidDate -> ValidNumber
+const convertTo =
+def('convertTo',
+    {},
+    [TimeUnit, $.ValidDate, $.ValidNumber],
+    function recur(unit, date) {
+      switch (unit) {
+        case 'milliseconds': return date.valueOf();
+        case 'seconds':      return recur('milliseconds', date) / 1000;
+        case 'minutes':      return recur('seconds', date) / 60;
+        case 'hours':        return recur('minutes', date) / 60;
+      }
+    });
+    
+convertTo('seconds', new Date(1000));
+// => 1
+
+convertTo('days', new Date(1000));
+// ! TypeError: ‘convertTo’ expected a value of type ("milliseconds" | "seconds" | "minutes" | "hours") as its first argument; received "days"
+```
+
 #### `RecordType`
 
 `RecordType` is used to construct record types. The type definition specifies
@@ -618,8 +659,8 @@ _concat([1, 2], 'buzz');
 
 The type of `_concat` is misleading: it suggests that it can operate on any
 two values of *any* one type. In fact there's an implicit constraint, since
-the type must support concatenation (in [mathematical][5] terms, the type
-must have a [semigroup][6]). The run-time type errors that result when this
+the type must support concatenation (in [mathematical][7] terms, the type
+must have a [semigroup][8]). The run-time type errors that result when this
 constraint is violated are not particularly descriptive:
 
 ```javascript
@@ -662,5 +703,7 @@ Multiple constraints may be placed on a type variable by including multiple
 [2]: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/SyntaxError
 [3]: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/TypeError
 [4]: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/create
-[5]: https://en.wikipedia.org/wiki/Semigroup
-[6]: https://github.com/fantasyland/fantasy-land#semigroup
+[5]: https://en.wikipedia.org/wiki/Enumerated_type
+[6]: http://ramdajs.com/docs/#toString
+[7]: https://en.wikipedia.org/wiki/Semigroup
+[8]: https://github.com/fantasyland/fantasy-land#semigroup
