@@ -529,6 +529,8 @@ describe('def', function() {
   });
 
   it('supports "nullable" types', function() {
+    var def = $.create($.env.concat([$.Nullable]));
+
     //  toUpper :: Nullable String -> Nullable String
     var toUpper =
     def('toUpper',
@@ -543,6 +545,32 @@ describe('def', function() {
            errorEq(TypeError,
                    '‘toUpper’ expected a value of type (Nullable String) ' +
                    'as its first argument; received ["abc"]'));
+
+    //  defaultTo :: a -> Nullable a -> a
+    var defaultTo =
+    def('defaultTo',
+        {},
+        [a, $.Nullable(a), a],
+        function(x, nullable) { return nullable === null ? x : nullable; });
+
+    eq(defaultTo(0, null), 0);
+    eq(defaultTo(0, 42), 42);
+
+    throws(function() { defaultTo(0, 'XXX'); },
+           errorEq(TypeError,
+                   '‘defaultTo’ expected a value of type (Nullable Number) ' +
+                   'as its second argument; received "XXX"'));
+
+    //  f :: Nullable a -> Nullable a
+    var f = def('f', {}, [$.Nullable(a), $.Nullable(a)], R.always(42));
+
+    eq(f(null), 42);
+    eq(f(0), 42);
+
+    throws(function() { f('XXX'); },
+           errorEq(TypeError,
+                   '‘f’ is expected to return a value of type ' +
+                   '(Nullable String); returned 42'));
   });
 
   it('supports the "ValidDate" type', function() {
