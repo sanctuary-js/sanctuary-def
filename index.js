@@ -19,6 +19,9 @@
 
   var $ = {};
 
+  var MAX_SAFE_INTEGER = Math.pow(2, 53) - 1;
+  var MIN_SAFE_INTEGER = -MAX_SAFE_INTEGER;
+
   var LEFT_SINGLE_QUOTATION_MARK = '\u2018';
   var RIGHT_SINGLE_QUOTATION_MARK = '\u2019';
 
@@ -390,13 +393,42 @@
   //  NonZeroValidNumber :: Type
   $.NonZeroValidNumber = $.NullaryType(
     'sanctuary-def/NonZeroValidNumber',
-    function(x) { return $.ValidNumber.test(x) && Number(x) !== 0; }
+    function(x) { return $.ValidNumber.test(x) && x != 0; }
   );
 
   //  NonZeroFiniteNumber :: Type
   $.NonZeroFiniteNumber = $.NullaryType(
     'sanctuary-def/NonZeroFiniteNumber',
-    function(x) { return $.FiniteNumber.test(x) && Number(x) !== 0; }
+    function(x) { return $.FiniteNumber.test(x) && x != 0; }
+  );
+
+  //  Integer :: Type
+  $.Integer = $.NullaryType(
+    'sanctuary-def/Integer',
+    function(x) {
+      return $.ValidNumber.test(x) &&
+             Math.floor(x) == x &&
+             x >= MIN_SAFE_INTEGER &&
+             x <= MAX_SAFE_INTEGER;
+    }
+  );
+
+  //  NonZeroInteger :: Type
+  $.NonZeroInteger = $.NullaryType(
+    'sanctuary-def/NonZeroInteger',
+    function(x) { return $.Integer.test(x) && x != 0; }
+  );
+
+  //  PositiveInteger :: Type
+  $.PositiveInteger = $.NullaryType(
+    'sanctuary-def/PositiveInteger',
+    function(x) { return $.Integer.test(x) && x > 0; }
+  );
+
+  //  NegativeInteger :: Type
+  $.NegativeInteger = $.NullaryType(
+    'sanctuary-def/NegativeInteger',
+    function(x) { return $.Integer.test(x) && x < 0; }
   );
 
   //  arity :: (Number, Function) -> Function
