@@ -69,6 +69,13 @@
     };
   };
 
+  //  functionName :: Function -> String
+  var functionName = function(f) {
+    // String(x => x) evaluates to "x => x", so the pattern may not match.
+    var match = String(f).match(/^function (\w+)/);
+    return match == null ? '' : match[1];
+  };
+
   //  has :: (String, Object) -> Boolean
   var has = function(key, obj) { return hasOwnProperty.call(obj, key); };
 
@@ -123,6 +130,462 @@
     var result = [];
     for (var n = start; n < stop; n += 1) result.push(n);
     return result;
+  };
+
+  //  strRepeat :: (String, Integer) -> String
+  var strRepeat = function(s, times) {
+    return Array(times + 1).join(s);
+  };
+
+  //  findNodePosition :: Node -> (Node -> Node) -> Position
+  var findNodePosition = function(sig) {
+    return function(fn) {
+      var node = fn(sig);
+      return [node.start, node.end];
+    };
+  };
+
+  var SIG_IDX_NAME = 0;
+  var SIG_IDX_CONSTRAINTS = 1;
+  var SIG_IDX_ARGS = 2;
+  var SIG_IDX_RET = 3;
+
+  //  sigHighlights :: (Node,
+  //                    [(Boolean, (Node -> (Node -> Node)))]) -> String
+  var sigHighlights = function(sig, specs) {
+    var upcarrots = '';
+    var highlightNumbers = '';
+    var number = 1;
+    var idx, spec, pos, start, end, len, showNumber, numberPos;
+    for (idx = 0; idx < specs.length; idx += 1) {
+      spec = specs[idx];
+      showNumber = spec[0];
+      pos = findNodePosition(sig)(spec[1]);
+      start = pos[0];
+      end = pos[1];
+      len = end - start;
+      numberPos = start + Math.floor((len - 1) / 2);
+      upcarrots += strRepeat(' ', start - upcarrots.length) +
+                   strRepeat('^', len);
+      highlightNumbers += strRepeat(' ', numberPos - highlightNumbers.length);
+      if (showNumber) {
+        highlightNumbers += String(number);
+        number += 1;
+      }
+    }
+    return upcarrots + '\n' + highlightNumbers;
+  };
+
+  //  sigGetName :: Node -> String
+  var sigGetName = function(sig) {
+    return sig.children[SIG_IDX_NAME].children[0].text;
+  };
+
+  //  findConstraint :: (TypeClass, String) -> Node -> Nullable Node
+  var findConstraint = function(typeClass, typeVarName) {
+    return function(sig) {
+      return traverseFind(function(node, parents) {
+        if (isVar(node) && node.text === typeVarName) {
+          var parent = getParent(parents);
+          if (parent.text === getConstraintText(typeClass)) {
+            return parent;
+          }
+        }
+      }, sig.children[SIG_IDX_CONSTRAINTS]);
+    };
+  };
+
+  //  findTypeVar :: (String, Node) -> Nullable Node
+  var findTypeVar = function(typeVarName, startNode) {
+    return traverseFind(function(node, parents) {
+      if (isVar(node) && node.text === typeVarName) {
+        return node;
+      }
+    }, startNode);
+  };
+
+  //  findArg :: (Integer, Node) -> Nullable Node
+  var findArg = function(index, sig) {
+    var args = nonDelimiters(sig.children[SIG_IDX_ARGS].children);
+    return args[index];
+  };
+
+  //  findRetTypeVar :: String -> Node -> Nullable Node
+  var findRetTypeVar = function(typeVarName) {
+    return function(sig) {
+      return findTypeVar(typeVarName, sig.children[SIG_IDX_RET]);
+    };
+  };
+
+  //  findArgTypeVar :: (Integer, String) -> Node -> Nullable Node
+  var findArgTypeVar = function(index, typeVarName) {
+    return function(sig) {
+      return findTypeVar(typeVarName, findArg(index, sig));
+    };
+  };
+
+  //  findVal :: Integer -> Node -> Node
+  var findVal = function(index) {
+    return function(sig) {
+      return isNaN(index) ? sig.children[SIG_IDX_RET] :
+                            findArg(index, sig);
+    };
+  };
+
+  //  findBadTypeVar :: (Number, String) -> Nullable Node
+  var findBadTypeVar = function(index, typeVarName) {
+    return isNaN(index) ? findRetTypeVar(typeVarName) :
+                          findArgTypeVar(index, typeVarName);
+  };
+
+  //  pipe :: (Any -> [(Any -> Any)]) -> Any
+  var pipe = function(data, fns) {
+    var r = fns[0](data);
+    for (var idx = 1; idx < fns.length; idx += 1) {
+      r = fns[idx](r);
+    }
+    return r;
+  };
+
+  //  head :: [a] -> a?
+  var head = function(xs) {
+    return xs[0];
+  };
+
+  //  last :: [a] -> a?
+  var last = function(xs) {
+    return xs[xs.length - 1];
+  };
+
+  //  toPairs :: StrMap a -> [Pair String a]
+  var toPairs = function(obj) {
+    var pairs = [];
+    for (var k in obj) {
+      pairs.push([k, obj[k]]);
+    }
+    return pairs;
+  };
+
+  //  isFirstChild :: (Node, Node) -> Boolean
+  var isFirstChild = function(node, parent) {
+    return head(nonDelimiters(parent.children)) === node;
+  };
+
+  //  isRootFirstChild :: (Node, [Node]) -> Boolean
+  var isRootFirstChild = function(node, parents) {
+    return (
+      isRootChild(parents) &&
+      isFirstChild(node, head(parents))
+    );
+  };
+
+  //  getParent :: [Node] -> Nullable Node
+  var getParent = last;
+
+  //  isRoot :: [Node] -> Boolean
+  var isRoot = isEmpty;
+
+  //  isRootChild :: [Node] -> Boolean
+  var isRootChild = function(parents) {
+    return parents.length === 1;
+  };
+
+  //  nonDelimiters :: [Node] -> [Node]
+  var nonDelimiters = function(nodes) {
+    return reject(nodes, isDelimiter);
+  };
+
+  //  arrayClone :: [a] -> [a]
+  var arrayClone = function(a) {
+    return a.slice();
+  };
+
+  //  isLeaf :: Node -> Boolean
+  var isLeaf = function(node) {
+    return isEmpty(node.children);
+  };
+
+  //  isDelimiter :: Node -> Boolean
+  var isDelimiter = function(t) {
+    return t.type === 'DELIMITER';
+  };
+
+  //  isParameterizedType :: Object -> Boolean
+  var isParameterizedType = function(t) {
+    return t.type === 'UNARY' || t.type === 'BINARY';
+  };
+
+  //  isVar :: Node -> Boolean
+  var isVar = function(t) {
+    return t.type === 'VARIABLE';
+  };
+
+  //  getConstraintText :: Node -> String
+  var getConstraintText = function(constraint) {
+    return stripNamespace(constraint.name);
+  };
+
+  //  traverse :: ((Node, [Node]) -> Undefined) -> Node -> Undefined
+  var traverse = function(f) {
+    return function(startNode) {
+      var recur = function recur(node, parents) {
+        f(node, parents);
+        var nodes = arrayClone(node.children);
+        for (var idx = 0; idx < nodes.length; idx += 1) {
+          recur(nodes[idx], parents.concat([node]));
+        }
+        return node;
+      };
+      return recur(startNode, []);
+    };
+  };
+
+  //  traverseFind :: ((Node, [Node]) -> Nullable Node) -> Node
+  //                  -> Nullable Node
+  var traverseFind = function(f, startNode) {
+    var recur = function recur(node, parents) {
+      var r = f(node, parents);
+      if (r != null) {
+        return r;
+      }
+      var nodes = arrayClone(node.children);
+      for (var idx = 0; idx < nodes.length; idx += 1) {
+        r = recur(nodes[idx], parents.concat([node]));
+        if (r != null) {
+          return r;
+        }
+      }
+      return null;
+    };
+    return recur(startNode, []);
+  };
+
+  //  traverseWith :: ((a, Node, Node) -> a) -> a -> Node -> Node -> a
+  var traverseWith = function traverseWith(f, acc, node, parent) {
+    acc = f(acc, node, parent);
+    var nodes = arrayClone(node.children);
+    for (var idx = 0; idx < nodes.length; idx += 1) {
+      acc = traverseWith(f, acc, nodes[idx], node);
+    }
+    return acc;
+  };
+
+  //  postTraverseWith :: ((a, Node, Node) -> a) -> a -> Node -> Node -> a
+  var postTraverseWith = function postTraverseWith(f, acc, node, parent) {
+    var nodes = arrayClone(node.children);
+    for (var idx = 0; idx < nodes.length; idx += 1) {
+      acc = postTraverseWith(f, acc, nodes[idx], node);
+    }
+    return f(acc, node, parent);
+  };
+
+  //  reject :: ([a], (a -> Boolean)) -> [a]
+  var reject = function(xs, pred) {
+    var b = [];
+    for (var idx = 0; idx < xs.length; idx += 1) {
+      var elem = xs[idx];
+      if (!pred(elem)) {
+        b.push(elem);
+      }
+    }
+    return b;
+  };
+
+  //  Node :: (String, String, [Node]) -> Node
+  var Node = function(type, text, children) {
+    return {
+      type: type,
+      text: text,
+      start: null,
+      end: null,
+      children: children
+    };
+  };
+
+  //  addSpaces :: (Node, [Node]) -> Undefined
+  var addSpaces = function(node, parents) {
+    if (!isEmpty(parents) && !isDelimiter(node)) {
+      if (!isRootFirstChild(node, parents)) {
+        var parent = getParent(parents);
+        insertBefore(parent.children, node, Node('DELIMITER', ' ', []));
+      }
+    }
+  };
+
+  //  wrapRootChildren :: (Node, [Node]) -> Undefined
+  var wrapRootChildren = function(node, parents) {
+    if (isRoot(parents)) {
+      var children = reject(node.children, isDelimiter);
+      if (children.length > 1) {
+        insertBefore(node.children, head(children),
+                     Node('DELIMITER', '(', []));
+        insertAfter(node.children, last(children),
+                    Node('DELIMITER', ')', []));
+      }
+    }
+  };
+
+  //  rootChildrenSeparator :: String -> (Node, [Node]) -> Undefined
+  var rootChildrenSeparator = function(text) {
+    return function(node, parents) {
+      if (isRoot(parents)) {
+        var children = reject(node.children, isDelimiter);
+        map(children.slice(1), function(child) {
+          insertBefore(node.children, child, Node('DELIMITER', text, []));
+        });
+      }
+    };
+  };
+
+  //  wrapNestedContainers :: (Node, [Node]) -> Undefined
+  var wrapNestedContainers = function(node, parents) {
+    if (isParameterizedType(node) && !isRootChild(node)) {
+      var parent = getParent(parents);
+      if (isParameterizedType(parent)) {
+        insertBefore(parent.children, node, Node('DELIMITER', '(', []));
+        insertAfter(parent.children, node, Node('DELIMITER', ')', []));
+      }
+    }
+  };
+
+  //  addSeparator :: String -> (Node, [Node]) -> Undefined
+  var addSeparator = function(text) {
+    return function(node, parents) {
+      if (isRoot(parents) && !isEmpty(node.children)) {
+        insertAfter(node.children, last(node.children),
+                    Node('DELIMITER', text, []));
+      }
+    };
+  };
+
+  //  Name :: String -> Node
+  var Name = function(data) {
+    var tree = Node('NAME', '', [
+      Node('FN_NAME', data, [])
+    ]);
+    return pipe(tree, [
+      traverse(addSeparator(' :: '))
+    ]);
+  };
+
+  //  Constraints :: StrMap Constraint -> Node
+  var Constraints = function(data) {
+    var tree = Node('CONSTRAINTS', '',
+                    chain(toPairs(data), TypeVarConstraints));
+    return pipe(tree, [
+      traverse(addSeparator(' => ')),
+      traverse(rootChildrenSeparator(',')),
+      traverse(addSpaces),
+      traverse(wrapRootChildren)
+    ]);
+  };
+
+  //  Args :: [ExpType] -> Node
+  var Args = function(data) {
+    var tree = Node('ARGS', '', map(data, Arg));
+    return pipe(tree, [
+      traverse(addSeparator(' -> ')),
+      traverse(rootChildrenSeparator(' ->')),
+      traverse(addSpaces),
+      traverse(wrapNestedContainers)
+    ]);
+  };
+
+  //  Ret :: ExpType -> Node
+  var Ret = function(data) {
+    var tree = Node('RET', '', [
+      Arg(data)
+    ]);
+    return pipe(tree, [
+      traverse(addSpaces),
+      traverse(wrapNestedContainers)
+    ]);
+  };
+
+  //  Arg :: ExpType -> Node
+  var Arg = function(arg) {
+    return Node(
+      arg.type,
+      arg.name ? stripNamespace(arg.name) : arg.toString(),
+      map(getArgChildren(arg), Arg));
+  };
+
+  //  TypeVarConstraints :: [[String, Constraint]] -> Node
+  var TypeVarConstraints = function(typeVarConstraints) {
+    var typeVar = typeVarConstraints[0];
+    var constraints = typeVarConstraints[1];
+    return map(constraints, Constraint(typeVar));
+  };
+
+  //  Constraint :: String -> Constraint -> Node
+  var Constraint = function(typeVarName) {
+    return function(constraint) {
+      return Node('CONSTRAINT', getConstraintText(constraint), [
+        Node('VARIABLE', typeVarName, [])
+      ]);
+    };
+  };
+
+  //  getArgChildren :: ExpType -> [ExpType]
+  var getArgChildren = function(arg) {
+    switch (arg.type) {
+      case 'UNARY':  return [arg.$1];
+      case 'BINARY': return [arg.$1, arg.$2];
+      default:       return [];
+    }
+  };
+
+  //  insert :: [Node] -> Node -> Node -> Integer -> Undefined
+  var insert = function(children, target, newChild, offset) {
+    for (var idx = 0; idx < children.length; idx += 1) {
+      if (children[idx] === target) {
+        children.splice(idx + offset, 0, newChild);
+        break;
+      }
+    }
+  };
+
+  //  insertAfter :: [Node] -> Node -> Node -> Undefined
+  var insertAfter = function(children, target, newChild) {
+    insert(children, target, newChild, 1);
+  };
+
+  //  insertBefore :: [Node] -> Node -> Node -> Undefined
+  var insertBefore = function(children, target, newChild) {
+    insert(children, target, newChild, 0);
+  };
+
+  //  setStart :: Integer -> Node -> Node -> Integer
+  var setStart = function(acc, node, parent) {
+    node.start = acc;
+    return acc + node.text.length;
+  };
+
+  //  setEnd :: Integer -> Node -> Node -> Integer
+  var setEnd = function(acc, node, parent) {
+    node.end = isLeaf(node) ? node.start + node.text.length : acc;
+    return node.end;
+  };
+
+  //  showSignature :: Node -> String
+  var showSignature = function(tree) {
+    return traverseWith(function(acc, t) { return acc + t.text; },
+                        '', tree);
+  };
+
+  //  signature :: (String, [Constraint], [Type], Type) -> Signature
+  var signature = function(name, constraints, expTypes, expRetType) {
+    var sig = Node('SIG', '', [
+      Name(name),
+      Constraints(constraints),
+      Args(expTypes),
+      Ret(expRetType)
+    ]);
+
+    traverseWith(setStart, 0, sig);
+    postTraverseWith(setEnd, 0, sig);
+
+    return sig;
   };
 
   //  stripNamespace :: String -> String
@@ -551,22 +1014,6 @@
     }
   };
 
-  //  replaceTypeVars :: {[Type]} -> Type -> [Type]
-  var replaceTypeVars = function(typeVarMap) {
-    return function recur(t) {
-      switch (t.type) {
-        case 'VARIABLE':
-          return has(t.name, typeVarMap) ? typeVarMap[t.name] : [t];
-        case 'UNARY':
-          return map(recur(t.$1), UnaryType.from(t));
-        case 'BINARY':
-          return BinaryType.xprod(t, recur(t.$1), recur(t.$2));
-        default:
-          return [t];
-      }
-    };
-  };
-
   //  rejectInconsistent :: Type -> [Type]
   var rejectInconsistent = function recur(t) {
     switch (t.type) {
@@ -579,6 +1026,14 @@
       default:
         return [t];
     }
+  };
+
+  //  unexpectedType :: Any -> TypeError
+  var unexpectedType = /* istanbul ignore next */ function(x) {
+    return new TypeError(
+      'Unexpected type ' +
+      LEFT_SINGLE_QUOTATION_MARK + x + RIGHT_SINGLE_QUOTATION_MARK
+    );
   };
 
   //  equalTypes :: (Type, Type) -> Boolean
@@ -602,10 +1057,7 @@
         return t1.type === t2.type && show(t1) === show(t2);
       /* istanbul ignore next */
       default:
-        throw new TypeError(
-          'Unexpected type ' +
-          LEFT_SINGLE_QUOTATION_MARK + t1.type + RIGHT_SINGLE_QUOTATION_MARK
-        );
+        throw unexpectedType(t1.type);
     }
   };
 
@@ -654,7 +1106,7 @@
       'Definition of ' + LEFT_SINGLE_QUOTATION_MARK + name +
       RIGHT_SINGLE_QUOTATION_MARK + ' references ' + type.name +
       ' which is not in the environment:\n\n' +
-      map(chain(env, rejectInconsistent), prefix('  - ')).join('\n')
+      map(chain(env, rejectInconsistent), prefix('  - ')).join('\n') + '\n'
     );
   };
 
@@ -672,32 +1124,94 @@
       ' received ' + show(value) + ' as its ' + ordinals[index] +
       ' argument, but this value is not a member of any of the types ' +
       'in the environment:\n\n' +
-      map(chain(env, rejectInconsistent), prefix('  - ')).join('\n')
+      map(chain(env, rejectInconsistent), prefix('  - ')).join('\n') + '\n'
     );
   };
 
-  var invalidReturnValue = function(name, types, value) {
-    return new TypeError(
-      LEFT_SINGLE_QUOTATION_MARK + name + RIGHT_SINGLE_QUOTATION_MARK +
-      ' is expected to return a value of type ' + types.join(' or ') +
-      '; returned ' + show(value)
+  //  showValueAndType :: ([String], [Any]) -> String
+  var showValueAndType = function(types, values) {
+    return show(values[0]) + ' :: ' + map(types, show).join(', ');
+  };
+
+  //  showParameterizedValuesAndTypes :: (String, [Any], String) -> String
+  var showParameterizedValuesAndTypes = function(typeName, values, pad) {
+    var start, end;
+    if (typeName === 'Array') {
+      start = '[ ';
+      end = ' ]';
+    } else {
+      start = typeName + '( ';
+      end = ' )';
+    }
+    pad += start.length;
+    values = map(values,
+             function(repr) { return showValuesAndTypes(repr, pad); });
+    return (
+      start +
+      values.join('\n' + strRepeat(' ', pad)) +
+      end
     );
   };
 
-  var invalidValue = function(name, types, value, index) {
-    return isNaN(index) ?
-      invalidReturnValue(name, types, value) :
-      invalidArgument(name, types, value, index);
+  //  showValuesAndTypes :: (ErrorRepr, String) -> String
+  var showValuesAndTypes = function(repr, pad) {
+    return repr.isParameterizedType ?
+      showParameterizedValuesAndTypes(repr.type, repr.values, pad) :
+      showValueAndType(repr.types, repr.values);
   };
 
-  var constraintViolation = function(name, typeVarName, typeClasses, _types) {
-    var types = chain(_types, rejectInconsistent);
+  //  showErrorValue :: (Integer, ErrorRepr) -> String
+  var showErrorValue = function(num, repr) {
+    var numRepr = num + ')  ';
+    return (
+      numRepr +
+      showValuesAndTypes(repr, numRepr.length) +
+      '\n\n'
+    );
+  };
+
+  var conflictingTypeVar = function(sig, typeVarName, a, b) {
+    var pair = a.index > b.index ? [b, a] : [a, b];
     return new TypeError(
-      LEFT_SINGLE_QUOTATION_MARK + name + RIGHT_SINGLE_QUOTATION_MARK +
-      ' requires ' + LEFT_SINGLE_QUOTATION_MARK + typeVarName +
-      RIGHT_SINGLE_QUOTATION_MARK + ' to implement ' +
-      typeClasses.join(' and ') + '; ' + types.join(' and ') + ' ' +
-      (types.length === 1 ? 'does' : 'do') + ' not'
+      'Type-variable constraint violation\n\n' +
+      showSignature(sig) + '\n' +
+      sigHighlights(sig, [
+        [true, findBadTypeVar(pair[0].index, typeVarName)],
+        [true, findBadTypeVar(pair[1].index, typeVarName)]
+      ]) + '\n\n' +
+      showErrorValue(1, pair[0].repr) +
+      showErrorValue(2, pair[1].repr) +
+      'Since there is no type of which all the above values are members, ' +
+      'the type-variable constraint has been violated.\n'
+    );
+  };
+
+  var invalidValue = function(sig, expType, errInfo) {
+    return new TypeError(
+      'Invalid value\n\n' +
+      showSignature(sig) + '\n' +
+      sigHighlights(sig, [
+        [true, findVal(errInfo.index)]
+      ]) + '\n\n' +
+      showErrorValue(1, errInfo.repr) +
+      'The value at position 1 is not a member of ' +
+      show(expType) + '.\n'
+    );
+  };
+
+  var constraintViolation = function(sig, typeVarName, typeClass, errInfo) {
+    return new TypeError(
+      'Type-class constraint violation\n\n' +
+      showSignature(sig) + '\n' +
+      sigHighlights(sig, [
+        [false, findConstraint(typeClass, typeVarName)],
+        [true, findBadTypeVar(errInfo.index, typeVarName)]
+      ]) + '\n\n' +
+      showErrorValue(1, errInfo.repr) +
+      LEFT_SINGLE_QUOTATION_MARK + sigGetName(sig) +
+      RIGHT_SINGLE_QUOTATION_MARK + ' requires ' + LEFT_SINGLE_QUOTATION_MARK +
+      typeVarName + RIGHT_SINGLE_QUOTATION_MARK + ' to satisfy the ' +
+      typeClass + ' type-class constraint; the value at position 1 does not.\n'
     );
   };
 
@@ -750,11 +1264,85 @@
       });
     };
 
-    var _satisfactoryTypes =
-    function(name, constraints, $typeVarMap, _value, index) {
-      return function recur(expType, values, nest) {
-        var $1s, $2s, idx, okTypes;
+    //  valueTypes :: [Any] -> [Type]
+    var valueTypes = function(values) {
+      return chain(commonTypes(map(values, determineActualTypes)),
+                   rejectInconsistent);
+    };
 
+    //  paramTypesAndValues :: ((a -> Any), Type, [a]) -> ErrorRepr
+    var paramTypesAndValues = function(valFn, type, values) {
+      return map(
+        chain(values, valFn),
+        function(value) {
+          return typesAndValues(
+            type,
+            [value]
+          );
+        }
+      );
+    };
+
+    //  nullaryTypesAndValues :: [Any] -> ErrorRepr
+    var nullaryTypesAndValues = function(values) {
+      return {
+        isParameterizedType: false,
+        types: valueTypes(values),
+        values: values
+      };
+    };
+
+    //  typesAndValues :: (type, [Any]) -> ErrorRepr
+    var typesAndValues = function(t, values) {
+      if (isParameterizedType(t)) {
+        var constructorName = functionName(values[0].constructor);
+        var typeRepr = constructorName === '' ? stripNamespace(t.name) :
+                                                constructorName;
+        switch (t.type) {
+          case 'UNARY':
+            return {
+              isParameterizedType: true,
+              type: typeRepr,
+              values: paramTypesAndValues(t._1, t.$1, values)
+            };
+          case 'BINARY':
+            var $1s = paramTypesAndValues(t._1, t.$1, values);
+            var $2s = paramTypesAndValues(t._2, t.$2, values);
+            return {
+              isParameterizedType: true,
+              type: typeRepr,
+              values: $1s.concat($2s)
+            };
+          /* istanbul ignore next */
+          default:
+            throw unexpectedType(t.type);
+        }
+      } else {
+        return nullaryTypesAndValues(values);
+      }
+    };
+
+    //  typeVarErrorInfo :: (Integer, Type, Any) -> ErrorInfo
+    var typeVarErrorInfo = function(index, t, value) {
+      return {
+        index: index,
+        repr: typesAndValues(t, [value])
+      };
+    };
+
+    //  invalidValueErrorInfo :: (Integer, Any) -> ErrorInfo
+    var invalidValueErrorInfo = function(index, value) {
+      return {
+        index: index,
+        repr: nullaryTypesAndValues([value])
+      };
+    };
+
+    var _satisfactoryTypes =
+    function(name, constraints, expArgTypes, expRetType,
+             $typeVarMap, _expType, _value, index) {
+      return function recur(expType, values) {
+        var $1s, $2s, idx, okTypes;
         switch (expType.type) {
 
           case 'VARIABLE':
@@ -765,47 +1353,58 @@
                 for (var idx2 = 0; idx2 < typeClasses.length; idx2 += 1) {
                   if (!typeClasses[idx2].test(values[idx])) {
                     throw constraintViolation(
-                      name,
+                      signature(name, constraints, expArgTypes, expRetType),
                       typeVarName,
-                      typeClasses,
-                      commonTypes(map(values, determineActualTypes))
+                      typeClasses[idx2],
+                      typeVarErrorInfo(index, expType, values[idx])
                     );
                   }
                 }
               }
             }
             if (has(typeVarName, $typeVarMap)) {
-              var types = $typeVarMap[typeVarName];
+              var types = $typeVarMap[typeVarName].types;
               okTypes = chain(types, function(t) {
                 return all(values, t.test) ? [t] : [];
               });
               if (isEmpty(okTypes)) {
-                throw invalidValue(name, map(types, nest), _value, index);
+                var history = $typeVarMap[typeVarName].history;
+                throw conflictingTypeVar(
+                  signature(name, constraints, expArgTypes, expRetType),
+                  typeVarName,
+                  typeVarErrorInfo(history.index, history.expType,
+                                   history.value),
+                  typeVarErrorInfo(index, _expType, _value)
+                );
               }
             } else {
-              okTypes = chain(commonTypes(map(values, determineActualTypes)),
-                              rejectInconsistent);
+              okTypes = valueTypes(values);
               if (isEmpty(okTypes) && !isEmpty(values)) {
                 throw orphanArgument(env, name, _value, index);
               }
             }
-            if (!isEmpty(okTypes)) $typeVarMap[typeVarName] = okTypes;
+            if (!isEmpty(okTypes)) {
+              $typeVarMap[typeVarName] = {
+                types: okTypes,
+                history: {
+                  index: index,
+                  expType: _expType,
+                  value: _value
+                }
+              };
+            }
             return okTypes;
 
           case 'UNARY':
             $1s = recur(expType.$1,
-                        chain(values, expType._1),
-                        UnaryType.from(expType));
+                        chain(values, expType._1));
             return map(or($1s, [expType.$1]), UnaryType.from(expType));
 
           case 'BINARY':
-            var specialize = BinaryType.from(expType);
             $1s = recur(expType.$1,
-                        chain(values, expType._1),
-                        function($1) { return specialize($1, expType.$2); });
+                        chain(values, expType._1));
             $2s = recur(expType.$2,
-                        chain(values, expType._2),
-                        function($2) { return specialize(expType.$1, $2); });
+                        chain(values, expType._2));
             return BinaryType.xprod(expType,
                                     or($1s, [expType.$1]),
                                     or($2s, [expType.$2]));
@@ -817,9 +1416,11 @@
     };
 
     var satisfactoryTypes =
-    function(name, constraints, $typeVarMap, expType, value, index) {
-      return _satisfactoryTypes(name, constraints, $typeVarMap, value, index)
-                               (expType, [value], id);
+    function(name, constraints, expArgTypes, expRetType, $typeVarMap,
+             expType, value, index) {
+      return _satisfactoryTypes(name, constraints, expArgTypes,
+                                expRetType, $typeVarMap, expType, value, index)
+                               (expType, [value]);
     };
 
     var curry = function(name, constraints, expArgTypes, expRetType,
@@ -835,7 +1436,7 @@
         }
         var $typeVarMap = {};
         for (var typeVarName in _typeVarMap) {
-          $typeVarMap[typeVarName] = _typeVarMap[typeVarName].slice();
+          $typeVarMap[typeVarName] = _typeVarMap[typeVarName];
         }
         var values = _values.slice();
         var indexes = [];
@@ -851,12 +1452,15 @@
             if (checkTypes) {
               var expType = expArgTypes[index];
               if (!expType.test(value) ||
-                  isEmpty(satisfactoryTypes(name, constraints, $typeVarMap,
+                  isEmpty(satisfactoryTypes(name, constraints, expArgTypes,
+                                            expRetType, $typeVarMap,
                                             expType, value, index))) {
-                throw invalidValue(name,
-                                   replaceTypeVars($typeVarMap)(expType),
-                                   value,
-                                   index);
+                throw invalidValue(signature(name,
+                                             constraints,
+                                             expArgTypes,
+                                             expRetType),
+                                   expType,
+                                   invalidValueErrorInfo(index, value));
               }
             }
             values[index] = value;
@@ -868,10 +1472,16 @@
           var returnValue = impl.apply(this, values);
           if (checkTypes) {
             if (!expRetType.test(returnValue)) {
-              throw invalidReturnValue(name, [expRetType], returnValue);
+              throw invalidValue(signature(name,
+                                           constraints,
+                                           expArgTypes,
+                                           expRetType),
+                                       expRetType,
+                                       invalidValueErrorInfo(NaN, returnValue)
+                                );
             }
-            satisfactoryTypes(name, constraints, $typeVarMap,
-                              expRetType, returnValue, NaN);
+            satisfactoryTypes(name, constraints, expArgTypes, expRetType,
+                              $typeVarMap, expRetType, returnValue, NaN);
           }
           return returnValue;
         } else {
