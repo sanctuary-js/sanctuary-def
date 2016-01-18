@@ -373,62 +373,86 @@
   ];
 
   //  ValidDate :: Type
-  $.ValidDate = $.NullaryType(
+  $.ValidDate = NullaryType(
     'sanctuary-def/ValidDate',
     function(x) { return $.Date.test(x) && !isNaN(x.valueOf()); }
   );
 
+  //  PositiveNumber :: Type
+  $.PositiveNumber = NullaryType(
+    'sanctuary-def/PositiveNumber',
+    function(x) { return $.Number.test(x) && x > 0; }
+  );
+
+  //  NegativeNumber :: Type
+  $.NegativeNumber = NullaryType(
+    'sanctuary-def/NegativeNumber',
+    function(x) { return $.Number.test(x) && x < 0; }
+  );
+
   //  ValidNumber :: Type
-  $.ValidNumber = $.NullaryType(
+  var ValidNumber = $.ValidNumber = NullaryType(
     'sanctuary-def/ValidNumber',
     function(x) { return $.Number.test(x) && !isNaN(x); }
   );
 
-  //  FiniteNumber :: Type
-  $.FiniteNumber = $.NullaryType(
-    'sanctuary-def/FiniteNumber',
-    function(x) { return $.ValidNumber.test(x) && isFinite(x); }
+  //  NonZeroValidNumber :: Type
+  $.NonZeroValidNumber = NullaryType(
+    'sanctuary-def/NonZeroValidNumber',
+    function(x) { return ValidNumber.test(x) && x != 0; }
   );
 
-  //  NonZeroValidNumber :: Type
-  $.NonZeroValidNumber = $.NullaryType(
-    'sanctuary-def/NonZeroValidNumber',
-    function(x) { return $.ValidNumber.test(x) && x != 0; }
+  //  FiniteNumber :: Type
+  var FiniteNumber = $.FiniteNumber = NullaryType(
+    'sanctuary-def/FiniteNumber',
+    function(x) { return ValidNumber.test(x) && isFinite(x); }
+  );
+
+  //  PositiveFiniteNumber :: Type
+  $.PositiveFiniteNumber = NullaryType(
+    'sanctuary-def/PositiveFiniteNumber',
+    function(x) { return FiniteNumber.test(x) && x > 0; }
+  );
+
+  //  NegativeFiniteNumber :: Type
+  $.NegativeFiniteNumber = NullaryType(
+    'sanctuary-def/NegativeFiniteNumber',
+    function(x) { return FiniteNumber.test(x) && x < 0; }
   );
 
   //  NonZeroFiniteNumber :: Type
-  $.NonZeroFiniteNumber = $.NullaryType(
+  $.NonZeroFiniteNumber = NullaryType(
     'sanctuary-def/NonZeroFiniteNumber',
-    function(x) { return $.FiniteNumber.test(x) && x != 0; }
+    function(x) { return FiniteNumber.test(x) && x != 0; }
   );
 
   //  Integer :: Type
-  $.Integer = $.NullaryType(
+  var Integer = $.Integer = NullaryType(
     'sanctuary-def/Integer',
     function(x) {
-      return $.ValidNumber.test(x) &&
+      return ValidNumber.test(x) &&
              Math.floor(x) == x &&
              x >= MIN_SAFE_INTEGER &&
              x <= MAX_SAFE_INTEGER;
     }
   );
 
-  //  NonZeroInteger :: Type
-  $.NonZeroInteger = $.NullaryType(
-    'sanctuary-def/NonZeroInteger',
-    function(x) { return $.Integer.test(x) && x != 0; }
-  );
-
   //  PositiveInteger :: Type
-  $.PositiveInteger = $.NullaryType(
+  $.PositiveInteger = NullaryType(
     'sanctuary-def/PositiveInteger',
-    function(x) { return $.Integer.test(x) && x > 0; }
+    function(x) { return Integer.test(x) && x > 0; }
   );
 
   //  NegativeInteger :: Type
-  $.NegativeInteger = $.NullaryType(
+  $.NegativeInteger = NullaryType(
     'sanctuary-def/NegativeInteger',
-    function(x) { return $.Integer.test(x) && x < 0; }
+    function(x) { return Integer.test(x) && x < 0; }
+  );
+
+  //  NonZeroInteger :: Type
+  $.NonZeroInteger = NullaryType(
+    'sanctuary-def/NonZeroInteger',
+    function(x) { return Integer.test(x) && x != 0; }
   );
 
   //  arity :: (Number, Function) -> Function
