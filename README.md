@@ -177,7 +177,7 @@ constructors such as [`SyntaxError`][2] and [`TypeError`][3].
 $.FiniteNumber :: Type
 ```
 
-Type comprising every [`ValidNumber`](#validnumber) value except `Infinity` and 
+Type comprising every [`ValidNumber`](#validnumber) value except `Infinity` and
 `-Infinity` (and their object counterparts).
 
 #### `Function`
@@ -194,8 +194,16 @@ Type comprising every Function value.
 $.Integer :: Type
 ```
 
-Type comprising every integer in the range 
+Type comprising every integer in the range
 [[`Number.MIN_SAFE_INTEGER`][4] .. [`Number.MAX_SAFE_INTEGER`][5]].
+
+#### `NegativeFiniteNumber`
+
+```haskell
+$.NegativeFiniteNumber :: Type
+```
+
+Type comprising every [`FiniteNumber`](#finitenumber) value less than zero.
 
 #### `NegativeInteger`
 
@@ -205,13 +213,21 @@ $.NegativeInteger :: Type
 
 Type comprising every [`Integer`](#integer) value less than zero.
 
+#### `NegativeNumber`
+
+```haskell
+$.NegativeNumber :: Type
+```
+
+Type comprising every [`Number`](#number) value less than zero.
+
 #### `NonZeroFiniteNumber`
 
 ```haskell
 $.NonZeroFiniteNumber :: Type
 ```
 
-Type comprising every [`FiniteNumber`](#finitenumber) value except `0` and `-0` 
+Type comprising every [`FiniteNumber`](#finitenumber) value except `0` and `-0`
 (and their object counterparts).
 
 #### `NonZeroInteger`
@@ -268,6 +284,14 @@ Type comprising every "plain" Object value. Specifically, values created via:
   - the `new` operator in conjunction with `Object` or a custom
     constructor function.
 
+#### `PositiveFiniteNumber`
+
+```haskell
+$.PositiveFiniteNumber :: Type
+```
+
+Type comprising every [`FiniteNumber`](#finitenumber) value greater than zero.
+
 #### `PositiveInteger`
 
 ```haskell
@@ -275,6 +299,14 @@ $.PositiveInteger :: Type
 ```
 
 Type comprising every [`Integer`](#integer) value greater than zero.
+
+#### `PositiveNumber`
+
+```haskell
+$.PositiveNumber :: Type
+```
+
+Type comprising every [`Number`](#number) value greater than zero.
 
 #### `RegExp`
 
@@ -314,7 +346,7 @@ Type comprising every [`Date`](#date) value except `new Date(NaN)`.
 $.ValidNumber :: Type
 ```
 
-Type comprising every [`Number`](#number) value except `NaN` (and its object 
+Type comprising every [`Number`](#number) value except `NaN` (and its object
 counterpart).
 
 ### `env`
@@ -616,7 +648,7 @@ def('convertTo',
         case 'hours':        return recur('minutes', date) / 60;
       }
     });
-    
+
 convertTo('seconds', new Date(1000));
 // => 1
 

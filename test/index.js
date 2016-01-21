@@ -648,6 +648,40 @@ describe('def', function() {
     eq(sinceEpoch(new Date(123456)), 123.456);
   });
 
+  it('supports the "PositiveNumber" type', function() {
+    eq($.PositiveNumber.name, 'sanctuary-def/PositiveNumber');
+    eq($.PositiveNumber.test(null), false);
+    eq($.PositiveNumber.test(NaN), false);
+    eq($.PositiveNumber.test(new Number(NaN)), false);
+    eq($.PositiveNumber.test(-1), false);
+    eq($.PositiveNumber.test(new Number(-1)), false);
+    eq($.PositiveNumber.test(0), false);
+    eq($.PositiveNumber.test(new Number(0)), false);
+    eq($.PositiveNumber.test(-0), false);
+    eq($.PositiveNumber.test(new Number(-0)), false);
+    eq($.PositiveNumber.test(0.5), true);
+    eq($.PositiveNumber.test(new Number(0.5)), true);
+    eq($.PositiveNumber.test(Infinity), true);
+    eq($.PositiveNumber.test(new Number(Infinity)), true);
+  });
+
+  it('supports the "NegativeNumber" type', function() {
+    eq($.NegativeNumber.name, 'sanctuary-def/NegativeNumber');
+    eq($.NegativeNumber.test(null), false);
+    eq($.NegativeNumber.test(NaN), false);
+    eq($.NegativeNumber.test(new Number(NaN)), false);
+    eq($.NegativeNumber.test(1), false);
+    eq($.NegativeNumber.test(new Number(1)), false);
+    eq($.NegativeNumber.test(0), false);
+    eq($.NegativeNumber.test(new Number(0)), false);
+    eq($.NegativeNumber.test(-0), false);
+    eq($.NegativeNumber.test(new Number(-0)), false);
+    eq($.NegativeNumber.test(-0.5), true);
+    eq($.NegativeNumber.test(new Number(-0.5)), true);
+    eq($.NegativeNumber.test(-Infinity), true);
+    eq($.NegativeNumber.test(new Number(-Infinity)), true);
+  });
+
   it('supports the "ValidNumber" type', function() {
     var def = $.create($.env.concat([$.ValidNumber]));
 
@@ -669,6 +703,39 @@ describe('def', function() {
 
     eq(inc(1), 2);
     eq(inc(new Number(1)), 2);
+  });
+
+  it('supports the "NonZeroValidNumber" type', function() {
+    var def = $.create($.env.concat([$.ValidNumber, $.NonZeroValidNumber]));
+
+    //  div :: ValidNumber -> NonZeroValidNumber -> ValidNumber
+    var div = def('div',
+                  {},
+                  [$.ValidNumber, $.NonZeroValidNumber, $.ValidNumber],
+                  function(a, b) { return a / b; });
+
+    throws(function() { div(3, 0); },
+           errorEq(TypeError,
+                   '‘div’ expected a value of type NonZeroValidNumber ' +
+                   'as its second argument; received 0'));
+
+    throws(function() { div(3, new Number(0)); },
+           errorEq(TypeError,
+                   '‘div’ expected a value of type NonZeroValidNumber ' +
+                   'as its second argument; received new Number(0)'));
+
+    throws(function() { div(3, -0); },
+           errorEq(TypeError,
+                   '‘div’ expected a value of type NonZeroValidNumber ' +
+                   'as its second argument; received -0'));
+
+    throws(function() { div(3, new Number(-0)); },
+           errorEq(TypeError,
+                   '‘div’ expected a value of type NonZeroValidNumber ' +
+                   'as its second argument; received new Number(-0)'));
+
+    eq(div(4, 2), 2);
+    eq(div(4, new Number(2)), 2);
   });
 
   it('supports the "FiniteNumber" type', function() {
@@ -704,37 +771,38 @@ describe('def', function() {
     eq(div(4, new Number(2)), 2);
   });
 
-  it('supports the "NonZeroValidNumber" type', function() {
-    var def = $.create($.env.concat([$.ValidNumber, $.NonZeroValidNumber]));
+  it('supports the "PositiveFiniteNumber" type', function() {
+    eq($.PositiveFiniteNumber.name, 'sanctuary-def/PositiveFiniteNumber');
+    eq($.PositiveFiniteNumber.test(null), false);
+    eq($.PositiveFiniteNumber.test(NaN), false);
+    eq($.PositiveFiniteNumber.test(new Number(NaN)), false);
+    eq($.PositiveFiniteNumber.test(Infinity), false);
+    eq($.PositiveFiniteNumber.test(new Number(Infinity)), false);
+    eq($.PositiveFiniteNumber.test(-1), false);
+    eq($.PositiveFiniteNumber.test(new Number(-1)), false);
+    eq($.PositiveFiniteNumber.test(0), false);
+    eq($.PositiveFiniteNumber.test(new Number(0)), false);
+    eq($.PositiveFiniteNumber.test(-0), false);
+    eq($.PositiveFiniteNumber.test(new Number(-0)), false);
+    eq($.PositiveFiniteNumber.test(0.5), true);
+    eq($.PositiveFiniteNumber.test(new Number(0.5)), true);
+  });
 
-    //  div :: ValidNumber -> NonZeroValidNumber -> ValidNumber
-    var div = def('div',
-                  {},
-                  [$.ValidNumber, $.NonZeroValidNumber, $.ValidNumber],
-                  function(a, b) { return a / b; });
-
-    throws(function() { div(3, 0); },
-           errorEq(TypeError,
-                   '‘div’ expected a value of type NonZeroValidNumber ' +
-                   'as its second argument; received 0'));
-
-    throws(function() { div(3, new Number(0)); },
-           errorEq(TypeError,
-                   '‘div’ expected a value of type NonZeroValidNumber ' +
-                   'as its second argument; received new Number(0)'));
-
-    throws(function() { div(3, -0); },
-           errorEq(TypeError,
-                   '‘div’ expected a value of type NonZeroValidNumber ' +
-                   'as its second argument; received -0'));
-
-    throws(function() { div(3, new Number(-0)); },
-           errorEq(TypeError,
-                   '‘div’ expected a value of type NonZeroValidNumber ' +
-                   'as its second argument; received new Number(-0)'));
-
-    eq(div(4, 2), 2);
-    eq(div(4, new Number(2)), 2);
+  it('supports the "NegativeFiniteNumber" type', function() {
+    eq($.NegativeFiniteNumber.name, 'sanctuary-def/NegativeFiniteNumber');
+    eq($.NegativeFiniteNumber.test(null), false);
+    eq($.NegativeFiniteNumber.test(NaN), false);
+    eq($.NegativeFiniteNumber.test(new Number(NaN)), false);
+    eq($.NegativeFiniteNumber.test(-Infinity), false);
+    eq($.NegativeFiniteNumber.test(new Number(-Infinity)), false);
+    eq($.NegativeFiniteNumber.test(1), false);
+    eq($.NegativeFiniteNumber.test(new Number(1)), false);
+    eq($.NegativeFiniteNumber.test(0), false);
+    eq($.NegativeFiniteNumber.test(new Number(0)), false);
+    eq($.NegativeFiniteNumber.test(-0), false);
+    eq($.NegativeFiniteNumber.test(new Number(-0)), false);
+    eq($.NegativeFiniteNumber.test(-0.5), true);
+    eq($.NegativeFiniteNumber.test(new Number(-0.5)), true);
   });
 
   it('supports the "NonZeroFiniteNumber" type', function() {
