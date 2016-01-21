@@ -977,6 +977,23 @@ describe('def', function() {
     eq(dec(new Number(-1)), -2);
   });
 
+  it('supports the "RegexFlags" type', function() {
+    eq($.RegexFlags.test(''), true);
+    eq($.RegexFlags.test('g'), true);
+    eq($.RegexFlags.test('i'), true);
+    eq($.RegexFlags.test('m'), true);
+    eq($.RegexFlags.test('gi'), true);
+    eq($.RegexFlags.test('gm'), true);
+    eq($.RegexFlags.test('im'), true);
+    eq($.RegexFlags.test('gim'), true);
+    //  String objects are not acceptable.
+    eq($.RegexFlags.test(new String('')), false);
+    //  Flags must be alphabetically ordered.
+    eq($.RegexFlags.test('mg'), false);
+    //  "Sticky" flag is not acceptable.
+    eq($.RegexFlags.test('y'), false);
+  });
+
   it('uses R.toString-like string representations', function() {
     //  f :: Null -> Null
     var f = def('f', {}, [$.Null, $.Null], function(x) { return x; });

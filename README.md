@@ -316,6 +316,23 @@ $.RegExp :: Type
 
 Type comprising every RegExp value.
 
+#### `RegexFlags`
+
+```haskell
+$.RegexFlags :: Type
+```
+
+Type comprising the canonical RegExp flags:
+
+  - `''`
+  - `'g'`
+  - `'i'`
+  - `'m'`
+  - `'gi'`
+  - `'gm'`
+  - `'im'`
+  - `'gim'`
+
 #### `String`
 
 ```haskell

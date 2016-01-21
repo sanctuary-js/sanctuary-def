@@ -284,7 +284,7 @@
   };
 
   //  EnumType :: [Any] -> Type
-  $.EnumType = function(members) {
+  var EnumType = $.EnumType = function(members) {
     var reprs = map(members, show);
     return {
       type: 'ENUM',
@@ -454,6 +454,9 @@
     'sanctuary-def/NonZeroInteger',
     function(x) { return Integer.test(x) && x != 0; }
   );
+
+  //  RegexFlags :: Type
+  $.RegexFlags = EnumType(['', 'g', 'i', 'm', 'gi', 'gm', 'im', 'gim']);
 
   //  arity :: (Number, Function) -> Function
   var arity = function(n, f) {
