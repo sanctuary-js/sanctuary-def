@@ -23,6 +23,11 @@ var errorEq = R.curry(function(type, message, error) {
   return error.constructor === type && error.message === message;
 });
 
+var testBoxed = R.curry(function(type, val, result) {
+  eq(type.test(val), result);
+  eq(type.test(Object(val)), result);
+});
+
 
 var def = $.create($.env);
 
@@ -683,26 +688,9 @@ describe('def', function() {
   });
 
   it('supports the "ValidNumber" type', function() {
-    var def = $.create($.env.concat([$.ValidNumber]));
-
-    //  inc :: ValidNumber -> ValidNumber
-    var inc = def('inc',
-                  {},
-                  [$.ValidNumber, $.ValidNumber],
-                  function(x) { return x + 1; });
-
-    throws(function() { inc(NaN); },
-           errorEq(TypeError,
-                   '‘inc’ expected a value of type ValidNumber ' +
-                   'as its first argument; received NaN'));
-
-    throws(function() { inc(new Number(NaN)); },
-           errorEq(TypeError,
-                   '‘inc’ expected a value of type ValidNumber ' +
-                   'as its first argument; received new Number(NaN)'));
-
-    eq(inc(1), 2);
-    eq(inc(new Number(1)), 2);
+    eq($.ValidNumber.name, 'sanctuary-def/ValidNumber');
+    testBoxed($.ValidNumber, NaN, false);
+    testBoxed($.ValidNumber, 1, true);
   });
 
   it('supports the "NonZeroValidNumber" type', function() {
