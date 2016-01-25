@@ -683,92 +683,31 @@ describe('def', function() {
   });
 
   it('supports the "ValidNumber" type', function() {
-    var def = $.create($.env.concat([$.ValidNumber]));
-
-    //  inc :: ValidNumber -> ValidNumber
-    var inc = def('inc',
-                  {},
-                  [$.ValidNumber, $.ValidNumber],
-                  function(x) { return x + 1; });
-
-    throws(function() { inc(NaN); },
-           errorEq(TypeError,
-                   '‘inc’ expected a value of type ValidNumber ' +
-                   'as its first argument; received NaN'));
-
-    throws(function() { inc(new Number(NaN)); },
-           errorEq(TypeError,
-                   '‘inc’ expected a value of type ValidNumber ' +
-                   'as its first argument; received new Number(NaN)'));
-
-    eq(inc(1), 2);
-    eq(inc(new Number(1)), 2);
+    eq($.ValidNumber.name, 'sanctuary-def/ValidNumber');
+    eq($.ValidNumber.test(NaN), false);
+    eq($.ValidNumber.test(new Number(NaN)), false);
+    eq($.ValidNumber.test(1), true);
+    eq($.ValidNumber.test(new Number(1)), true);
   });
 
   it('supports the "NonZeroValidNumber" type', function() {
-    var def = $.create($.env.concat([$.ValidNumber, $.NonZeroValidNumber]));
-
-    //  div :: ValidNumber -> NonZeroValidNumber -> ValidNumber
-    var div = def('div',
-                  {},
-                  [$.ValidNumber, $.NonZeroValidNumber, $.ValidNumber],
-                  function(a, b) { return a / b; });
-
-    throws(function() { div(3, 0); },
-           errorEq(TypeError,
-                   '‘div’ expected a value of type NonZeroValidNumber ' +
-                   'as its second argument; received 0'));
-
-    throws(function() { div(3, new Number(0)); },
-           errorEq(TypeError,
-                   '‘div’ expected a value of type NonZeroValidNumber ' +
-                   'as its second argument; received new Number(0)'));
-
-    throws(function() { div(3, -0); },
-           errorEq(TypeError,
-                   '‘div’ expected a value of type NonZeroValidNumber ' +
-                   'as its second argument; received -0'));
-
-    throws(function() { div(3, new Number(-0)); },
-           errorEq(TypeError,
-                   '‘div’ expected a value of type NonZeroValidNumber ' +
-                   'as its second argument; received new Number(-0)'));
-
-    eq(div(4, 2), 2);
-    eq(div(4, new Number(2)), 2);
+    eq($.NonZeroValidNumber.name, 'sanctuary-def/NonZeroValidNumber');
+    eq($.NonZeroValidNumber.test(0), false);
+    eq($.NonZeroValidNumber.test(new Number(0)), false);
+    eq($.NonZeroValidNumber.test(-0), false);
+    eq($.NonZeroValidNumber.test(new Number(-0)), false);
+    eq($.NonZeroValidNumber.test(1), true);
+    eq($.NonZeroValidNumber.test(new Number(1)), true);
   });
 
   it('supports the "FiniteNumber" type', function() {
-    var def = $.create($.env.concat([$.ValidNumber, $.FiniteNumber]));
-
-    //  div :: ValidNumber -> FiniteNumber -> ValidNumber
-    var div = def('div',
-                  {},
-                  [$.ValidNumber, $.FiniteNumber, $.ValidNumber],
-                  function(a, b) { return a / b; });
-
-    throws(function() { div(3, Infinity); },
-           errorEq(TypeError,
-                   '‘div’ expected a value of type FiniteNumber ' +
-                   'as its second argument; received Infinity'));
-
-    throws(function() { div(3, new Number(Infinity)); },
-           errorEq(TypeError,
-                   '‘div’ expected a value of type FiniteNumber ' +
-                   'as its second argument; received new Number(Infinity)'));
-
-    throws(function() { div(3, -Infinity); },
-           errorEq(TypeError,
-                   '‘div’ expected a value of type FiniteNumber ' +
-                   'as its second argument; received -Infinity'));
-
-    throws(function() { div(3, new Number(-Infinity)); },
-           errorEq(TypeError,
-                   '‘div’ expected a value of type FiniteNumber ' +
-                   'as its second argument; received new Number(-Infinity)'));
-
-    eq(div(4, 2), 2);
-    eq(div(4, new Number(2)), 2);
+    eq($.FiniteNumber.name, 'sanctuary-def/FiniteNumber');
+    eq($.FiniteNumber.test(Infinity), false);
+    eq($.FiniteNumber.test(new Number(Infinity)), false);
+    eq($.FiniteNumber.test(-Infinity), false);
+    eq($.FiniteNumber.test(new Number(-Infinity)), false);
+    eq($.FiniteNumber.test(1), true);
+    eq($.FiniteNumber.test(new Number(1)), true);
   });
 
   it('supports the "PositiveFiniteNumber" type', function() {
@@ -806,175 +745,61 @@ describe('def', function() {
   });
 
   it('supports the "NonZeroFiniteNumber" type', function() {
-    var def = $.create($.env.concat([$.ValidNumber, $.NonZeroFiniteNumber]));
-
-    //  div :: ValidNumber -> NonZeroFiniteNumber -> ValidNumber
-    var div = def('div',
-                  {},
-                  [$.ValidNumber, $.NonZeroFiniteNumber, $.ValidNumber],
-                  function(a, b) { return a / b; });
-
-    throws(function() { div(3, 0); },
-           errorEq(TypeError,
-                   '‘div’ expected a value of type NonZeroFiniteNumber ' +
-                   'as its second argument; received 0'));
-
-    throws(function() { div(3, new Number(0)); },
-           errorEq(TypeError,
-                   '‘div’ expected a value of type NonZeroFiniteNumber ' +
-                   'as its second argument; received new Number(0)'));
-
-    throws(function() { div(3, -0); },
-           errorEq(TypeError,
-                   '‘div’ expected a value of type NonZeroFiniteNumber ' +
-                   'as its second argument; received -0'));
-
-    throws(function() { div(3, new Number(-0)); },
-           errorEq(TypeError,
-                   '‘div’ expected a value of type NonZeroFiniteNumber ' +
-                   'as its second argument; received new Number(-0)'));
-
-    eq(div(4, 2), 2);
-    eq(div(4, new Number(2)), 2);
+    eq($.NonZeroFiniteNumber.name, 'sanctuary-def/NonZeroFiniteNumber');
+    eq($.NonZeroFiniteNumber.test(0), false);
+    eq($.NonZeroFiniteNumber.test(new Number(0)), false);
+    eq($.NonZeroFiniteNumber.test(-0), false);
+    eq($.NonZeroFiniteNumber.test(new Number(-0)), false);
+    eq($.NonZeroFiniteNumber.test(Infinity), false);
+    eq($.NonZeroFiniteNumber.test(new Number(Infinity)), false);
+    eq($.NonZeroFiniteNumber.test(-Infinity), false);
+    eq($.NonZeroFiniteNumber.test(new Number(-Infinity)), false);
+    eq($.NonZeroFiniteNumber.test(1), true);
+    eq($.NonZeroFiniteNumber.test(new Number(1)), true);
   });
 
   it('supports the "Integer" type', function() {
-    var def = $.create($.env.concat([$.Integer]));
-
-    //  inc :: Integer -> Integer
-    var inc = def('inc',
-                  {},
-                  [$.Integer, $.Integer],
-                  function(x) { return x + 1; });
-
-    throws(function() { inc(3.14); },
-           errorEq(TypeError,
-                   '‘inc’ expected a value of type Integer ' +
-                   'as its first argument; received 3.14'));
-
-    throws(function() { inc(9007199254740992); },
-           errorEq(TypeError,
-                   '‘inc’ expected a value of type Integer ' +
-                   'as its first argument; received 9007199254740992'));
-
-    throws(function() { inc(-9007199254740992); },
-           errorEq(TypeError,
-                   '‘inc’ expected a value of type Integer ' +
-                   'as its first argument; received -9007199254740992'));
-
-    throws(function() { inc(new Number(9007199254740992)); },
-           errorEq(TypeError,
-                   '‘inc’ expected a value of type Integer ' +
-                   'as its first argument; received ' +
-                   'new Number(9007199254740992)'));
-
-    throws(function() { inc(new Number(-9007199254740992)); },
-           errorEq(TypeError,
-                   '‘inc’ expected a value of type Integer ' +
-                   'as its first argument; received ' +
-                   'new Number(-9007199254740992)'));
-
-    eq(inc(1), 2);
-    eq(inc(new Number(1)), 2);
+    eq($.Integer.name, 'sanctuary-def/Integer');
+    eq($.Integer.test(3.14), false);
+    eq($.Integer.test(new Number(3.14)), false);
+    eq($.Integer.test(9007199254740992), false);
+    eq($.Integer.test(new Number(9007199254740992)), false);
+    eq($.Integer.test(-9007199254740992), false);
+    eq($.Integer.test(new Number(-9007199254740992)), false);
+    eq($.Integer.test(1), true);
+    eq($.Integer.test(new Number(1)), true);
   });
 
   it('supports the "NonZeroInteger" type', function() {
-    var def = $.create($.env.concat([$.ValidNumber, $.NonZeroInteger]));
-
-    //  div :: ValidNumber -> NonZeroInteger -> ValidNumber
-    var div = def('div',
-                  {},
-                  [$.ValidNumber, $.NonZeroInteger, $.ValidNumber],
-                  function(a, b) { return a / b; });
-
-    throws(function() { div(3, 0); },
-           errorEq(TypeError,
-                   '‘div’ expected a value of type NonZeroInteger ' +
-                   'as its second argument; received 0'));
-
-    throws(function() { div(3, new Number(0)); },
-           errorEq(TypeError,
-                   '‘div’ expected a value of type NonZeroInteger ' +
-                   'as its second argument; received new Number(0)'));
-
-    throws(function() { div(3, -0); },
-           errorEq(TypeError,
-                   '‘div’ expected a value of type NonZeroInteger ' +
-                   'as its second argument; received -0'));
-
-    throws(function() { div(3, new Number(-0)); },
-           errorEq(TypeError,
-                   '‘div’ expected a value of type NonZeroInteger ' +
-                   'as its second argument; received new Number(-0)'));
-
-    eq(div(4, 2), 2);
-    eq(div(4, new Number(2)), 2);
+    eq($.NonZeroInteger.name, 'sanctuary-def/NonZeroInteger');
+    eq($.NonZeroInteger.test(0), false);
+    eq($.NonZeroInteger.test(new Number(0)), false);
+    eq($.NonZeroInteger.test(-0), false);
+    eq($.NonZeroInteger.test(new Number(-0)), false);
+    eq($.NonZeroInteger.test(3.14), false);
+    eq($.NonZeroInteger.test(new Number(3.14)), false);
+    eq($.NonZeroInteger.test(1), true);
+    eq($.NonZeroInteger.test(new Number(1)), true);
   });
 
   it('supports the "PositiveInteger" type', function() {
-    var def = $.create($.env.concat([$.PositiveInteger]));
-
-    //  inc :: PositiveInteger -> PositiveInteger
-    var inc = def('inc',
-                  {},
-                  [$.PositiveInteger, $.PositiveInteger],
-                  function(x) { return x + 1; });
-
-    throws(function() { inc(1.5); },
-           errorEq(TypeError,
-                   '‘inc’ expected a value of type PositiveInteger ' +
-                   'as its first argument; received 1.5'));
-
-    throws(function() { inc(new Number(1.5)); },
-           errorEq(TypeError,
-                   '‘inc’ expected a value of type PositiveInteger ' +
-                   'as its first argument; received new Number(1.5)'));
-
-    throws(function() { inc(-1); },
-           errorEq(TypeError,
-                   '‘inc’ expected a value of type PositiveInteger ' +
-                   'as its first argument; received -1'));
-
-    throws(function() { inc(new Number(-1)); },
-           errorEq(TypeError,
-                   '‘inc’ expected a value of type PositiveInteger ' +
-                   'as its first argument; received new Number(-1)'));
-
-    eq(inc(1), 2);
-    eq(inc(new Number(1)), 2);
+    eq($.PositiveInteger.name, 'sanctuary-def/PositiveInteger');
+    eq($.PositiveInteger.test(1.5), false);
+    eq($.PositiveInteger.test(new Number(1.5)), false);
+    eq($.PositiveInteger.test(-1), false);
+    eq($.PositiveInteger.test(new Number(-1)), false);
+    eq($.PositiveInteger.test(1), true);
+    eq($.PositiveInteger.test(new Number(1)), true);
   });
 
   it('supports the "NegativeInteger" type', function() {
-    var def = $.create($.env.concat([$.NegativeInteger]));
-
-    //  dec :: NegativeInteger -> NegativeInteger
-    var dec = def('dec',
-                  {},
-                  [$.NegativeInteger, $.NegativeInteger],
-                  function(x) { return x - 1; });
-
-    throws(function() { dec(-1.5); },
-           errorEq(TypeError,
-                   '‘dec’ expected a value of type NegativeInteger ' +
-                   'as its first argument; received -1.5'));
-
-    throws(function() { dec(new Number(-1.5)); },
-           errorEq(TypeError,
-                   '‘dec’ expected a value of type NegativeInteger ' +
-                   'as its first argument; received new Number(-1.5)'));
-
-    throws(function() { dec(1); },
-           errorEq(TypeError,
-                   '‘dec’ expected a value of type NegativeInteger ' +
-                   'as its first argument; received 1'));
-
-    throws(function() { dec(new Number(1)); },
-           errorEq(TypeError,
-                   '‘dec’ expected a value of type NegativeInteger ' +
-                   'as its first argument; received new Number(1)'));
-
-    eq(dec(-1), -2);
-    eq(dec(new Number(-1)), -2);
+    eq($.NegativeInteger.name, 'sanctuary-def/NegativeInteger');
+    eq($.NegativeInteger.test(-1.5), false);
+    eq($.NegativeInteger.test(new Number(-1.5)), false);
+    eq($.NegativeInteger.test(1), false);
+    eq($.NegativeInteger.test(new Number(1)), false);
+    eq($.NegativeInteger.test(-1), true);
+    eq($.NegativeInteger.test(new Number(-1)), true);
   });
 
   it('uses R.toString-like string representations', function() {
