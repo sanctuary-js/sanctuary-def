@@ -24,7 +24,7 @@ var errorEq = R.curry(function(type, message, error) {
 });
 
 
-var def = $.create($.env);
+var def = $.create(true, $.env);
 
 var a = $.TypeVariable('a');
 var b = $.TypeVariable('b');
@@ -159,7 +159,7 @@ var $Pair = $.BinaryType(
 
 describe('def', function() {
 
-  it('type checks its arguments', function() {
+  it('type checks its arguments when checkTypes is true', function() {
     throws(function() { def(); },
            errorEq(TypeError,
                    '‘def’ requires four arguments; received zero arguments'));
@@ -184,6 +184,24 @@ describe('def', function() {
            errorEq(TypeError,
                    '‘def’ expected a value of type Function ' +
                    'as its fourth argument; received null'));
+  });
+
+  it('does not type check its arguments when checkTypes is false', function() {
+    var def = $.create(false, $.env);
+
+    //  add :: Number -> Number -> Number
+    var add =
+    def('add',
+        {},
+        [$.Number, $.Number, $.Number],
+        function(x, y) { return x + y; });
+
+    eq(add(42, 1), 43);
+    eq(add(42)(1), 43);
+    eq(add(1, 2, 3, 4), 3);
+    eq(add(1)(2, 3, 4), 3);
+    eq(add('XXX', {foo: 42}), 'XXX[object Object]');
+    eq(add({foo: 42}, 'XXX'), '[object Object]XXX');
   });
 
   it('returns a function whose length matches that of given list', function() {
@@ -427,7 +445,8 @@ describe('def', function() {
   });
 
   it('supports custom types', function() {
-    var def = $.create($.env.concat([Integer, $Pair]));
+    var env = $.env.concat([Integer, $Pair]);
+    var def = $.create(true, env);
 
     var T = $.Array($Pair($.String, Maybe($.Number)));
 
@@ -468,7 +487,8 @@ describe('def', function() {
     //  TimeUnit :: Type
     var TimeUnit = $.EnumType(['milliseconds', 'seconds', 'minutes', 'hours']);
 
-    var def = $.create($.env.concat([TimeUnit, $.ValidDate, $.ValidNumber]));
+    var env = $.env.concat([TimeUnit, $.ValidDate, $.ValidNumber]);
+    var def = $.create(true, env);
 
     //  convertTo :: TimeUnit -> ValidDate -> ValidNumber
     var convertTo =
@@ -495,7 +515,8 @@ describe('def', function() {
     //  SillyType :: Type
     var SillyType = $.EnumType(['foo', true, 42]);
 
-    var _def = $.create($.env.concat([SillyType]));
+    var _env = $.env.concat([SillyType]);
+    var _def = $.create(true, _env);
 
     //  id :: a -> a
     var id = _def('id', {}, [a, a], R.identity);
@@ -529,7 +550,8 @@ describe('def', function() {
     //  Line :: Type
     var Line = $.RecordType({start: Point, end: Point});
 
-    var def = $.create($.env.concat([Point, Line]));
+    var env = $.env.concat([Point, Line]);
+    var def = $.create(true, env);
 
     //  dist :: Point -> Point -> Number
     var dist = def('dist', {}, [Point, Point, $.Number], function(p, q) {
@@ -587,7 +609,8 @@ describe('def', function() {
   });
 
   it('supports "nullable" types', function() {
-    var def = $.create($.env.concat([$.Nullable]));
+    var env = $.env.concat([$.Nullable]);
+    var def = $.create(true, env);
 
     //  toUpper :: Nullable String -> Nullable String
     var toUpper =
@@ -632,7 +655,8 @@ describe('def', function() {
   });
 
   it('supports the "ValidDate" type', function() {
-    var def = $.create($.env.concat([$.ValidDate]));
+    var env = $.env.concat([$.ValidDate]);
+    var def = $.create(true, env);
 
     //  sinceEpoch :: ValidDate -> Number
     var sinceEpoch = def('sinceEpoch',
@@ -857,7 +881,8 @@ describe('def', function() {
   });
 
   it('supports polymorphism via type variables', function() {
-    var def = $.create($.env.concat([Either, Maybe, $Pair]));
+    var env = $.env.concat([Either, Maybe, $Pair]);
+    var def = $.create(true, env);
 
     //  aa :: a -> a -> (a, a)
     var aa = def('aa', {}, [a, a, $Pair(a, a)], Pair);
@@ -946,7 +971,8 @@ describe('def', function() {
   });
 
   it('does not allow heterogeneous arrays', function() {
-    var def = $.create($.env.concat([Either]));
+    var env = $.env.concat([Either]);
+    var def = $.create(true, env);
 
     //  concat :: [a] -> [a] -> [a]
     var concat =
@@ -981,7 +1007,8 @@ describe('def', function() {
   });
 
   it('supports type-class constraints', function() {
-    var def = $.create($.env.concat([Integer, Maybe, Either]));
+    var env = $.env.concat([Integer, Maybe, Either]);
+    var def = $.create(true, env);
 
     //  hasMethods :: [String] -> a -> Boolean
     var hasMethods = R.curry(function(names, x) {
