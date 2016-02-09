@@ -30,7 +30,15 @@ const env = $.env.concat([Integer, NonZeroInteger]);
 The next step is to define a `def` function for the environment:
 
 ```javascript
-const def = $.create(env);
+const def = $.create(true, env);
+```
+
+The first argument to `$.create` determines whether type checking is enabled.
+This allows one to only pay the performance cost of run-time type checking
+during development. For example:
+
+```javascript
+const def = $.create(process.env.NODE_ENV === 'development', env);
 ```
 
 `def` is a function for defining functions. For example:
@@ -650,7 +658,10 @@ For example:
 //    TimeUnit :: Type
 const TimeUnit = $.EnumType(['milliseconds', 'seconds', 'minutes', 'hours']);
 
-const def = $.create($.env.concat([TimeUnit, $.ValidDate, $.ValidNumber]));
+//    env :: [Type]
+const env = $.env.concat([TimeUnit, $.ValidDate, $.ValidNumber]);
+
+const def = $.create(true, env);
 
 //    convertTo :: TimeUnit -> ValidDate -> ValidNumber
 const convertTo =

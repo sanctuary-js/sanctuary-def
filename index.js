@@ -671,8 +671,8 @@
     );
   };
 
-  //  create :: [Type] -> Function
-  $.create = function(_env) {
+  //  create :: (Boolean, [Type]) -> Function
+  $.create = function(checkTypes, _env) {
     //  env :: [Type]
     var env = map(_env, function(x) {
       return typeof x === 'function' ?
@@ -795,11 +795,13 @@
     var curry = function(name, constraints, expArgTypes, expRetType,
                          _typeVarMap, _values, _indexes, impl) {
       return arity(_indexes.length, function() {
-        var delta = _indexes.length - arguments.length;
-        if (delta < 0) {
-          throw invalidArgumentsLength(name,
-                                       expArgTypes.length,
-                                       expArgTypes.length - delta);
+        if (checkTypes) {
+          var delta = _indexes.length - arguments.length;
+          if (delta < 0) {
+            throw invalidArgumentsLength(name,
+                                         expArgTypes.length,
+                                         expArgTypes.length - delta);
+          }
         }
         var $typeVarMap = {};
         for (var typeVarName in _typeVarMap) {
@@ -816,14 +818,16 @@
                 arguments[idx]['@@functional/placeholder'] === true)) {
 
             var value = arguments[idx];
-            var expType = expArgTypes[index];
-            if (!expType.test(value) ||
-                isEmpty(satisfactoryTypes(name, constraints, $typeVarMap,
-                                          expType, value, index))) {
-              throw invalidValue(name,
-                                 replaceTypeVars($typeVarMap)(expType),
-                                 value,
-                                 index);
+            if (checkTypes) {
+              var expType = expArgTypes[index];
+              if (!expType.test(value) ||
+                  isEmpty(satisfactoryTypes(name, constraints, $typeVarMap,
+                                            expType, value, index))) {
+                throw invalidValue(name,
+                                   replaceTypeVars($typeVarMap)(expType),
+                                   value,
+                                   index);
+              }
             }
             values[index] = value;
           } else {
@@ -832,11 +836,13 @@
         }
         if (isEmpty(indexes)) {
           var returnValue = impl.apply(this, values);
-          if (!expRetType.test(returnValue)) {
-            throw invalidReturnValue(name, [expRetType], returnValue);
+          if (checkTypes) {
+            if (!expRetType.test(returnValue)) {
+              throw invalidReturnValue(name, [expRetType], returnValue);
+            }
+            satisfactoryTypes(name, constraints, $typeVarMap,
+                              expRetType, returnValue, NaN);
           }
-          satisfactoryTypes(name, constraints, $typeVarMap,
-                            expRetType, returnValue, NaN);
           return returnValue;
         } else {
           return curry(name, constraints, expArgTypes, expRetType,
@@ -846,15 +852,17 @@
     };
 
     return function def(name, constraints, expTypes, impl) {
-      if (arguments.length !== def.length) {
-        throw invalidArgumentsLength('def', def.length, arguments.length);
-      }
+      if (checkTypes) {
+        if (arguments.length !== def.length) {
+          throw invalidArgumentsLength('def', def.length, arguments.length);
+        }
 
-      var Type = RecordType({test: $.Function});
-      var types = [$.String, $.Object, $.Array(Type), $.Function];
-      for (var idx = 0; idx < types.length; idx += 1) {
-        if (!types[idx].test(arguments[idx])) {
-          throw invalidArgument('def', [types[idx]], arguments[idx], idx);
+        var Type = RecordType({test: $.Function});
+        var types = [$.String, $.Object, $.Array(Type), $.Function];
+        for (var idx = 0; idx < types.length; idx += 1) {
+          if (!types[idx].test(arguments[idx])) {
+            throw invalidArgument('def', [types[idx]], arguments[idx], idx);
+          }
         }
       }
 
@@ -867,7 +875,7 @@
         );
       }
 
-      assertExpectedTypesInEnvironment(name)(expTypes);
+      if (checkTypes) assertExpectedTypesInEnvironment(name)(expTypes);
 
       return curry(name,
                    constraints,
