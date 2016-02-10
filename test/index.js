@@ -606,6 +606,18 @@ describe('def', function() {
     var id = def('id', {}, [a, a], R.identity);
 
     eq(id([{x: 0, y: 0}, {x: 1, y: 1}]), [{x: 0, y: 0}, {x: 1, y: 1}]);
+
+    throws(function() { $.RecordType({x: /XXX/, y: /XXX/, z: $.Any}); },
+           errorEq(TypeError,
+                   'Invalid values\n' +
+                   '\n' +
+                   'The argument to ‘RecordType’ must be an object mapping ' +
+                   'field name to type.\n' +
+                   '\n' +
+                   'The following mappings are invalid:\n' +
+                   '\n' +
+                   '  - "x": /XXX/\n' +
+                   '  - "y": /XXX/'));
   });
 
   it('supports "nullable" types', function() {

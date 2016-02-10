@@ -198,6 +198,7 @@
 
   //  Any :: Type
   var Any = {
+    '@@type': 'sanctuary-def/Type',
     type: 'ANY',
     test: K(true),
     toString: always('Any')
@@ -205,6 +206,7 @@
 
   //  Unknown :: Type
   var Unknown = {
+    '@@type': 'sanctuary-def/Type',
     type: 'UNKNOWN',
     test: K(true),
     toString: always('???')
@@ -213,6 +215,7 @@
   //  TypeVariable :: String -> Type
   $.TypeVariable = function(name) {
     return {
+      '@@type': 'sanctuary-def/Type',
       type: 'VARIABLE',
       name: name,
       test: K(true),
@@ -223,6 +226,7 @@
   //  NullaryType :: (String, (x -> Boolean)) -> Type
   var NullaryType = $.NullaryType = function(name, test) {
     return {
+      '@@type': 'sanctuary-def/Type',
       type: 'NULLARY',
       name: name,
       test: test,
@@ -234,6 +238,7 @@
   var UnaryType = $.UnaryType = function(name, test, _1) {
     return function($1) {
       return {
+        '@@type': 'sanctuary-def/Type',
         type: 'UNARY',
         name: name,
         test: function(x) { return test(x) && all(_1(x), $1.test); },
@@ -254,6 +259,7 @@
   var BinaryType = $.BinaryType = function(name, test, _1, _2) {
     return function($1, $2) {
       return {
+        '@@type': 'sanctuary-def/Type',
         type: 'BINARY',
         name: name,
         test: function(x) { return test(x) && all(_1(x), $1.test) &&
@@ -287,6 +293,7 @@
   var EnumType = $.EnumType = function(members) {
     var reprs = map(members, show);
     return {
+      '@@type': 'sanctuary-def/Type',
       type: 'ENUM',
       test: function(x) {
         var repr = show(x);
@@ -301,11 +308,31 @@
 
   //  RecordType :: {Type} -> Type
   var RecordType = $.RecordType = function(fields) {
+    var names = keys(fields);
+
+    //  invalidMappings :: [String]
+    var invalidMappings = chain(names, function(name) {
+      return $$type(fields[name]) === 'sanctuary-def/Type' ?
+        [] :
+        [show(name) + ': ' + show(fields[name])];
+    });
+
+    if (!isEmpty(invalidMappings)) {
+      throw new TypeError(
+        'Invalid values\n\n' +
+        'The argument to ‘RecordType’ must be an object mapping field name ' +
+        'to type.\n\n' +
+        'The following mappings are invalid:\n\n' +
+        map(invalidMappings, prefix('  - ')).join('\n')
+      );
+    }
+
     return {
+      '@@type': 'sanctuary-def/Type',
       type: 'RECORD',
       test: function(x) {
         if (x == null) return false;
-        for (var idx = 0, names = keys(fields); idx < names.length; idx += 1) {
+        for (var idx = 0; idx < names.length; idx += 1) {
           var name = names[idx];
           if (!has(name, x) || !fields[name].test(x[name])) return false;
         }
@@ -313,7 +340,7 @@
       },
       toString: function() {
         var s = '{';
-        for (var idx = 0, names = keys(fields); idx < names.length; idx += 1) {
+        for (var idx = 0; idx < names.length; idx += 1) {
           var name = names[idx];
           s += idx === 0 ? ' ' : ', ';
           s += name + ' :: ' + fields[name];
