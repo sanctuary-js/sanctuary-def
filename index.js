@@ -291,16 +291,19 @@
 
   //  EnumType :: [Any] -> Type
   var EnumType = $.EnumType = function(members) {
+    var types = map(members, $$type);
     var reprs = map(members, show);
     return {
       '@@type': 'sanctuary-def/Type',
       type: 'ENUM',
       test: function(x) {
-        var repr = show(x);
-        for (var idx = 0; idx < reprs.length; idx += 1) {
-          if (reprs[idx] === repr) return true;
-        }
-        return false;
+        //  We use `show` to perform value-based equality checks (since we
+        //  don't have access to `R.equals` and don't want to implement it).
+        //  We avoid a lot of unnecessary work by checking the type of `x`
+        //  before determining its string representation. Only if `x` is of
+        //  the same type as one or more of the `members` do we incur the
+        //  cost of determining its string representation.
+        return types.indexOf($$type(x)) >= 0 && reprs.indexOf(show(x)) >= 0;
       },
       toString: always('(' + reprs.join(' | ') + ')')
     };
