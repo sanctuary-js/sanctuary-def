@@ -521,6 +521,13 @@ describe('def', function() {
     //  id :: a -> a
     var id = _def('id', {}, [a, a], R.identity);
 
+    eq(id('foo'), 'foo');
+    eq(id('bar'), 'bar');
+    eq(id(true), true);
+    eq(id(false), false);
+    eq(id(42), 42);
+    eq(id(-42), -42);
+
     eq(id(['foo', true]), ['foo', true]);
 
     throws(function() { id(['foo', false]); },
