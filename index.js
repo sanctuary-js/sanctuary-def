@@ -432,6 +432,15 @@
     function(nullable) { return nullable === null ? [] : [nullable]; }
   );
 
+  //  StrMap :: Type -> Type
+  var StrMap = UnaryType(
+    'sanctuary-def/StrMap',
+    function(x) { return $.Object.test(x); },
+    function(strMap) {
+      return map(keys(strMap), function(k) { return strMap[k]; });
+    }
+  );
+
   //  $$type :: a -> String
   var $$type = function(x) {
     return x != null && typeOf(x['@@type']) === 'String' ?
@@ -468,6 +477,7 @@
     ($.Number     = type0('Number')),
     ($.Object     = type0('Object')),
     ($.RegExp     = type0('RegExp')),
+    ($.StrMap     = StrMap),
     ($.String     = type0('String')),
     ($.Undefined  = type0('Undefined'))
   ];
@@ -772,7 +782,7 @@
       'Definition of ' + LEFT_SINGLE_QUOTATION_MARK + name + RIGHT_SINGLE_QUOTATION_MARK +
         ' references ' + type.name + ' which is not in the environment:',
       '',
-      map(chain(env, rejectAny), prefix('  - ')).join('\n')
+      map(map(chain(env, rejectAny), showType), prefix('  - ')).join('\n')
     ])));
   };
 
@@ -1051,40 +1061,47 @@
       };
     };
 
-    //  _determineActualTypes :: Boolean -> [Any] -> [Type]
-    var _determineActualTypes = function(loose) {
-      return function recur(values) {
-        if (isEmpty(values)) return [Unknown];
-        //  consistentTypes :: [Type]
-        var consistentTypes = chain(env, rejectAny);
-        //  typeses :: [[Type]]
-        var typeses = map(values, function(value) {
-          return chain(consistentTypes, function(t) {
-            return (
-              t.name === 'sanctuary-def/Nullable' || !test(t, value).valid ?
-                [] :
-              t.type === 'UNARY' ?
-                map(recur(t._1(value)), UnaryType.from(t)) :
-              t.type === 'BINARY' ?
-                BinaryType.xprod(t, recur(t._1(value)), recur(t._2(value))) :
-              // else
-                [t]
-            );
-          });
-        });
-        //  common :: [Type]
-        var common = commonTypes(typeses, loose);
-        if (!isEmpty(common)) return common;
-        //  If none of the values is a member of a type in the environment,
-        //  and all the values have the same type identifier, the values are
-        //  members of a "foreign" type.
-        if (isEmpty(filterTypesByValues(consistentTypes, values)) &&
-            all(values.slice(1), $$typeEq($$type(values[0])))) {
-          //  Create a nullary type for the foreign type.
-          return [type0($$type(values[0]))];
+    //  _determineActualTypes :: (Boolean, [Object], [Any]) -> [Type]
+    var _determineActualTypes = function recur(loose, $seen, values) {
+      if (isEmpty(values)) return [Unknown];
+      //  consistentTypes :: [Type]
+      var consistentTypes = chain(env, rejectAny);
+      //  typeses :: [[Type]]
+      var typeses = map(values, function(value) {
+        if (typeof value === 'object' && value != null ||
+            typeof value === 'function') {
+          //  Abort if a circular reference is encountered; add the current
+          //  object to the list of seen objects otherwise.
+          if ($seen.indexOf(value) >= 0) return [];
+          $seen.push(value);
         }
-        return [Inconsistent];
-      };
+        return chain(consistentTypes, function(t) {
+          return (
+            t.name === 'sanctuary-def/Nullable' || !test(t, value).valid ?
+              [] :
+            t.type === 'UNARY' ?
+              map(recur(loose, $seen, t._1(value)), UnaryType.from(t)) :
+            t.type === 'BINARY' ?
+              BinaryType.xprod(t,
+                               recur(loose, $seen, t._1(value)),
+                               recur(loose, $seen, t._2(value))) :
+            // else
+              [t]
+          );
+        });
+      });
+      //  common :: [Type]
+      var common = commonTypes(typeses, loose);
+      if (!isEmpty(common)) return common;
+      //  If none of the values is a member of a type in the environment,
+      //  and all the values have the same type identifier, the values are
+      //  members of a "foreign" type.
+      if (isEmpty(filterTypesByValues(consistentTypes, values)) &&
+          all(values.slice(1), $$typeEq($$type(values[0])))) {
+        //  Create a nullary type for the foreign type.
+        return [type0($$type(values[0]))];
+      }
+      return [Inconsistent];
     };
 
     //  rejectInconsistent :: [Type] -> [Type]
@@ -1096,12 +1113,12 @@
 
     //  determineActualTypesStrict :: [Any] -> [Type]
     var determineActualTypesStrict = function(values) {
-      return rejectInconsistent(_determineActualTypes(false)(values));
+      return rejectInconsistent(_determineActualTypes(false, [], values));
     };
 
     //  determineActualTypesLoose :: [Any] -> [Type]
     var determineActualTypesLoose = function(values) {
-      return rejectInconsistent(_determineActualTypes(true)(values));
+      return rejectInconsistent(_determineActualTypes(true, [], values));
     };
 
     //  valuesToPairs :: [Any] -> [Pair Any [Type]]
