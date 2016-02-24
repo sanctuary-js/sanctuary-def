@@ -793,17 +793,27 @@
       );
     }
 
+    //  validate :: Any -> [String]
+    var validate = function(x) {
+      if (typeOf(x) !== 'Object') return [show(x) + ' is not a record'];
+      var errors = [];
+      for (var idx = 0; idx < names.length; idx += 1) {
+        var name = names[idx];
+        if (!has(name, x)) {
+          errors.push('Missing ‘' + name + '’ field');
+        } else if (!fields[name].test(x[name])) {
+          errors.push('Value of ‘' + name + '’ field is not a member of ' +
+                      'expected type, ' + show(fields[name]));
+        }
+      }
+      return errors;
+    };
+
     return {
       '@@type': 'sanctuary-def/Type',
       type: 'RECORD',
-      test: function(x) {
-        if (x == null) return false;
-        for (var idx = 0; idx < names.length; idx += 1) {
-          var name = names[idx];
-          if (!has(name, x) || !fields[name].test(x[name])) return false;
-        }
-        return true;
-      },
+      test: function(x) { return isEmpty(validate(x)); },
+      validate: validate,
       toString: function() {
         var s = '{';
         for (var idx = 0; idx < names.length; idx += 1) {
@@ -1093,6 +1103,16 @@
     'ninth'
   ];
 
+  //  reasons :: ([Type], Any) -> String
+  var reasons = function(types, value) {
+    var errors = chain(types, function(t) {
+      return typeof t.validate === 'function' ? t.validate(value) : [];
+    });
+    return isEmpty(errors) ? '' :
+      '\nType checking failed for the following reasons:\n\n' +
+      map(errors, prefix('  - ')).join('\n\n') + '\n';
+  };
+
   var invalidArgumentsLength = function(name, expectedLength, actualLength) {
     return new TypeError(
       LEFT_SINGLE_QUOTATION_MARK + name + RIGHT_SINGLE_QUOTATION_MARK +
@@ -1195,7 +1215,8 @@
       ]) + '\n\n' +
       showErrorValue(1, errInfo.repr) +
       'The value at position 1 is not a member of ' +
-      show(expType) + '.\n'
+      show(expType) + '.\n' +
+      reasons([expType], errInfo.value)
     );
   };
 
@@ -1326,7 +1347,8 @@
     var typeVarErrorInfo = function(index, t, value) {
       return {
         index: index,
-        repr: typesAndValues(t, [value])
+        repr: typesAndValues(t, [value]),
+        value: value
       };
     };
 
@@ -1334,7 +1356,8 @@
     var invalidValueErrorInfo = function(index, value) {
       return {
         index: index,
-        repr: nullaryTypesAndValues([value])
+        repr: nullaryTypesAndValues([value]),
+        value: value
       };
     };
 

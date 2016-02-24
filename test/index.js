@@ -988,6 +988,11 @@ describe('def', function() {
       return dist(line.start, line.end);
     });
 
+    //  midpoint :: Point -> Point -> Point
+    var midpoint = def('midpoint', {}, [Point, Point, Point], function(p, q) {
+      return 'TODO';
+    });
+
     eq(dist({x: 0, y: 0}, {x: 0, y: 0}), 0);
     eq(dist({x: 0, y: 0}, {x: 0, y: 0, color: 'red'}), 0);
     eq(dist({x: 1, y: 1}, {x: 4, y: 5}), 5);
@@ -1007,7 +1012,11 @@ describe('def', function() {
                    '1)  null :: Null\n' +
                    '\n' +
                    'The value at position 1 is not a member of { x :: ' +
-                   'Number, y :: Number }.\n'));
+                   'Number, y :: Number }.\n' +
+                   '\n' +
+                   'Type checking failed for the following reasons:\n' +
+                   '\n' +
+                   '  - null is not a record\n'));
 
     throws(function() { dist({}); },
            errorEq(TypeError,
@@ -1020,7 +1029,13 @@ describe('def', function() {
                    '1)  {} :: Object\n' +
                    '\n' +
                    'The value at position 1 is not a member of { x :: ' +
-                   'Number, y :: Number }.\n'));
+                   'Number, y :: Number }.\n' +
+                   '\n' +
+                   'Type checking failed for the following reasons:\n' +
+                   '\n' +
+                   '  - Missing ‘x’ field\n' +
+                   '\n' +
+                   '  - Missing ‘y’ field\n'));
 
     throws(function() { dist({x: 0}); },
            errorEq(TypeError,
@@ -1033,7 +1048,11 @@ describe('def', function() {
                    '1)  {"x": 0} :: Object\n' +
                    '\n' +
                    'The value at position 1 is not a member of { x :: ' +
-                   'Number, y :: Number }.\n'));
+                   'Number, y :: Number }.\n' +
+                   '\n' +
+                   'Type checking failed for the following reasons:\n' +
+                   '\n' +
+                   '  - Missing ‘y’ field\n'));
 
     throws(function() { dist({x: 0, y: null}); },
            errorEq(TypeError,
@@ -1046,7 +1065,12 @@ describe('def', function() {
                    '1)  {"x": 0, "y": null} :: Object\n' +
                    '\n' +
                    'The value at position 1 is not a member of { x :: ' +
-                   'Number, y :: Number }.\n'));
+                   'Number, y :: Number }.\n' +
+                   '\n' +
+                   'Type checking failed for the following reasons:\n' +
+                   '\n' +
+                   '  - Value of ‘y’ field is not a member of expected type, ' +
+                   'Number\n'));
 
     throws(function() { length({start: 0, end: 0}); },
            errorEq(TypeError,
@@ -1060,7 +1084,32 @@ describe('def', function() {
                    '\n' +
                    'The value at position 1 is not a member of { end :: { ' +
                    'x :: Number, y :: Number }, start :: { x :: Number, y ' +
-                   ':: Number } }.\n'));
+                   ':: Number } }.\n' +
+                   '\n' +
+                   'Type checking failed for the following reasons:\n' +
+                   '\n' +
+                   '  - Value of ‘end’ field is not a member of expected ' +
+                   'type, { x :: Number, y :: Number }\n' +
+                   '\n' +
+                   '  - Value of ‘start’ field is not a member of expected ' +
+                   'type, { x :: Number, y :: Number }\n'));
+
+    throws(function() { midpoint({x: 0, y: 0}, {x: 2, y: 2}); },
+           errorEq(TypeError,
+                   'Invalid value\n' +
+                   '\n' +
+                   'midpoint :: { x :: Number, y :: Number } -> { x :: Number, y :: Number } -> { x :: Number, y :: Number }\n' +
+                   '                                                                            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n' +
+                   '                                                                                         1\n' +
+                   '\n' +
+                   '1)  "TODO" :: String\n' +
+                   '\n' +
+                   'The value at position 1 is not a member of ' +
+                   '{ x :: Number, y :: Number }.\n' +
+                   '\n' +
+                   'Type checking failed for the following reasons:\n' +
+                   '\n' +
+                   '  - "TODO" is not a record\n'));
 
     //  id :: a -> a
     var id = def('id', {}, [a, a], R.identity);
