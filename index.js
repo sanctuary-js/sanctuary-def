@@ -69,6 +69,17 @@
     };
   };
 
+  //  filter :: ([a], (a -> Boolean)) -> [a]
+  var filter = function(xs, pred) {
+    var result = [];
+    for (var idx = 0; idx < xs.length; idx += 1) {
+      if (pred(xs[idx])) {
+        result.push(xs[idx]);
+      }
+    }
+    return result;
+  };
+
   //  has :: (String, Object) -> Boolean
   var has = function(key, obj) { return hasOwnProperty.call(obj, key); };
 
@@ -249,6 +260,14 @@
     toString: always('???')
   };
 
+  //  Inconsistent :: Type
+  var Inconsistent = {
+    '@@type': 'sanctuary-def/Inconsistent',
+    type: 'INCONSISTENT',
+    test: K(false),
+    toString: always('???')
+  };
+
   //  TypeVariable :: String -> Type
   $.TypeVariable = function(name) {
     return {
@@ -290,7 +309,7 @@
     };
   };
 
-  //  UnaryType.from :: Type -> Type
+  //  UnaryType.from :: Type -> (Type -> Type)
   UnaryType.from = function(t) {
     return UnaryType(t.name, t.test, t._1);
   };
@@ -319,7 +338,7 @@
     };
   };
 
-  //  BinaryType.from :: Type -> Type
+  //  BinaryType.from :: Type -> ((Type, Type) -> Type)
   BinaryType.from = function(t) {
     return BinaryType(t.name, t.test, t._1, t._2);
   };
@@ -598,8 +617,8 @@
     }
   };
 
-  //  rejectInconsistent :: Type -> [Type]
-  var rejectInconsistent = function recur(t) {
+  //  rejectAny :: Type -> [Type]
+  var rejectAny = function recur(t) {
     switch (t.type) {
       case 'ANY':
         return [];
@@ -620,21 +639,20 @@
     );
   };
 
-  //  equalTypes :: (Type, Type) -> Boolean
-  var equalTypes = function equalTypes(t1, t2) {
+  //  equalTypes :: (Type, Type, Boolean) -> Boolean
+  var equalTypes = function equalTypes(t1, t2, loose) {
+    if (t1.type === 'INCONSISTENT' || t2.type === 'INCONSISTENT') return loose;
     if (t1.type === 'UNKNOWN' || t2.type === 'UNKNOWN') return true;
     switch (t1.type) {
-      case 'ANY':
-        return t1.type === t2.type && t1.name === t2.name;
       case 'NULLARY':
         return t1.type === t2.type && t1.name === t2.name;
       case 'UNARY':
         return t1.type === t2.type && t1.name === t2.name &&
-               equalTypes(t1.$1, t2.$1);
+               equalTypes(t1.$1, t2.$1, loose);
       case 'BINARY':
         return t1.type === t2.type && t1.name === t2.name &&
-               equalTypes(t1.$1, t2.$1) &&
-               equalTypes(t1.$2, t2.$2);
+               equalTypes(t1.$1, t2.$1, loose) &&
+               equalTypes(t1.$2, t2.$2, loose);
       case 'ENUM':
         return t1.type === t2.type && show(t1) === show(t2);
       case 'RECORD':
@@ -645,22 +663,51 @@
     }
   };
 
-  //  commonTypes :: [[Type]] -> [Type]
-  var commonTypes = function(typeses) {
-    if (isEmpty(typeses)) return [];
+  //  commonTypes :: ([[Type]], Boolean) -> [Type]
+  var commonTypes = function(typeses, loose) {
+    var types = chain(typeses, id);
+    if (isEmpty(types)) return [];
 
-    return chain(typeses[0], function(t) {
-      var common = true;
-      for (var idx = 1; idx < typeses.length; idx += 1) {
-        common = false;
-        for (var idx2 = 0; idx2 < typeses[idx].length; idx2 += 1) {
-          if (equalTypes(t, typeses[idx][idx2])) {
-            common = true;
-            break;
-          }
-        }
+    var $1s, $2s, candidates, idx, t;
+    if (types[0].type === 'UNARY') {
+      $1s = {};
+      for (idx = 0; idx < types.length; idx += 1) {
+        t = types[idx];
+        if (t.$1.type !== 'UNKNOWN') $1s[t.$1.name] = t.$1;
       }
-      return common ? [t] : [];
+      candidates =
+      map(or(map(keys($1s), function(k) { return $1s[k]; }), [Unknown]),
+          UnaryType.from(types[0]));
+    } else if (types[0].type === 'BINARY') {
+      $1s = {};
+      $2s = {};
+      for (idx = 0; idx < types.length; idx += 1) {
+        t = types[idx];
+        if (t.$1.type !== 'UNKNOWN') $1s[t.$1.name] = t.$1;
+        if (t.$2.type !== 'UNKNOWN') $2s[t.$2.name] = t.$2;
+      }
+      candidates = BinaryType.xprod(
+        types[0],
+        or(map(keys($1s), function(k) { return $1s[k]; }), [Unknown]),
+        or(map(keys($2s), function(k) { return $2s[k]; }), [Unknown])
+      );
+    } else {
+      candidates = types;
+    }
+
+    return filter(candidates, function(t1) {
+      return all(typeses, function(types) {
+        return any(types, function(t2) {
+          return equalTypes(t1, t2, loose);
+        });
+      });
+    });
+  };
+
+  //  filterTypesByValues :: ([Type], [Any]) -> [Type]
+  var filterTypesByValues = function(types, values) {
+    return filter(types, function(t) {
+      return all(values, t.test);
     });
   };
 
@@ -690,7 +737,7 @@
       'Definition of ' + LEFT_SINGLE_QUOTATION_MARK + name + RIGHT_SINGLE_QUOTATION_MARK +
         ' references ' + type.name + ' which is not in the environment:',
       '',
-      map(chain(env, rejectInconsistent), prefix('  - ')).join('\n')
+      map(chain(env, rejectAny), prefix('  - ')).join('\n')
     ]));
   };
 
@@ -700,17 +747,6 @@
       ' expected a value of type ' + types.join(' or ') + ' as its ' +
       ordinals[index] + ' argument; received ' + show(value)
     );
-  };
-
-  var orphanArgument = function(env, name, value, index) {
-    return new TypeError(unlines([
-      LEFT_SINGLE_QUOTATION_MARK + name + RIGHT_SINGLE_QUOTATION_MARK +
-        ' received ' + show(value) + ' as its ' + ordinals[index] +
-        ' argument, but this value is not a member of any of the types ' +
-        'in the environment:',
-      '',
-      map(chain(env, rejectInconsistent), prefix('  - ')).join('\n')
-    ]));
   };
 
   //  constraintsRepr :: StrMap [Type] -> String
@@ -846,9 +882,29 @@
            trimTrailingSpaces(underline(snd.typePath[0], snd.propPath, g));
   };
 
-  //  conflictingTypeVar ::
+  //  conflictingTypeVar :: (String, StrMap [Type], [Type], Object) -> Error
+  var conflictingTypeVar = function(name, constraints, expTypes, fst) {
+    var nameAndConstraints = name + ' :: ' + constraintsRepr(constraints);
+    var expTypeRepr = showType(expTypes[fst.index]);
+    var padding = _(_showTypeSig(expTypes.slice(0, fst.index)));
+
+    return new TypeError(unlines([
+      'Type-variable constraint violation',
+      '',
+      nameAndConstraints + showTypeSig(expTypes),
+      _(nameAndConstraints) + padding + trimTrailingSpaces(r('^')(expTypeRepr)),
+      _(nameAndConstraints) + padding + trimTrailingSpaces(label('1')(expTypeRepr)),
+      '',
+      '1)  ' + map(fst.pairs, showValueAndType).join('\n    '),
+      '',
+      'Since there is no type of which all the above values are members, ' +
+        'the type-variable constraint has been violated.'
+    ]));
+  };
+
+  //  conflictingTypeVar2 ::
   //  (String, StrMap [Type], [Type], Object, Object) -> Error
-  var conflictingTypeVar = function(name, constraints, expTypes, _fst, _snd) {
+  var conflictingTypeVar2 = function(name, constraints, expTypes, _fst, _snd) {
     var fst = _fst.index < _snd.index ? _fst : _snd;
     var snd = _fst.index < _snd.index ? _snd : _fst;
 
@@ -920,36 +976,62 @@
       };
     };
 
-    //  determineActualTypes :: a -> [Type]
-    var determineActualTypes = function recur(value) {
-      return chain(env, function(t) {
-        return (
-          t.name === 'sanctuary-def/Nullable' || !t.test(value) ?
-            [] :
-          t.type === 'UNARY' ?
-            map(commonTypes(or(map(t._1(value), recur), [[Unknown]])),
-                UnaryType.from(t)) :
-          t.type === 'BINARY' ?
-            BinaryType.xprod(
-              t,
-              commonTypes(or(map(t._1(value), recur), [[Unknown]])),
-              commonTypes(or(map(t._2(value), recur), [[Unknown]]))
-            ) :
-          // else
-            [t]
-        );
-      });
+    //  _determineActualTypes :: Boolean -> [Any] -> [Type]
+    var _determineActualTypes = function(loose) {
+      return function recur(values) {
+        if (isEmpty(values)) return [Unknown];
+        //  consistentTypes :: [Type]
+        var consistentTypes = chain(env, rejectAny);
+        //  typeses :: [[Type]]
+        var typeses = map(values, function(value) {
+          return chain(consistentTypes, function(t) {
+            return (
+              t.name === 'sanctuary-def/Nullable' || !t.test(value) ?
+                [] :
+              t.type === 'UNARY' ?
+                map(recur(t._1(value)), UnaryType.from(t)) :
+              t.type === 'BINARY' ?
+                BinaryType.xprod(t, recur(t._1(value)), recur(t._2(value))) :
+              // else
+                [t]
+            );
+          });
+        });
+        //  common :: [Type]
+        var common = commonTypes(typeses, loose);
+        if (!isEmpty(common)) return common;
+        //  If none of the values is a member of a type in the environment,
+        //  and all the values have the same type identifier, the values are
+        //  members of a "foreign" type.
+        if (isEmpty(filterTypesByValues(consistentTypes, values)) &&
+            all(values.slice(1), $$typeEq($$type(values[0])))) {
+          //  Create a nullary type for the foreign type.
+          return [type0($$type(values[0]))];
+        }
+        return [Inconsistent];
+      };
     };
 
-    //  valueTypes :: [Any] -> [Type]
-    var valueTypes = function(values) {
-      return chain(commonTypes(map(values, determineActualTypes)),
-                   rejectInconsistent);
+    //  rejectInconsistent :: [Type] -> [Type]
+    var rejectInconsistent = function(types) {
+      return filter(types, function(t) { return t.type !== 'INCONSISTENT'; });
+    };
+
+    //  determineActualTypesStrict :: [Any] -> [Type]
+    var determineActualTypesStrict = function(values) {
+      return rejectInconsistent(_determineActualTypes(false)(values));
+    };
+
+    //  determineActualTypesLoose :: [Any] -> [Type]
+    var determineActualTypesLoose = function(values) {
+      return rejectInconsistent(_determineActualTypes(true)(values));
     };
 
     //  valuesToPairs :: [Any] -> [Pair Any [Type]]
     var valuesToPairs = function(values) {
-      return map(values, function(x) { return [x, valueTypes([x])]; });
+      return map(values, function(x) {
+        return [x, determineActualTypesLoose([x])];
+      });
     };
 
     var _satisfactoryTypes =
@@ -972,7 +1054,7 @@
                       expArgTypes.concat([expRetType]),
                       values[idx],
                       index,
-                      valueTypes([values[idx]]),
+                      determineActualTypesLoose([values[idx]]),
                       typeVarName,
                       typeClasses[idx2]
                     );
@@ -981,12 +1063,10 @@
               }
             }
             if (has(typeVarName, $typeVarMap)) {
-              var types = $typeVarMap[typeVarName].types;
-              okTypes = chain(types, function(t) {
-                return all(values, t.test) ? [t] : [];
-              });
+              okTypes = filterTypesByValues($typeVarMap[typeVarName].types,
+                                            values);
               if (isEmpty(okTypes)) {
-                throw conflictingTypeVar(
+                throw conflictingTypeVar2(
                   name,
                   constraints,
                   expArgTypes.concat([expRetType]),
@@ -998,22 +1078,28 @@
                 );
               }
             } else {
-              okTypes = valueTypes(values);
-              if (isEmpty(okTypes) && !isEmpty(values)) {
-                throw orphanArgument(env, name, _value, index);
+              okTypes = determineActualTypesStrict(values);
+              if (isEmpty(okTypes)) {
+                throw conflictingTypeVar(
+                  name,
+                  constraints,
+                  expArgTypes.concat([expRetType]),
+                  {index: index,
+                   pairs: valuesToPairs(values),
+                   propPath: propPath,
+                   typePath: typePath.concat([expType])}
+                );
               }
             }
-            if (!isEmpty(okTypes)) {
-              $typeVarMap[typeVarName] = {
-                types: okTypes,
-                history: {
-                  index: index,
-                  pairs: valuesToPairs(values),
-                  propPath: propPath,
-                  typePath: typePath.concat([expType])
-                }
-              };
-            }
+            $typeVarMap[typeVarName] = {
+              types: okTypes,
+              history: {
+                index: index,
+                pairs: valuesToPairs(values),
+                propPath: propPath,
+                typePath: typePath.concat([expType])
+              }
+            };
             return okTypes;
 
           case 'UNARY':
@@ -1037,7 +1123,7 @@
                                     or($2s, [expType.$2]));
 
           default:
-            return commonTypes(map(values, determineActualTypes));
+            return determineActualTypesStrict(values);
         }
       };
     };
@@ -1087,7 +1173,7 @@
                                    expArgTypes.concat([expRetType]),
                                    value,
                                    index,
-                                   valueTypes([value]));
+                                   determineActualTypesLoose([value]));
               }
             }
             values[index] = value;
@@ -1104,7 +1190,7 @@
                                  expArgTypes.concat([expRetType]),
                                  returnValue,
                                  _indexes.length,
-                                 valueTypes([returnValue]));
+                                 determineActualTypesLoose([returnValue]));
             }
             satisfactoryTypes(name, constraints, expArgTypes, expRetType,
                               $typeVarMap, expRetType, returnValue, NaN);
