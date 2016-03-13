@@ -3,8 +3,6 @@
 /* global describe, it */
 /* jshint -W053 */
 
-// jscs:disable maximumLineLength
-
 var assert = require('assert');
 var vm = require('vm');
 
@@ -300,7 +298,7 @@ describe('def', function() {
                    '\n' +
                    '1)  /x/ :: RegExp\n' +
                    '\n' +
-                   'The value at position 1 is not a member of Number.\n'));
+                   'The value at position 1 is not a member of ‘Number’.\n'));
 
     throws(function() { triple(R.__, R.__, /x/); },
            errorEq(TypeError,
@@ -312,7 +310,7 @@ describe('def', function() {
                    '\n' +
                    '1)  /x/ :: RegExp\n' +
                    '\n' +
-                   'The value at position 1 is not a member of Number.\n'));
+                   'The value at position 1 is not a member of ‘Number’.\n'));
 
     throws(function() { triple(R.__, 2, 3)(/x/); },
            errorEq(TypeError,
@@ -324,7 +322,7 @@ describe('def', function() {
                    '\n' +
                    '1)  /x/ :: RegExp\n' +
                    '\n' +
-                   'The value at position 1 is not a member of Number.\n'));
+                   'The value at position 1 is not a member of ‘Number’.\n'));
   });
 
   it('returns a function which throws if given too many args', function() {
@@ -387,7 +385,7 @@ describe('def', function() {
                    '\n' +
                    '1)  "X" :: String\n' +
                    '\n' +
-                   'The value at position 1 is not a member of Number.\n'));
+                   'The value at position 1 is not a member of ‘Number’.\n'));
 
     throws(function() { $9(1, 'X'); },
            errorEq(TypeError,
@@ -399,7 +397,7 @@ describe('def', function() {
                    '\n' +
                    '1)  "X" :: String\n' +
                    '\n' +
-                   'The value at position 1 is not a member of Number.\n'));
+                   'The value at position 1 is not a member of ‘Number’.\n'));
 
     throws(function() { $9(1, 2, 'X'); },
            errorEq(TypeError,
@@ -411,7 +409,7 @@ describe('def', function() {
                    '\n' +
                    '1)  "X" :: String\n' +
                    '\n' +
-                   'The value at position 1 is not a member of Number.\n'));
+                   'The value at position 1 is not a member of ‘Number’.\n'));
 
     throws(function() { $9(1, 2, 3, 'X'); },
            errorEq(TypeError,
@@ -423,7 +421,7 @@ describe('def', function() {
                    '\n' +
                    '1)  "X" :: String\n' +
                    '\n' +
-                   'The value at position 1 is not a member of Number.\n'));
+                   'The value at position 1 is not a member of ‘Number’.\n'));
 
     throws(function() { $9(1, 2, 3, 4, 'X'); },
            errorEq(TypeError,
@@ -435,7 +433,7 @@ describe('def', function() {
                    '\n' +
                    '1)  "X" :: String\n' +
                    '\n' +
-                   'The value at position 1 is not a member of Number.\n'));
+                   'The value at position 1 is not a member of ‘Number’.\n'));
 
     throws(function() { $9(1, 2, 3, 4, 5, 'X'); },
            errorEq(TypeError,
@@ -447,7 +445,7 @@ describe('def', function() {
                    '\n' +
                    '1)  "X" :: String\n' +
                    '\n' +
-                   'The value at position 1 is not a member of Number.\n'));
+                   'The value at position 1 is not a member of ‘Number’.\n'));
 
     throws(function() { $9(1, 2, 3, 4, 5, 6, 'X'); },
            errorEq(TypeError,
@@ -459,7 +457,7 @@ describe('def', function() {
                    '\n' +
                    '1)  "X" :: String\n' +
                    '\n' +
-                   'The value at position 1 is not a member of Number.\n'));
+                   'The value at position 1 is not a member of ‘Number’.\n'));
 
     throws(function() { $9(1, 2, 3, 4, 5, 6, 7, 'X'); },
            errorEq(TypeError,
@@ -471,7 +469,7 @@ describe('def', function() {
                    '\n' +
                    '1)  "X" :: String\n' +
                    '\n' +
-                   'The value at position 1 is not a member of Number.\n'));
+                   'The value at position 1 is not a member of ‘Number’.\n'));
 
     throws(function() { $9(1, 2, 3, 4, 5, 6, 7, 8, 'X'); },
            errorEq(TypeError,
@@ -483,7 +481,7 @@ describe('def', function() {
                    '\n' +
                    '1)  "X" :: String\n' +
                    '\n' +
-                   'The value at position 1 is not a member of Number.\n'));
+                   'The value at position 1 is not a member of ‘Number’.\n'));
 
     eq($9(1, 2, 3, 4, 5, 6, 7, 8, 9), [1, 2, 3, 4, 5, 6, 7, 8, 9]);
   });
@@ -504,7 +502,7 @@ describe('def', function() {
                    '\n' +
                    '1)  null :: Null\n' +
                    '\n' +
-                   'The value at position 1 is not a member of Number.\n'));
+                   'The value at position 1 is not a member of ‘Number’.\n'));
 
     throws(function() { sqrt(undefined); },
            errorEq(TypeError,
@@ -516,7 +514,7 @@ describe('def', function() {
                    '\n' +
                    '1)  undefined :: Undefined\n' +
                    '\n' +
-                   'The value at position 1 is not a member of Number.\n'));
+                   'The value at position 1 is not a member of ‘Number’.\n'));
   });
 
   it('creates a proper curry closure', function() {
@@ -583,7 +581,7 @@ describe('def', function() {
                    '\n' +
                    '1)  1 :: Number\n' +
                    '\n' +
-                   '2)  ["a"] :: (Array String)\n' +
+                   '2)  ["a"] :: Array String\n' +
                    '\n' +
                    'Since there is no type of which all the above values ' +
                    'are members, the type-variable constraint has been ' +
@@ -599,7 +597,7 @@ describe('def', function() {
                    '\n' +
                    '1)  1 :: Number\n' +
                    '\n' +
-                   '2)  Just(1) :: (Maybe Number)\n' +
+                   '2)  Just(1) :: Maybe Number\n' +
                    '\n' +
                    'Since there is no type of which all the above values ' +
                    'are members, the type-variable constraint has been ' +
@@ -615,8 +613,8 @@ describe('def', function() {
                    '\n' +
                    '1)  1 :: Number\n' +
                    '\n' +
-                   '2)  [ "a" :: String\n' +
-                   '      "b" :: String ]\n' +
+                   '2)  "a" :: String\n' +
+                   '    "b" :: String\n' +
                    '\n' +
                    'Since there is no type of which all the above values ' +
                    'are members, the type-variable constraint has been ' +
@@ -630,12 +628,12 @@ describe('def', function() {
                    '       ^          ^\n' +
                    '       1          2\n' +
                    '\n' +
-                   '1)  [1, 2] :: (Array Number)\n' +
+                   '1)  [1, 2] :: Array Number\n' +
                    '\n' +
-                   '2)  [ 1 :: Number\n' +
-                   '      2 :: Number\n' +
-                   '      3 :: Number\n' +
-                   '      4 :: Number ]\n' +
+                   '2)  1 :: Number\n' +
+                   '    2 :: Number\n' +
+                   '    3 :: Number\n' +
+                   '    4 :: Number\n' +
                    '\n' +
                    'Since there is no type of which all the above values ' +
                    'are members, the type-variable constraint has been ' +
@@ -649,10 +647,10 @@ describe('def', function() {
                    '       ^          ^\n' +
                    '       1          2\n' +
                    '\n' +
-                   '1)  [1, 2] :: (Array Number)\n' +
+                   '1)  [1, 2] :: Array Number\n' +
                    '\n' +
-                   '2)  [ ["a", "b"] :: (Array String)\n' +
-                   '      ["c", "d"] :: (Array String) ]\n' +
+                   '2)  ["a", "b"] :: Array String\n' +
+                   '    ["c", "d"] :: Array String\n' +
                    '\n' +
                    'Since there is no type of which all the above values ' +
                    'are members, the type-variable constraint has been ' +
@@ -666,10 +664,10 @@ describe('def', function() {
                    '       ^          ^\n' +
                    '       1          2\n' +
                    '\n' +
-                   '1)  [[1, 2], [3, 4]] :: (Array (Array Number))\n' +
+                   '1)  [[1, 2], [3, 4]] :: Array (Array Number)\n' +
                    '\n' +
-                   '2)  [ [1, 2] :: (Array Number)\n' +
-                   '      [3, 4] :: (Array Number) ]\n' +
+                   '2)  [1, 2] :: Array Number\n' +
+                   '    [3, 4] :: Array Number\n' +
                    '\n' +
                    'Since there is no type of which all the above values ' +
                    'are members, the type-variable constraint has been ' +
@@ -683,14 +681,14 @@ describe('def', function() {
                    '       ^                 ^\n' +
                    '       1                 2\n' +
                    '\n' +
-                   '1)  [1, 2] :: (Array Number)\n' +
+                   '1)  [1, 2] :: Array Number\n' +
                    '\n' +
-                   '2)  [ [ 1 :: Number\n' +
-                   '        2 :: Number ]\n' +
-                   '      [ 3 :: Number\n' +
-                   '        4 :: Number\n' +
-                   '        5 :: Number\n' +
-                   '        6 :: Number ] ]\n' +
+                   '2)  1 :: Number\n' +
+                   '    2 :: Number\n' +
+                   '    3 :: Number\n' +
+                   '    4 :: Number\n' +
+                   '    5 :: Number\n' +
+                   '    6 :: Number\n' +
                    '\n' +
                    'Since there is no type of which all the above values ' +
                    'are members, the type-variable constraint has been ' +
@@ -706,10 +704,10 @@ describe('def', function() {
                    '\n' +
                    '1)  1 :: Number\n' +
                    '\n' +
-                   '2)  [ [ Left( "a" :: String )\n' +
-                   '        Left( "b" :: String ) ]\n' +
-                   '      [ Left( "c" :: String )\n' +
-                   '        Left( "d" :: String ) ] ]\n' +
+                   '2)  "a" :: String\n' +
+                   '    "b" :: String\n' +
+                   '    "c" :: String\n' +
+                   '    "d" :: String\n' +
                    '\n' +
                    'Since there is no type of which all the above values ' +
                    'are members, the type-variable constraint has been ' +
@@ -725,10 +723,10 @@ describe('def', function() {
                    '\n' +
                    '1)  "x" :: String\n' +
                    '\n' +
-                   '2)  [ [ Right( 1 :: Number )\n' +
-                   '        Right( 2 :: Number ) ]\n' +
-                   '      [ Right( 3 :: Number )\n' +
-                   '        Right( 4 :: Number ) ] ]\n' +
+                   '2)  1 :: Number\n' +
+                   '    2 :: Number\n' +
+                   '    3 :: Number\n' +
+                   '    4 :: Number\n' +
                    '\n' +
                    'Since there is no type of which all the above values ' +
                    'are members, the type-variable constraint has been ' +
@@ -744,15 +742,14 @@ describe('def', function() {
                    '\n' +
                    '1)  1 :: Number\n' +
                    '\n' +
-                   '2)  Left( [ [ "a" :: String\n' +
-                   '              "b" :: String ]\n' +
-                   '            [ "c" :: String\n' +
-                   '              "d" :: String ] ] )\n' +
+                   '2)  "a" :: String\n' +
+                   '    "b" :: String\n' +
+                   '    "c" :: String\n' +
+                   '    "d" :: String\n' +
                    '\n' +
                    'Since there is no type of which all the above values ' +
                    'are members, the type-variable constraint has been ' +
                    'violated.\n'));
-
 
     throws(function() { ab0e21(1, 'x', Right([1, 2])); },
            errorEq(TypeError,
@@ -764,8 +761,8 @@ describe('def', function() {
                    '\n' +
                    '1)  "x" :: String\n' +
                    '\n' +
-                   '2)  Right( [ 1 :: Number\n' +
-                   '             2 :: Number ] )\n' +
+                   '2)  1 :: Number\n' +
+                   '    2 :: Number\n' +
                    '\n' +
                    'Since there is no type of which all the above values ' +
                    'are members, the type-variable constraint has been ' +
@@ -786,7 +783,7 @@ describe('def', function() {
                    '\n' +
                    '1)  "XXX" :: String\n' +
                    '\n' +
-                   'The value at position 1 is not a member of Number.\n'));
+                   'The value at position 1 is not a member of ‘Number’.\n'));
   });
 
   it('does not rely on constructor identity', function() {
@@ -805,7 +802,6 @@ describe('def', function() {
   });
 
   it('supports custom types', function() {
-
     //  AnonJust :: a -> AnonMaybe a
     var AnonJust = function(x) {
       return {
@@ -868,7 +864,7 @@ describe('def', function() {
                    '\n' +
                    '1)  0.5 :: Number\n' +
                    '\n' +
-                   'The value at position 1 is not a member of Integer.\n'));
+                   'The value at position 1 is not a member of ‘Integer’.\n'));
 
     //  fromMaybe :: a -> AnonMaybe a
     var fromMaybe =
@@ -887,7 +883,7 @@ describe('def', function() {
                    '\n' +
                    '1)  "x" :: String\n' +
                    '\n' +
-                   '2)  AnonMaybe( null :: Null )\n' +
+                   '2)  null :: Null\n' +
                    '\n' +
                    'Since there is no type of which all the above values ' +
                    'are members, the type-variable constraint has been ' +
@@ -926,7 +922,7 @@ describe('def', function() {
                    '1)  "days" :: String\n' +
                    '\n' +
                    'The value at position 1 is not a member of ' +
-                   '("milliseconds" | "seconds" | "minutes" | "hours").\n'));
+                   '‘("milliseconds" | "seconds" | "minutes" | "hours")’.\n'));
 
     eq(convertTo('seconds', new Date(1000)), 1);
 
@@ -1006,8 +1002,8 @@ describe('def', function() {
                    '\n' +
                    '1)  null :: Null\n' +
                    '\n' +
-                   'The value at position 1 is not a member of { x :: ' +
-                   'Number, y :: Number }.\n'));
+                   'The value at position 1 is not a member of ' +
+                   '‘{ x :: Number, y :: Number }’.\n'));
 
     throws(function() { dist({}); },
            errorEq(TypeError,
@@ -1019,8 +1015,8 @@ describe('def', function() {
                    '\n' +
                    '1)  {} :: Object\n' +
                    '\n' +
-                   'The value at position 1 is not a member of { x :: ' +
-                   'Number, y :: Number }.\n'));
+                   'The value at position 1 is not a member of ' +
+                   '‘{ x :: Number, y :: Number }’.\n'));
 
     throws(function() { dist({x: 0}); },
            errorEq(TypeError,
@@ -1032,8 +1028,8 @@ describe('def', function() {
                    '\n' +
                    '1)  {"x": 0} :: Object\n' +
                    '\n' +
-                   'The value at position 1 is not a member of { x :: ' +
-                   'Number, y :: Number }.\n'));
+                   'The value at position 1 is not a member of ' +
+                   '‘{ x :: Number, y :: Number }’.\n'));
 
     throws(function() { dist({x: 0, y: null}); },
            errorEq(TypeError,
@@ -1045,8 +1041,8 @@ describe('def', function() {
                    '\n' +
                    '1)  {"x": 0, "y": null} :: Object\n' +
                    '\n' +
-                   'The value at position 1 is not a member of { x :: ' +
-                   'Number, y :: Number }.\n'));
+                   'The value at position 1 is not a member of ' +
+                   '‘{ x :: Number, y :: Number }’.\n'));
 
     throws(function() { length({start: 0, end: 0}); },
            errorEq(TypeError,
@@ -1058,9 +1054,9 @@ describe('def', function() {
                    '\n' +
                    '1)  {"end": 0, "start": 0} :: Object\n' +
                    '\n' +
-                   'The value at position 1 is not a member of { end :: { ' +
-                   'x :: Number, y :: Number }, start :: { x :: Number, y ' +
-                   ':: Number } }.\n'));
+                   'The value at position 1 is not a member of ' +
+                   '‘{ end :: { x :: Number, y :: Number },' +
+                   ' start :: { x :: Number, y :: Number } }’.\n'));
 
     //  id :: a -> a
     var id = def('id', {}, [a, a], R.identity);
@@ -1077,7 +1073,7 @@ describe('def', function() {
                    'The following mappings are invalid:\n' +
                    '\n' +
                    '  - "x": /XXX/\n' +
-                   '  - "y": /XXX/'));
+                   '  - "y": /XXX/\n'));
   });
 
   it('supports "nullable" types', function() {
@@ -1102,10 +1098,10 @@ describe('def', function() {
                    '           ^^^^^^^^^^^^^^^\n' +
                    '                  1\n' +
                    '\n' +
-                   '1)  ["abc"] :: (Array String)\n' +
+                   '1)  ["abc"] :: Array String\n' +
                    '\n' +
-                   'The value at position 1 is not a member of (Nullable ' +
-                   'String).\n'));
+                   'The value at position 1 is not a member of ' +
+                   '‘Nullable String’.\n'));
 
     //  defaultTo :: a -> Nullable a -> a
     var defaultTo =
@@ -1127,7 +1123,7 @@ describe('def', function() {
                    '\n' +
                    '1)  0 :: Number\n' +
                    '\n' +
-                   '2)  String( "XXX" :: String )\n' +
+                   '2)  "XXX" :: String\n' +
                    '\n' +
                    'Since there is no type of which all the above values ' +
                    'are members, the type-variable constraint has been ' +
@@ -1147,9 +1143,9 @@ describe('def', function() {
                    '              ^             ^\n' +
                    '              1             2\n' +
                    '\n' +
-                   '1)  String( "XXX" :: String )\n' +
+                   '1)  "XXX" :: String\n' +
                    '\n' +
-                   '2)  Number( 42 :: Number )\n' +
+                   '2)  42 :: Number\n' +
                    '\n' +
                    'Since there is no type of which all the above values ' +
                    'are members, the type-variable constraint has been ' +
@@ -1176,7 +1172,8 @@ describe('def', function() {
                    '\n' +
                    '1)  new Date(NaN) :: Date\n' +
                    '\n' +
-                   'The value at position 1 is not a member of ValidDate.\n'));
+                   'The value at position 1 is not a member of ' +
+                   '‘ValidDate’.\n'));
 
     eq(sinceEpoch(new Date(123456)), 123.456);
   });
@@ -1374,10 +1371,10 @@ describe('def', function() {
       [new Date('XXX'), 'Date'],
       [new Number(-0), 'Number'],
       [new String(''), 'String'],
-      [/x/.exec('xyz'), '(Array String)'],
+      [/x/.exec('xyz'), 'Array String'],
       [
         (function() { var xs = [1, 2, 3]; xs.z = 0; xs.a = 0; return xs; }()),
-        '(Array Number)'
+        'Array Number'
       ],
       [{toString: null}, 'Object'],
       [new Point(0, 0), 'Object'],
@@ -1395,7 +1392,7 @@ describe('def', function() {
                      '\n' +
                      '1)  ' + R.toString(x) + ' :: ' + types + '\n' +
                      '\n' +
-                     'The value at position 1 is not a member of Null.\n'));
+                     'The value at position 1 is not a member of ‘Null’.\n'));
     }));
   });
 
@@ -1463,9 +1460,9 @@ describe('def', function() {
                    '                  ^^^^^^^\n' +
                    '                     1\n' +
                    '\n' +
-                   '1)  [1, 2, 3] :: (Array Number)\n' +
+                   '1)  [1, 2, 3] :: Array Number\n' +
                    '\n' +
-                   'The value at position 1 is not a member of (Maybe a).\n'));
+                   'The value at position 1 is not a member of ‘Maybe a’.\n'));
 
     //  fst :: Pair a b -> a
     var fst = def('fst', {}, [$Pair(a, b), a], R.nth(0));
@@ -1483,7 +1480,7 @@ describe('def', function() {
                    '1)  ["XXX", 42] :: \n' +
                    '\n' +
                    'The value at position 1 is not a member of ' +
-                   '(Pair a b).\n'));
+                   '‘Pair a b’.\n'));
 
     //  concat :: Either a b -> Either a b -> Either a b
     var concat =
@@ -1509,9 +1506,9 @@ describe('def', function() {
                    '                 ^             ^\n' +
                    '                 1             2\n' +
                    '\n' +
-                   '1)  Left( "abc" :: String )\n' +
+                   '1)  "abc" :: String\n' +
                    '\n' +
-                   '2)  Left( [1, 2, 3] :: (Array Number) )\n' +
+                   '2)  [1, 2, 3] :: Array Number\n' +
                    '\n' +
                    'Since there is no type of which all the above values ' +
                    'are members, the type-variable constraint has been ' +
@@ -1525,9 +1522,9 @@ describe('def', function() {
                    '                   ^             ^\n' +
                    '                   1             2\n' +
                    '\n' +
-                   '1)  Right( "abc" :: String )\n' +
+                   '1)  "abc" :: String\n' +
                    '\n' +
-                   '2)  Right( [1, 2, 3] :: (Array Number) )\n' +
+                   '2)  [1, 2, 3] :: Array Number\n' +
                    '\n' +
                    'Since there is no type of which all the above values ' +
                    'are members, the type-variable constraint has been ' +
@@ -1550,10 +1547,10 @@ describe('def', function() {
                    '          ^^^^^^^^^^^^^^^\n' +
                    '                 1\n' +
                    '\n' +
-                   '1)  [1, 2, 3] :: (Array Number)\n' +
+                   '1)  [1, 2, 3] :: Array Number\n' +
                    '\n' +
-                   'The value at position 1 is not a member of (Array ' +
-                   '(Array a)).\n'));
+                   'The value at position 1 is not a member of ‘Array ' +
+                   '(Array a)’.\n'));
   });
 
   it('does not allow heterogeneous arrays', function() {
@@ -1624,8 +1621,7 @@ describe('def', function() {
                    '      ^^^^^^^^^^^^^    ^\n' +
                    '                       1\n' +
                    '\n' +
-                   '1)  Left(1) :: (Either Number ???), (Either Integer ' +
-                   '???)\n' +
+                   '1)  Left(1) :: Either Number ???, Either Integer ???\n' +
                    '\n' +
                    '‘or’ requires ‘a’ to satisfy the Alternative ' +
                    'type-class constraint; the value at position 1 does ' +
@@ -1639,8 +1635,7 @@ describe('def', function() {
                    '      ^^^^^^^^^^^^^         ^\n' +
                    '                            1\n' +
                    '\n' +
-                   '1)  Right(1) :: (Either ??? Number), (Either ??? ' +
-                   'Integer)\n' +
+                   '1)  Right(1) :: Either ??? Number, Either ??? Integer\n' +
                    '\n' +
                    '‘or’ requires ‘a’ to satisfy the Alternative ' +
                    'type-class constraint; the value at position 1 does ' +
@@ -1694,7 +1689,7 @@ describe('def', function() {
                    '                         ^    ^\n' +
                    '                         1    2\n' +
                    '\n' +
-                   '1)  [] :: (Array ???)\n' +
+                   '1)  [] :: Array ???\n' +
                    '\n' +
                    '2)  "" :: String\n' +
                    '\n' +
@@ -1712,7 +1707,7 @@ describe('def', function() {
                    '\n' +
                    '1)  "" :: String\n' +
                    '\n' +
-                   '2)  [] :: (Array ???)\n' +
+                   '2)  [] :: Array ???\n' +
                    '\n' +
                    'Since there is no type of which all the above values ' +
                    'are members, the type-variable constraint has been ' +
@@ -1747,7 +1742,7 @@ describe('def', function() {
                    '           ^^^^^^^                           ^\n' +
                    '                                             1\n' +
                    '\n' +
-                   '1)  [1, 2, 3] :: (Array Number), (Array Integer)\n' +
+                   '1)  [1, 2, 3] :: Array Number, Array Integer\n' +
                    '\n' +
                    '‘filter’ requires ‘a’ to satisfy the Monad type-class ' +
                    'constraint; the value at position 1 does not.\n'));
@@ -1760,8 +1755,7 @@ describe('def', function() {
                    '                    ^^^^^^^^                 ^\n' +
                    '                                             1\n' +
                    '\n' +
-                   '1)  Right(42) :: (Either ??? Number), (Either ??? ' +
-                   'Integer)\n' +
+                   '1)  Right(42) :: Either ??? Number, Either ??? Integer\n' +
                    '\n' +
                    '‘filter’ requires ‘a’ to satisfy the Monoid ' +
                    'type-class constraint; the value at position 1 does ' +
