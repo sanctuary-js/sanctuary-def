@@ -946,22 +946,17 @@ describe('def', function() {
 
     throws(function() { id(['foo', false]); },
            errorEq(TypeError,
-                   '‘id’ received ["foo", false] as its first argument, ' +
-                   'but this value is not a member of any of the types ' +
-                   'in the environment:\n' +
+                   'Type-variable constraint violation\n' +
                    '\n' +
-                   '  - (Array ???)\n' +
-                   '  - Boolean\n' +
-                   '  - Date\n' +
-                   '  - Error\n' +
-                   '  - Function\n' +
-                   '  - Null\n' +
-                   '  - Number\n' +
-                   '  - Object\n' +
-                   '  - RegExp\n' +
-                   '  - String\n' +
-                   '  - Undefined\n' +
-                   '  - ("foo" | true | 42)\n'));
+                   'id :: a -> a\n' +
+                   '      ^\n' +
+                   '      1\n' +
+                   '\n' +
+                   '1)  ["foo", false] :: Array ???\n' +
+                   '\n' +
+                   'Since there is no type of which all the above values ' +
+                   'are members, the type-variable constraint has been ' +
+                   'violated.\n'));
   });
 
   it('supports record types', function() {
@@ -1365,7 +1360,7 @@ describe('def', function() {
     o2.ref = o1;
 
     var values = [
-      [(function() { return arguments; }(1, 2, 3)), ''],
+      [(function() { return arguments; }(1, 2, 3)), 'Arguments'],
       [new Boolean(false), 'Boolean'],
       [new Date(0), 'Date'],
       [new Date('XXX'), 'Date'],
@@ -1477,7 +1472,7 @@ describe('def', function() {
                    '       ^^^^^^^^\n' +
                    '          1\n' +
                    '\n' +
-                   '1)  ["XXX", 42] :: \n' +
+                   '1)  ["XXX", 42] :: Array ???\n' +
                    '\n' +
                    'The value at position 1 is not a member of ' +
                    '‘Pair a b’.\n'));
@@ -1571,22 +1566,45 @@ describe('def', function() {
 
     throws(function() { concat([[1, 2, 3], [Left('XXX'), Right(42)]]); },
            errorEq(TypeError,
-                   '‘concat’ received [[1, 2, 3], [Left("XXX"), Right(42)]] ' +
-                   'as its first argument, but this value is not a ' +
-                   'member of any of the types in the environment:\n' +
+                   'Type-variable constraint violation\n' +
                    '\n' +
-                   '  - (Array ???)\n' +
-                   '  - Boolean\n' +
-                   '  - Date\n' +
-                   '  - Error\n' +
-                   '  - Function\n' +
-                   '  - Null\n' +
-                   '  - Number\n' +
-                   '  - Object\n' +
-                   '  - RegExp\n' +
-                   '  - String\n' +
-                   '  - Undefined\n' +
-                   '  - (Either ??? ???)\n'));
+                   'concat :: Array a -> Array a -> Array a\n' +
+                   '          ^^^^^^^\n' +
+                   '             1\n' +
+                   '\n' +
+                   '1)  [1, 2, 3] :: Array Number\n' +
+                   '    [Left("XXX"), Right(42)] :: Array (Either String Number)\n' +
+                   '\n' +
+                   'Since there is no type of which all the above values ' +
+                   'are members, the type-variable constraint has been ' +
+                   'violated.\n'));
+  });
+
+  it('supports values of "foreign" types', function() {
+    //  id :: a -> a
+    var id = def('id', {}, [a, a], R.identity);
+
+    //  x :: Foreign
+    var x = {'@@type': 'my-package/Foreign'};
+
+    eq(id(x), x);
+    eq(id([x]), [x]);
+    eq(id([x, x]), [x, x]);
+
+    throws(function() { id([{'@@type': 'my-package/Foo'},
+                            {'@@type': 'my-package/Bar'}]); },
+           errorEq(TypeError,
+                   'Type-variable constraint violation\n' +
+                   '\n' +
+                   'id :: a -> a\n' +
+                   '      ^\n' +
+                   '      1\n' +
+                   '\n' +
+                   '1)  [{"@@type": "my-package/Foo"}, {"@@type": "my-package/Bar"}] :: Array ???\n' +
+                   '\n' +
+                   'Since there is no type of which all the above values ' +
+                   'are members, the type-variable constraint has been ' +
+                   'violated.\n'));
   });
 
   it('supports type-class constraints', function() {
