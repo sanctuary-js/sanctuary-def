@@ -5,7 +5,7 @@
   'use strict';
 
   /* istanbul ignore else */
-  if (typeof module !== 'undefined') {
+  if (typeof module === 'object' && typeof module.exports === 'object') {
     module.exports = f();
   } else if (typeof define === 'function' && define.amd != null) {
     define([], f);
