@@ -59,12 +59,11 @@ var Integer = $.NullaryType(
 
 
 //  Nothing :: -> Maybe a
-var Nothing = function Nothing() {
+var Nothing = function() {
   return {
     '@@type': 'my-package/Maybe',
     'chain': function(f) { return this; },
     'concat': function() { throw new Error('Not implemented'); },
-    'constructor': Nothing,  // ramda/ramda#1516
     'empty': function() { return this; },
     'isNothing': true,
     'isJust': false,
@@ -75,12 +74,11 @@ var Nothing = function Nothing() {
 };
 
 //  Just :: a -> Maybe a
-var Just = function Just(x) {
+var Just = function(x) {
   return {
     '@@type': 'my-package/Maybe',
     'chain': function(f) { return f(x); },
     'concat': function() { throw new Error('Not implemented'); },
-    'constructor': Just,  // ramda/ramda#1516
     'empty': R.always(Nothing()),
     'isNothing': false,
     'isJust': true,
@@ -100,11 +98,10 @@ var Maybe = $.UnaryType(
 
 
 //  Left :: a -> Either a b
-var Left = function Left(x) {
+var Left = function(x) {
   return {
     '@@type': 'my-package/Either',
     'chain': function(f) { return this; },
-    'constructor': Left,  // ramda/ramda#1516
     'isLeft': true,
     'isRight': false,
     'of': function(x) { return Right(x); },
@@ -114,11 +111,10 @@ var Left = function Left(x) {
 };
 
 //  Right :: b -> Either a b
-var Right = function Right(x) {
+var Right = function(x) {
   return {
     '@@type': 'my-package/Either',
     'chain': function(f) { return f(x); },
-    'constructor': Right,  // ramda/ramda#1516
     'isLeft': false,
     'isRight': true,
     'of': function(x) { return Right(x); },
@@ -137,12 +133,11 @@ var Either = $.BinaryType(
 
 
 //  Pair :: a -> b -> Pair a b
-var Pair = function Pair(x, y) {
+var Pair = function(x, y) {
   return {
     '0': x,
     '1': y,
     '@@type': 'my-package/Pair',
-    'constructor': Pair,  // ramda/ramda#1516
     'length': 2,
     'toString': R.always('Pair(' + R.toString(x) + ', ' + R.toString(y) + ')')
   };
@@ -806,7 +801,6 @@ describe('def', function() {
     var AnonJust = function(x) {
       return {
         '@@type': 'my-package/AnonMaybe',
-        'constructor': function() {},  // ramda/ramda#1516
         'isNothing': false,
         'isJust': true,
         'toString': R.always('AnonJust(' + R.toString(x) + ')'),
