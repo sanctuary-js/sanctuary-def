@@ -161,24 +161,19 @@ describe('def', function() {
 
     throws(function() { def(null, null, null, null); },
            errorEq(TypeError,
-                   '‘def’ expected a value of type String ' +
-                   'as its first argument; received null'));
+                   '‘def’ expected a value of type String as its first argument; received null'));
 
     throws(function() { def('', null, null, null); },
            errorEq(TypeError,
-                   '‘def’ expected a value of type Object ' +
-                   'as its second argument; received null'));
+                   '‘def’ expected a value of type Object as its second argument; received null'));
 
     throws(function() { def('', {}, null, null); },
            errorEq(TypeError,
-                   '‘def’ expected a value of type ' +
-                   '(Array { test :: Function }) ' +
-                   'as its third argument; received null'));
+                   '‘def’ expected a value of type (Array { test :: Function }) as its third argument; received null'));
 
     throws(function() { def('', {}, [], null); },
            errorEq(TypeError,
-                   '‘def’ expected a value of type Function ' +
-                   'as its fourth argument; received null'));
+                   '‘def’ expected a value of type Function as its fourth argument; received null'));
   });
 
   it('does not type check its arguments when checkTypes is false', function() {
@@ -215,8 +210,7 @@ describe('def', function() {
              def('$10', {}, [a, a, a, a, a, a, a, a, a, a, $.Array(a)], list);
            },
            errorEq(RangeError,
-                   '‘def’ cannot define a function ' +
-                   'with arity greater than nine'));
+                   '‘def’ cannot define a function with arity greater than nine'));
   });
 
   it('returns a curried function', function() {
@@ -562,9 +556,7 @@ describe('def', function() {
                    '\n' +
                    '2)  "a" :: String\n' +
                    '\n' +
-                   'Since there is no type of which all the above values ' +
-                   'are members, the type-variable constraint has been ' +
-                   'violated.\n'));
+                   'Since there is no type of which all the above values are members, the type-variable constraint has been violated.\n'));
 
     throws(function() { a00(1, ['a']); },
            errorEq(TypeError,
@@ -578,9 +570,7 @@ describe('def', function() {
                    '\n' +
                    '2)  ["a"] :: Array String\n' +
                    '\n' +
-                   'Since there is no type of which all the above values ' +
-                   'are members, the type-variable constraint has been ' +
-                   'violated.\n'));
+                   'Since there is no type of which all the above values are members, the type-variable constraint has been violated.\n'));
 
     throws(function() { a00(1, Just(1)); },
            errorEq(TypeError,
@@ -594,9 +584,7 @@ describe('def', function() {
                    '\n' +
                    '2)  Just(1) :: Maybe Number\n' +
                    '\n' +
-                   'Since there is no type of which all the above values ' +
-                   'are members, the type-variable constraint has been ' +
-                   'violated.\n'));
+                   'Since there is no type of which all the above values are members, the type-variable constraint has been violated.\n'));
 
     throws(function() { a01(1, ['a', 'b']); },
            errorEq(TypeError,
@@ -611,9 +599,7 @@ describe('def', function() {
                    '2)  "a" :: String\n' +
                    '    "b" :: String\n' +
                    '\n' +
-                   'Since there is no type of which all the above values ' +
-                   'are members, the type-variable constraint has been ' +
-                   'violated.\n'));
+                   'Since there is no type of which all the above values are members, the type-variable constraint has been violated.\n'));
 
     throws(function() { a01([1, 2], [1, 2, 3, 4]); },
            errorEq(TypeError,
@@ -630,9 +616,7 @@ describe('def', function() {
                    '    3 :: Number\n' +
                    '    4 :: Number\n' +
                    '\n' +
-                   'Since there is no type of which all the above values ' +
-                   'are members, the type-variable constraint has been ' +
-                   'violated.\n'));
+                   'Since there is no type of which all the above values are members, the type-variable constraint has been violated.\n'));
 
     throws(function() { a01([1, 2], [['a', 'b'], ['c', 'd']]); },
            errorEq(TypeError,
@@ -647,9 +631,7 @@ describe('def', function() {
                    '2)  ["a", "b"] :: Array String\n' +
                    '    ["c", "d"] :: Array String\n' +
                    '\n' +
-                   'Since there is no type of which all the above values ' +
-                   'are members, the type-variable constraint has been ' +
-                   'violated.\n'));
+                   'Since there is no type of which all the above values are members, the type-variable constraint has been violated.\n'));
 
     throws(function() { a01([[1, 2], [3, 4]], [[1, 2], [3, 4]]); },
            errorEq(TypeError,
@@ -664,9 +646,7 @@ describe('def', function() {
                    '2)  [1, 2] :: Array Number\n' +
                    '    [3, 4] :: Array Number\n' +
                    '\n' +
-                   'Since there is no type of which all the above values ' +
-                   'are members, the type-variable constraint has been ' +
-                   'violated.\n'));
+                   'Since there is no type of which all the above values are members, the type-variable constraint has been violated.\n'));
 
     throws(function() { a02([1, 2], [[1, 2], [3, 4, 5, 6]]); },
            errorEq(TypeError,
@@ -685,9 +665,7 @@ describe('def', function() {
                    '    5 :: Number\n' +
                    '    6 :: Number\n' +
                    '\n' +
-                   'Since there is no type of which all the above values ' +
-                   'are members, the type-variable constraint has been ' +
-                   'violated.\n'));
+                   'Since there is no type of which all the above values are members, the type-variable constraint has been violated.\n'));
 
     throws(function() { ab02e(1, 'x', [[Left('a'), Left('b')], [Left('c'), Left('d')]]); },
            errorEq(TypeError,
@@ -704,9 +682,7 @@ describe('def', function() {
                    '    "c" :: String\n' +
                    '    "d" :: String\n' +
                    '\n' +
-                   'Since there is no type of which all the above values ' +
-                   'are members, the type-variable constraint has been ' +
-                   'violated.\n'));
+                   'Since there is no type of which all the above values are members, the type-variable constraint has been violated.\n'));
 
     throws(function() { ab02e(1, 'x', [[Right(1), Right(2)], [Right(3), Right(4)]]); },
            errorEq(TypeError,
@@ -723,9 +699,7 @@ describe('def', function() {
                    '    3 :: Number\n' +
                    '    4 :: Number\n' +
                    '\n' +
-                   'Since there is no type of which all the above values ' +
-                   'are members, the type-variable constraint has been ' +
-                   'violated.\n'));
+                   'Since there is no type of which all the above values are members, the type-variable constraint has been violated.\n'));
 
     throws(function() { ab0e21(1, 'x', Left([['a', 'b'], ['c', 'd']])); },
            errorEq(TypeError,
@@ -742,9 +716,7 @@ describe('def', function() {
                    '    "c" :: String\n' +
                    '    "d" :: String\n' +
                    '\n' +
-                   'Since there is no type of which all the above values ' +
-                   'are members, the type-variable constraint has been ' +
-                   'violated.\n'));
+                   'Since there is no type of which all the above values are members, the type-variable constraint has been violated.\n'));
 
     throws(function() { ab0e21(1, 'x', Right([1, 2])); },
            errorEq(TypeError,
@@ -759,9 +731,7 @@ describe('def', function() {
                    '2)  1 :: Number\n' +
                    '    2 :: Number\n' +
                    '\n' +
-                   'Since there is no type of which all the above values ' +
-                   'are members, the type-variable constraint has been ' +
-                   'violated.\n'));
+                   'Since there is no type of which all the above values are members, the type-variable constraint has been violated.\n'));
   });
 
   it('returns a function which type checks its return value', function() {
@@ -822,8 +792,7 @@ describe('def', function() {
 
     throws(function() { def('id', {}, [T, T], R.identity); },
            errorEq(TypeError,
-                   'Definition of ‘id’ references my-package/Maybe ' +
-                   'which is not in the environment:\n' +
+                   'Definition of ‘id’ references my-package/Maybe which is not in the environment:\n' +
                    '\n' +
                    '  - (Array ???)\n' +
                    '  - Boolean\n' +
@@ -879,9 +848,7 @@ describe('def', function() {
                    '\n' +
                    '2)  null :: Null\n' +
                    '\n' +
-                   'Since there is no type of which all the above values ' +
-                   'are members, the type-variable constraint has been ' +
-                   'violated.\n'));
+                   'Since there is no type of which all the above values are members, the type-variable constraint has been violated.\n'));
   });
 
   it('supports enumerated types', function() {
@@ -915,8 +882,7 @@ describe('def', function() {
                    '\n' +
                    '1)  "days" :: String\n' +
                    '\n' +
-                   'The value at position 1 is not a member of ' +
-                   '‘("milliseconds" | "seconds" | "minutes" | "hours")’.\n'));
+                   'The value at position 1 is not a member of ‘("milliseconds" | "seconds" | "minutes" | "hours")’.\n'));
 
     eq(convertTo('seconds', new Date(1000)), 1);
 
@@ -948,9 +914,7 @@ describe('def', function() {
                    '\n' +
                    '1)  ["foo", false] :: Array ???\n' +
                    '\n' +
-                   'Since there is no type of which all the above values ' +
-                   'are members, the type-variable constraint has been ' +
-                   'violated.\n'));
+                   'Since there is no type of which all the above values are members, the type-variable constraint has been violated.\n'));
   });
 
   it('supports record types', function() {
@@ -991,8 +955,7 @@ describe('def', function() {
                    '\n' +
                    '1)  null :: Null\n' +
                    '\n' +
-                   'The value at position 1 is not a member of ' +
-                   '‘{ x :: Number, y :: Number }’.\n'));
+                   'The value at position 1 is not a member of ‘{ x :: Number, y :: Number }’.\n'));
 
     throws(function() { dist({}); },
            errorEq(TypeError,
@@ -1004,8 +967,7 @@ describe('def', function() {
                    '\n' +
                    '1)  {} :: Object\n' +
                    '\n' +
-                   'The value at position 1 is not a member of ' +
-                   '‘{ x :: Number, y :: Number }’.\n'));
+                   'The value at position 1 is not a member of ‘{ x :: Number, y :: Number }’.\n'));
 
     throws(function() { dist({x: 0}); },
            errorEq(TypeError,
@@ -1017,8 +979,7 @@ describe('def', function() {
                    '\n' +
                    '1)  {"x": 0} :: Object\n' +
                    '\n' +
-                   'The value at position 1 is not a member of ' +
-                   '‘{ x :: Number, y :: Number }’.\n'));
+                   'The value at position 1 is not a member of ‘{ x :: Number, y :: Number }’.\n'));
 
     throws(function() { dist({x: 0, y: null}); },
            errorEq(TypeError,
@@ -1030,8 +991,7 @@ describe('def', function() {
                    '\n' +
                    '1)  {"x": 0, "y": null} :: Object\n' +
                    '\n' +
-                   'The value at position 1 is not a member of ' +
-                   '‘{ x :: Number, y :: Number }’.\n'));
+                   'The value at position 1 is not a member of ‘{ x :: Number, y :: Number }’.\n'));
 
     throws(function() { length({start: 0, end: 0}); },
            errorEq(TypeError,
@@ -1043,9 +1003,7 @@ describe('def', function() {
                    '\n' +
                    '1)  {"end": 0, "start": 0} :: Object\n' +
                    '\n' +
-                   'The value at position 1 is not a member of ' +
-                   '‘{ end :: { x :: Number, y :: Number },' +
-                   ' start :: { x :: Number, y :: Number } }’.\n'));
+                   'The value at position 1 is not a member of ‘{ end :: { x :: Number, y :: Number }, start :: { x :: Number, y :: Number } }’.\n'));
 
     //  id :: a -> a
     var id = def('id', {}, [a, a], R.identity);
@@ -1056,8 +1014,7 @@ describe('def', function() {
            errorEq(TypeError,
                    'Invalid values\n' +
                    '\n' +
-                   'The argument to ‘RecordType’ must be an object mapping ' +
-                   'field name to type.\n' +
+                   'The argument to ‘RecordType’ must be an object mapping field name to type.\n' +
                    '\n' +
                    'The following mappings are invalid:\n' +
                    '\n' +
@@ -1089,8 +1046,7 @@ describe('def', function() {
                    '\n' +
                    '1)  ["abc"] :: Array String\n' +
                    '\n' +
-                   'The value at position 1 is not a member of ' +
-                   '‘Nullable String’.\n'));
+                   'The value at position 1 is not a member of ‘Nullable String’.\n'));
 
     //  defaultTo :: a -> Nullable a -> a
     var defaultTo =
@@ -1114,9 +1070,7 @@ describe('def', function() {
                    '\n' +
                    '2)  "XXX" :: String\n' +
                    '\n' +
-                   'Since there is no type of which all the above values ' +
-                   'are members, the type-variable constraint has been ' +
-                   'violated.\n'));
+                   'Since there is no type of which all the above values are members, the type-variable constraint has been violated.\n'));
 
     //  f :: Nullable a -> Nullable a
     var f = def('f', {}, [$.Nullable(a), $.Nullable(a)], R.always(42));
@@ -1136,9 +1090,7 @@ describe('def', function() {
                    '\n' +
                    '2)  42 :: Number\n' +
                    '\n' +
-                   'Since there is no type of which all the above values ' +
-                   'are members, the type-variable constraint has been ' +
-                   'violated.\n'));
+                   'Since there is no type of which all the above values are members, the type-variable constraint has been violated.\n'));
   });
 
   it('supports the "ValidDate" type', function() {
@@ -1161,8 +1113,7 @@ describe('def', function() {
                    '\n' +
                    '1)  new Date(NaN) :: Date\n' +
                    '\n' +
-                   'The value at position 1 is not a member of ' +
-                   '‘ValidDate’.\n'));
+                   'The value at position 1 is not a member of ‘ValidDate’.\n'));
 
     eq(sinceEpoch(new Date(123456)), 123.456);
   });
@@ -1413,9 +1364,7 @@ describe('def', function() {
                    '\n' +
                    '2)  /x/ :: RegExp\n' +
                    '\n' +
-                   'Since there is no type of which all the above values ' +
-                   'are members, the type-variable constraint has been ' +
-                   'violated.\n'));
+                   'Since there is no type of which all the above values are members, the type-variable constraint has been violated.\n'));
 
     throws(function() { aa(R.__, 0)(/x/); },
            errorEq(TypeError,
@@ -1429,9 +1378,7 @@ describe('def', function() {
                    '\n' +
                    '2)  0 :: Number\n' +
                    '\n' +
-                   'Since there is no type of which all the above values ' +
-                   'are members, the type-variable constraint has been ' +
-                   'violated.\n'));
+                   'Since there is no type of which all the above values are members, the type-variable constraint has been violated.\n'));
 
     //  fromMaybe :: a -> Maybe a -> a
     var fromMaybe = def('fromMaybe', {}, [a, Maybe(a), a], function(x, maybe) {
@@ -1468,8 +1415,7 @@ describe('def', function() {
                    '\n' +
                    '1)  ["XXX", 42] :: Array ???\n' +
                    '\n' +
-                   'The value at position 1 is not a member of ' +
-                   '‘Pair a b’.\n'));
+                   'The value at position 1 is not a member of ‘Pair a b’.\n'));
 
     //  concat :: Either a b -> Either a b -> Either a b
     var concat =
@@ -1499,9 +1445,7 @@ describe('def', function() {
                    '\n' +
                    '2)  [1, 2, 3] :: Array Number\n' +
                    '\n' +
-                   'Since there is no type of which all the above values ' +
-                   'are members, the type-variable constraint has been ' +
-                   'violated.\n'));
+                   'Since there is no type of which all the above values are members, the type-variable constraint has been violated.\n'));
 
     throws(function() { concat(Right('abc'), Right([1, 2, 3])); },
            errorEq(TypeError,
@@ -1515,9 +1459,7 @@ describe('def', function() {
                    '\n' +
                    '2)  [1, 2, 3] :: Array Number\n' +
                    '\n' +
-                   'Since there is no type of which all the above values ' +
-                   'are members, the type-variable constraint has been ' +
-                   'violated.\n'));
+                   'Since there is no type of which all the above values are members, the type-variable constraint has been violated.\n'));
   });
 
   it('supports arbitrary nesting of types', function() {
@@ -1538,8 +1480,7 @@ describe('def', function() {
                    '\n' +
                    '1)  [1, 2, 3] :: Array Number\n' +
                    '\n' +
-                   'The value at position 1 is not a member of ‘Array ' +
-                   '(Array a)’.\n'));
+                   'The value at position 1 is not a member of ‘Array (Array a)’.\n'));
   });
 
   it('does not allow heterogeneous arrays', function() {
@@ -1569,9 +1510,7 @@ describe('def', function() {
                    '1)  [1, 2, 3] :: Array Number\n' +
                    '    [Left("XXX"), Right(42)] :: Array (Either String Number)\n' +
                    '\n' +
-                   'Since there is no type of which all the above values ' +
-                   'are members, the type-variable constraint has been ' +
-                   'violated.\n'));
+                   'Since there is no type of which all the above values are members, the type-variable constraint has been violated.\n'));
   });
 
   it('supports values of "foreign" types', function() {
@@ -1596,9 +1535,7 @@ describe('def', function() {
                    '\n' +
                    '1)  [{"@@type": "my-package/Foo"}, {"@@type": "my-package/Bar"}] :: Array ???\n' +
                    '\n' +
-                   'Since there is no type of which all the above values ' +
-                   'are members, the type-variable constraint has been ' +
-                   'violated.\n'));
+                   'Since there is no type of which all the above values are members, the type-variable constraint has been violated.\n'));
   });
 
   it('supports type-class constraints', function() {
@@ -1635,9 +1572,7 @@ describe('def', function() {
                    '\n' +
                    '1)  Left(1) :: Either Number ???, Either Integer ???\n' +
                    '\n' +
-                   '‘or’ requires ‘a’ to satisfy the Alternative ' +
-                   'type-class constraint; the value at position 1 does ' +
-                   'not.\n'));
+                   '‘or’ requires ‘a’ to satisfy the Alternative type-class constraint; the value at position 1 does not.\n'));
 
     throws(function() { or(R.__, Right(1)); },
            errorEq(TypeError,
@@ -1649,9 +1584,7 @@ describe('def', function() {
                    '\n' +
                    '1)  Right(1) :: Either ??? Number, Either ??? Integer\n' +
                    '\n' +
-                   '‘or’ requires ‘a’ to satisfy the Alternative ' +
-                   'type-class constraint; the value at position 1 does ' +
-                   'not.\n'));
+                   '‘or’ requires ‘a’ to satisfy the Alternative type-class constraint; the value at position 1 does not.\n'));
 
     //  Semigroup :: TypeClass
     var Semigroup =
@@ -1675,9 +1608,7 @@ describe('def', function() {
                    '\n' +
                    '1)  /x/ :: RegExp\n' +
                    '\n' +
-                   '‘concat’ requires ‘a’ to satisfy the Semigroup ' +
-                   'type-class constraint; the value at position 1 does ' +
-                   'not.\n'));
+                   '‘concat’ requires ‘a’ to satisfy the Semigroup type-class constraint; the value at position 1 does not.\n'));
 
     throws(function() { concat(R.__, /x/); },
            errorEq(TypeError,
@@ -1689,9 +1620,7 @@ describe('def', function() {
                    '\n' +
                    '1)  /x/ :: RegExp\n' +
                    '\n' +
-                   '‘concat’ requires ‘a’ to satisfy the Semigroup ' +
-                   'type-class constraint; the value at position 1 does ' +
-                   'not.\n'));
+                   '‘concat’ requires ‘a’ to satisfy the Semigroup type-class constraint; the value at position 1 does not.\n'));
 
     throws(function() { concat([], ''); },
            errorEq(TypeError,
@@ -1705,9 +1634,7 @@ describe('def', function() {
                    '\n' +
                    '2)  "" :: String\n' +
                    '\n' +
-                   'Since there is no type of which all the above values ' +
-                   'are members, the type-variable constraint has been ' +
-                   'violated.\n'));
+                   'Since there is no type of which all the above values are members, the type-variable constraint has been violated.\n'));
 
     throws(function() { concat('', []); },
            errorEq(TypeError,
@@ -1721,9 +1648,7 @@ describe('def', function() {
                    '\n' +
                    '2)  [] :: Array ???\n' +
                    '\n' +
-                   'Since there is no type of which all the above values ' +
-                   'are members, the type-variable constraint has been ' +
-                   'violated.\n'));
+                   'Since there is no type of which all the above values are members, the type-variable constraint has been violated.\n'));
 
     //  Monad :: TypeClass
     var Monad =
@@ -1756,8 +1681,7 @@ describe('def', function() {
                    '\n' +
                    '1)  [1, 2, 3] :: Array Number, Array Integer\n' +
                    '\n' +
-                   '‘filter’ requires ‘a’ to satisfy the Monad type-class ' +
-                   'constraint; the value at position 1 does not.\n'));
+                   '‘filter’ requires ‘a’ to satisfy the Monad type-class constraint; the value at position 1 does not.\n'));
 
     throws(function() { filter(R.F, Right(42)); },
            errorEq(TypeError,
@@ -1769,9 +1693,7 @@ describe('def', function() {
                    '\n' +
                    '1)  Right(42) :: Either ??? Number, Either ??? Integer\n' +
                    '\n' +
-                   '‘filter’ requires ‘a’ to satisfy the Monoid ' +
-                   'type-class constraint; the value at position 1 does ' +
-                   'not.\n'));
+                   '‘filter’ requires ‘a’ to satisfy the Monoid type-class constraint; the value at position 1 does not.\n'));
   });
 
 });
