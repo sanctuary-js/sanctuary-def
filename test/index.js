@@ -1504,11 +1504,69 @@ describe('def', function() {
                    'Type-variable constraint violation\n' +
                    '\n' +
                    'concat :: Array a -> Array a -> Array a\n' +
-                   '          ^^^^^^^\n' +
-                   '             1\n' +
+                   '                ^\n' +
+                   '                1\n' +
                    '\n' +
                    '1)  [1, 2, 3] :: Array Number\n' +
                    '    [Left("XXX"), Right(42)] :: Array (Either String Number)\n' +
+                   '\n' +
+                   'Since there is no type of which all the above values are members, the type-variable constraint has been violated.\n'));
+
+    //  concatNested :: [[a]] -> [[a]] -> [[a]]
+    var concatNested =
+    def('concatNested',
+        {},
+        [$.Array($.Array(a)), $.Array($.Array(a)), $.Array($.Array(a))],
+        R.always([['a', 'b', 'c'], [1, 2, 3]]));
+
+    throws(function() { concatNested([['a', 'b', 'c'], [1, 2, 3]]); },
+           errorEq(TypeError,
+                   'Type-variable constraint violation\n' +
+                   '\n' +
+                   'concatNested :: Array (Array a) -> Array (Array a) -> Array (Array a)\n' +
+                   '                             ^\n' +
+                   '                             1\n' +
+                   '\n' +
+                   '1)  "a" :: String\n' +
+                   '    "b" :: String\n' +
+                   '    "c" :: String\n' +
+                   '    1 :: Number\n' +
+                   '    2 :: Number\n' +
+                   '    3 :: Number\n' +
+                   '\n' +
+                   'Since there is no type of which all the above values are members, the type-variable constraint has been violated.\n'));
+
+    throws(function() { concatNested([], [['a', 'b', 'c'], [1, 2, 3]]); },
+           errorEq(TypeError,
+                   'Type-variable constraint violation\n' +
+                   '\n' +
+                   'concatNested :: Array (Array a) -> Array (Array a) -> Array (Array a)\n' +
+                   '                                                ^\n' +
+                   '                                                1\n' +
+                   '\n' +
+                   '1)  "a" :: String\n' +
+                   '    "b" :: String\n' +
+                   '    "c" :: String\n' +
+                   '    1 :: Number\n' +
+                   '    2 :: Number\n' +
+                   '    3 :: Number\n' +
+                   '\n' +
+                   'Since there is no type of which all the above values are members, the type-variable constraint has been violated.\n'));
+
+    throws(function() { concatNested([], []); },
+           errorEq(TypeError,
+                   'Type-variable constraint violation\n' +
+                   '\n' +
+                   'concatNested :: Array (Array a) -> Array (Array a) -> Array (Array a)\n' +
+                   '                                                                   ^\n' +
+                   '                                                                   1\n' +
+                   '\n' +
+                   '1)  "a" :: String\n' +
+                   '    "b" :: String\n' +
+                   '    "c" :: String\n' +
+                   '    1 :: Number\n' +
+                   '    2 :: Number\n' +
+                   '    3 :: Number\n' +
                    '\n' +
                    'Since there is no type of which all the above values are members, the type-variable constraint has been violated.\n'));
   });

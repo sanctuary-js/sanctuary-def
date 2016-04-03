@@ -900,33 +900,54 @@
            underline(snd.typePath[0])(snd.propPath)(g);
   };
 
-  //  conflictingTypeVar :: ... -> Error
-  var conflictingTypeVar = function(
+  //  _typeVarConstraintViolation :: ... -> Error
+  var _typeVarConstraintViolation = function(
+    name,           // :: String
+    constraints,    // :: StrMap [TypeClass]
+    expTypes,       // :: [Type]
+    carets,         // :: String
+    numbers,        // :: String
+    pairss          // :: [[Pair Any [Type]]]
+  ) {
+    var nameAndConstraints = name + ' :: ' + constraintsRepr(constraints);
+    var lines = [];
+    lines.push('Type-variable constraint violation');
+    lines.push('');
+    lines.push(nameAndConstraints + showTypeSig(expTypes));
+    lines.push(_(nameAndConstraints) + carets);
+    lines.push(_(nameAndConstraints) + numbers);
+    for (var idx = 0; idx < pairss.length; idx += 1) {
+      lines.push('');
+      lines.push(String(idx + 1) + ')  ' +
+                 map(pairss[idx], showValueAndType).join('\n    '));
+    }
+    lines.push('');
+    lines.push('Since there is no type of which all the above values are ' +
+               'members, the type-variable constraint has been violated.');
+    return new TypeError(trimTrailingSpaces(unlines(lines)));
+  };
+
+  //  typeVarConstraintViolation :: ... -> Error
+  var typeVarConstraintViolation = function(
     name,           // :: String
     constraints,    // :: StrMap [TypeClass]
     expTypes,       // :: [Type]
     info            // :: Info
   ) {
-    var nameAndConstraints = name + ' :: ' + constraintsRepr(constraints);
-    var expTypeRepr = showType(expTypes[info.index]);
     var padding = _(_showTypeSig(expTypes.slice(0, info.index)));
-
-    return new TypeError(trimTrailingSpaces(unlines([
-      'Type-variable constraint violation',
-      '',
-      nameAndConstraints + showTypeSig(expTypes),
-      _(nameAndConstraints) + padding + r('^')(expTypeRepr),
-      _(nameAndConstraints) + padding + label('1')(expTypeRepr),
-      '',
-      '1)  ' + map(info.pairs, showValueAndType).join('\n    '),
-      '',
-      'Since there is no type of which all the above values are members, ' +
-        'the type-variable constraint has been violated.'
-    ])));
+    var f = underline(expTypes[info.index])(info.propPath);
+    return _typeVarConstraintViolation(
+      name,
+      constraints,
+      expTypes,
+      padding + f(r('^')),
+      padding + f(label('1')),
+      [info.pairs]
+    );
   };
 
-  //  conflictingTypeVar2 :: ... -> Error
-  var conflictingTypeVar2 = function(
+  //  typeVarConstraintViolation2 :: ... -> Error
+  var typeVarConstraintViolation2 = function(
     name,           // :: String
     constraints,    // :: StrMap [TypeClass]
     expTypes,       // :: [Type]
@@ -935,23 +956,14 @@
   ) {
     var fst = _fst.index < _snd.index ? _fst : _snd;
     var snd = _fst.index < _snd.index ? _snd : _fst;
-
-    var nameAndConstraints = name + ' :: ' + constraintsRepr(constraints);
-
-    return new TypeError(trimTrailingSpaces(unlines([
-      'Type-variable constraint violation',
-      '',
-      nameAndConstraints + showTypeSig(expTypes),
-      _(nameAndConstraints) + annotateSig(expTypes, fst, snd, r('^'), r('^')),
-      _(nameAndConstraints) + annotateSig(expTypes, fst, snd, label('1'), label('2')),
-      '',
-      '1)  ' + map(fst.pairs, showValueAndType).join('\n    '),
-      '',
-      '2)  ' + map(snd.pairs, showValueAndType).join('\n    '),
-      '',
-      'Since there is no type of which all the above values are members, ' +
-        'the type-variable constraint has been violated.'
-    ])));
+    return _typeVarConstraintViolation(
+      name,
+      constraints,
+      expTypes,
+      annotateSig(expTypes, fst, snd, r('^'), r('^')),
+      annotateSig(expTypes, fst, snd, label('1'), label('2')),
+      [fst.pairs, snd.pairs]
+    );
   };
 
   //  invalidValue :: ... -> Error
@@ -1047,7 +1059,9 @@
 
     //  rejectInconsistent :: [Type] -> [Type]
     var rejectInconsistent = function(types) {
-      return filter(types, function(t) { return t.type !== 'INCONSISTENT'; });
+      return filter(types, function(t) {
+        return t.type !== 'INCONSISTENT' && t.type !== 'UNKNOWN';
+      });
     };
 
     //  determineActualTypesStrict :: [Any] -> [Type]
@@ -1109,7 +1123,7 @@
               okTypes = filterTypesByValues($typeVarMap[typeVarName].types,
                                             values);
               if (isEmpty(okTypes)) {
-                throw conflictingTypeVar2(
+                throw typeVarConstraintViolation2(
                   name,
                   constraints,
                   expTypes,
@@ -1122,8 +1136,8 @@
               }
             } else {
               okTypes = determineActualTypesStrict(values);
-              if (isEmpty(okTypes)) {
-                throw conflictingTypeVar(
+              if (isEmpty(okTypes) && !isEmpty(values)) {
+                throw typeVarConstraintViolation(
                   name,
                   constraints,
                   expTypes,
@@ -1134,15 +1148,17 @@
                 );
               }
             }
-            $typeVarMap[typeVarName] = {
-              types: okTypes,
-              info: {
-                index: index,
-                pairs: valuesToPairs(values),
-                propPath: propPath,
-                typePath: typePath.concat([expType])
-              }
-            };
+            if (!isEmpty(okTypes)) {
+              $typeVarMap[typeVarName] = {
+                types: okTypes,
+                info: {
+                  index: index,
+                  pairs: valuesToPairs(values),
+                  propPath: propPath,
+                  typePath: typePath.concat([expType])
+                }
+              };
+            }
             return okTypes;
 
           case 'UNARY':
