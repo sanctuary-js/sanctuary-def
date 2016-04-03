@@ -749,7 +749,7 @@
     );
   };
 
-  //  constraintsRepr :: StrMap [Type] -> String
+  //  constraintsRepr :: StrMap [TypeClass] -> String
   var constraintsRepr = function(constraints) {
     var reprs = chain(toPairs(constraints), function(pair) {
       return map(pair[1], function(typeClass) {
@@ -813,11 +813,22 @@
     return show(pair[0]) + ' :: ' + map(pair[1], showType).join(', ');
   };
 
-  //  constraintViolation ::
-  //  (String, StrMap [Type], [Type], Any, Integer, [Type], String, TypeClass)
-  //  -> Error
-  var constraintViolation = function(name, constraints, expTypes, value, index,
-                                     actualTypes, typeVarName, typeClass) {
+  //  Info = { index :: Integer
+  //         , pairs :: [Pair Any [Type]]
+  //         , propPath :: [String]
+  //         , typePath :: [Type] }
+
+  //  constraintViolation :: ... -> Error
+  var constraintViolation = function(
+    name,           // :: String
+    constraints,    // :: StrMap [TypeClass]
+    expTypes,       // :: [Type]
+    value,          // :: Any
+    index,          // :: Integer
+    actualTypes,    // :: [Type]
+    typeVarName,    // :: String
+    typeClass       // :: TypeClass
+  ) {
     var reprs = chain(toPairs(constraints), function(pair) {
       return map(pair[1], function(tc) {
         var match = tc.name === typeClass.name && pair[0] === typeVarName;
@@ -869,24 +880,30 @@
     return isParameterizedType(type) ? s.slice(1, -1) : s;
   };
 
-  //  annotateSig :: [Type]
-  //                 -> { index :: Integer, typePath :: [Type] }
-  //                 -> { index :: Integer, typePath :: [Type] }
-  //                 -> (String -> String)
-  //                 -> (String -> String)
-  //                 -> String
-  var annotateSig = function(types, fst, snd, f, g) {
+  //  annotateSig :: ... -> String
+  var annotateSig = function(
+    types,          // :: [Type]
+    fst,            // :: Info
+    snd,            // :: Info
+    f,              // :: String -> String
+    g               // :: String -> String
+  ) {
     return _(_showTypeSig((types.slice(0, fst.index)))) +
            underline(fst.typePath[0], fst.propPath, f) +
            _(_showTypeSig_(types.slice(fst.index + 1, snd.index))) +
            trimTrailingSpaces(underline(snd.typePath[0], snd.propPath, g));
   };
 
-  //  conflictingTypeVar :: (String, StrMap [Type], [Type], Object) -> Error
-  var conflictingTypeVar = function(name, constraints, expTypes, fst) {
+  //  conflictingTypeVar :: ... -> Error
+  var conflictingTypeVar = function(
+    name,           // :: String
+    constraints,    // :: StrMap [TypeClass]
+    expTypes,       // :: [Type]
+    info            // :: Info
+  ) {
     var nameAndConstraints = name + ' :: ' + constraintsRepr(constraints);
-    var expTypeRepr = showType(expTypes[fst.index]);
-    var padding = _(_showTypeSig(expTypes.slice(0, fst.index)));
+    var expTypeRepr = showType(expTypes[info.index]);
+    var padding = _(_showTypeSig(expTypes.slice(0, info.index)));
 
     return new TypeError(unlines([
       'Type-variable constraint violation',
@@ -895,16 +912,21 @@
       _(nameAndConstraints) + padding + trimTrailingSpaces(r('^')(expTypeRepr)),
       _(nameAndConstraints) + padding + trimTrailingSpaces(label('1')(expTypeRepr)),
       '',
-      '1)  ' + map(fst.pairs, showValueAndType).join('\n    '),
+      '1)  ' + map(info.pairs, showValueAndType).join('\n    '),
       '',
       'Since there is no type of which all the above values are members, ' +
         'the type-variable constraint has been violated.'
     ]));
   };
 
-  //  conflictingTypeVar2 ::
-  //  (String, StrMap [Type], [Type], Object, Object) -> Error
-  var conflictingTypeVar2 = function(name, constraints, expTypes, _fst, _snd) {
+  //  conflictingTypeVar2 :: ... -> Error
+  var conflictingTypeVar2 = function(
+    name,           // :: String
+    constraints,    // :: StrMap [TypeClass]
+    expTypes,       // :: [Type]
+    _fst,           // :: Info
+    _snd            // :: Info
+  ) {
     var fst = _fst.index < _snd.index ? _fst : _snd;
     var snd = _fst.index < _snd.index ? _snd : _fst;
 
@@ -926,10 +948,15 @@
     ]));
   };
 
-  //  invalidValue ::
-  //  (String, StrMap [Type], [Type], Any, Integer, [Type]) -> Error
-  var invalidValue = function(name, constraints, expTypes,
-                              value, index, actualTypes) {
+  //  invalidValue :: ... -> Error
+  var invalidValue = function(
+    name,           // :: String
+    constraints,    // :: StrMap [TypeClass]
+    expTypes,       // :: [Type]
+    value,          // :: Any
+    index,          // :: Integer
+    actualTypes     // :: [Type]
+  ) {
     var nameAndConstraints = name + ' :: ' + constraintsRepr(constraints);
     var expTypeRepr = showType(expTypes[index]);
     var padding = _(_showTypeSig(expTypes.slice(0, index)));
@@ -1034,10 +1061,23 @@
       });
     };
 
-    var _satisfactoryTypes =
-    function(name, constraints, expArgTypes, expRetType,
-             $typeVarMap, _expType, _value, index) {
-      return function recur(expType, values, typePath, propPath) {
+    //  _satisfactoryTypes :: ... -> [Type]
+    var _satisfactoryTypes = function(
+      name,         // :: String
+      constraints,  // :: StrMap [TypeClass]
+      expArgTypes,  // :: [Type]
+      expRetType,   // :: Type
+      $typeVarMap,  // :: StrMap { info :: Info, types :: [Type] }
+      _expType,     // :: Type
+      _value,       // :: Any
+      index         // :: Integer
+    ) {
+      return function recur(
+        expType,    // :: Type
+        values,     // :: [Any]
+        typePath,   // :: [Type]
+        propPath    // :: [String]
+      ) {
         var $1s, $2s, idx, okTypes;
         switch (expType.type) {
 
@@ -1128,16 +1168,42 @@
       };
     };
 
-    var satisfactoryTypes =
-    function(name, constraints, expArgTypes, expRetType, $typeVarMap,
-             expType, value, index) {
-      return _satisfactoryTypes(name, constraints, expArgTypes,
-                                expRetType, $typeVarMap, expType, value, index)
-                               (expType, [value], [], []);
+    //  satisfactoryTypes :: ... -> [Type]
+    var satisfactoryTypes = function(
+      name,         // :: String
+      constraints,  // :: StrMap [TypeClass]
+      expArgTypes,  // :: [Type]
+      expRetType,   // :: Type
+      $typeVarMap,  // :: StrMap { info :: Info, types :: [Type] }
+      expType,      // :: Type
+      value,        // :: Any
+      index         // :: Integer
+    ) {
+      return _satisfactoryTypes(name,
+                                constraints,
+                                expArgTypes,
+                                expRetType,
+                                $typeVarMap,
+                                expType,
+                                value,
+                                index)
+                               (expType,
+                                [value],
+                                [],
+                                []);
     };
 
-    var curry = function(name, constraints, expArgTypes, expRetType,
-                         _typeVarMap, _values, _indexes, impl) {
+    //  curry :: ... -> Function
+    var curry = function(
+      name,         // :: String
+      constraints,  // :: StrMap [TypeClass]
+      expArgTypes,  // :: [Type]
+      expRetType,   // :: Type
+      _typeVarMap,  // :: StrMap { info :: Info, types :: [Type] }
+      _values,      // :: [Any]
+      _indexes,     // :: [Integer]
+      impl          // :: Function
+    ) {
       return arity(_indexes.length, function() {
         if (checkTypes) {
           var delta = _indexes.length - arguments.length;
@@ -1165,9 +1231,14 @@
             if (checkTypes) {
               var expType = expArgTypes[index];
               if (!expType.test(value) ||
-                  isEmpty(satisfactoryTypes(name, constraints, expArgTypes,
-                                            expRetType, $typeVarMap,
-                                            expType, value, index))) {
+                  isEmpty(satisfactoryTypes(name,
+                                            constraints,
+                                            expArgTypes,
+                                            expRetType,
+                                            $typeVarMap,
+                                            expType,
+                                            value,
+                                            index))) {
                 throw invalidValue(name,
                                    constraints,
                                    expArgTypes.concat([expRetType]),
@@ -1192,13 +1263,25 @@
                                  _indexes.length,
                                  determineActualTypesLoose([returnValue]));
             }
-            satisfactoryTypes(name, constraints, expArgTypes, expRetType,
-                              $typeVarMap, expRetType, returnValue, NaN);
+            satisfactoryTypes(name,
+                              constraints,
+                              expArgTypes,
+                              expRetType,
+                              $typeVarMap,
+                              expRetType,
+                              returnValue,
+                              NaN);
           }
           return returnValue;
         } else {
-          return curry(name, constraints, expArgTypes, expRetType,
-                       $typeVarMap, values, indexes, impl);
+          return curry(name,
+                       constraints,
+                       expArgTypes,
+                       expRetType,
+                       $typeVarMap,
+                       values,
+                       indexes,
+                       impl);
         }
       });
     };
