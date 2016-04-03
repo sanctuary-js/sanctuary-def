@@ -303,7 +303,7 @@
         '@@type': 'sanctuary-def/Type',
         type: 'UNARY',
         name: name,
-        test: function(x) { return test(x) && all(_1(x), $1.test); },
+        test: test,
         format: format,
         toString: always(format(id, id)),
         _1: _1,
@@ -329,8 +329,7 @@
         '@@type': 'sanctuary-def/Type',
         type: 'BINARY',
         name: name,
-        test: function(x) { return test(x) && all(_1(x), $1.test) &&
-                                              all(_2(x), $2.test); },
+        test: test,
         format: format,
         toString: always(format(id, id, id)),
         _1: _1,
@@ -406,7 +405,9 @@
         if (x == null) return false;
         for (var idx = 0; idx < names.length; idx += 1) {
           var name = names[idx];
-          if (!has(name, x) || !fields[name].test(x[name])) return false;
+          if (!has(name, x) || !test(fields[name], x[name]).valid) {
+            return false;
+          }
         }
         return true;
       },
@@ -707,10 +708,41 @@
     });
   };
 
+  //  testNested :: (Type, Any, Integer) -> Result
+  var testNested = function(t, x, position) {
+    var _ = '_' + String(position);
+    var $ = '$' + String(position);
+    for (var idx = 0, xs = t[_](x); idx < xs.length; idx += 1) {
+      var result = test(t[$], xs[idx]);
+      if (!result.valid) {
+        result.typePath.unshift(t);
+        result.propPath.unshift($);
+        return result;
+      }
+    }
+    return {valid: true, value: x};
+  };
+
+  //  test :: (Type, Any) -> Result
+  var test = function(t, x) {
+    if (!t.test(x)) {
+      return {valid: false, value: x, typePath: [t], propPath: []};
+    } else if (t.type === 'UNARY') {
+      return testNested(t, x, 1);
+    } else if (t.type === 'BINARY') {
+      var lhs = testNested(t, x, 1);
+      return lhs.valid ? testNested(t, x, 2) : lhs;
+    } else {
+      return {valid: true, value: x};
+    }
+  };
+
   //  filterTypesByValues :: ([Type], [Any]) -> [Type]
   var filterTypesByValues = function(types, values) {
     return filter(types, function(t) {
-      return all(values, t.test);
+      return all(values, function(x) {
+        return test(t, x).valid;
+      });
     });
   };
 
@@ -971,25 +1003,23 @@
     name,           // :: String
     constraints,    // :: StrMap [TypeClass]
     expTypes,       // :: [Type]
-    value,          // :: Any
-    index,          // :: Integer
-    actualTypes     // :: [Type]
+    info            // :: Info
   ) {
     var nameAndConstraints = name + ' :: ' + constraintsRepr(constraints);
-    var expTypeRepr = showType(expTypes[index]);
-    var padding = _(_showTypeSig(expTypes.slice(0, index)));
+    var padding = _(_showTypeSig(expTypes.slice(0, info.index)));
+    var f = underline(info.typePath[0])(info.propPath);
 
     return new TypeError(trimTrailingSpaces(unlines([
       'Invalid value',
       '',
       nameAndConstraints + showTypeSig(expTypes),
-      _(nameAndConstraints) + padding + r('^')(expTypeRepr),
-      _(nameAndConstraints) + padding + label('1')(expTypeRepr),
+      _(nameAndConstraints) + padding + f(r('^')),
+      _(nameAndConstraints) + padding + f(label('1')),
       '',
-      '1)  ' + showValueAndType([value, actualTypes]),
+      '1)  ' + map(info.pairs, showValueAndType).join('\n    '),
       '',
       'The value at position 1 is not a member of ' +
-        LEFT_SINGLE_QUOTATION_MARK + showType(expTypes[index]) + RIGHT_SINGLE_QUOTATION_MARK + '.'
+        LEFT_SINGLE_QUOTATION_MARK + showType(last(info.typePath)) + RIGHT_SINGLE_QUOTATION_MARK + '.'
     ])));
   };
 
@@ -1031,7 +1061,7 @@
         var typeses = map(values, function(value) {
           return chain(consistentTypes, function(t) {
             return (
-              t.name === 'sanctuary-def/Nullable' || !t.test(value) ?
+              t.name === 'sanctuary-def/Nullable' || !test(t, value).valid ?
                 [] :
               t.type === 'UNARY' ?
                 map(recur(t._1(value)), UnaryType.from(t)) :
@@ -1218,6 +1248,7 @@
       impl          // :: Function
     ) {
       return arity(_indexes.length, function() {
+        var result;
         if (checkTypes) {
           var delta = _indexes.length - arguments.length;
           if (delta < 0) {
@@ -1242,13 +1273,15 @@
 
             var value = arguments[idx];
             if (checkTypes) {
-              if (!expTypes[index].test(value)) {
+              result = test(expTypes[index], value);
+              if (!result.valid) {
                 throw invalidValue(name,
                                    constraints,
                                    expTypes,
-                                   value,
-                                   index,
-                                   determineActualTypesLoose([value]));
+                                   {index: index,
+                                    pairs: valuesToPairs([result.value]),
+                                    propPath: result.propPath,
+                                    typePath: result.typePath});
               }
               satisfactoryTypes(name,
                                 constraints,
@@ -1265,13 +1298,15 @@
         if (isEmpty(indexes)) {
           var returnValue = impl.apply(this, values);
           if (checkTypes) {
-            if (!last(expTypes).test(returnValue)) {
+            result = test(last(expTypes), returnValue);
+            if (!result.valid) {
               throw invalidValue(name,
                                  constraints,
                                  expTypes,
-                                 returnValue,
-                                 _indexes.length,
-                                 determineActualTypesLoose([returnValue]));
+                                 {index: _indexes.length,
+                                  pairs: valuesToPairs([result.value]),
+                                  propPath: result.propPath,
+                                  typePath: result.typePath});
             }
             satisfactoryTypes(name,
                               constraints,
@@ -1302,7 +1337,7 @@
         var Type = RecordType({test: $.Function});
         var types = [$.String, $.Object, $.Array(Type), $.Function];
         for (var idx = 0; idx < types.length; idx += 1) {
-          if (!types[idx].test(arguments[idx])) {
+          if (!test(types[idx], arguments[idx]).valid) {
             throw invalidArgument('def', [types[idx]], arguments[idx], idx);
           }
         }

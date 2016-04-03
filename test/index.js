@@ -1041,12 +1041,12 @@ describe('def', function() {
                    'Invalid value\n' +
                    '\n' +
                    'toUpper :: Nullable String -> Nullable String\n' +
-                   '           ^^^^^^^^^^^^^^^\n' +
-                   '                  1\n' +
+                   '                    ^^^^^^\n' +
+                   '                      1\n' +
                    '\n' +
                    '1)  ["abc"] :: Array String\n' +
                    '\n' +
-                   'The value at position 1 is not a member of ‘Nullable String’.\n'));
+                   'The value at position 1 is not a member of ‘String’.\n'));
 
     //  defaultTo :: a -> Nullable a -> a
     var defaultTo =
@@ -1463,6 +1463,9 @@ describe('def', function() {
   });
 
   it('supports arbitrary nesting of types', function() {
+    var env = $.env.concat([Either, $.Integer]);
+    var def = $.create(true, env);
+
     //  unnest :: [[a]] -> [a]
     var unnest =
     def('unnest', {}, [$.Array($.Array(a)), $.Array(a)], R.unnest);
@@ -1475,12 +1478,81 @@ describe('def', function() {
                    'Invalid value\n' +
                    '\n' +
                    'unnest :: Array (Array a) -> Array a\n' +
-                   '          ^^^^^^^^^^^^^^^\n' +
-                   '                 1\n' +
+                   '                ^^^^^^^^^\n' +
+                   '                    1\n' +
                    '\n' +
-                   '1)  [1, 2, 3] :: Array Number\n' +
+                   '1)  1 :: Number, Integer\n' +
                    '\n' +
-                   'The value at position 1 is not a member of ‘Array (Array a)’.\n'));
+                   'The value at position 1 is not a member of ‘Array a’.\n'));
+
+    //  concatComplex :: [Either String Integer] -> [Either String Integer] -> [Either String Integer]
+    var concatComplex =
+    def('concatComplex',
+        {},
+        [$.Array(Either($.String, $.Integer)),
+         $.Array(Either($.String, $.Integer)),
+         $.Array(Either($.String, $.Integer))],
+        R.always([Left(/xxx/)]));
+
+    throws(function() { concatComplex([Left(/xxx/), Right(0), Right(0.1), Right(0.2)]); },
+           errorEq(TypeError,
+                   'Invalid value\n' +
+                   '\n' +
+                   'concatComplex :: Array (Either String Integer) -> Array (Either String Integer) -> Array (Either String Integer)\n' +
+                   '                               ^^^^^^\n' +
+                   '                                 1\n' +
+                   '\n' +
+                   '1)  /xxx/ :: RegExp\n' +
+                   '\n' +
+                   'The value at position 1 is not a member of ‘String’.\n'));
+
+    throws(function() { concatComplex([Left('abc'), Right(0), Right(0.1), Right(0.2)]); },
+           errorEq(TypeError,
+                   'Invalid value\n' +
+                   '\n' +
+                   'concatComplex :: Array (Either String Integer) -> Array (Either String Integer) -> Array (Either String Integer)\n' +
+                   '                                      ^^^^^^^\n' +
+                   '                                         1\n' +
+                   '\n' +
+                   '1)  0.1 :: Number\n' +
+                   '\n' +
+                   'The value at position 1 is not a member of ‘Integer’.\n'));
+
+    throws(function() { concatComplex([], [Left(/xxx/), Right(0), Right(0.1), Right(0.2)]); },
+           errorEq(TypeError,
+                   'Invalid value\n' +
+                   '\n' +
+                   'concatComplex :: Array (Either String Integer) -> Array (Either String Integer) -> Array (Either String Integer)\n' +
+                   '                                                                ^^^^^^\n' +
+                   '                                                                  1\n' +
+                   '\n' +
+                   '1)  /xxx/ :: RegExp\n' +
+                   '\n' +
+                   'The value at position 1 is not a member of ‘String’.\n'));
+
+    throws(function() { concatComplex([], [Left('abc'), Right(0), Right(0.1), Right(0.2)]); },
+           errorEq(TypeError,
+                   'Invalid value\n' +
+                   '\n' +
+                   'concatComplex :: Array (Either String Integer) -> Array (Either String Integer) -> Array (Either String Integer)\n' +
+                   '                                                                       ^^^^^^^\n' +
+                   '                                                                          1\n' +
+                   '\n' +
+                   '1)  0.1 :: Number\n' +
+                   '\n' +
+                   'The value at position 1 is not a member of ‘Integer’.\n'));
+
+    throws(function() { concatComplex([], []); },
+           errorEq(TypeError,
+                   'Invalid value\n' +
+                   '\n' +
+                   'concatComplex :: Array (Either String Integer) -> Array (Either String Integer) -> Array (Either String Integer)\n' +
+                   '                                                                                                 ^^^^^^\n' +
+                   '                                                                                                   1\n' +
+                   '\n' +
+                   '1)  /xxx/ :: RegExp\n' +
+                   '\n' +
+                   'The value at position 1 is not a member of ‘String’.\n'));
   });
 
   it('does not allow heterogeneous arrays', function() {
