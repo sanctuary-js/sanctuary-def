@@ -158,7 +158,7 @@
 
   //  trimTrailingSpaces :: String -> String
   var trimTrailingSpaces = function(s) {
-    return s.replace(/[ ]+$/, '');
+    return s.replace(/[ ]+$/gm, '');
   };
 
   //  unlines :: [String] -> String
@@ -385,7 +385,7 @@
     });
 
     if (!isEmpty(invalidMappings)) {
-      throw new TypeError(unlines([
+      throw new TypeError(trimTrailingSpaces(unlines([
         'Invalid values',
         '',
         'The argument to ‘RecordType’ must be an object mapping field name to type.',
@@ -393,7 +393,7 @@
         'The following mappings are invalid:',
         '',
         map(invalidMappings, prefix('  - ')).join('\n')
-      ]));
+      ])));
     }
 
     return {
@@ -733,12 +733,12 @@
   };
 
   var typeNotInEnvironment = function(env, name, type) {
-    return new TypeError(unlines([
+    return new TypeError(trimTrailingSpaces(unlines([
       'Definition of ' + LEFT_SINGLE_QUOTATION_MARK + name + RIGHT_SINGLE_QUOTATION_MARK +
         ' references ' + type.name + ' which is not in the environment:',
       '',
       map(chain(env, rejectAny), prefix('  - ')).join('\n')
-    ]));
+    ])));
   };
 
   var invalidArgument = function(name, types, value, index) {
@@ -842,7 +842,7 @@
 
     var padding = _(showTypeSig_(expTypes.slice(0, index)));
 
-    return new TypeError(unlines([
+    return new TypeError(trimTrailingSpaces(unlines([
       'Type-class constraint violation',
       '',
       name + ' :: ' + constraintsRepr(constraints) + showTypeSig(expTypes),
@@ -855,7 +855,7 @@
         LEFT_SINGLE_QUOTATION_MARK + typeVarName + RIGHT_SINGLE_QUOTATION_MARK +
         ' to satisfy the ' + typeClass + ' type-class constraint;' +
         ' the value at position 1 does not.'
-    ]));
+    ])));
   };
 
   //  underline :: (Type, [String], (String -> String)) -> String
@@ -891,7 +891,7 @@
     return _(_showTypeSig((types.slice(0, fst.index)))) +
            underline(fst.typePath[0], fst.propPath, f) +
            _(_showTypeSig_(types.slice(fst.index + 1, snd.index))) +
-           trimTrailingSpaces(underline(snd.typePath[0], snd.propPath, g));
+           underline(snd.typePath[0], snd.propPath, g);
   };
 
   //  conflictingTypeVar :: ... -> Error
@@ -905,18 +905,18 @@
     var expTypeRepr = showType(expTypes[info.index]);
     var padding = _(_showTypeSig(expTypes.slice(0, info.index)));
 
-    return new TypeError(unlines([
+    return new TypeError(trimTrailingSpaces(unlines([
       'Type-variable constraint violation',
       '',
       nameAndConstraints + showTypeSig(expTypes),
-      _(nameAndConstraints) + padding + trimTrailingSpaces(r('^')(expTypeRepr)),
-      _(nameAndConstraints) + padding + trimTrailingSpaces(label('1')(expTypeRepr)),
+      _(nameAndConstraints) + padding + r('^')(expTypeRepr),
+      _(nameAndConstraints) + padding + label('1')(expTypeRepr),
       '',
       '1)  ' + map(info.pairs, showValueAndType).join('\n    '),
       '',
       'Since there is no type of which all the above values are members, ' +
         'the type-variable constraint has been violated.'
-    ]));
+    ])));
   };
 
   //  conflictingTypeVar2 :: ... -> Error
@@ -932,7 +932,7 @@
 
     var nameAndConstraints = name + ' :: ' + constraintsRepr(constraints);
 
-    return new TypeError(unlines([
+    return new TypeError(trimTrailingSpaces(unlines([
       'Type-variable constraint violation',
       '',
       nameAndConstraints + showTypeSig(expTypes),
@@ -945,7 +945,7 @@
       '',
       'Since there is no type of which all the above values are members, ' +
         'the type-variable constraint has been violated.'
-    ]));
+    ])));
   };
 
   //  invalidValue :: ... -> Error
@@ -961,18 +961,18 @@
     var expTypeRepr = showType(expTypes[index]);
     var padding = _(_showTypeSig(expTypes.slice(0, index)));
 
-    return new TypeError(unlines([
+    return new TypeError(trimTrailingSpaces(unlines([
       'Invalid value',
       '',
       nameAndConstraints + showTypeSig(expTypes),
-      _(nameAndConstraints) + padding + trimTrailingSpaces(r('^')(expTypeRepr)),
-      _(nameAndConstraints) + padding + trimTrailingSpaces(label('1')(expTypeRepr)),
+      _(nameAndConstraints) + padding + r('^')(expTypeRepr),
+      _(nameAndConstraints) + padding + label('1')(expTypeRepr),
       '',
       '1)  ' + showValueAndType([value, actualTypes]),
       '',
       'The value at position 1 is not a member of ' +
         LEFT_SINGLE_QUOTATION_MARK + showType(expTypes[index]) + RIGHT_SINGLE_QUOTATION_MARK + '.'
-    ]));
+    ])));
   };
 
   //  create :: (Boolean, [Type]) -> Function
