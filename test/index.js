@@ -1694,6 +1694,49 @@ describe('def', function() {
                    '1)  Right(42) :: Either ??? Number, Either ??? Integer\n' +
                    '\n' +
                    '‘filter’ requires ‘a’ to satisfy the Monoid type-class constraint; the value at position 1 does not.\n'));
+
+    //  concatMaybes :: Semigroup a => Maybe a -> Maybe a -> Maybe a
+    var concatMaybes =
+    def('concatMaybes',
+        {a: [Semigroup]},
+        [Maybe(a), Maybe(a), Maybe(a)],
+        R.always(Just(/xxx/)));
+
+    throws(function() { concatMaybes(Just(/xxx/)); },
+           errorEq(TypeError,
+                   'Type-class constraint violation\n' +
+                   '\n' +
+                   'concatMaybes :: Semigroup a => Maybe a -> Maybe a -> Maybe a\n' +
+                   '                ^^^^^^^^^^^          ^\n' +
+                   '                                     1\n' +
+                   '\n' +
+                   '1)  /xxx/ :: RegExp\n' +
+                   '\n' +
+                   '‘concatMaybes’ requires ‘a’ to satisfy the Semigroup type-class constraint; the value at position 1 does not.\n'));
+
+    throws(function() { concatMaybes(Just('abc'), Just(/xxx/)); },
+           errorEq(TypeError,
+                   'Type-class constraint violation\n' +
+                   '\n' +
+                   'concatMaybes :: Semigroup a => Maybe a -> Maybe a -> Maybe a\n' +
+                   '                ^^^^^^^^^^^                     ^\n' +
+                   '                                                1\n' +
+                   '\n' +
+                   '1)  /xxx/ :: RegExp\n' +
+                   '\n' +
+                   '‘concatMaybes’ requires ‘a’ to satisfy the Semigroup type-class constraint; the value at position 1 does not.\n'));
+
+    throws(function() { concatMaybes(Just('abc'), Just('def')); },
+           errorEq(TypeError,
+                   'Type-class constraint violation\n' +
+                   '\n' +
+                   'concatMaybes :: Semigroup a => Maybe a -> Maybe a -> Maybe a\n' +
+                   '                ^^^^^^^^^^^                                ^\n' +
+                   '                                                           1\n' +
+                   '\n' +
+                   '1)  /xxx/ :: RegExp\n' +
+                   '\n' +
+                   '‘concatMaybes’ requires ‘a’ to satisfy the Semigroup type-class constraint; the value at position 1 does not.\n'));
   });
 
 });
