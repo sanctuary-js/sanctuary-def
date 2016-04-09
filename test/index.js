@@ -794,7 +794,7 @@ describe('def', function() {
            errorEq(TypeError,
                    'Definition of ‘id’ references my-package/Maybe which is not in the environment:\n' +
                    '\n' +
-                   '  - (Array ???)\n' +
+                   '  - Array ???\n' +
                    '  - Boolean\n' +
                    '  - Date\n' +
                    '  - Error\n' +
@@ -803,11 +803,12 @@ describe('def', function() {
                    '  - Number\n' +
                    '  - Object\n' +
                    '  - RegExp\n' +
+                   '  - StrMap ???\n' +
                    '  - String\n' +
                    '  - Undefined\n' +
                    '  - Integer\n' +
-                   '  - (Pair ??? ???)\n' +
-                   '  - (AnonMaybe ???)\n'));
+                   '  - Pair ??? ???\n' +
+                   '  - AnonMaybe ???\n'));
 
     //  even :: Integer -> Boolean
     var even = def('even', {}, [Integer, $.Boolean], function(x) {
@@ -965,7 +966,7 @@ describe('def', function() {
                    '        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n' +
                    '                     1\n' +
                    '\n' +
-                   '1)  {} :: Object\n' +
+                   '1)  {} :: Object, StrMap ???\n' +
                    '\n' +
                    'The value at position 1 is not a member of ‘{ x :: Number, y :: Number }’.\n'));
 
@@ -977,7 +978,7 @@ describe('def', function() {
                    '        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n' +
                    '                     1\n' +
                    '\n' +
-                   '1)  {"x": 0} :: Object\n' +
+                   '1)  {"x": 0} :: Object, StrMap Number\n' +
                    '\n' +
                    'The value at position 1 is not a member of ‘{ x :: Number, y :: Number }’.\n'));
 
@@ -989,7 +990,7 @@ describe('def', function() {
                    '        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n' +
                    '                     1\n' +
                    '\n' +
-                   '1)  {"x": 0, "y": null} :: Object\n' +
+                   '1)  {"x": 0, "y": null} :: Object, StrMap ???\n' +
                    '\n' +
                    'The value at position 1 is not a member of ‘{ x :: Number, y :: Number }’.\n'));
 
@@ -1001,7 +1002,7 @@ describe('def', function() {
                    '          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n' +
                    '                                                1\n' +
                    '\n' +
-                   '1)  {"end": 0, "start": 0} :: Object\n' +
+                   '1)  {"end": 0, "start": 0} :: Object, StrMap Number, StrMap Number\n' +
                    '\n' +
                    'The value at position 1 is not a member of ‘{ end :: { x :: Number, y :: Number }, start :: { x :: Number, y :: Number } }’.\n'));
 
@@ -1289,6 +1290,115 @@ describe('def', function() {
     eq($.RegexFlags.test('y'), false);
   });
 
+  it('supports the "StrMap" type constructor', function() {
+    var env = $.env.concat([Either, $.StrMap]);
+    var def = $.create(true, env);
+
+    //  id :: a -> a
+    var id = def('id', {}, [a, a], R.identity);
+
+    //  keys :: StrMap a -> [String]
+    var keys =
+    def('keys',
+        {},
+        [$.StrMap(a), $.Array($.String)],
+        function(m) { return R.keys(m).sort(); });
+
+    //  values :: StrMap a -> [a]
+    var values =
+    def('values',
+        {},
+        [$.StrMap(a), $.Array(a)],
+        function(m) { return R.map(R.prop(R.__, m), keys(m)); });
+
+    var o = Object.create(null);
+    o.x = 1;
+    o.y = 2;
+    o.z = 3;
+
+    eq(id({}), {});
+    eq(id({x: 1, y: 2, z: 3}), {x: 1, y: 2, z: 3});
+    eq(id(o), {x: 1, y: 2, z: 3});
+    eq(id({a: 1, b: 'XXX'}), {a: 1, b: 'XXX'});
+
+    eq(keys({}), []);
+    eq(keys({x: 1, y: 2, z: 3}), ['x', 'y', 'z']);
+    eq(keys(o), ['x', 'y', 'z']);
+
+    throws(function() { keys({a: 1, b: 'XXX'}); },
+           errorEq(TypeError,
+                   'Type-variable constraint violation\n' +
+                   '\n' +
+                   'keys :: StrMap a -> Array String\n' +
+                   '               ^\n' +
+                   '               1\n' +
+                   '\n' +
+                   '1)  1 :: Number\n' +
+                   '    "XXX" :: String\n' +
+                   '\n' +
+                   'Since there is no type of which all the above values are members, the type-variable constraint has been violated.\n'));
+
+    eq(values({}), []);
+    eq(values({x: 1, y: 2, z: 3}), [1, 2, 3]);
+    eq(values(o), [1, 2, 3]);
+
+    throws(function() { values({a: 1, b: 'XXX'}); },
+           errorEq(TypeError,
+                   'Type-variable constraint violation\n' +
+                   '\n' +
+                   'values :: StrMap a -> Array a\n' +
+                   '                 ^\n' +
+                   '                 1\n' +
+                   '\n' +
+                   '1)  1 :: Number\n' +
+                   '    "XXX" :: String\n' +
+                   '\n' +
+                   'Since there is no type of which all the above values are members, the type-variable constraint has been violated.\n'));
+
+    //  testUnaryType :: [StrMap Number] -> [StrMap Number]
+    var testUnaryType =
+    def('testUnaryType',
+        {},
+        [$.Array($.StrMap($.Number)), $.Array($.StrMap($.Number))],
+        R.identity);
+
+    eq(testUnaryType([{x: 1}, {y: 2}, {z: 3}]), [{x: 1}, {y: 2}, {z: 3}]);
+
+    throws(function() { testUnaryType([{x: /xxx/}]); },
+           errorEq(TypeError,
+                   'Invalid value\n' +
+                   '\n' +
+                   'testUnaryType :: Array (StrMap Number) -> Array (StrMap Number)\n' +
+                   '                               ^^^^^^\n' +
+                   '                                 1\n' +
+                   '\n' +
+                   '1)  /xxx/ :: RegExp\n' +
+                   '\n' +
+                   'The value at position 1 is not a member of ‘Number’.\n'));
+
+    //  testBinaryType :: Either a (StrMap b) -> Either a (StrMap b)
+    var testBinaryType =
+    def('testBinaryType',
+        {},
+        [Either(a, $.StrMap(b)), Either(a, $.StrMap(b))],
+        R.identity);
+
+    eq(testBinaryType(Left('XXX')), Left('XXX'));
+    eq(testBinaryType(Right({x: 1, y: 2, z: 3})), Right({x: 1, y: 2, z: 3}));
+
+    throws(function() { testBinaryType(Right({x: ['foo', false]})); },
+           errorEq(TypeError,
+                   'Type-variable constraint violation\n' +
+                   '\n' +
+                   'testBinaryType :: Either a (StrMap b) -> Either a (StrMap b)\n' +
+                   '                                   ^\n' +
+                   '                                   1\n' +
+                   '\n' +
+                   '1)  ["foo", false] :: Array ???\n' +
+                   '\n' +
+                   'Since there is no type of which all the above values are members, the type-variable constraint has been violated.\n'));
+  });
+
   it('uses R.toString-like string representations', function() {
     //  f :: Null -> Null
     var f = def('f', {}, [$.Null, $.Null], function(x) { return x; });
@@ -1316,9 +1426,9 @@ describe('def', function() {
         (function() { var xs = [1, 2, 3]; xs.z = 0; xs.a = 0; return xs; }()),
         'Array Number'
       ],
-      [{toString: null}, 'Object'],
-      [new Point(0, 0), 'Object'],
-      [o1, 'Object']
+      [{toString: null}, 'Object, StrMap Null'],
+      [new Point(0, 0), 'Object, StrMap Number, StrMap Number'],
+      [o1, 'Object, StrMap ???']
     ];
 
     values.forEach(R.apply(function(x, types) {

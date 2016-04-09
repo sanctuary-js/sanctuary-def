@@ -341,6 +341,17 @@ Type comprising the canonical RegExp flags:
   - `'im'`
   - `'gim'`
 
+#### `StrMap`
+
+```haskell
+$.StrMap :: Type -> Type
+```
+
+Constructor for homogeneous Object types.
+
+`{foo: 1, bar: 2, baz: 3}`, for example, is a member of `StrMap Number`;
+`{foo: 1, bar: 2, baz: 'XXX'}` is not.
+
 #### `String`
 
 ```haskell
@@ -388,6 +399,7 @@ counterpart).
   - [`$.Number`](#number)
   - [`$.Object`](#object)
   - [`$.RegExp`](#regexp)
+  - [`$.StrMap`](#strmap)
   - [`$.String`](#string)
   - [`$.Undefined`](#undefined)
 
