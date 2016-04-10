@@ -1743,6 +1743,39 @@ describe('def', function() {
                    'Since there is no type of which all the above values are members, the type-variable constraint has been violated.\n'));
   });
 
+  it('permits the use of arrays as tuples', function() {
+    //  Pair :: Type
+    var Pair = $.BinaryType(
+      'my-package/Pair',
+      R.both(R.is(Array), R.propEq('length', 2)),
+      R.compose(R.of, R.nth(0)),
+      R.compose(R.of, R.nth(1))
+    );
+
+    var env = $.env.concat([Either, Pair]);
+    var def = $.create(true, env);
+
+    //  id :: a -> a
+    var id = def('id', {}, [a, a], R.identity);
+
+    eq(id(['abc', 123]), ['abc', 123]);
+    eq(id([Left('abc'), 123]), [Left('abc'), 123]);
+    eq(id(['abc', Right(123)]), ['abc', Right(123)]);
+    eq(id([Left('abc'), Right(123)]), [Left('abc'), Right(123)]);
+
+    throws(function() { id([Left('abc'), 123, 456]); },
+           errorEq(TypeError,
+                   'Type-variable constraint violation\n' +
+                   '\n' +
+                   'id :: a -> a\n' +
+                   '      ^\n' +
+                   '      1\n' +
+                   '\n' +
+                   '1)  [Left("abc"), 123, 456] :: Array ???\n' +
+                   '\n' +
+                   'Since there is no type of which all the above values are members, the type-variable constraint has been violated.\n'));
+  });
+
   it('supports values of "foreign" types', function() {
     //  id :: a -> a
     var id = def('id', {}, [a, a], R.identity);
