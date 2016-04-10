@@ -1002,7 +1002,7 @@ describe('def', function() {
                    '          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n' +
                    '                                                1\n' +
                    '\n' +
-                   '1)  {"end": 0, "start": 0} :: Object, StrMap Number, StrMap Number\n' +
+                   '1)  {"end": 0, "start": 0} :: Object, StrMap Number\n' +
                    '\n' +
                    'The value at position 1 is not a member of ‘{ end :: { x :: Number, y :: Number }, start :: { x :: Number, y :: Number } }’.\n'));
 
@@ -1427,7 +1427,7 @@ describe('def', function() {
         'Array Number'
       ],
       [{toString: null}, 'Object, StrMap Null'],
-      [new Point(0, 0), 'Object, StrMap Number, StrMap Number'],
+      [new Point(0, 0), 'Object, StrMap Number'],
       [o1, 'Object, StrMap ???']
     ];
 
@@ -1487,6 +1487,18 @@ describe('def', function() {
                    '1)  /x/ :: RegExp\n' +
                    '\n' +
                    '2)  0 :: Number\n' +
+                   '\n' +
+                   'Since there is no type of which all the above values are members, the type-variable constraint has been violated.\n'));
+
+    throws(function() { aa([Left('XXX'), 42]); },
+           errorEq(TypeError,
+                   'Type-variable constraint violation\n' +
+                   '\n' +
+                   'aa :: a -> a -> Pair a a\n' +
+                   '      ^\n' +
+                   '      1\n' +
+                   '\n' +
+                   '1)  [Left("XXX"), 42] :: Array ???\n' +
                    '\n' +
                    'Since there is no type of which all the above values are members, the type-variable constraint has been violated.\n'));
 
