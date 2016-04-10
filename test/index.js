@@ -788,28 +788,6 @@ describe('def', function() {
     var env = $.env.concat([Integer, $Pair, AnonMaybe]);
     var def = $.create(true, env);
 
-    var T = $.Array($Pair($.String, Maybe($.Number)));
-
-    throws(function() { def('id', {}, [T, T], R.identity); },
-           errorEq(TypeError,
-                   'Definition of ‘id’ references my-package/Maybe which is not in the environment:\n' +
-                   '\n' +
-                   '  - Array ???\n' +
-                   '  - Boolean\n' +
-                   '  - Date\n' +
-                   '  - Error\n' +
-                   '  - Function\n' +
-                   '  - Null\n' +
-                   '  - Number\n' +
-                   '  - Object\n' +
-                   '  - RegExp\n' +
-                   '  - StrMap ???\n' +
-                   '  - String\n' +
-                   '  - Undefined\n' +
-                   '  - Integer\n' +
-                   '  - Pair ??? ???\n' +
-                   '  - AnonMaybe ???\n'));
-
     //  even :: Integer -> Boolean
     var even = def('even', {}, [Integer, $.Boolean], function(x) {
       return x % 2 === 0;
