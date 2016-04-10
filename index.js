@@ -139,6 +139,13 @@
     return result;
   };
 
+  //  reduce :: ([a], b, (b, a) -> b) -> b
+  var reduce = function(xs, y, f) {
+    var result = y;
+    for (var idx = 0; idx < xs.length; idx += 1) result = f(result, xs[idx]);
+    return result;
+  };
+
   //  strRepeat :: (String, Integer) -> String
   var strRepeat = function(s, times) {
     return Array(times + 1).join(s);
@@ -677,44 +684,46 @@
     }
   };
 
+  //  chooseType :: (Type, Type) -> Type
+  var chooseType = function(t1, t2) {
+    return t1.type === 'UNKNOWN' ? t2 : t1;
+  };
+
+  //  mergeTypes :: (Type, Type) -> Type
+  //
+  //  Either String ??? `mergeTypes` Either ??? Number = Either String Number
+  var mergeTypes = function(t1, t2) {
+    return (
+      t1.type === 'UNARY' ?
+        UnaryType.from(t1)(chooseType(t1.$1, t2.$1)) :
+      t1.type === 'BINARY' ?
+        BinaryType.from(t1)(chooseType(t1.$1, t2.$1),
+                            chooseType(t1.$2, t2.$2)) :
+      // else
+        chooseType(t1, t2)
+    );
+  };
+
   //  commonTypes :: ([[Type]], Boolean) -> [Type]
+  //
+  //  [[String, RegexFlags], [String, RegexFlags]] ---> [String, RegexFlags]
+  //
+  //  [[Boolean], [Boolean], [Boolean], [Number]] ---> []
+  //
+  //  [[Array ???], [Array String], [Array ???]] ---> [Array String]
+  //
+  //  [[Either String ???], [Either ??? Number]] ---> [Either String Number]
   var commonTypes = function(typeses, loose) {
-    var types = chain(typeses, id);
-    if (isEmpty(types)) return [];
-
-    var $1s, $2s, candidates, idx, t;
-    if (types[0].type === 'UNARY') {
-      $1s = {};
-      for (idx = 0; idx < types.length; idx += 1) {
-        t = types[idx];
-        if (t.$1.type !== 'UNKNOWN') $1s[t.$1.name] = t.$1;
-      }
-      candidates =
-      map(or(map(keys($1s), function(k) { return $1s[k]; }), [Unknown]),
-          UnaryType.from(types[0]));
-    } else if (types[0].type === 'BINARY') {
-      $1s = {};
-      $2s = {};
-      for (idx = 0; idx < types.length; idx += 1) {
-        t = types[idx];
-        if (t.$1.type !== 'UNKNOWN') $1s[t.$1.name] = t.$1;
-        if (t.$2.type !== 'UNKNOWN') $2s[t.$2.name] = t.$2;
-      }
-      candidates = BinaryType.xprod(
-        types[0],
-        or(map(keys($1s), function(k) { return $1s[k]; }), [Unknown]),
-        or(map(keys($2s), function(k) { return $2s[k]; }), [Unknown])
-      );
-    } else {
-      candidates = types;
-    }
-
-    return filter(candidates, function(t1) {
-      return all(typeses, function(types) {
-        return any(types, function(t2) {
-          return equalTypes(t1, t2, loose);
+    return reduce(typeses[0], [], function(types, t) {
+      var st = reduce(typeses, {ok: true, type: t}, function(st, types) {
+        var st$ = reduce(types, {ok: false, type: st.type}, function(st, t) {
+          var equal = equalTypes(st.type, t, loose);
+          return {ok: equal || st.ok,
+                  type: equal ? mergeTypes(st.type, t) : st.type};
         });
+        return {type: st$.type, ok: st.ok && st$.ok};
       });
+      return st.ok ? types.concat([st.type]) : types;
     });
   };
 
