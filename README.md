@@ -121,7 +121,15 @@ _add('2', '2');
 
 ```javascript
 add('2', '2');
-// ! TypeError: ‘add’ expected a value of type Number as its first argument; received "2"
+// ! TypeError: Invalid value
+//
+//   add :: Number -> Number -> Number
+//          ^^^^^^
+//            1
+//
+//   1)  "2" :: String
+//
+//   The value at position 1 is not a member of ‘Number’.
 ```
 
 Type checking is performed as arguments are provided (rather than once all
@@ -129,7 +137,15 @@ arguments have been provided), so type errors are reported early:
 
 ```javascript
 add('X');
-// ! TypeError: ‘add’ expected a value of type Number as its first argument; received "X"
+// ! TypeError: Invalid value
+//
+//   add :: Number -> Number -> Number
+//          ^^^^^^
+//            1
+//
+//   1)  "X" :: String
+//
+//   The value at position 1 is not a member of ‘Number’.
 ```
 
 ### Types
@@ -450,7 +466,17 @@ cmp('z', 'a');
 // => 1
 
 cmp(0, '1');
-// ! TypeError: ‘cmp’ expected a value of type Number as its second argument; received "1"
+// ! TypeError: Type-variable constraint violation
+//
+//   cmp :: a -> a -> Number
+//          ^    ^
+//          1    2
+//
+//   1)  0 :: Number
+//
+//   2)  "1" :: String
+//
+//   Since there is no type of which all the above values are members, the type-variable constraint has been violated.
 ```
 
 #### `NullaryType`
@@ -496,10 +522,26 @@ rem(42, 5);
 // => 2
 
 rem(0.5);
-// ! TypeError: ‘rem’ expected a value of type Integer as its first argument; received 0.5
+// ! TypeError: Invalid value
+//
+//   rem :: Integer -> NonZeroInteger -> Integer
+//          ^^^^^^^
+//             1
+//
+//   1)  0.5 :: Number
+//
+//   The value at position 1 is not a member of ‘Integer’.
 
 rem(42, 0);
-// ! TypeError: ‘rem’ expected a value of type NonZeroInteger as its second argument; received 0
+// ! TypeError: Invalid value
+//
+//   rem :: Integer -> NonZeroInteger -> Integer
+//                     ^^^^^^^^^^^^^^
+//                           1
+//
+//   1)  0 :: Number
+//
+//   The value at position 1 is not a member of ‘NonZeroInteger’.
 ```
 
 #### `UnaryType`
@@ -516,7 +558,15 @@ sum([1, 2, 3, 4]);
 // => 10
 
 sum(['1', '2', '3', '4']);
-// ! TypeError: ‘sum’ expected a value of type (Array Number) as its first argument; received ["1", "2", "3", "4"]
+// ! TypeError: Invalid value
+//
+//   sum :: Array Number -> Number
+//                ^^^^^^
+//                  1
+//
+//   1)  "1" :: String
+//
+//   The value at position 1 is not a member of ‘Number’.
 ```
 
 To define a unary type `t a` one must provide:
@@ -574,7 +624,17 @@ fromMaybe(0, Nothing);
 // => 0
 
 fromMaybe(0, Just('XXX'));
-// ! TypeError: ‘fromMaybe’ expected a value of type (Maybe Number) as its second argument; received Just("XXX")
+// ! TypeError: Type-variable constraint violation
+//
+//   fromMaybe :: a -> Maybe a -> a
+//                ^          ^
+//                1          2
+//
+//   1)  0 :: Number
+//
+//   2)  "XXX" :: String
+//
+//   Since there is no type of which all the above values are members, the type-variable constraint has been violated.
 ```
 
 #### `BinaryType`
@@ -648,7 +708,15 @@ showCard(Pair('A', '♠'));
 // => 'A♠'
 
 showCard(Pair('X', '♠'));
-// ! TypeError: ‘showCard’ expected a value of type (Pair Rank Suit) as its first argument; received Pair("X", "♠")
+// ! TypeError: Invalid value
+//
+//   showCard :: Pair Rank Suit -> String
+//                    ^^^^
+//                     1
+//
+//   1)  "X" :: String
+//
+//   The value at position 1 is not a member of ‘Rank’.
 ```
 
 #### `EnumType`
@@ -669,11 +737,6 @@ For example:
 //    TimeUnit :: Type
 const TimeUnit = $.EnumType(['milliseconds', 'seconds', 'minutes', 'hours']);
 
-//    env :: [Type]
-const env = $.env.concat([TimeUnit, $.ValidDate, $.ValidNumber]);
-
-const def = $.create(true, env);
-
 //    convertTo :: TimeUnit -> ValidDate -> ValidNumber
 const convertTo =
 def('convertTo',
@@ -692,7 +755,15 @@ convertTo('seconds', new Date(1000));
 // => 1
 
 convertTo('days', new Date(1000));
-// ! TypeError: ‘convertTo’ expected a value of type ("milliseconds" | "seconds" | "minutes" | "hours") as its first argument; received "days"
+// ! TypeError: Invalid value
+//
+//   convertTo :: ("milliseconds" | "seconds" | "minutes" | "hours") -> ValidDate -> ValidNumber
+//                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//                                        1
+//
+//   1)  "days" :: String
+//
+//   The value at position 1 is not a member of ‘("milliseconds" | "seconds" | "minutes" | "hours")’.
 ```
 
 #### `RecordType`
@@ -711,18 +782,12 @@ RecordType :: {Type} -> Type
 For example:
 
 ```javascript
-//    FiniteNumber :: Type
-const FiniteNumber = $.NullaryType(
-  'my-package/FiniteNumber',
-  x => Object.prototype.toString.call(x) === '[object Number]' && isFinite(x)
-);
-
 //    Point :: Type
-const Point = $.RecordType({x: FiniteNumber, y: FiniteNumber});
+const Point = $.RecordType({x: $.FiniteNumber, y: $.FiniteNumber});
 
 //    dist :: Point -> Point -> FiniteNumber
 const dist =
-def('dist', {}, [Point, Point, FiniteNumber],
+def('dist', {}, [Point, Point, $.FiniteNumber],
     (p, q) => Math.sqrt(Math.pow(p.x - q.x, 2) + Math.pow(p.y - q.y, 2)));
 
 dist({x: 0, y: 0}, {x: 3, y: 4});
@@ -732,10 +797,26 @@ dist({x: 0, y: 0}, {x: 3, y: 4, color: 'red'});
 // => 5
 
 dist({x: 0, y: 0}, {x: NaN, y: NaN});
-// ! TypeError: ‘dist’ expected a value of type { x :: FiniteNumber, y :: FiniteNumber } as its second argument; received {"x": NaN, "y": NaN}
+// ! TypeError: Invalid value
+//
+//   dist :: { x :: FiniteNumber, y :: FiniteNumber } -> { x :: FiniteNumber, y :: FiniteNumber } -> FiniteNumber
+//                                                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//                                                                          1
+//
+//   1)  {"x": NaN, "y": NaN} :: Object, StrMap Number
+//
+//   The value at position 1 is not a member of ‘{ x :: FiniteNumber, y :: FiniteNumber }’.
 
 dist(0);
-// ! TypeError: ‘dist’ expected a value of type { x :: FiniteNumber, y :: FiniteNumber } as its first argument; received 0
+// ! TypeError: Invalid value
+//
+//   dist :: { x :: FiniteNumber, y :: FiniteNumber } -> { x :: FiniteNumber, y :: FiniteNumber } -> FiniteNumber
+//           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+//                              1
+//
+//   1)  0 :: Number
+//
+//   The value at position 1 is not a member of ‘{ x :: FiniteNumber, y :: FiniteNumber }’.
 ```
 
 ### Type classes
@@ -758,7 +839,17 @@ _concat([1, 2], [3, 4]);
 // => [1, 2, 3, 4]
 
 _concat([1, 2], 'buzz');
-// ! TypeError: ‘_concat’ expected a value of type (Array Number) as its second argument; received "buzz"
+// ! TypeError: Type-variable constraint violation
+//
+//   _concat :: a -> a -> a
+//              ^    ^
+//              1    2
+//
+//   1)  [1, 2] :: Array Number
+//
+//   2)  "buzz" :: String
+//
+//   Since there is no type of which all the above values are members, the type-variable constraint has been violated.
 ```
 
 The type of `_concat` is misleading: it suggests that it can operate on any
@@ -793,10 +884,26 @@ concat([1, 2], [3, 4]);
 // => [1, 2, 3, 4]
 
 concat({}, {});
-// ! TypeError: ‘concat’ requires ‘a’ to implement Semigroup; Object does not
+// ! TypeError: Type-class constraint violation
+//
+//   concat :: Semigroup a => a -> a -> a
+//             ^^^^^^^^^^^    ^
+//                            1
+//
+//   1)  {} :: Object, StrMap ???
+//
+//   ‘concat’ requires ‘a’ to satisfy the Semigroup type-class constraint; the value at position 1 does not.
 
 concat(null, null);
-// ! TypeError: ‘concat’ requires ‘a’ to implement Semigroup; Null does not
+// ! TypeError: Type-class constraint violation
+//
+//   concat :: Semigroup a => a -> a -> a
+//             ^^^^^^^^^^^    ^
+//                            1
+//
+//   1)  null :: Null
+//
+//   ‘concat’ requires ‘a’ to satisfy the Semigroup type-class constraint; the value at position 1 does not.
 ```
 
 Multiple constraints may be placed on a type variable by including multiple
