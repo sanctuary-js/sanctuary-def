@@ -1009,27 +1009,30 @@
     });
 
     //  _determineActualTypes :: (Boolean, [Object], [Any]) -> [Type]
-    var _determineActualTypes = function recur(loose, $seen, values) {
+    var _determineActualTypes = function recur(loose, seen, values) {
       if (isEmpty(values)) return [Unknown];
       //  typeses :: [[Type]]
       var typeses = map(values, function(value) {
+        var seen$;
         if (typeof value === 'object' && value != null ||
             typeof value === 'function') {
           //  Abort if a circular reference is encountered; add the current
           //  object to the list of seen objects otherwise.
-          if ($seen.indexOf(value) >= 0) return [];
-          $seen.push(value);
+          if (seen.indexOf(value) >= 0) return [];
+          seen$ = seen.concat([value]);
+        } else {
+          seen$ = seen;
         }
         return chain(env, function(t) {
           return (
             t.name === 'sanctuary-def/Nullable' || !test(t, value).valid ?
               [] :
             t.type === 'UNARY' ?
-              map(recur(loose, $seen, t._1(value)), UnaryType.from(t)) :
+              map(recur(loose, seen$, t._1(value)), UnaryType.from(t)) :
             t.type === 'BINARY' ?
               BinaryType.xprod(t,
-                               recur(loose, $seen, t._1(value)),
-                               recur(loose, $seen, t._2(value))) :
+                               recur(loose, seen$, t._1(value)),
+                               recur(loose, seen$, t._2(value))) :
             // else
               [t]
           );
