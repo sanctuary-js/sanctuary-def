@@ -43,14 +43,6 @@
   //  always :: a -> (-> a)
   var always = function(x) { return function() { return x; }; };
 
-  //  any :: ([a], (a -> Boolean)) -> Boolean
-  var any = function(xs, pred) {
-    for (var idx = 0; idx < xs.length; idx += 1) {
-      if (pred(xs[idx])) return true;
-    }
-    return false;
-  };
-
   //  chain :: ([a], (a -> [b])) -> [b]
   var chain = function(xs, f) {
     var result = [];
@@ -58,15 +50,6 @@
       push.apply(result, f(xs[idx]));
     }
     return result;
-  };
-
-  //  eqProps :: String -> Object -> Object -> Boolean
-  var eqProps = function(key) {
-    return function(o1) {
-      return function(o2) {
-        return o1[key] === o2[key];
-      };
-    };
   };
 
   //  filter :: ([a], (a -> Boolean)) -> [a]
@@ -252,14 +235,6 @@
       test: test,
       toString: always(stripNamespace(name))
     };
-  };
-
-  //  Any :: Type
-  var Any = {
-    '@@type': 'sanctuary-def/Type',
-    type: 'ANY',
-    test: K(true),
-    toString: always('Any')
   };
 
   //  Unknown :: Type
@@ -474,7 +449,6 @@
 
   //  $.env :: [Type]
   $.env = [
-    ($.Any        = Any),
     ($.Array      = type1('Array', id)),
     ($.Boolean    = type0('Boolean')),
     ($.Date       = type0('Date')),
@@ -488,6 +462,12 @@
     ($.String     = type0('String')),
     ($.Undefined  = type0('Undefined'))
   ];
+
+  //  Any :: Type
+  $.Any = NullaryType(
+    'sanctuary-def/Any',
+    K(true)
+  );
 
   //  ValidDate :: Type
   $.ValidDate = NullaryType(
@@ -638,20 +618,6 @@
     }
   };
 
-  //  rejectAny :: Type -> [Type]
-  var rejectAny = function recur(t) {
-    switch (t.type) {
-      case 'ANY':
-        return [];
-      case 'UNARY':
-        return map(recur(t.$1), UnaryType.from(t));
-      case 'BINARY':
-        return BinaryType.xprod(t, recur(t.$1), recur(t.$2));
-      default:
-        return [t];
-    }
-  };
-
   //  unexpectedType :: Any -> TypeError
   var unexpectedType = /* istanbul ignore next */ function(x) {
     return new TypeError(
@@ -784,15 +750,6 @@
       ' requires ' + numArgs(expectedLength) + ';' +
       ' received ' + numArgs(actualLength)
     );
-  };
-
-  var typeNotInEnvironment = function(env, name, type) {
-    return new TypeError(trimTrailingSpaces(unlines([
-      'Definition of ' + LEFT_SINGLE_QUOTATION_MARK + name + RIGHT_SINGLE_QUOTATION_MARK +
-        ' references ' + type.name + ' which is not in the environment:',
-      '',
-      map(map(chain(env, rejectAny), showType), prefix('  - ')).join('\n')
-    ])));
   };
 
   var invalidArgument = function(name, types, value, index) {
@@ -1051,30 +1008,9 @@
         x;
     });
 
-    //  assertExpectedTypesInEnvironment :: String -> [Type] -> Undefined
-    var assertExpectedTypesInEnvironment = function(name) {
-      return function recur(expTypes) {
-        for (var idx = 0; idx < expTypes.length; idx += 1) {
-          var expType = expTypes[idx];
-          if (expType.type !== 'VARIABLE') {
-            if (!any(env, eqProps('name')(expType))) {
-              throw typeNotInEnvironment(env, name, expType);
-            }
-            if (expType.type === 'UNARY') {
-              recur([expType.$1]);
-            } else if (expType.type === 'BINARY') {
-              recur([expType.$1, expType.$2]);
-            }
-          }
-        }
-      };
-    };
-
     //  _determineActualTypes :: (Boolean, [Object], [Any]) -> [Type]
     var _determineActualTypes = function recur(loose, $seen, values) {
       if (isEmpty(values)) return [Unknown];
-      //  consistentTypes :: [Type]
-      var consistentTypes = chain(env, rejectAny);
       //  typeses :: [[Type]]
       var typeses = map(values, function(value) {
         if (typeof value === 'object' && value != null ||
@@ -1084,7 +1020,7 @@
           if ($seen.indexOf(value) >= 0) return [];
           $seen.push(value);
         }
-        return chain(consistentTypes, function(t) {
+        return chain(env, function(t) {
           return (
             t.name === 'sanctuary-def/Nullable' || !test(t, value).valid ?
               [] :
@@ -1105,7 +1041,7 @@
       //  If none of the values is a member of a type in the environment,
       //  and all the values have the same type identifier, the values are
       //  members of a "foreign" type.
-      if (isEmpty(filterTypesByValues(consistentTypes, values)) &&
+      if (isEmpty(filterTypesByValues(env, values)) &&
           all(values.slice(1), $$typeEq($$type(values[0])))) {
         //  Create a nullary type for the foreign type.
         return [type0($$type(values[0]))];
@@ -1376,8 +1312,6 @@
           ' cannot define a function with arity greater than nine'
         );
       }
-
-      if (checkTypes) assertExpectedTypesInEnvironment(name)(expTypes);
 
       return curry(name,
                    constraints,

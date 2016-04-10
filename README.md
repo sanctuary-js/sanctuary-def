@@ -389,7 +389,6 @@ counterpart).
 
 `$.env` is a list of [types](#types):
 
-  - [`$.Any`](#any)
   - [`$.Array`](#array)
   - [`$.Boolean`](#boolean)
   - [`$.Date`](#date)
