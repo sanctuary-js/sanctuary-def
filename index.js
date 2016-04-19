@@ -29,6 +29,30 @@
   var hasOwnProperty    = Object.prototype.hasOwnProperty;
   var toString          = Object.prototype.toString;
 
+  //  Left :: a -> Either a b
+  var Left = function(x) {
+    return {
+      '@@type': 'sanctuary-def/Either',
+      isLeft: true,
+      isRight: false,
+      chain: function(f) { return this; },
+      map: function(f) { return this; },
+      value: x
+    };
+  };
+
+  //  Right :: b -> Either a b
+  var Right = function(x) {
+    return {
+      '@@type': 'sanctuary-def/Either',
+      isLeft: false,
+      isRight: true,
+      chain: function(f) { return f(this.value); },
+      map: function(f) { return Right(f(this.value)); },
+      value: x
+    };
+  };
+
   //  K :: a -> b -> a
   var K = function(x) { return function(y) { return x; }; };
 
@@ -1076,7 +1100,7 @@
       });
     };
 
-    //  _satisfactoryTypes :: ... -> [Type]
+    //  _satisfactoryTypes :: ... -> Either Error [Type]
     var _satisfactoryTypes = function(
       name,         // :: String
       constraints,  // :: StrMap [TypeClass]
@@ -1090,7 +1114,7 @@
         typePath,   // :: [Type]
         propPath    // :: [String]
       ) {
-        var $1s, $2s, idx, okTypes;
+        var idx, okTypes;
         switch (expType.type) {
 
           case 'VARIABLE':
@@ -1100,7 +1124,7 @@
               for (idx = 0; idx < values.length; idx += 1) {
                 for (var idx2 = 0; idx2 < typeClasses.length; idx2 += 1) {
                   if (!typeClasses[idx2].test(values[idx])) {
-                    throw typeClassConstraintViolation(
+                    return Left(typeClassConstraintViolation(
                       name,
                       constraints,
                       expTypes,
@@ -1109,7 +1133,7 @@
                        pairs: valuesToPairs([values[idx]]),
                        propPath: propPath,
                        typePath: typePath.concat([expType])}
-                    );
+                    ));
                   }
                 }
               }
@@ -1118,7 +1142,7 @@
               okTypes = filterTypesByValues($typeVarMap[typeVarName].types,
                                             values);
               if (isEmpty(okTypes)) {
-                throw typeVarConstraintViolation2(
+                return Left(typeVarConstraintViolation2(
                   name,
                   constraints,
                   expTypes,
@@ -1127,12 +1151,12 @@
                    propPath: propPath,
                    typePath: typePath.concat([expType])},
                   $typeVarMap[typeVarName].info
-                );
+                ));
               }
             } else {
               okTypes = determineActualTypesStrict(values);
               if (isEmpty(okTypes) && !isEmpty(values)) {
-                throw typeVarConstraintViolation(
+                return Left(typeVarConstraintViolation(
                   name,
                   constraints,
                   expTypes,
@@ -1140,7 +1164,7 @@
                    pairs: valuesToPairs(values),
                    propPath: propPath,
                    typePath: typePath.concat([expType])}
-                );
+                ));
               }
             }
             if (!isEmpty(okTypes)) {
@@ -1154,35 +1178,47 @@
                 }
               };
             }
-            return okTypes;
+            return Right(okTypes);
 
           case 'UNARY':
-            $1s = recur(expType.$1,
-                        chain(values, expType._1),
-                        typePath.concat([expType]),
-                        propPath.concat(['$1']));
-            return map(or($1s, [expType.$1]), UnaryType.from(expType));
+            return recur(
+              expType.$1,
+              chain(values, expType._1),
+              typePath.concat([expType]),
+              propPath.concat(['$1'])
+            )
+            .map(function($1s) {
+              return map(or($1s, [expType.$1]), UnaryType.from(expType));
+            });
 
           case 'BINARY':
-            $1s = recur(expType.$1,
-                        chain(values, expType._1),
-                        typePath.concat([expType]),
-                        propPath.concat(['$1']));
-            $2s = recur(expType.$2,
-                        chain(values, expType._2),
-                        typePath.concat([expType]),
-                        propPath.concat(['$2']));
-            return BinaryType.xprod(expType,
-                                    or($1s, [expType.$1]),
-                                    or($2s, [expType.$2]));
+            return recur(
+              expType.$1,
+              chain(values, expType._1),
+              typePath.concat([expType]),
+              propPath.concat(['$1'])
+            )
+            .chain(function($1s) {
+              return recur(
+                expType.$2,
+                chain(values, expType._2),
+                typePath.concat([expType]),
+                propPath.concat(['$2'])
+              )
+              .map(function($2s) {
+                return BinaryType.xprod(expType,
+                                        or($1s, [expType.$1]),
+                                        or($2s, [expType.$2]));
+              });
+            });
 
           default:
-            return determineActualTypesStrict(values);
+            return Right(determineActualTypesStrict(values));
         }
       };
     };
 
-    //  satisfactoryTypes :: ... -> [Type]
+    //  satisfactoryTypes :: ... -> Either Error [Type]
     var satisfactoryTypes = function(
       name,         // :: String
       constraints,  // :: StrMap [TypeClass]
@@ -1213,7 +1249,7 @@
       impl          // :: Function
     ) {
       return arity(_indexes.length, function() {
-        var result;
+        var either, result;
         if (checkTypes) {
           var delta = _indexes.length - arguments.length;
           if (delta < 0) {
@@ -1248,12 +1284,13 @@
                                     propPath: result.propPath,
                                     typePath: result.typePath});
               }
-              satisfactoryTypes(name,
-                                constraints,
-                                expTypes,
-                                $typeVarMap,
-                                value,
-                                index);
+              either = satisfactoryTypes(name,
+                                         constraints,
+                                         expTypes,
+                                         $typeVarMap,
+                                         value,
+                                         index);
+              if (either.isLeft) throw either.value;
             }
             values[index] = value;
           } else {
@@ -1273,12 +1310,13 @@
                                   propPath: result.propPath,
                                   typePath: result.typePath});
             }
-            satisfactoryTypes(name,
-                              constraints,
-                              expTypes,
-                              $typeVarMap,
-                              returnValue,
-                              expTypes.length - 1);
+            either = satisfactoryTypes(name,
+                                       constraints,
+                                       expTypes,
+                                       $typeVarMap,
+                                       returnValue,
+                                       expTypes.length - 1);
+            if (either.isLeft) throw either.value;
           }
           return returnValue;
         } else {
