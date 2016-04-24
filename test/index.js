@@ -161,19 +161,23 @@ describe('def', function() {
 
     throws(function() { def(null, null, null, null); },
            errorEq(TypeError,
-                   '‘def’ expected a value of type String as its first argument; received null'));
+                   '‘def’ expected a value of type ‘String’ as its first argument; received null'));
 
     throws(function() { def('', null, null, null); },
            errorEq(TypeError,
-                   '‘def’ expected a value of type Object as its second argument; received null'));
+                   '‘def’ expected a value of type ‘Object’ as its second argument; received null'));
 
     throws(function() { def('', {}, null, null); },
            errorEq(TypeError,
-                   '‘def’ expected a value of type (Array { test :: Function }) as its third argument; received null'));
+                   '‘def’ expected a value of type ‘Array Type’ as its third argument; received null'));
+
+    throws(function() { def('', {}, [1, 2, 3], null); },
+           errorEq(TypeError,
+                   '‘def’ expected a value of type ‘Array Type’ as its third argument; received [1, 2, 3]'));
 
     throws(function() { def('', {}, [], null); },
            errorEq(TypeError,
-                   '‘def’ expected a value of type Function as its fourth argument; received null'));
+                   '‘def’ expected a value of type ‘Function’ as its fourth argument; received null'));
   });
 
   it('does not type check its arguments when checkTypes is false', function() {
@@ -1099,177 +1103,228 @@ describe('def', function() {
 
   it('supports the "PositiveNumber" type', function() {
     eq($.PositiveNumber.name, 'sanctuary-def/PositiveNumber');
-    eq($.PositiveNumber.test(null), false);
-    eq($.PositiveNumber.test(NaN), false);
-    eq($.PositiveNumber.test(new Number(NaN)), false);
-    eq($.PositiveNumber.test(-1), false);
-    eq($.PositiveNumber.test(new Number(-1)), false);
-    eq($.PositiveNumber.test(0), false);
-    eq($.PositiveNumber.test(new Number(0)), false);
-    eq($.PositiveNumber.test(-0), false);
-    eq($.PositiveNumber.test(new Number(-0)), false);
-    eq($.PositiveNumber.test(0.5), true);
-    eq($.PositiveNumber.test(new Number(0.5)), true);
-    eq($.PositiveNumber.test(Infinity), true);
-    eq($.PositiveNumber.test(new Number(Infinity)), true);
+
+    var isPositiveNumber = function(x) {
+      return $.test($.env, $.PositiveNumber, x);
+    };
+    eq(isPositiveNumber(null), false);
+    eq(isPositiveNumber(NaN), false);
+    eq(isPositiveNumber(new Number(NaN)), false);
+    eq(isPositiveNumber(-1), false);
+    eq(isPositiveNumber(new Number(-1)), false);
+    eq(isPositiveNumber(0), false);
+    eq(isPositiveNumber(new Number(0)), false);
+    eq(isPositiveNumber(-0), false);
+    eq(isPositiveNumber(new Number(-0)), false);
+    eq(isPositiveNumber(0.5), true);
+    eq(isPositiveNumber(new Number(0.5)), true);
+    eq(isPositiveNumber(Infinity), true);
+    eq(isPositiveNumber(new Number(Infinity)), true);
   });
 
   it('supports the "NegativeNumber" type', function() {
     eq($.NegativeNumber.name, 'sanctuary-def/NegativeNumber');
-    eq($.NegativeNumber.test(null), false);
-    eq($.NegativeNumber.test(NaN), false);
-    eq($.NegativeNumber.test(new Number(NaN)), false);
-    eq($.NegativeNumber.test(1), false);
-    eq($.NegativeNumber.test(new Number(1)), false);
-    eq($.NegativeNumber.test(0), false);
-    eq($.NegativeNumber.test(new Number(0)), false);
-    eq($.NegativeNumber.test(-0), false);
-    eq($.NegativeNumber.test(new Number(-0)), false);
-    eq($.NegativeNumber.test(-0.5), true);
-    eq($.NegativeNumber.test(new Number(-0.5)), true);
-    eq($.NegativeNumber.test(-Infinity), true);
-    eq($.NegativeNumber.test(new Number(-Infinity)), true);
+
+    var isNegativeNumber = function(x) {
+      return $.test($.env, $.NegativeNumber, x);
+    };
+    eq(isNegativeNumber(null), false);
+    eq(isNegativeNumber(NaN), false);
+    eq(isNegativeNumber(new Number(NaN)), false);
+    eq(isNegativeNumber(1), false);
+    eq(isNegativeNumber(new Number(1)), false);
+    eq(isNegativeNumber(0), false);
+    eq(isNegativeNumber(new Number(0)), false);
+    eq(isNegativeNumber(-0), false);
+    eq(isNegativeNumber(new Number(-0)), false);
+    eq(isNegativeNumber(-0.5), true);
+    eq(isNegativeNumber(new Number(-0.5)), true);
+    eq(isNegativeNumber(-Infinity), true);
+    eq(isNegativeNumber(new Number(-Infinity)), true);
   });
 
   it('supports the "ValidNumber" type', function() {
     eq($.ValidNumber.name, 'sanctuary-def/ValidNumber');
-    eq($.ValidNumber.test(NaN), false);
-    eq($.ValidNumber.test(new Number(NaN)), false);
-    eq($.ValidNumber.test(1), true);
-    eq($.ValidNumber.test(new Number(1)), true);
+
+    var isValidNumber = function(x) {
+      return $.test($.env, $.ValidNumber, x);
+    };
+    eq(isValidNumber(NaN), false);
+    eq(isValidNumber(new Number(NaN)), false);
+    eq(isValidNumber(1), true);
+    eq(isValidNumber(new Number(1)), true);
   });
 
   it('supports the "NonZeroValidNumber" type', function() {
     eq($.NonZeroValidNumber.name, 'sanctuary-def/NonZeroValidNumber');
-    eq($.NonZeroValidNumber.test(0), false);
-    eq($.NonZeroValidNumber.test(new Number(0)), false);
-    eq($.NonZeroValidNumber.test(-0), false);
-    eq($.NonZeroValidNumber.test(new Number(-0)), false);
-    eq($.NonZeroValidNumber.test(1), true);
-    eq($.NonZeroValidNumber.test(new Number(1)), true);
+
+    var isNonZeroValidNumber = function(x) {
+      return $.test($.env, $.NonZeroValidNumber, x);
+    };
+    eq(isNonZeroValidNumber(0), false);
+    eq(isNonZeroValidNumber(new Number(0)), false);
+    eq(isNonZeroValidNumber(-0), false);
+    eq(isNonZeroValidNumber(new Number(-0)), false);
+    eq(isNonZeroValidNumber(1), true);
+    eq(isNonZeroValidNumber(new Number(1)), true);
   });
 
   it('supports the "FiniteNumber" type', function() {
     eq($.FiniteNumber.name, 'sanctuary-def/FiniteNumber');
-    eq($.FiniteNumber.test(Infinity), false);
-    eq($.FiniteNumber.test(new Number(Infinity)), false);
-    eq($.FiniteNumber.test(-Infinity), false);
-    eq($.FiniteNumber.test(new Number(-Infinity)), false);
-    eq($.FiniteNumber.test(1), true);
-    eq($.FiniteNumber.test(new Number(1)), true);
+
+    var isFiniteNumber = function(x) {
+      return $.test($.env, $.FiniteNumber, x);
+    };
+    eq(isFiniteNumber(Infinity), false);
+    eq(isFiniteNumber(new Number(Infinity)), false);
+    eq(isFiniteNumber(-Infinity), false);
+    eq(isFiniteNumber(new Number(-Infinity)), false);
+    eq(isFiniteNumber(1), true);
+    eq(isFiniteNumber(new Number(1)), true);
   });
 
   it('supports the "PositiveFiniteNumber" type', function() {
     eq($.PositiveFiniteNumber.name, 'sanctuary-def/PositiveFiniteNumber');
-    eq($.PositiveFiniteNumber.test(null), false);
-    eq($.PositiveFiniteNumber.test(NaN), false);
-    eq($.PositiveFiniteNumber.test(new Number(NaN)), false);
-    eq($.PositiveFiniteNumber.test(Infinity), false);
-    eq($.PositiveFiniteNumber.test(new Number(Infinity)), false);
-    eq($.PositiveFiniteNumber.test(-1), false);
-    eq($.PositiveFiniteNumber.test(new Number(-1)), false);
-    eq($.PositiveFiniteNumber.test(0), false);
-    eq($.PositiveFiniteNumber.test(new Number(0)), false);
-    eq($.PositiveFiniteNumber.test(-0), false);
-    eq($.PositiveFiniteNumber.test(new Number(-0)), false);
-    eq($.PositiveFiniteNumber.test(0.5), true);
-    eq($.PositiveFiniteNumber.test(new Number(0.5)), true);
+
+    var isPositiveFiniteNumber = function(x) {
+      return $.test($.env, $.PositiveFiniteNumber, x);
+    };
+    eq(isPositiveFiniteNumber(null), false);
+    eq(isPositiveFiniteNumber(NaN), false);
+    eq(isPositiveFiniteNumber(new Number(NaN)), false);
+    eq(isPositiveFiniteNumber(Infinity), false);
+    eq(isPositiveFiniteNumber(new Number(Infinity)), false);
+    eq(isPositiveFiniteNumber(-1), false);
+    eq(isPositiveFiniteNumber(new Number(-1)), false);
+    eq(isPositiveFiniteNumber(0), false);
+    eq(isPositiveFiniteNumber(new Number(0)), false);
+    eq(isPositiveFiniteNumber(-0), false);
+    eq(isPositiveFiniteNumber(new Number(-0)), false);
+    eq(isPositiveFiniteNumber(0.5), true);
+    eq(isPositiveFiniteNumber(new Number(0.5)), true);
   });
 
   it('supports the "NegativeFiniteNumber" type', function() {
     eq($.NegativeFiniteNumber.name, 'sanctuary-def/NegativeFiniteNumber');
-    eq($.NegativeFiniteNumber.test(null), false);
-    eq($.NegativeFiniteNumber.test(NaN), false);
-    eq($.NegativeFiniteNumber.test(new Number(NaN)), false);
-    eq($.NegativeFiniteNumber.test(-Infinity), false);
-    eq($.NegativeFiniteNumber.test(new Number(-Infinity)), false);
-    eq($.NegativeFiniteNumber.test(1), false);
-    eq($.NegativeFiniteNumber.test(new Number(1)), false);
-    eq($.NegativeFiniteNumber.test(0), false);
-    eq($.NegativeFiniteNumber.test(new Number(0)), false);
-    eq($.NegativeFiniteNumber.test(-0), false);
-    eq($.NegativeFiniteNumber.test(new Number(-0)), false);
-    eq($.NegativeFiniteNumber.test(-0.5), true);
-    eq($.NegativeFiniteNumber.test(new Number(-0.5)), true);
+
+    var isNegativeFiniteNumber = function(x) {
+      return $.test($.env, $.NegativeFiniteNumber, x);
+    };
+    eq(isNegativeFiniteNumber(null), false);
+    eq(isNegativeFiniteNumber(NaN), false);
+    eq(isNegativeFiniteNumber(new Number(NaN)), false);
+    eq(isNegativeFiniteNumber(-Infinity), false);
+    eq(isNegativeFiniteNumber(new Number(-Infinity)), false);
+    eq(isNegativeFiniteNumber(1), false);
+    eq(isNegativeFiniteNumber(new Number(1)), false);
+    eq(isNegativeFiniteNumber(0), false);
+    eq(isNegativeFiniteNumber(new Number(0)), false);
+    eq(isNegativeFiniteNumber(-0), false);
+    eq(isNegativeFiniteNumber(new Number(-0)), false);
+    eq(isNegativeFiniteNumber(-0.5), true);
+    eq(isNegativeFiniteNumber(new Number(-0.5)), true);
   });
 
   it('supports the "NonZeroFiniteNumber" type', function() {
     eq($.NonZeroFiniteNumber.name, 'sanctuary-def/NonZeroFiniteNumber');
-    eq($.NonZeroFiniteNumber.test(0), false);
-    eq($.NonZeroFiniteNumber.test(new Number(0)), false);
-    eq($.NonZeroFiniteNumber.test(-0), false);
-    eq($.NonZeroFiniteNumber.test(new Number(-0)), false);
-    eq($.NonZeroFiniteNumber.test(Infinity), false);
-    eq($.NonZeroFiniteNumber.test(new Number(Infinity)), false);
-    eq($.NonZeroFiniteNumber.test(-Infinity), false);
-    eq($.NonZeroFiniteNumber.test(new Number(-Infinity)), false);
-    eq($.NonZeroFiniteNumber.test(1), true);
-    eq($.NonZeroFiniteNumber.test(new Number(1)), true);
+
+    var isNonZeroFiniteNumber = function(x) {
+      return $.test($.env, $.NonZeroFiniteNumber, x);
+    };
+    eq(isNonZeroFiniteNumber(0), false);
+    eq(isNonZeroFiniteNumber(new Number(0)), false);
+    eq(isNonZeroFiniteNumber(-0), false);
+    eq(isNonZeroFiniteNumber(new Number(-0)), false);
+    eq(isNonZeroFiniteNumber(Infinity), false);
+    eq(isNonZeroFiniteNumber(new Number(Infinity)), false);
+    eq(isNonZeroFiniteNumber(-Infinity), false);
+    eq(isNonZeroFiniteNumber(new Number(-Infinity)), false);
+    eq(isNonZeroFiniteNumber(1), true);
+    eq(isNonZeroFiniteNumber(new Number(1)), true);
   });
 
   it('supports the "Integer" type', function() {
     eq($.Integer.name, 'sanctuary-def/Integer');
-    eq($.Integer.test(3.14), false);
-    eq($.Integer.test(new Number(3.14)), false);
-    eq($.Integer.test(9007199254740992), false);
-    eq($.Integer.test(new Number(9007199254740992)), false);
-    eq($.Integer.test(-9007199254740992), false);
-    eq($.Integer.test(new Number(-9007199254740992)), false);
-    eq($.Integer.test(1), true);
-    eq($.Integer.test(new Number(1)), true);
+
+    var isInteger = function(x) {
+      return $.test($.env, $.Integer, x);
+    };
+    eq(isInteger(3.14), false);
+    eq(isInteger(new Number(3.14)), false);
+    eq(isInteger(9007199254740992), false);
+    eq(isInteger(new Number(9007199254740992)), false);
+    eq(isInteger(-9007199254740992), false);
+    eq(isInteger(new Number(-9007199254740992)), false);
+    eq(isInteger(1), true);
+    eq(isInteger(new Number(1)), true);
   });
 
   it('supports the "NonZeroInteger" type', function() {
     eq($.NonZeroInteger.name, 'sanctuary-def/NonZeroInteger');
-    eq($.NonZeroInteger.test(0), false);
-    eq($.NonZeroInteger.test(new Number(0)), false);
-    eq($.NonZeroInteger.test(-0), false);
-    eq($.NonZeroInteger.test(new Number(-0)), false);
-    eq($.NonZeroInteger.test(3.14), false);
-    eq($.NonZeroInteger.test(new Number(3.14)), false);
-    eq($.NonZeroInteger.test(1), true);
-    eq($.NonZeroInteger.test(new Number(1)), true);
+
+    var isNonZeroInteger = function(x) {
+      return $.test($.env, $.NonZeroInteger, x);
+    };
+    eq(isNonZeroInteger(0), false);
+    eq(isNonZeroInteger(new Number(0)), false);
+    eq(isNonZeroInteger(-0), false);
+    eq(isNonZeroInteger(new Number(-0)), false);
+    eq(isNonZeroInteger(3.14), false);
+    eq(isNonZeroInteger(new Number(3.14)), false);
+    eq(isNonZeroInteger(1), true);
+    eq(isNonZeroInteger(new Number(1)), true);
   });
 
   it('supports the "PositiveInteger" type', function() {
     eq($.PositiveInteger.name, 'sanctuary-def/PositiveInteger');
-    eq($.PositiveInteger.test(1.5), false);
-    eq($.PositiveInteger.test(new Number(1.5)), false);
-    eq($.PositiveInteger.test(-1), false);
-    eq($.PositiveInteger.test(new Number(-1)), false);
-    eq($.PositiveInteger.test(1), true);
-    eq($.PositiveInteger.test(new Number(1)), true);
+
+    var isPositiveInteger = function(x) {
+      return $.test($.env, $.PositiveInteger, x);
+    };
+    eq(isPositiveInteger(1.5), false);
+    eq(isPositiveInteger(new Number(1.5)), false);
+    eq(isPositiveInteger(-1), false);
+    eq(isPositiveInteger(new Number(-1)), false);
+    eq(isPositiveInteger(1), true);
+    eq(isPositiveInteger(new Number(1)), true);
   });
 
   it('supports the "NegativeInteger" type', function() {
     eq($.NegativeInteger.name, 'sanctuary-def/NegativeInteger');
-    eq($.NegativeInteger.test(-1.5), false);
-    eq($.NegativeInteger.test(new Number(-1.5)), false);
-    eq($.NegativeInteger.test(1), false);
-    eq($.NegativeInteger.test(new Number(1)), false);
-    eq($.NegativeInteger.test(-1), true);
-    eq($.NegativeInteger.test(new Number(-1)), true);
+
+    var isNegativeInteger = function(x) {
+      return $.test($.env, $.NegativeInteger, x);
+    };
+    eq(isNegativeInteger(-1.5), false);
+    eq(isNegativeInteger(new Number(-1.5)), false);
+    eq(isNegativeInteger(1), false);
+    eq(isNegativeInteger(new Number(1)), false);
+    eq(isNegativeInteger(-1), true);
+    eq(isNegativeInteger(new Number(-1)), true);
   });
 
   it('supports the "RegexFlags" type', function() {
-    eq($.RegexFlags.test(''), true);
-    eq($.RegexFlags.test('g'), true);
-    eq($.RegexFlags.test('i'), true);
-    eq($.RegexFlags.test('m'), true);
-    eq($.RegexFlags.test('gi'), true);
-    eq($.RegexFlags.test('gm'), true);
-    eq($.RegexFlags.test('im'), true);
-    eq($.RegexFlags.test('gim'), true);
+    var isRegexFlags = function(x) {
+      return $.test($.env, $.RegexFlags, x);
+    };
+    eq(isRegexFlags(''), true);
+    eq(isRegexFlags('g'), true);
+    eq(isRegexFlags('i'), true);
+    eq(isRegexFlags('m'), true);
+    eq(isRegexFlags('gi'), true);
+    eq(isRegexFlags('gm'), true);
+    eq(isRegexFlags('im'), true);
+    eq(isRegexFlags('gim'), true);
     //  String objects are not acceptable.
-    eq($.RegexFlags.test(new String('')), false);
+    eq(isRegexFlags(new String('')), false);
     //  Flags must be alphabetically ordered.
-    eq($.RegexFlags.test('mg'), false);
+    eq(isRegexFlags('mg'), false);
     //  "Sticky" flag is not acceptable.
-    eq($.RegexFlags.test('y'), false);
+    eq(isRegexFlags('y'), false);
   });
 
   it('supports the "StrMap" type constructor', function() {
-    var env = $.env.concat([Either, $.StrMap]);
+    var env = $.env.concat([Either]);
     var def = $.create(true, env);
 
     //  id :: a -> a
@@ -2000,6 +2055,45 @@ describe('def', function() {
                    '1)  /xxx/ :: RegExp\n' +
                    '\n' +
                    '‘concatMaybes’ requires ‘a’ to satisfy the Semigroup type-class constraint; the value at position 1 does not.\n'));
+  });
+
+});
+
+describe('test', function() {
+
+  it('supports nullary types', function() {
+    eq($.test($.env, $.Number, null), false);
+    eq($.test($.env, $.Number, '42'), false);
+    eq($.test($.env, $.Number, 42), true);
+  });
+
+  it('supports unary types', function() {
+    eq($.test($.env, $.Array($.Number), null), false);
+    eq($.test($.env, $.Array($.Number), '42'), false);
+    eq($.test($.env, $.Array($.Number), [1, 2, '3']), false);
+    eq($.test($.env, $.Array($.Number), ['42']), false);
+    eq($.test($.env, $.Array($.Number), []), true);
+    eq($.test($.env, $.Array($.Number), [1, 2, 3]), true);
+  });
+
+  it('supports binary types', function() {
+    eq($.test($.env, $Pair($.Number, $.String), Pair(42, 42)), false);
+    eq($.test($.env, $Pair($.Number, $.String), Pair('', '')), false);
+    eq($.test($.env, $Pair($.Number, $.String), Pair('', 42)), false);
+    eq($.test($.env, $Pair($.Number, $.String), Pair(42, '')), true);
+  });
+
+  it('supports type variables', function() {
+    eq($.test($.env, $.Array(a), null), false);
+    eq($.test($.env, $.Array(a), '42'), false);
+    eq($.test($.env, $.Array(a), [1, 2, '3']), false);
+    eq($.test($.env, $.Array(a), ['42']), true);
+    eq($.test($.env, $.Array(a), []), true);
+    eq($.test($.env, $.Array(a), [1, 2, 3]), true);
+
+    eq($.test($.env, $Pair(a, a), Pair('foo', 42)), false);
+    eq($.test($.env, $Pair(a, a), Pair('foo', 'bar')), true);
+    eq($.test($.env, $Pair(a, b), Pair('foo', 42)), true);
   });
 
 });
