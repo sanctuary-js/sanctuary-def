@@ -485,8 +485,14 @@
       }
       for (var idx = 0; idx < names.length; idx += 1) {
         var name = names[idx];
-        if (!has(name, x) || !fields[name]._test(x[name])) {
+        if (!has(name, x)) {
           return Left({value: x, typePath: [t], propPath: []});
+        }
+        var result = fields[name].validate(x[name]);
+        if (result.isLeft) {
+          return Left({value: result.value.value,
+                       typePath: [t].concat(result.value.typePath),
+                       propPath: [name].concat(result.value.propPath)});
         }
       }
       return Right(x);
@@ -1151,18 +1157,21 @@
         var t = type;
         var types = [t];
         for (var idx = 0; idx < propPath.length; idx += 1) {
-          types.push(t = t[propPath[idx]]);
+          types.push(t = (t.type === 'RECORD' ? t.fields : t)[propPath[idx]]);
         }
 
         var s = f(String(last(types)));
         for (idx = types.length - 2; idx >= 0; idx -= 1) {
+          var k = propPath[idx];
           t = types[idx];
           s = t.type === 'UNARY' ?
                 t.format(_, K(s)) :
-              t.type === 'BINARY' && propPath[idx] === '$1' ?
+              t.type === 'BINARY' && k === '$1' ?
                 t.format(_, K(s), _) :
+              t.type === 'BINARY' && k === '$2' ?
+                t.format(_, _, K(s)) :
               // else
-                t.format(_, _, K(s));
+                t.format(_, function(k$) { return k$ === k ? K(s) : _; });  // jshint ignore:line
         }
 
         return isParameterizedType(type) ? s.slice(1, -1) : s;

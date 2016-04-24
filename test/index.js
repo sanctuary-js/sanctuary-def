@@ -969,24 +969,36 @@ describe('def', function() {
                    'Invalid value\n' +
                    '\n' +
                    'dist :: { x :: Number, y :: Number } -> { x :: Number, y :: Number } -> Number\n' +
-                   '        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n' +
-                   '                     1\n' +
+                   '                            ^^^^^^\n' +
+                   '                              1\n' +
                    '\n' +
-                   '1)  {"x": 0, "y": null} :: Object, StrMap ???\n' +
+                   '1)  null :: Null\n' +
                    '\n' +
-                   'The value at position 1 is not a member of ‘{ x :: Number, y :: Number }’.\n'));
+                   'The value at position 1 is not a member of ‘Number’.\n'));
 
     throws(function() { length({start: 0, end: 0}); },
            errorEq(TypeError,
                    'Invalid value\n' +
                    '\n' +
                    'length :: { end :: { x :: Number, y :: Number }, start :: { x :: Number, y :: Number } } -> Number\n' +
-                   '          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n' +
-                   '                                                1\n' +
+                   '                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n' +
+                   '                                1\n' +
                    '\n' +
-                   '1)  {"end": 0, "start": 0} :: Object, StrMap Number\n' +
+                   '1)  0 :: Number\n' +
                    '\n' +
-                   'The value at position 1 is not a member of ‘{ end :: { x :: Number, y :: Number }, start :: { x :: Number, y :: Number } }’.\n'));
+                   'The value at position 1 is not a member of ‘{ x :: Number, y :: Number }’.\n'));
+
+    throws(function() { length({start: {x: 0, y: 0}, end: {x: null, y: null}}); },
+           errorEq(TypeError,
+                   'Invalid value\n' +
+                   '\n' +
+                   'length :: { end :: { x :: Number, y :: Number }, start :: { x :: Number, y :: Number } } -> Number\n' +
+                   '                          ^^^^^^\n' +
+                   '                            1\n' +
+                   '\n' +
+                   '1)  null :: Null\n' +
+                   '\n' +
+                   'The value at position 1 is not a member of ‘Number’.\n'));
 
     //  id :: a -> a
     var id = def('id', {}, [a, a], R.identity);
