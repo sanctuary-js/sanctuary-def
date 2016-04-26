@@ -2,7 +2,7 @@ ISTANBUL = node_modules/.bin/istanbul
 JSCS = node_modules/.bin/jscs
 JSHINT = node_modules/.bin/jshint
 NPM = npm
-XYZ = node_modules/.bin/xyz --repo git@github.com:plaid/sanctuary-def.git
+XYZ = node_modules/.bin/xyz --repo git@github.com:sanctuary-js/sanctuary-def.git
 
 
 .PHONY: all
