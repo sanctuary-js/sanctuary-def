@@ -1,6 +1,5 @@
+ESLINT = node_modules/.bin/eslint --config node_modules/sanctuary-style/eslint-es3.json --env es3
 ISTANBUL = node_modules/.bin/istanbul
-JSCS = node_modules/.bin/jscs
-JSHINT = node_modules/.bin/jshint
 NPM = npm
 XYZ = node_modules/.bin/xyz --repo git@github.com:sanctuary-js/sanctuary-def.git
 
@@ -11,8 +10,17 @@ all:
 
 .PHONY: lint
 lint:
-	$(JSHINT) -- index.js test/index.js
-	$(JSCS) -- index.js test/index.js
+	$(ESLINT) \
+	  --global define \
+	  --global module \
+	  --global self \
+	  -- index.js
+	$(ESLINT) \
+	  --env node \
+	  --env mocha \
+	  --rule 'dot-notation: [error, {allowKeywords: true}]' \
+	  --rule 'max-len: [off]' \
+	  -- test
 
 
 .PHONY: release-major release-minor release-patch

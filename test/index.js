@@ -1,8 +1,5 @@
 'use strict';
 
-/* global describe, it */
-/* jshint -W053 */
-
 var assert = require('assert');
 var vm = require('vm');
 
@@ -62,14 +59,14 @@ var Integer = $.NullaryType(
 var Nothing = function() {
   return {
     '@@type': 'my-package/Maybe',
-    'chain': function(f) { return this; },
-    'concat': function() { throw new Error('Not implemented'); },
-    'empty': function() { return this; },
-    'isNothing': true,
-    'isJust': false,
-    'of': function(x) { return Just(x); },
-    'or': R.identity,
-    'toString': R.always('Nothing()')
+    chain: function(f) { return this; },
+    concat: function() { throw new Error('Not implemented'); },
+    empty: function() { return this; },
+    isNothing: true,
+    isJust: false,
+    of: function(x) { return Just(x); },
+    or: R.identity,
+    toString: R.always('Nothing()')
   };
 };
 
@@ -77,15 +74,15 @@ var Nothing = function() {
 var Just = function(x) {
   return {
     '@@type': 'my-package/Maybe',
-    'chain': function(f) { return f(x); },
-    'concat': function() { throw new Error('Not implemented'); },
-    'empty': R.always(Nothing()),
-    'isNothing': false,
-    'isJust': true,
-    'of': function(x) { return Just(x); },
-    'or': function() { return this; },
-    'toString': R.always('Just(' + R.toString(x) + ')'),
-    'value': x
+    chain: function(f) { return f(x); },
+    concat: function() { throw new Error('Not implemented'); },
+    empty: R.always(Nothing()),
+    isNothing: false,
+    isJust: true,
+    of: function(x) { return Just(x); },
+    or: function() { return this; },
+    toString: R.always('Just(' + R.toString(x) + ')'),
+    value: x
   };
 };
 
@@ -101,12 +98,12 @@ var Maybe = $.UnaryType(
 var Left = function(x) {
   return {
     '@@type': 'my-package/Either',
-    'chain': function(f) { return this; },
-    'isLeft': true,
-    'isRight': false,
-    'of': function(x) { return Right(x); },
-    'toString': R.always('Left(' + R.toString(x) + ')'),
-    'value': x
+    chain: function(f) { return this; },
+    isLeft: true,
+    isRight: false,
+    of: function(x) { return Right(x); },
+    toString: R.always('Left(' + R.toString(x) + ')'),
+    value: x
   };
 };
 
@@ -114,12 +111,12 @@ var Left = function(x) {
 var Right = function(x) {
   return {
     '@@type': 'my-package/Either',
-    'chain': function(f) { return f(x); },
-    'isLeft': false,
-    'isRight': true,
-    'of': function(x) { return Right(x); },
-    'toString': R.always('Right(' + R.toString(x) + ')'),
-    'value': x
+    chain: function(f) { return f(x); },
+    isLeft: false,
+    isRight: true,
+    of: function(x) { return Right(x); },
+    toString: R.always('Right(' + R.toString(x) + ')'),
+    value: x
   };
 };
 
@@ -135,11 +132,11 @@ var Either = $.BinaryType(
 //  Pair :: a -> b -> Pair a b
 var Pair = function(x, y) {
   return {
-    '0': x,
-    '1': y,
+    0: x,
+    1: y,
     '@@type': 'my-package/Pair',
-    'length': 2,
-    'toString': R.always('Pair(' + R.toString(x) + ', ' + R.toString(y) + ')')
+    length: 2,
+    toString: R.always('Pair(' + R.toString(x) + ', ' + R.toString(y) + ')')
   };
 };
 
@@ -210,9 +207,7 @@ describe('def', function() {
     eq($8.length, 8);
     eq($9.length, 9);
 
-    throws(function() {
-             def('$10', {}, [a, a, a, a, a, a, a, a, a, a, $.Array(a)], list);
-           },
+    throws(function() { def('$10', {}, [a, a, a, a, a, a, a, a, a, a, $.Array(a)], list); },
            errorEq(RangeError,
                    '‘def’ cannot define a function with arity greater than nine'));
   });
@@ -775,10 +770,10 @@ describe('def', function() {
     var AnonJust = function(x) {
       return {
         '@@type': 'my-package/AnonMaybe',
-        'isNothing': false,
-        'isJust': true,
-        'toString': R.always('AnonJust(' + R.toString(x) + ')'),
-        'value': x
+        isNothing: false,
+        isJust: true,
+        toString: R.always('AnonJust(' + R.toString(x) + ')'),
+        value: x
       };
     };
 
@@ -1854,8 +1849,7 @@ describe('def', function() {
     eq(id([x]), [x]);
     eq(id([x, x]), [x, x]);
 
-    throws(function() { id([{'@@type': 'my-package/Foo'},
-                            {'@@type': 'my-package/Bar'}]); },
+    throws(function() { id([{'@@type': 'my-package/Foo'}, {'@@type': 'my-package/Bar'}]); },
            errorEq(TypeError,
                    'Type-variable constraint violation\n' +
                    '\n' +
