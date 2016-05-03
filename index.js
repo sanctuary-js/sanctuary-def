@@ -1,6 +1,4 @@
-/* global define, self */
-
-;(function(f) {
+(function(f) {
 
   'use strict';
 
@@ -460,7 +458,8 @@
       throw new TypeError(trimTrailingSpaces(unlines([
         'Invalid values',
         '',
-        'The argument to ‘RecordType’ must be an object mapping field name to type.',
+        'The argument to ‘RecordType’ must be an object ' +
+          'mapping field name to type.',
         '',
         'The following mappings are invalid:',
         '',
@@ -552,18 +551,18 @@
 
   //  $.env :: [Type]
   $.env = [
-    ($.Array      = type1('Array', id)),
-    ($.Boolean    = type0('Boolean')),
-    ($.Date       = type0('Date')),
-    ($.Error      = type0('Error')),
-    ($.Function   = type0('Function')),
-    ($.Null       = type0('Null')),
-    ($.Number     = type0('Number')),
-    ($.Object     = type0('Object')),
-    ($.RegExp     = type0('RegExp')),
-    ($.StrMap     = StrMap),
-    ($.String     = type0('String')),
-    ($.Undefined  = type0('Undefined'))
+    $.Array     = type1('Array', id),
+    $.Boolean   = type0('Boolean'),
+    $.Date      = type0('Date'),
+    $.Error     = type0('Error'),
+    $.Function  = type0('Function'),
+    $.Null      = type0('Null'),
+    $.Number    = type0('Number'),
+    $.Object    = type0('Object'),
+    $.RegExp    = type0('RegExp'),
+    $.StrMap    = StrMap,
+    $.String    = type0('String'),
+    $.Undefined = type0('Undefined')
   ];
 
   //  Any :: Type
@@ -599,7 +598,12 @@
   //  NonZeroValidNumber :: Type
   $.NonZeroValidNumber = NullaryType(
     'sanctuary-def/NonZeroValidNumber',
-    function(x) { return ValidNumber._test(x) && x != 0; }
+    function(x) {
+      return ValidNumber._test(x) &&
+             /* eslint-disable eqeqeq */
+             x != 0;
+             /* eslint-enable eqeqeq */
+    }
   );
 
   //  FiniteNumber :: Type
@@ -623,7 +627,12 @@
   //  NonZeroFiniteNumber :: Type
   $.NonZeroFiniteNumber = NullaryType(
     'sanctuary-def/NonZeroFiniteNumber',
-    function(x) { return FiniteNumber._test(x) && x != 0; }
+    function(x) {
+      return FiniteNumber._test(x) &&
+             /* eslint-disable eqeqeq */
+             x != 0;
+             /* eslint-enable eqeqeq */
+    }
   );
 
   //  Integer :: Type
@@ -631,7 +640,9 @@
     'sanctuary-def/Integer',
     function(x) {
       return ValidNumber._test(x) &&
+             /* eslint-disable eqeqeq */
              Math.floor(x) == x &&
+             /* eslint-enable eqeqeq */
              x >= MIN_SAFE_INTEGER &&
              x <= MAX_SAFE_INTEGER;
     }
@@ -652,7 +663,12 @@
   //  NonZeroInteger :: Type
   $.NonZeroInteger = NullaryType(
     'sanctuary-def/NonZeroInteger',
-    function(x) { return Integer._test(x) && x != 0; }
+    function(x) {
+      return Integer._test(x) &&
+             /* eslint-disable eqeqeq */
+             x != 0;
+             /* eslint-enable eqeqeq */
+    }
   );
 
   //  RegexFlags :: Type
@@ -711,7 +727,7 @@
   var numArgs = function(n) {
     switch (n) {
       case  0:  return  'zero arguments';
-      case  1:  return   'one argument' ;
+      case  1:  return   'one argument';
       case  2:  return   'two arguments';
       case  3:  return 'three arguments';
       case  4:  return  'four arguments';
@@ -948,7 +964,11 @@
             typeVarMap: isEmpty(okTypes) ? typeVarMap : assoc(
               typeVarName,
               {types: okTypes,
-               info: Info(env, values, typePath.concat([expType]), propPath, index)},
+               info: Info(env,
+                          values,
+                          typePath.concat([expType]),
+                          propPath,
+                          index)},
               typeVarMap
             ),
             types: okTypes
@@ -965,7 +985,8 @@
           .map(function(result) {
             return {
               typeVarMap: result.typeVarMap,
-              types: map(or(result.types, [expType.$1]), UnaryType.from(expType))
+              types: map(or(result.types, [expType.$1]),
+                         UnaryType.from(expType))
             };
           });
 
@@ -1014,16 +1035,8 @@
     value,          // :: Any
     index           // :: Integer
   ) {
-    return _satisfactoryTypes(env,
-                              name,
-                              constraints,
-                              expTypes,
-                              index)
-                             (typeVarMap,
-                              expTypes[index],
-                              [value],
-                              [],
-                              []);
+    var f = _satisfactoryTypes(env, name, constraints, expTypes, index);
+    return f(typeVarMap, expTypes[index], [value], [], []);
   };
 
   //  applyParameterizedTypes :: [Type] -> [Type]
@@ -1171,7 +1184,7 @@
               t.type === 'BINARY' && k === '$2' ?
                 t.format(_, _, K(s)) :
               // else
-                t.format(_, function(k$) { return k$ === k ? K(s) : _; });  // jshint ignore:line
+                t.format(_, function(k$) { return k$ === k ? K(s) : _; });
         }
 
         return isParameterizedType(type) ? s.slice(1, -1) : s;
@@ -1224,8 +1237,9 @@
       '',
       '1)  ' + map(info.pairs, showValueAndType).join('\n    '),
       '',
-      LEFT_SINGLE_QUOTATION_MARK + name + RIGHT_SINGLE_QUOTATION_MARK + ' requires ' +
-        LEFT_SINGLE_QUOTATION_MARK + typeVarName + RIGHT_SINGLE_QUOTATION_MARK +
+      LEFT_SINGLE_QUOTATION_MARK + name + RIGHT_SINGLE_QUOTATION_MARK +
+        ' requires ' + LEFT_SINGLE_QUOTATION_MARK +
+        typeVarName + RIGHT_SINGLE_QUOTATION_MARK +
         ' to satisfy the ' + typeClass + ' type-class constraint;' +
         ' the value at position 1 does not.'
     ])));
@@ -1239,7 +1253,7 @@
     f,              // :: String -> String
     g               // :: String -> String
   ) {
-    return _(_showTypeSig((types.slice(0, fst.index)))) +
+    return _(_showTypeSig(types.slice(0, fst.index))) +
            underline(fst.typePath[0])(fst.propPath)(f) +
            _(_showTypeSig_(types.slice(fst.index + 1, snd.index))) +
            underline(snd.typePath[0])(snd.propPath)(g);
