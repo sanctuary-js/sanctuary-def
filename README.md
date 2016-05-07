@@ -30,15 +30,18 @@ const env = $.env.concat([Integer, NonZeroInteger]);
 The next step is to define a `def` function for the environment:
 
 ```javascript
-const def = $.create(true, env);
+const def = $.create({checkTypes: true, env: env});
 ```
 
-The first argument to `$.create` determines whether type checking is enabled.
+The `checkTypes` option determines whether type checking is enabled.
 This allows one to only pay the performance cost of run-time type checking
 during development. For example:
 
 ```javascript
-const def = $.create(process.env.NODE_ENV === 'development', env);
+const def = $.create({
+  checkTypes: process.env.NODE_ENV === 'development',
+  env: env,
+});
 ```
 
 `def` is a function for defining functions. For example:
