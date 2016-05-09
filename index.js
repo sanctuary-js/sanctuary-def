@@ -263,6 +263,7 @@
   //  TypeClass :: (String, (a -> Boolean)) -> TypeClass
   $.TypeClass = function(name, test) {
     return {
+      '@@type': 'sanctuary-def/TypeClass',
       name: name,
       _test: test,
       toString: always(stripNamespace(name))
@@ -444,7 +445,7 @@
   };
 
   //  RecordType :: {Type} -> Type
-  $.RecordType = function(fields) {
+  var RecordType = $.RecordType = function(fields) {
     var names = keys(fields);
 
     //  invalidMappings :: [String]
@@ -472,7 +473,7 @@
       for (var idx = 0; idx < names.length; idx += 1) {
         var name = names[idx];
         s += f(idx === 0 ? ' ' : ', ');
-        s += f(name + ' :: ') + kv(name)(String(fields[name]));
+        s += f(name + ' :: ') + kv(name)(showType(fields[name]));
         if (idx === names.length - 1) s += f(' ');
       }
       return s + f('}');
@@ -549,8 +550,17 @@
     return UnaryType(name, $$typeEq(name), _1);
   };
 
-  //  $.env :: [Type]
-  $.env = [
+  //  applyParameterizedTypes :: [Type] -> [Type]
+  var applyParameterizedTypes = function(types) {
+    return map(types, function(x) {
+      return typeof x === 'function' ?
+        x.apply(null, map(range(0, x.length), K(Unknown))) :
+        x;
+    });
+  };
+
+  //  defaultEnv :: [Type]
+  var defaultEnv = $.env = applyParameterizedTypes([
     $.Array     = type1('Array', id),
     $.Boolean   = type0('Boolean'),
     $.Date      = type0('Date'),
@@ -563,7 +573,7 @@
     $.StrMap    = StrMap,
     $.String    = type0('String'),
     $.Undefined = type0('Undefined')
-  ];
+  ]);
 
   //  Any :: Type
   $.Any = NullaryType(
@@ -676,6 +686,9 @@
 
   //  Type :: Type
   var Type = type0('sanctuary-def/Type');
+
+  //  TypeClass :: Type
+  var TypeClass = type0('sanctuary-def/TypeClass');
 
   //  arity :: (Number, Function) -> Function
   var arity = function(n, f) {
@@ -1035,23 +1048,27 @@
     value,          // :: Any
     index           // :: Integer
   ) {
-    var f = _satisfactoryTypes(env, name, constraints, expTypes, index);
-    return f(typeVarMap, expTypes[index], [value], [], []);
-  };
-
-  //  applyParameterizedTypes :: [Type] -> [Type]
-  var applyParameterizedTypes = function(_env) {
-    return map(_env, function(x) {
-      return typeof x === 'function' ?
-        x.apply(null, map(range(0, x.length), K(Unknown))) :
-        x;
-    });
+    var result = expTypes[index].validate(value);
+    return result.isLeft ?
+      Left(invalidValue(name,
+                        constraints,
+                        expTypes,
+                        Info(env,
+                             [result.value.value],
+                             result.value.typePath,
+                             result.value.propPath,
+                             index))) :
+      result.chain(function(value) {
+        var f = _satisfactoryTypes(env, name, constraints, expTypes, index);
+        return f(typeVarMap, expTypes[index], [value], [], []);
+      });
   };
 
   //  test :: ([Type], Type, Any) -> Boolean
   var test = $.test = function(_env, t, x) {
     var env = applyParameterizedTypes(_env);
-    return satisfactoryTypes(env, 'name', {}, [t], {}, x, 0).isRight;
+    var f = _satisfactoryTypes(env, 'name', {}, [t], 0);
+    return f({}, t, [x], [], []).isRight;
   };
 
   //  filterTypesByValues :: ([Type], [Any]) -> [Type]
@@ -1063,32 +1080,12 @@
     });
   };
 
-  //  ordinals :: [String]
-  var ordinals = [
-    'first',
-    'second',
-    'third',
-    'fourth',
-    'fifth',
-    'sixth',
-    'seventh',
-    'eighth',
-    'ninth'
-  ];
-
+  //  invalidArgumentsLength :: (String, Integer, Integer) -> Error
   var invalidArgumentsLength = function(name, expectedLength, actualLength) {
     return new TypeError(
       LEFT_SINGLE_QUOTATION_MARK + name + RIGHT_SINGLE_QUOTATION_MARK +
       ' requires ' + numArgs(expectedLength) + ';' +
       ' received ' + numArgs(actualLength)
-    );
-  };
-
-  var invalidArgument = function(name, types, value, index) {
-    return new TypeError(
-      LEFT_SINGLE_QUOTATION_MARK + name + RIGHT_SINGLE_QUOTATION_MARK +
-      ' expected a value of type ' + map(types, showTypeQuoted).join(' or ') +
-      ' as its ' + ordinals[index] + ' argument; received ' + show(value)
     );
   };
 
@@ -1350,10 +1347,29 @@
     ])));
   };
 
-  //  create :: (Boolean, [Type]) -> Function
-  $.create = function(checkTypes, _env) {
+  //  assertRight :: Either a b -> Undefined !
+  var assertRight = function(either) {
+    if (either.isLeft) throw either.value;
+  };
+
+  //  Options :: Type
+  var Options = RecordType({checkTypes: $.Boolean, env: $.Array($.Any)});
+
+  //  create :: Options -> Function
+  $.create = function(opts) {
+    assertRight(satisfactoryTypes(defaultEnv,
+                                  'create',
+                                  {},
+                                  [Options, $.Function],
+                                  {},
+                                  opts,
+                                  0));
+
+    //  checkTypes :: Boolean
+    var checkTypes = opts.checkTypes;
+
     //  env :: [Type]
-    var env = applyParameterizedTypes(_env);
+    var env = applyParameterizedTypes(opts.env);
 
     //  curry :: ... -> Function
     var curry = function(
@@ -1366,7 +1382,6 @@
       impl          // :: Function
     ) {
       return arity(_indexes.length, function() {
-        var either, result;
         if (checkTypes) {
           var delta = _indexes.length - arguments.length;
           if (delta < 0) {
@@ -1388,26 +1403,15 @@
 
             var value = arguments[idx];
             if (checkTypes) {
-              result = expTypes[index].validate(value);
-              if (result.isLeft) {
-                throw invalidValue(name,
-                                   constraints,
-                                   expTypes,
-                                   Info(env,
-                                        [result.value.value],
-                                        result.value.typePath,
-                                        result.value.propPath,
-                                        index));
-              }
-              either = satisfactoryTypes(env,
-                                         name,
-                                         constraints,
-                                         expTypes,
-                                         typeVarMap,
-                                         value,
-                                         index);
-              if (either.isLeft) throw either.value;
-              typeVarMap = either.value.typeVarMap;
+              var result = satisfactoryTypes(env,
+                                             name,
+                                             constraints,
+                                             expTypes,
+                                             typeVarMap,
+                                             value,
+                                             index);
+              assertRight(result);
+              typeVarMap = result.value.typeVarMap;
             }
             values[index] = value;
           } else {
@@ -1417,25 +1421,13 @@
         if (isEmpty(indexes)) {
           var returnValue = impl.apply(this, values);
           if (checkTypes) {
-            result = last(expTypes).validate(returnValue);
-            if (result.isLeft) {
-              throw invalidValue(name,
-                                 constraints,
-                                 expTypes,
-                                 Info(env,
-                                      [result.value.value],
-                                      result.value.typePath,
-                                      result.value.propPath,
-                                      _indexes.length));
-            }
-            either = satisfactoryTypes(env,
-                                       name,
-                                       constraints,
-                                       expTypes,
-                                       typeVarMap,
-                                       returnValue,
-                                       expTypes.length - 1);
-            if (either.isLeft) throw either.value;
+            assertRight(satisfactoryTypes(env,
+                                          name,
+                                          constraints,
+                                          expTypes,
+                                          typeVarMap,
+                                          returnValue,
+                                          expTypes.length - 1));
           }
           return returnValue;
         } else {
@@ -1456,11 +1448,19 @@
           throw invalidArgumentsLength('def', def.length, arguments.length);
         }
 
-        var types = [$.String, $.Object, $.Array(Type), $.Function];
-        for (var idx = 0; idx < types.length; idx += 1) {
-          if (!types[idx]._test(arguments[idx])) {
-            throw invalidArgument('def', [types[idx]], arguments[idx], idx);
-          }
+        var types = [$.String,
+                     StrMap($.Array(TypeClass)),
+                     $.Array(Type),
+                     $.Function,
+                     $.Function];
+        for (var idx = 0; idx < types.length - 1; idx += 1) {
+          assertRight(satisfactoryTypes(defaultEnv,
+                                        'def',
+                                        {},
+                                        types,
+                                        {},
+                                        arguments[idx],
+                                        idx));
         }
       }
 

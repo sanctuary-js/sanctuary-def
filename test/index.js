@@ -21,7 +21,7 @@ var errorEq = R.curry(function(type, message, error) {
 });
 
 
-var def = $.create(true, $.env);
+var def = $.create({checkTypes: true, env: $.env});
 
 var a = $.TypeVariable('a');
 var b = $.TypeVariable('b');
@@ -149,6 +149,29 @@ var $Pair = $.BinaryType(
 );
 
 
+describe('create', function() {
+
+  it('is a unary function', function() {
+    eq(typeof $.create, 'function');
+    eq($.create.length, 1);
+  });
+
+  it('type checks its arguments', function() {
+    throws(function() { $.create(true, []); },
+           errorEq(TypeError,
+                   'Invalid value\n' +
+                   '\n' +
+                   'create :: { checkTypes :: Boolean, env :: Array Any } -> Function\n' +
+                   '          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n' +
+                   '                               1\n' +
+                   '\n' +
+                   '1)  true :: Boolean\n' +
+                   '\n' +
+                   'The value at position 1 is not a member of ‘{ checkTypes :: Boolean, env :: Array Any }’.\n'));
+  });
+
+});
+
 describe('def', function() {
 
   it('type checks its arguments when checkTypes is true', function() {
@@ -158,27 +181,67 @@ describe('def', function() {
 
     throws(function() { def(null, null, null, null); },
            errorEq(TypeError,
-                   '‘def’ expected a value of type ‘String’ as its first argument; received null'));
+                   'Invalid value\n' +
+                   '\n' +
+                   'def :: String -> StrMap (Array TypeClass) -> Array Type -> Function -> Function\n' +
+                   '       ^^^^^^\n' +
+                   '         1\n' +
+                   '\n' +
+                   '1)  null :: Null\n' +
+                   '\n' +
+                   'The value at position 1 is not a member of ‘String’.\n'));
 
     throws(function() { def('', null, null, null); },
            errorEq(TypeError,
-                   '‘def’ expected a value of type ‘Object’ as its second argument; received null'));
+                   'Invalid value\n' +
+                   '\n' +
+                   'def :: String -> StrMap (Array TypeClass) -> Array Type -> Function -> Function\n' +
+                   '                 ^^^^^^^^^^^^^^^^^^^^^^^^\n' +
+                   '                            1\n' +
+                   '\n' +
+                   '1)  null :: Null\n' +
+                   '\n' +
+                   'The value at position 1 is not a member of ‘StrMap (Array TypeClass)’.\n'));
 
     throws(function() { def('', {}, null, null); },
            errorEq(TypeError,
-                   '‘def’ expected a value of type ‘Array Type’ as its third argument; received null'));
+                   'Invalid value\n' +
+                   '\n' +
+                   'def :: String -> StrMap (Array TypeClass) -> Array Type -> Function -> Function\n' +
+                   '                                             ^^^^^^^^^^\n' +
+                   '                                                 1\n' +
+                   '\n' +
+                   '1)  null :: Null\n' +
+                   '\n' +
+                   'The value at position 1 is not a member of ‘Array Type’.\n'));
 
     throws(function() { def('', {}, [1, 2, 3], null); },
            errorEq(TypeError,
-                   '‘def’ expected a value of type ‘Array Type’ as its third argument; received [1, 2, 3]'));
+                   'Invalid value\n' +
+                   '\n' +
+                   'def :: String -> StrMap (Array TypeClass) -> Array Type -> Function -> Function\n' +
+                   '                                                   ^^^^\n' +
+                   '                                                    1\n' +
+                   '\n' +
+                   '1)  1 :: Number\n' +
+                   '\n' +
+                   'The value at position 1 is not a member of ‘Type’.\n'));
 
     throws(function() { def('', {}, [], null); },
            errorEq(TypeError,
-                   '‘def’ expected a value of type ‘Function’ as its fourth argument; received null'));
+                   'Invalid value\n' +
+                   '\n' +
+                   'def :: String -> StrMap (Array TypeClass) -> Array Type -> Function -> Function\n' +
+                   '                                                           ^^^^^^^^\n' +
+                   '                                                              1\n' +
+                   '\n' +
+                   '1)  null :: Null\n' +
+                   '\n' +
+                   'The value at position 1 is not a member of ‘Function’.\n'));
   });
 
   it('does not type check its arguments when checkTypes is false', function() {
-    var def = $.create(false, $.env);
+    var def = $.create({checkTypes: false, env: $.env});
 
     //  add :: Number -> Number -> Number
     var add =
@@ -523,7 +586,7 @@ describe('def', function() {
 
   it('reports type error correctly for parameterized types', function() {
     var env = $.env.concat([Either, Maybe]);
-    var def = $.create(true, env);
+    var def = $.create({checkTypes: true, env: env});
 
     //  a00 :: a -> a -> a
     var a00 = def('a00', {}, [a, a, a], R.identity);
@@ -785,7 +848,7 @@ describe('def', function() {
     );
 
     var env = $.env.concat([Integer, $Pair, AnonMaybe]);
-    var def = $.create(true, env);
+    var def = $.create({checkTypes: true, env: env});
 
     //  even :: Integer -> Boolean
     var even = def('even', {}, [Integer, $.Boolean], function(x) {
@@ -834,7 +897,7 @@ describe('def', function() {
     var TimeUnit = $.EnumType(['milliseconds', 'seconds', 'minutes', 'hours']);
 
     var env = $.env.concat([TimeUnit, $.ValidDate, $.ValidNumber]);
-    var def = $.create(true, env);
+    var def = $.create({checkTypes: true, env: env});
 
     //  convertTo :: TimeUnit -> ValidDate -> ValidNumber
     var convertTo =
@@ -868,7 +931,7 @@ describe('def', function() {
     var SillyType = $.EnumType(['foo', true, 42]);
 
     var _env = $.env.concat([SillyType]);
-    var _def = $.create(true, _env);
+    var _def = $.create({checkTypes: true, env: _env});
 
     //  id :: a -> a
     var id = _def('id', {}, [a, a], R.identity);
@@ -903,7 +966,7 @@ describe('def', function() {
     var Line = $.RecordType({start: Point, end: Point});
 
     var env = $.env.concat([Point, Line]);
-    var def = $.create(true, env);
+    var def = $.create({checkTypes: true, env: env});
 
     //  dist :: Point -> Point -> Number
     var dist = def('dist', {}, [Point, Point, $.Number], function(p, q) {
@@ -1014,7 +1077,7 @@ describe('def', function() {
 
   it('supports "nullable" types', function() {
     var env = $.env.concat([$.Nullable]);
-    var def = $.create(true, env);
+    var def = $.create({checkTypes: true, env: env});
 
     //  toUpper :: Nullable String -> Nullable String
     var toUpper =
@@ -1085,7 +1148,7 @@ describe('def', function() {
 
   it('supports the "ValidDate" type', function() {
     var env = $.env.concat([$.ValidDate]);
-    var def = $.create(true, env);
+    var def = $.create({checkTypes: true, env: env});
 
     //  sinceEpoch :: ValidDate -> Number
     var sinceEpoch = def('sinceEpoch',
@@ -1332,7 +1395,7 @@ describe('def', function() {
 
   it('supports the "StrMap" type constructor', function() {
     var env = $.env.concat([Either]);
-    var def = $.create(true, env);
+    var def = $.create({checkTypes: true, env: env});
 
     //  id :: a -> a
     var id = def('id', {}, [a, a], R.identity);
@@ -1488,7 +1551,7 @@ describe('def', function() {
 
   it('supports polymorphism via type variables', function() {
     var env = $.env.concat([Either, Maybe, $Pair]);
-    var def = $.create(true, env);
+    var def = $.create({checkTypes: true, env: env});
 
     //  aa :: a -> a -> (a, a)
     var aa = def('aa', {}, [a, a, $Pair(a, a)], Pair);
@@ -1626,7 +1689,7 @@ describe('def', function() {
 
   it('supports arbitrary nesting of types', function() {
     var env = $.env.concat([Either, $.Integer]);
-    var def = $.create(true, env);
+    var def = $.create({checkTypes: true, env: env});
 
     //  unnest :: [[a]] -> [a]
     var unnest =
@@ -1719,7 +1782,7 @@ describe('def', function() {
 
   it('does not allow heterogeneous arrays', function() {
     var env = $.env.concat([Either]);
-    var def = $.create(true, env);
+    var def = $.create({checkTypes: true, env: env});
 
     //  concat :: [a] -> [a] -> [a]
     var concat =
@@ -1815,7 +1878,7 @@ describe('def', function() {
     );
 
     var env = $.env.concat([Either, Pair]);
-    var def = $.create(true, env);
+    var def = $.create({checkTypes: true, env: env});
 
     //  id :: a -> a
     var id = def('id', {}, [a, a], R.identity);
@@ -1864,7 +1927,7 @@ describe('def', function() {
 
   it('supports type-class constraints', function() {
     var env = $.env.concat([Integer, Maybe, Either]);
-    var def = $.create(true, env);
+    var def = $.create({checkTypes: true, env: env});
 
     //  hasMethods :: [String] -> a -> Boolean
     var hasMethods = R.curry(function(names, x) {
