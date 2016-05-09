@@ -1502,6 +1502,32 @@ describe('def', function() {
                    'Since there is no type of which all the above values are members, the type-variable constraint has been violated.\n'));
   });
 
+  it('supports the "Pair" type constructor', function() {
+    var env = $.env.concat([$.Pair]);
+    var def = $.create({checkTypes: true, env: env});
+
+    //  fst :: Pair a b -> a
+    var fst = def('fst', {}, [$.Pair(a, b), a], R.nth(0));
+
+    //  snd :: Pair a b -> b
+    var snd = def('snd', {}, [$.Pair(a, b), b], R.nth(1));
+
+    eq(fst(['foo', 42]), 'foo');
+    eq(snd(['foo', 42]), 42);
+
+    throws(function() { fst(['foo']); },
+           errorEq(TypeError,
+                   'Invalid value\n' +
+                   '\n' +
+                   'fst :: Pair a b -> a\n' +
+                   '       ^^^^^^^^\n' +
+                   '          1\n' +
+                   '\n' +
+                   '1)  ["foo"] :: Array String\n' +
+                   '\n' +
+                   'The value at position 1 is not a member of ‘Pair a b’.\n'));
+  });
+
   it('uses R.toString-like string representations', function() {
     //  f :: Null -> Null
     var f = def('f', {}, [$.Null, $.Null], function(x) { return x; });
