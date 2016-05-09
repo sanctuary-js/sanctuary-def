@@ -1,11 +1,17 @@
 ESLINT = node_modules/.bin/eslint --config node_modules/sanctuary-style/eslint-es3.json --env es3
 ISTANBUL = node_modules/.bin/istanbul
 NPM = npm
-XYZ = node_modules/.bin/xyz --repo git@github.com:sanctuary-js/sanctuary-def.git
+XYZ = node_modules/.bin/xyz --repo git@github.com:sanctuary-js/sanctuary-def.git --script scripts/prepublish
 
 
 .PHONY: all
-all:
+all: LICENSE
+
+.PHONY: LICENSE
+LICENSE:
+	cp -- '$@' '$@.orig'
+	sed 's/Copyright (c) .* Sanctuary/Copyright (c) $(shell git log --date=format:%Y --pretty=format:%ad | sort -r | head -n 1) Sanctuary/' '$@.orig' >'$@'
+	rm -- '$@.orig'
 
 
 .PHONY: lint
