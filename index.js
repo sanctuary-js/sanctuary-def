@@ -581,6 +581,14 @@
     K(true)
   );
 
+  //  Pair :: (Type, Type) -> Type
+  $.Pair = $.BinaryType(
+    'sanctuary-def/Pair',
+    function(x) { return $$typeEq('Array')(x) && x.length === 2; },
+    function(pair) { return [pair[0]]; },
+    function(pair) { return [pair[1]]; }
+  );
+
   //  ValidDate :: Type
   $.ValidDate = NullaryType(
     'sanctuary-def/ValidDate',

@@ -311,6 +311,15 @@ Type comprising every "plain" Object value. Specifically, values created via:
   - the `new` operator in conjunction with `Object` or a custom
     constructor function.
 
+#### `Pair`
+
+```haskell
+$.Pair :: (Type, Type) -> Type
+```
+
+Constructor for tuple types of length 2. Arrays are said to represent tuples.
+`['foo', 42]` is a member of `Pair String Number`.
+
 #### `PositiveFiniteNumber`
 
 ```haskell
