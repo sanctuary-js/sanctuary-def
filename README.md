@@ -430,6 +430,37 @@ counterpart).
   - [`$.String`](#string)
   - [`$.Undefined`](#undefined)
 
+### `test`
+
+`$.test` takes three arguments:
+
+  - an environment (a list of [types](#types));
+  - a type; and
+  - a value.
+
+It returns `true` if the value is a member of the specified type; `false`
+otherwise.
+
+The environment is only significant when the second argument to `$.test`
+contains [type variables](#typevariable). In other cases, simply provide
+`[]` or [`$.env`](#env).
+
+It's common to define a more restrictive type in terms of a more general one.
+`$.test` enables this. For example, one could use `$.test([], $.Integer, x)`
+in the definition of NonNegativeInteger:
+
+```javascript
+//    NonNegativeInteger :: Type
+const NonNegativeInteger = $.NullaryType(
+  'my-package/NonNegativeInteger',
+  x => $.test([], $.Integer, x) && x >= 0
+);
+```
+
+Using types as predicates is useful in other contexts too. For example, one
+could define a record type for each endpoint of a REST API and validate the
+bodies of incoming POST requests against these types.
+
 ### Type constructors
 
 sanctuary-def provides several functions for defining types.
@@ -502,7 +533,7 @@ To define a nullary type `t` one must provide:
   - the name of `t` (exposed as `t.name`); and
 
   - a predicate which accepts any JavaScript value and returns `true` if
-    (and only if) the value is a member of `t` (exposed as `t.test`).
+    (and only if) the value is a member of `t`.
 
 ```haskell
 NullaryType :: String -> (Any -> Boolean) -> Type
@@ -523,7 +554,7 @@ const Integer = $.NullaryType(
 //    NonZeroInteger :: Type
 const NonZeroInteger = $.NullaryType(
   'my-package/NonZeroInteger',
-  x => Integer.test(x) && Number(x) !== 0
+  x => $.test([], Integer, x) && Number(x) !== 0
 );
 
 //    rem :: Integer -> NonZeroInteger -> Integer
@@ -586,8 +617,7 @@ To define a unary type `t a` one must provide:
   - the name of `t` (exposed as `t.name`);
 
   - a predicate which accepts any JavaScript value and returns `true`
-    if (and only if) the value is a member of `t x` for some type `x`
-    (exposed as `t.test`);
+    if (and only if) the value is a member of `t x` for some type `x`;
 
   - a function which takes any value of type `t a` and returns an array
     of the values of type `a` contained in the `t` (exposed as `t._1`); and
@@ -659,7 +689,7 @@ To define a binary type `t a b` one must provide:
 
   - a predicate which accepts any JavaScript value and returns `true`
     if (and only if) the value is a member of `t x y` for some types
-    `x` and `y` (exposed as `t.test`);
+    `x` and `y`;
 
   - a function which takes any value of type `t a b` and returns an array
     of the values of type `a` contained in the `t` (exposed as `t._1`);
