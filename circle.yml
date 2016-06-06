@@ -1,17 +1,15 @@
 dependencies:
   override:
-    - make setup
+    - rm -rf node_modules
+    - case $CIRCLE_NODE_INDEX in 0) make setup ;; 1) nvm exec 0.12.7 make setup ;; 2) nvm exec 4 make setup ;; 3) nvm exec 5 make setup ;; esac:
+        parallel: true
 
 machine:
   node:
-    version: 0.10.34
+    version: 0.10.45
 
 test:
   override:
     - make lint
-    - make test
-    - nvm install 0.12.7
-    - nvm alias default 0.12.7
-    - make test
-    - nvm use 4 && make test
-    - nvm use 5 && make test
+    - case $CIRCLE_NODE_INDEX in 0) make test ;; 1) nvm exec 0.12.7 make test ;; 2) nvm exec 4 make test ;; 3) nvm exec 5 make test ;; esac:
+        parallel: true
