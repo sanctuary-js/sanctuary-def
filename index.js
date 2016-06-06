@@ -762,85 +762,15 @@
     }
   };
 
-  //  unexpectedType :: Any -> TypeError
-  var unexpectedType = /* istanbul ignore next */ function(x) {
-    return new TypeError(
-      'Unexpected type ' +
-      LEFT_SINGLE_QUOTATION_MARK + x + RIGHT_SINGLE_QUOTATION_MARK
-    );
-  };
-
-  //  equalTypes :: (Type, Type, Boolean) -> Boolean
-  var equalTypes = function equalTypes(t1, t2, loose) {
-    if (t1.type === 'INCONSISTENT' || t2.type === 'INCONSISTENT') return loose;
-    if (t1.type === 'UNKNOWN' || t2.type === 'UNKNOWN') return true;
-    switch (t1.type) {
-      case 'NULLARY':
-        return t1.type === t2.type && t1.name === t2.name;
-      case 'UNARY':
-        return t1.type === t2.type && t1.name === t2.name &&
-               equalTypes(t1.$1, t2.$1, loose);
-      case 'BINARY':
-        return t1.type === t2.type && t1.name === t2.name &&
-               equalTypes(t1.$1, t2.$1, loose) &&
-               equalTypes(t1.$2, t2.$2, loose);
-      case 'ENUM':
-        return t1.type === t2.type && show(t1) === show(t2);
-      case 'RECORD':
-        return t1.type === t2.type && show(t1) === show(t2);
-      /* istanbul ignore next */
-      default:
-        throw unexpectedType(t1.type);
-    }
-  };
-
-  //  chooseType :: (Type, Type) -> Type
-  var chooseType = function(t1, t2) {
-    return t1.type === 'UNKNOWN' ? t2 : t1;
-  };
-
-  //  mergeTypes :: (Type, Type) -> Type
-  //
-  //  Either String ??? `mergeTypes` Either ??? Number = Either String Number
-  var mergeTypes = function(t1, t2) {
-    return (
-      t1.type === 'UNARY' ?
-        UnaryType.from(t1)(chooseType(t1.$1, t2.$1)) :
-      t1.type === 'BINARY' ?
-        BinaryType.from(t1)(chooseType(t1.$1, t2.$1),
-                            chooseType(t1.$2, t2.$2)) :
-      // else
-        chooseType(t1, t2)
-    );
-  };
-
-  //  commonTypes :: ([[Type]], Boolean) -> [Type]
-  //
-  //  [[String, RegexFlags], [String, RegexFlags]] ---> [String, RegexFlags]
-  //
-  //  [[Boolean], [Boolean], [Boolean], [Number]] ---> []
-  //
-  //  [[Array ???], [Array String], [Array ???]] ---> [Array String]
-  //
-  //  [[Either String ???], [Either ??? Number]] ---> [Either String Number]
-  var commonTypes = function(typeses, loose) {
-    return reduce(typeses[0], [], function(types, t) {
-      var st = reduce(typeses, {ok: true, type: t}, function(st, types) {
-        var st$ = reduce(types, {ok: false, type: st.type}, function(st, t) {
-          var equal = equalTypes(st.type, t, loose);
-          return {ok: equal || st.ok,
-                  type: equal ? mergeTypes(st.type, t) : st.type};
-        });
-        return {type: st$.type, ok: st.ok && st$.ok};
-      });
-      return st.ok ? types.concat([st.type]) : types;
-    });
-  };
-
-  //  _determineActualTypes :: (Boolean, [Type], [Object], [Any]) -> [Type]
-  var _determineActualTypes = function recur(loose, env, seen, values) {
-    //  typeses :: [[Type]]
-    var typeses = map(values, function(value) {
+  //  _determineActualTypes :: ... -> [Type]
+  var _determineActualTypes = function recur(
+    loose,          // :: Boolean
+    env,            // :: [Type]
+    types,          // :: [Type]
+    seen,           // :: [Object]
+    values          // :: [Any]
+  ) {
+    var refine = function(types, value) {
       var seen$;
       if (typeof value === 'object' && value != null ||
           typeof value === 'function') {
@@ -851,24 +781,30 @@
       } else {
         seen$ = seen;
       }
-      return chain(env, function(t) {
+      return chain(types, function(t) {
         return (
           t.name === 'sanctuary-def/Nullable' || !t._test(value) ?
             [] :
           t.type === 'UNARY' ?
-            map(recur(loose, env, seen$, t._1(value)), UnaryType.from(t)) :
+            map(recur(loose, env, env, seen$, t._1(value)),
+                UnaryType.from(t)) :
           t.type === 'BINARY' ?
             BinaryType.xprod(t,
-                             recur(loose, env, seen$, t._1(value)),
-                             recur(loose, env, seen$, t._2(value))) :
+                             t.$1.type === 'UNKNOWN' ?
+                               recur(loose, env, env, seen$, t._1(value)) :
+                               [t.$1],
+                             t.$2.type === 'UNKNOWN' ?
+                               recur(loose, env, env, seen$, t._2(value)) :
+                               [t.$2]) :
           // else
             [t]
         );
       });
-    });
+    };
+
     return isEmpty(values) ?
       [Unknown] :
-      or(commonTypes(typeses, loose), [Inconsistent]);
+      or(reduce(values, types, refine), loose ? [Inconsistent] : []);
   };
 
   //  rejectInconsistent :: [Type] -> [Type]
@@ -878,20 +814,22 @@
     });
   };
 
-  //  determineActualTypesStrict :: ([Type], [Any]) -> [Type]
-  var determineActualTypesStrict = function(env, values) {
-    return rejectInconsistent(_determineActualTypes(false, env, [], values));
+  //  determineActualTypesStrict :: ([Type], [Type], [Any]) -> [Type]
+  var determineActualTypesStrict = function(env, types, values) {
+    var types$ = _determineActualTypes(false, env, types, [], values);
+    return rejectInconsistent(types$);
   };
 
-  //  determineActualTypesLoose :: ([Type], [Any]) -> [Type]
-  var determineActualTypesLoose = function(env, values) {
-    return rejectInconsistent(_determineActualTypes(true, env, [], values));
+  //  determineActualTypesLoose :: ([Type], [Type], [Any]) -> [Type]
+  var determineActualTypesLoose = function(env, types, values) {
+    var types$ = _determineActualTypes(true, env, types, [], values);
+    return rejectInconsistent(types$);
   };
 
   //  valuesToPairs :: ([Type], [Any]) -> [Pair Any [Type]]
   var valuesToPairs = function(env, values) {
     return map(values, function(x) {
-      return [x, determineActualTypesLoose(env, [x])];
+      return [x, determineActualTypesLoose(env, env, [x])];
     });
   };
 
@@ -942,8 +880,11 @@
             }
           }
           if (has(typeVarName, typeVarMap)) {
-            okTypes = filterTypesByValues(typeVarMap[typeVarName].types,
-                                          values);
+            okTypes = _determineActualTypes(false,
+                                            env,
+                                            typeVarMap[typeVarName].types,
+                                            [],
+                                            values);
             if (isEmpty(okTypes)) {
               return Left(typeVarConstraintViolation2(
                 name,
@@ -958,7 +899,7 @@
               ));
             }
           } else {
-            okTypes = determineActualTypesStrict(env, values);
+            okTypes = determineActualTypesStrict(env, env, values);
             if (isEmpty(okTypes) && !isEmpty(values)) {
               return Left(typeVarConstraintViolation(
                 name,
@@ -1032,7 +973,7 @@
 
         default:
           return Right({typeVarMap: typeVarMap,
-                        types: determineActualTypesStrict(env, values)});
+                        types: determineActualTypesStrict(env, env, values)});
       }
     };
   };
@@ -1064,19 +1005,10 @@
   };
 
   //  test :: ([Type], Type, Any) -> Boolean
-  var test = $.test = function(_env, t, x) {
+  $.test = function(_env, t, x) {
     var env = applyParameterizedTypes(_env);
     var f = _satisfactoryTypes(env, 'name', {}, [t], 0);
     return f({}, t, [x], [], []).isRight;
-  };
-
-  //  filterTypesByValues :: ([Type], [Any]) -> [Type]
-  var filterTypesByValues = function(env, values) {
-    return filter(env, function(t) {
-      return all(values, function(x) {
-        return test(env, t, x);
-      });
-    });
   };
 
   //  invalidArgumentsLength :: (String, Integer, Integer) -> Error
