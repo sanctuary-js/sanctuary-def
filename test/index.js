@@ -1927,30 +1927,6 @@ describe('def', function() {
                    'Since there is no type of which all the above values are members, the type-variable constraint has been violated.\n'));
   });
 
-  it('supports values of "foreign" types', function() {
-    //  id :: a -> a
-    var id = def('id', {}, [a, a], R.identity);
-
-    //  x :: Foreign
-    var x = {'@@type': 'my-package/Foreign'};
-
-    eq(id(x), x);
-    eq(id([x]), [x]);
-    eq(id([x, x]), [x, x]);
-
-    throws(function() { id([{'@@type': 'my-package/Foo'}, {'@@type': 'my-package/Bar'}]); },
-           errorEq(TypeError,
-                   'Type-variable constraint violation\n' +
-                   '\n' +
-                   'id :: a -> a\n' +
-                   '      ^\n' +
-                   '      1\n' +
-                   '\n' +
-                   '1)  [{"@@type": "my-package/Foo"}, {"@@type": "my-package/Bar"}] :: Array ???\n' +
-                   '\n' +
-                   'Since there is no type of which all the above values are members, the type-variable constraint has been violated.\n'));
-  });
-
   it('supports type-class constraints', function() {
     var env = $.env.concat([Integer, Maybe, Either]);
     var def = $.create({checkTypes: true, env: env});

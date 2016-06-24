@@ -561,6 +561,7 @@
 
   //  defaultEnv :: [Type]
   var defaultEnv = $.env = applyParameterizedTypes([
+    $.Arguments = type0('Arguments'),
     $.Array     = type1('Array', id),
     $.Boolean   = type0('Boolean'),
     $.Date      = type0('Date'),
@@ -838,7 +839,6 @@
 
   //  _determineActualTypes :: (Boolean, [Type], [Object], [Any]) -> [Type]
   var _determineActualTypes = function recur(loose, env, seen, values) {
-    if (isEmpty(values)) return [Unknown];
     //  typeses :: [[Type]]
     var typeses = map(values, function(value) {
       var seen$;
@@ -866,18 +866,9 @@
         );
       });
     });
-    //  common :: [Type]
-    var common = commonTypes(typeses, loose);
-    if (!isEmpty(common)) return common;
-    //  If none of the values is a member of a type in the environment,
-    //  and all the values have the same type identifier, the values are
-    //  members of a "foreign" type.
-    if (isEmpty(filterTypesByValues(env, values)) &&
-        all(values.slice(1), $$typeEq($$type(values[0])))) {
-      //  Create a nullary type for the foreign type.
-      return [type0($$type(values[0]))];
-    }
-    return [Inconsistent];
+    return isEmpty(values) ?
+      [Unknown] :
+      or(commonTypes(typeses, loose), [Inconsistent]);
   };
 
   //  rejectInconsistent :: [Type] -> [Type]

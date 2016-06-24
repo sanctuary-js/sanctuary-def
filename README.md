@@ -165,6 +165,14 @@ $.Any :: Type
 
 Type comprising every JavaScript value.
 
+#### `Arguments`
+
+```haskell
+$.Arguments :: Type
+```
+
+Type comprising every [`arguments`][2] object.
+
 #### `Array`
 
 ```haskell
@@ -196,7 +204,7 @@ $.Error :: Type
 ```
 
 Type comprising every Error value, including values of more specific
-constructors such as [`SyntaxError`][2] and [`TypeError`][3].
+constructors such as [`SyntaxError`][3] and [`TypeError`][4].
 
 #### `FiniteNumber`
 
@@ -222,7 +230,7 @@ $.Integer :: Type
 ```
 
 Type comprising every integer in the range
-[[`Number.MIN_SAFE_INTEGER`][4] .. [`Number.MAX_SAFE_INTEGER`][5]].
+[[`Number.MIN_SAFE_INTEGER`][5] .. [`Number.MAX_SAFE_INTEGER`][6]].
 
 #### `NegativeFiniteNumber`
 
@@ -307,7 +315,7 @@ $.Object :: Type
 Type comprising every "plain" Object value. Specifically, values created via:
 
   - object literal syntax;
-  - [`Object.create`][6]; or
+  - [`Object.create`][7]; or
   - the `new` operator in conjunction with `Object` or a custom
     constructor function.
 
@@ -417,6 +425,7 @@ counterpart).
 
 `$.env` is a list of [types](#types):
 
+  - [`$.Arguments`](#arguments)
   - [`$.Array`](#array)
   - [`$.Boolean`](#boolean)
   - [`$.Date`](#date)
@@ -763,11 +772,11 @@ showCard(Pair('X', '♠'));
 
 #### `EnumType`
 
-`EnumType` is used to construct [enumerated types][7].
+`EnumType` is used to construct [enumerated types][8].
 
 To define an enumerated type one must provide:
 
-  - an array of values with distinct [`R.toString`][8] representations.
+  - an array of values with distinct [`R.toString`][9] representations.
 
 ```haskell
 EnumType :: [Any] -> Type
@@ -896,8 +905,8 @@ _concat([1, 2], 'buzz');
 
 The type of `_concat` is misleading: it suggests that it can operate on any
 two values of *any* one type. In fact there's an implicit constraint, since
-the type must support concatenation (in [mathematical][9] terms, the type
-must have a [semigroup][10]). The run-time type errors that result when this
+the type must support concatenation (in [mathematical][10] terms, the type
+must have a [semigroup][11]). The run-time type errors that result when this
 constraint is violated are not particularly descriptive:
 
 ```javascript
@@ -953,12 +962,13 @@ Multiple constraints may be placed on a type variable by including multiple
 
 
 [1]: http://ramdajs.com/docs/#__
-[2]: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/SyntaxError
-[3]: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/TypeError
-[4]: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number/MIN_SAFE_INTEGER
-[5]: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number/MAX_SAFE_INTEGER
-[6]: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/create
-[7]: https://en.wikipedia.org/wiki/Enumerated_type
-[8]: http://ramdajs.com/docs/#toString
-[9]: https://en.wikipedia.org/wiki/Semigroup
-[10]: https://github.com/fantasyland/fantasy-land#semigroup
+[2]: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Functions/arguments
+[3]: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/SyntaxError
+[4]: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/TypeError
+[5]: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number/MIN_SAFE_INTEGER
+[6]: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number/MAX_SAFE_INTEGER
+[7]: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/create
+[8]: https://en.wikipedia.org/wiki/Enumerated_type
+[9]: http://ramdajs.com/docs/#toString
+[10]: https://en.wikipedia.org/wiki/Semigroup
+[11]: https://github.com/fantasyland/fantasy-land#semigroup
