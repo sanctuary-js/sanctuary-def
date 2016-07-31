@@ -23,7 +23,7 @@ const Integer = ...;
 //    NonZeroInteger :: Type
 const NonZeroInteger = ...;
 
-//    env :: [Type]
+//    env :: Array Type
 const env = $.env.concat([Integer, NonZeroInteger]);
 ```
 
@@ -165,6 +165,14 @@ $.Any :: Type
 
 Type comprising every JavaScript value.
 
+#### `AnyFunction`
+
+```haskell
+$.AnyFunction :: Type
+```
+
+Type comprising every Function value.
+
 #### `Arguments`
 
 ```haskell
@@ -218,10 +226,15 @@ Type comprising every [`ValidNumber`](#validnumber) value except `Infinity` and
 #### `Function`
 
 ```haskell
-$.Function :: Type
+$.Function :: Array Type -> Type
 ```
 
-Type comprising every Function value.
+Constructor for Function types.
+
+Examples:
+
+  - `$.Function([$.Date, $.String])` represents the `Date -> String` type; and
+  - `$.Function([a, b, a])` represents the `(a, b) -> a` type.
 
 #### `Integer`
 
@@ -425,12 +438,12 @@ counterpart).
 
 `$.env` is a list of [types](#types):
 
+  - [`$.AnyFunction`](#anyfunction)
   - [`$.Arguments`](#arguments)
   - [`$.Array`](#array)
   - [`$.Boolean`](#boolean)
   - [`$.Date`](#date)
   - [`$.Error`](#error)
-  - [`$.Function`](#function)
   - [`$.Null`](#null)
   - [`$.Number`](#number)
   - [`$.Object`](#object)
@@ -473,63 +486,6 @@ bodies of incoming POST requests against these types.
 ### Type constructors
 
 sanctuary-def provides several functions for defining types.
-
-#### `TypeVariable`
-
-Polymorphism is powerful. Not being able to define a function for all types
-would be very limiting indeed: one couldn't even define the identity function!
-
-```haskell
-TypeVariable :: String -> Type
-```
-
-Before defining a polymorphic function one must define one or more type
-variables:
-
-```javascript
-const a = $.TypeVariable('a');
-const b = $.TypeVariable('b');
-
-//    id :: a -> a
-const id = def('id', {}, [a, a], x => x);
-
-id(42);
-// => 42
-
-id(null);
-// => null
-```
-
-The same type variable may be used in multiple positions, creating a
-constraint:
-
-```javascript
-//    cmp :: a -> a -> Number
-const cmp =
-def('cmp', {}, [a, a, $.Number], (x, y) => x < y ? -1 : x > y ? 1 : 0);
-
-cmp(42, 42);
-// => 0
-
-cmp('a', 'z');
-// => -1
-
-cmp('z', 'a');
-// => 1
-
-cmp(0, '1');
-// ! TypeError: Type-variable constraint violation
-//
-//   cmp :: a -> a -> Number
-//          ^    ^
-//          1    2
-//
-//   1)  0 :: Number
-//
-//   2)  "1" :: String
-//
-//   Since there is no type of which all the above values are members, the type-variable constraint has been violated.
-```
 
 #### `NullaryType`
 
@@ -602,7 +558,7 @@ rem(42, 0);
 defined via `UnaryType`.
 
 ```javascript
-//    sum :: [Number] -> Number
+//    sum :: Array Number -> Number
 const sum =
 def('sum', {}, [$.Array($.Number), $.Number], xs => xs.reduce((x, y) => x + y, 0));
 
@@ -629,12 +585,13 @@ To define a unary type `t a` one must provide:
     if (and only if) the value is a member of `t x` for some type `x`;
 
   - a function which takes any value of type `t a` and returns an array
-    of the values of type `a` contained in the `t` (exposed as `t._1`); and
+    of the values of type `a` contained in the `t` (exposed as
+    `t.types.$1.extractor`); and
 
-  - the type of `a` (exposed as `t.$1`).
+  - the type of `a` (exposed as `t.types.$1.type`).
 
 ```haskell
-UnaryType :: String -> (Any -> Boolean) -> (t a -> [a]) -> Type -> Type
+UnaryType :: String -> (Any -> Boolean) -> (t a -> Array a) -> Type -> Type
 ```
 
 For example:
@@ -650,18 +607,18 @@ const Maybe = $.UnaryType(
 //    Nothing :: Maybe a
 const Nothing = {
   '@@type': 'my-package/Maybe',
-  'isJust': false,
-  'isNothing': true,
-  'toString': () => 'Nothing',
+  isJust: false,
+  isNothing: true,
+  toString: () => 'Nothing',
 };
 
 //    Just :: a -> Maybe a
 const Just = x => ({
   '@@type': 'my-package/Maybe',
-  'isJust': true,
-  'isNothing': false,
-  'toString': () => 'Just(' + JSON.stringify(x) + ')',
-  'value': x,
+  isJust: true,
+  isNothing: false,
+  toString: () => 'Just(' + JSON.stringify(x) + ')',
+  value: x,
 });
 
 //    fromMaybe :: a -> Maybe a -> a
@@ -701,17 +658,19 @@ To define a binary type `t a b` one must provide:
     `x` and `y`;
 
   - a function which takes any value of type `t a b` and returns an array
-    of the values of type `a` contained in the `t` (exposed as `t._1`);
+    of the values of type `a` contained in the `t` (exposed as
+    `t.types.$1.extractor`);
 
   - a function which takes any value of type `t a b` and returns an array
-    of the values of type `b` contained in the `t` (exposed as `t._2`);
+    of the values of type `b` contained in the `t` (exposed as
+    `t.types.$2.extractor`);
 
-  - the type of `a` (exposed as `t.$1`); and
+  - the type of `a` (exposed as `t.types.$1.type`); and
 
-  - the type of `b` (exposed as `t.$2`).
+  - the type of `b` (exposed as `t.types.$2.type`).
 
 ```haskell
-BinaryType :: String -> (Any -> Boolean) -> (t a b -> [a]) -> (t a b -> [b]) -> Type -> Type -> Type
+BinaryType :: String -> (Any -> Boolean) -> (t a b -> Array a) -> (t a b -> Array b) -> Type -> Type -> Type
 ```
 
 For example:
@@ -730,8 +689,8 @@ const Pair = def('Pair', {}, [a, b, $Pair(a, b)], (x, y) => ({
   '0': x,
   '1': y,
   '@@type': 'my-package/Pair',
-  'length': 2,
-  'toString': () => 'Pair(' + JSON.stringify(x) + ', ' + JSON.stringify(y) + ')',
+  length: 2,
+  toString: () => 'Pair(' + JSON.stringify(x) + ', ' + JSON.stringify(y) + ')',
 }));
 
 //    Rank :: Type
@@ -779,7 +738,7 @@ To define an enumerated type one must provide:
   - an array of values with distinct [`R.toString`][9] representations.
 
 ```haskell
-EnumType :: [Any] -> Type
+EnumType :: Array Any -> Type
 ```
 
 For example:
@@ -827,7 +786,7 @@ To define a record type one must provide:
   - an object mapping field name to type.
 
 ```haskell
-RecordType :: {Type} -> Type
+RecordType :: StrMap Type -> Type
 ```
 
 For example:
@@ -851,12 +810,12 @@ dist({x: 0, y: 0}, {x: NaN, y: NaN});
 // ! TypeError: Invalid value
 //
 //   dist :: { x :: FiniteNumber, y :: FiniteNumber } -> { x :: FiniteNumber, y :: FiniteNumber } -> FiniteNumber
-//                                                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-//                                                                          1
+//                                                              ^^^^^^^^^^^^
+//                                                                   1
 //
-//   1)  {"x": NaN, "y": NaN} :: Object, StrMap Number
+//   1)  NaN :: Number
 //
-//   The value at position 1 is not a member of ‘{ x :: FiniteNumber, y :: FiniteNumber }’.
+//   The value at position 1 is not a member of ‘FiniteNumber’.
 
 dist(0);
 // ! TypeError: Invalid value
@@ -869,6 +828,115 @@ dist(0);
 //
 //   The value at position 1 is not a member of ‘{ x :: FiniteNumber, y :: FiniteNumber }’.
 ```
+
+#### `TypeVariable`
+
+Polymorphism is powerful. Not being able to define a function for all types
+would be very limiting indeed: one couldn't even define the identity function!
+
+```haskell
+TypeVariable :: String -> Type
+```
+
+Before defining a polymorphic function one must define one or more type
+variables:
+
+```javascript
+const a = $.TypeVariable('a');
+const b = $.TypeVariable('b');
+
+//    id :: a -> a
+const id = def('id', {}, [a, a], x => x);
+
+id(42);
+// => 42
+
+id(null);
+// => null
+```
+
+The same type variable may be used in multiple positions, creating a
+constraint:
+
+```javascript
+//    cmp :: a -> a -> Number
+const cmp =
+def('cmp', {}, [a, a, $.Number], (x, y) => x < y ? -1 : x > y ? 1 : 0);
+
+cmp(42, 42);
+// => 0
+
+cmp('a', 'z');
+// => -1
+
+cmp('z', 'a');
+// => 1
+
+cmp(0, '1');
+// ! TypeError: Type-variable constraint violation
+//
+//   cmp :: a -> a -> Number
+//          ^    ^
+//          1    2
+//
+//   1)  0 :: Number
+//
+//   2)  "1" :: String
+//
+//   Since there is no type of which all the above values are members, the type-variable constraint has been violated.
+```
+
+#### `UnaryTypeVariable`
+
+As its name suggests, `UnaryTypeVariable` combines [`UnaryType`](#unarytype)
+and [`TypeVariable`](#typevariable).
+
+To define a unary type variable `t a` one must provide:
+
+  - a name (conventionally matching `^[a-z]$`); and
+
+  - the type of `a` (exposed as `t.types.$1.type`).
+
+```haskell
+UnaryTypeVariable :: String -> Type -> Type
+```
+
+Consider the type of a generalized `map`:
+
+```haskell
+map :: Functor f => (a -> b) -> f a -> f b
+```
+
+`f` is a unary type variable. With two (regular) type variables, one unary
+type variable, and one [type class](#type-classes) it's possible to define
+a fully polymorphic `map` function:
+
+```javascript
+const a = $.TypeVariable('a');
+const b = $.TypeVariable('b');
+const f = $.UnaryTypeVariable('f');
+
+//    Functor :: TypeClass
+const Functor = ...;
+
+//    map :: Functor f => (a -> b) -> f a -> f b
+const map =
+def('map',
+    {f: [Functor]},
+    [$.Function([a, b]), f(a), f(b)],
+    (fn, functor) => functor.map(fn));
+```
+
+Whereas a regular type variable is fully resolved (`a` might become
+`Array (Array String)`, for example), a unary type variable defers to
+its type argument, which may itself be a type variable. The type argument
+corresponds to the type argument of a unary type or the *second* type
+argument of a binary type. The second type argument of `Map k v`, for
+example, is `v`. One could replace `Functor => f` with `Map k` or with
+`Map Integer`, but not with `Map`.
+
+This shallow inspection makes it possible to constrain a value's "outer"
+and "inner" types independently.
 
 ### Type classes
 
