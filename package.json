@@ -17,7 +17,7 @@
     "mocha": "3.x.x",
     "ramda": "0.21.x",
     "sanctuary-style": "0.1.x",
-    "xyz": "0.5.x"
+    "xyz": "1.0.x"
   },
   "files": [
     "/LICENSE",
