@@ -86,19 +86,16 @@ inc(7);
 One may wish to partially apply a function whose parameters are in the "wrong"
 order. All functions defined via sanctuary-def accommodate this by accepting
 "placeholders". A placeholder is an object with a `'@@functional/placeholder'`
-property whose value is `true`. [`R.__`][R.__] is one such object.
-A placeholder indicates an argument yet to be provided. For example:
+property whose value is `true`. `$.__` is one such object. A placeholder
+indicates an argument yet to be provided. For example:
 
 ```javascript
-//    _ :: Placeholder
-const _ = {'@@functional/placeholder': true};
-
 //    concatS :: String -> String -> String
 const concatS =
 def('concatS', {}, [$.String, $.String, $.String], (x, y) => x + y);
 
 //    exclaim :: String -> String
-const exclaim = concatS(_, '!');
+const exclaim = concatS($.__, '!');
 
 exclaim('ahoy');
 // => 'ahoy!'
@@ -1032,7 +1029,6 @@ Multiple constraints may be placed on a type variable by including multiple
 
 [FL:Semigroup]:     https://github.com/fantasyland/fantasy-land#semigroup
 [Object.create]:    https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/create
-[R.__]:             http://ramdajs.com/docs/#__
 [R.toString]:       http://ramdajs.com/docs/#toString
 [SyntaxError]:      https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/SyntaxError
 [TypeError]:        https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/TypeError
