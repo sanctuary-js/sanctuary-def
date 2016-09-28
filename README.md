@@ -86,8 +86,8 @@ inc(7);
 One may wish to partially apply a function whose parameters are in the "wrong"
 order. All functions defined via sanctuary-def accommodate this by accepting
 "placeholders". A placeholder is an object with a `'@@functional/placeholder'`
-property whose value is `true`. [`R.__`][1] is one such object. A placeholder
-indicates an argument yet to be provided. For example:
+property whose value is `true`. [`R.__`][R.__] is one such object.
+A placeholder indicates an argument yet to be provided. For example:
 
 ```javascript
 //    _ :: Placeholder
@@ -179,7 +179,7 @@ Type comprising every Function value.
 $.Arguments :: Type
 ```
 
-Type comprising every [`arguments`][2] object.
+Type comprising every [`arguments`][arguments] object.
 
 #### `Array`
 
@@ -212,7 +212,7 @@ $.Error :: Type
 ```
 
 Type comprising every Error value, including values of more specific
-constructors such as [`SyntaxError`][3] and [`TypeError`][4].
+constructors such as [`SyntaxError`][SyntaxError] and [`TypeError`][TypeError].
 
 #### `FiniteNumber`
 
@@ -243,7 +243,7 @@ $.Integer :: Type
 ```
 
 Type comprising every integer in the range
-[[`Number.MIN_SAFE_INTEGER`][5] .. [`Number.MAX_SAFE_INTEGER`][6]].
+[[`Number.MIN_SAFE_INTEGER`][min] .. [`Number.MAX_SAFE_INTEGER`][max]].
 
 #### `NegativeFiniteNumber`
 
@@ -328,7 +328,7 @@ $.Object :: Type
 Type comprising every "plain" Object value. Specifically, values created via:
 
   - object literal syntax;
-  - [`Object.create`][7]; or
+  - [`Object.create`][Object.create]; or
   - the `new` operator in conjunction with `Object` or a custom
     constructor function.
 
@@ -731,11 +731,12 @@ showCard(Pair('X', '♠'));
 
 #### `EnumType`
 
-`EnumType` is used to construct [enumerated types][8].
+`EnumType` is used to construct [enumerated types][enumerated-type].
 
 To define an enumerated type one must provide:
 
-  - an array of values with distinct [`R.toString`][9] representations.
+  - an array of values with distinct [`R.toString`][R.toString]
+    representations.
 
 ```haskell
 EnumType :: Array Any -> Type
@@ -973,9 +974,9 @@ _concat([1, 2], 'buzz');
 
 The type of `_concat` is misleading: it suggests that it can operate on any
 two values of *any* one type. In fact there's an implicit constraint, since
-the type must support concatenation (in [mathematical][10] terms, the type
-must have a [semigroup][11]). The run-time type errors that result when this
-constraint is violated are not particularly descriptive:
+the type must support concatenation (in [mathematical][semigroup] terms, the
+type must have a [semigroup][FL:Semigroup]). The run-time type errors that
+result when this constraint is violated are not particularly descriptive:
 
 ```javascript
 _concat({}, {});
@@ -1029,14 +1030,14 @@ Multiple constraints may be placed on a type variable by including multiple
 `TypeClass` values in the list (e.g. `{a: [Foo, Bar, Baz]}`).
 
 
-[1]: http://ramdajs.com/docs/#__
-[2]: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Functions/arguments
-[3]: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/SyntaxError
-[4]: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/TypeError
-[5]: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number/MIN_SAFE_INTEGER
-[6]: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number/MAX_SAFE_INTEGER
-[7]: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/create
-[8]: https://en.wikipedia.org/wiki/Enumerated_type
-[9]: http://ramdajs.com/docs/#toString
-[10]: https://en.wikipedia.org/wiki/Semigroup
-[11]: https://github.com/fantasyland/fantasy-land#semigroup
+[FL:Semigroup]:     https://github.com/fantasyland/fantasy-land#semigroup
+[Object.create]:    https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/create
+[R.__]:             http://ramdajs.com/docs/#__
+[R.toString]:       http://ramdajs.com/docs/#toString
+[SyntaxError]:      https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/SyntaxError
+[TypeError]:        https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/TypeError
+[arguments]:        https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Functions/arguments
+[enumerated-type]:  https://en.wikipedia.org/wiki/Enumerated_type
+[max]:              https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number/MAX_SAFE_INTEGER
+[min]:              https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number/MIN_SAFE_INTEGER
+[semigroup]:        https://en.wikipedia.org/wiki/Semigroup
