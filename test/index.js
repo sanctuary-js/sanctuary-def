@@ -348,9 +348,9 @@ describe('def', function() {
     var triple =
     def('triple', {}, [$.Number, $.Number, $.Number, $.Array($.Number)], list);
 
-    eq(triple(R.__, R.__, 3)(R.__, 2)(1), [1, 2, 3]);
+    eq(triple($.__, $.__, 3)($.__, 2)(1), [1, 2, 3]);
 
-    throws(function() { triple(R.__, /x/); },
+    throws(function() { triple($.__, /x/); },
            errorEq(TypeError,
                    'Invalid value\n' +
                    '\n' +
@@ -362,7 +362,7 @@ describe('def', function() {
                    '\n' +
                    'The value at position 1 is not a member of ‘Number’.\n'));
 
-    throws(function() { triple(R.__, R.__, /x/); },
+    throws(function() { triple($.__, $.__, /x/); },
            errorEq(TypeError,
                    'Invalid value\n' +
                    '\n' +
@@ -374,7 +374,7 @@ describe('def', function() {
                    '\n' +
                    'The value at position 1 is not a member of ‘Number’.\n'));
 
-    throws(function() { triple(R.__, 2, 3)(/x/); },
+    throws(function() { triple($.__, 2, 3)(/x/); },
            errorEq(TypeError,
                    'Invalid value\n' +
                    '\n' +
@@ -584,14 +584,14 @@ describe('def', function() {
     var a000 = def('a00', {}, [a, a, a, $.Array(a)], Array);
     var anum = a000(1);
     var astr = a000('a');
-    var bstr = a000(R.__, 'b');
+    var bstr = a000($.__, 'b');
     var abstr = astr('b');
 
     eq(anum(2, 3), [1, 2, 3]);
     eq(anum(2)(3), [1, 2, 3]);
     eq(astr('b', 'c'), ['a', 'b', 'c']);
     eq(bstr('a', 'c'), ['a', 'b', 'c']);
-    eq(astr(R.__, 'c')('b'), ['a', 'b', 'c']);
+    eq(astr($.__, 'c')('b'), ['a', 'b', 'c']);
     eq(abstr('c'), ['a', 'b', 'c']);
   });
 
@@ -1432,7 +1432,7 @@ describe('def', function() {
     def('values',
         {},
         [$.StrMap(a), $.Array(a)],
-        function(m) { return R.map(R.prop(R.__, m), keys(m)); });
+        function(m) { return R.map(R.prop($.__, m), keys(m)); });
 
     var o = Object.create(null);
     o.x = 1;
@@ -1622,7 +1622,7 @@ describe('def', function() {
                    '\n' +
                    'Since there is no type of which all the above values are members, the type-variable constraint has been violated.\n'));
 
-    throws(function() { aa(R.__, 0)(/x/); },
+    throws(function() { aa($.__, 0)(/x/); },
            errorEq(TypeError,
                    'Type-variable constraint violation\n' +
                    '\n' +
@@ -2254,7 +2254,7 @@ describe('def', function() {
                    '\n' +
                    '‘or’ requires ‘a’ to satisfy the Alternative type-class constraint; the value at position 1 does not.\n'));
 
-    throws(function() { or(R.__, Right(1)); },
+    throws(function() { or($.__, Right(1)); },
            errorEq(TypeError,
                    'Type-class constraint violation\n' +
                    '\n' +
@@ -2290,7 +2290,7 @@ describe('def', function() {
                    '\n' +
                    '‘concat’ requires ‘a’ to satisfy the Semigroup type-class constraint; the value at position 1 does not.\n'));
 
-    throws(function() { concat(R.__, /x/); },
+    throws(function() { concat($.__, /x/); },
            errorEq(TypeError,
                    'Type-class constraint violation\n' +
                    '\n' +

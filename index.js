@@ -15,7 +15,7 @@
 
   'use strict';
 
-  var $ = {};
+  var $ = {__: {'@@functional/placeholder': true}};
 
   var MAX_SAFE_INTEGER = Math.pow(2, 53) - 1;
   var MIN_SAFE_INTEGER = -MAX_SAFE_INTEGER;
