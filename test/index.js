@@ -286,6 +286,18 @@ describe('def', function() {
                    '‘def’ cannot define a function with arity greater than nine'));
   });
 
+  it('returns a function with "inspect" and "toString" methods', function() {
+    //  add :: Number -> Number -> Number
+    var add =
+    def('add',
+        {},
+        [$.Number, $.Number, $.Number],
+        function(x, y) { return x + y; });
+
+    eq(add.inspect(), 'add :: Number -> Number -> Number');
+    eq(add.toString(), 'add :: Number -> Number -> Number');
+  });
+
   it('returns a curried function', function() {
     eq($2(1).length, 1);
     eq($3(1).length, 2);
