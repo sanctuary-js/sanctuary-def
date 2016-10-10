@@ -1209,6 +1209,17 @@
     }, '').join('\n    ');
   };
 
+  //  typeSignature :: ... -> String
+  var typeSignature = function(
+    name,           // :: String
+    constraints,    // :: StrMap (Array TypeClass)
+    expTypes        // :: Array Type
+  ) {
+    return name + ' :: ' +
+             constraintsRepr(constraints, id, K(K(id))) +
+             expTypes.map(showType).join(' -> ');
+  };
+
   //  _underline :: ... -> String
   var _underline = function recur(
     t,              // :: Type
@@ -1247,9 +1258,7 @@
       };
     }, {carets: [], numbers: [], counter: 0});
 
-    return name + ' :: ' +
-             constraintsRepr(constraints, id, K(K(id))) +
-             expTypes.map(showType).join(' -> ') + '\n' +
+    return typeSignature(name, constraints, expTypes) + '\n' +
            _(name + ' :: ') +
              constraintsRepr(constraints, _, underlineConstraint) +
              st.carets.join(_(' -> ')) + '\n' +
@@ -1468,7 +1477,7 @@
       _indexes,     // :: Array Integer
       impl          // :: Function
     ) {
-      return arity(_indexes.length, function() {
+      var curried = arity(_indexes.length, function() {
         if (checkTypes) {
           var delta = _indexes.length - arguments.length;
           if (delta < 0) {
@@ -1535,6 +1544,9 @@
                        impl);
         }
       });
+      curried.inspect =
+      curried.toString = always(typeSignature(name, constraints, expTypes));
+      return curried;
     };
 
     return function def(name, constraints, expTypes, impl) {
