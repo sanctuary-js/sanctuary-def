@@ -8,23 +8,23 @@ var R = require('ramda');
 var $ = require('..');
 
 
-var throws = assert.throws;
-
 var eq = function(actual, expected) {
   assert.strictEqual(arguments.length, 2);
   assert.strictEqual(R.toString(actual), R.toString(expected));
 };
-
-//  errorEq :: TypeRep a -> String -> Error -> Boolean
-var errorEq = R.curry(function(type, message, error) {
-  return error.constructor === type && error.message === message;
-});
 
 //  hasMethods :: Array String -> a -> Boolean
 var hasMethods = R.curry(function(names, x) {
   return x != null &&
          R.all(function(k) { return typeof x[k] === 'function'; }, names);
 });
+
+//  throws :: (Function, TypeRep a, String) -> Undefined
+var throws = function(f, type, message) {
+  assert.throws(f, function(err) {
+    return err.constructor === type && err.message === message;
+  });
+};
 
 
 var def = $.create({checkTypes: true, env: $.env});
@@ -169,16 +169,16 @@ describe('create', function() {
 
   it('type checks its arguments', function() {
     throws(function() { $.create(true, []); },
-           errorEq(TypeError,
-                   'Invalid value\n' +
-                   '\n' +
-                   'create :: { checkTypes :: Boolean, env :: Array Any } -> Function\n' +
-                   '          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n' +
-                   '                               1\n' +
-                   '\n' +
-                   '1)  true :: Boolean\n' +
-                   '\n' +
-                   'The value at position 1 is not a member of ‘{ checkTypes :: Boolean, env :: Array Any }’.\n'));
+           TypeError,
+           'Invalid value\n' +
+           '\n' +
+           'create :: { checkTypes :: Boolean, env :: Array Any } -> Function\n' +
+           '          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n' +
+           '                               1\n' +
+           '\n' +
+           '1)  true :: Boolean\n' +
+           '\n' +
+           'The value at position 1 is not a member of ‘{ checkTypes :: Boolean, env :: Array Any }’.\n');
   });
 
 });
@@ -187,68 +187,68 @@ describe('def', function() {
 
   it('type checks its arguments when checkTypes is true', function() {
     throws(function() { def(); },
-           errorEq(TypeError,
-                   '‘def’ requires four arguments; received zero arguments'));
+           TypeError,
+           '‘def’ requires four arguments; received zero arguments');
 
     throws(function() { def(null, null, null, null); },
-           errorEq(TypeError,
-                   'Invalid value\n' +
-                   '\n' +
-                   'def :: String -> StrMap (Array TypeClass) -> Array Type -> Function -> Function\n' +
-                   '       ^^^^^^\n' +
-                   '         1\n' +
-                   '\n' +
-                   '1)  null :: Null\n' +
-                   '\n' +
-                   'The value at position 1 is not a member of ‘String’.\n'));
+           TypeError,
+           'Invalid value\n' +
+           '\n' +
+           'def :: String -> StrMap (Array TypeClass) -> Array Type -> Function -> Function\n' +
+           '       ^^^^^^\n' +
+           '         1\n' +
+           '\n' +
+           '1)  null :: Null\n' +
+           '\n' +
+           'The value at position 1 is not a member of ‘String’.\n');
 
     throws(function() { def('', null, null, null); },
-           errorEq(TypeError,
-                   'Invalid value\n' +
-                   '\n' +
-                   'def :: String -> StrMap (Array TypeClass) -> Array Type -> Function -> Function\n' +
-                   '                 ^^^^^^^^^^^^^^^^^^^^^^^^\n' +
-                   '                            1\n' +
-                   '\n' +
-                   '1)  null :: Null\n' +
-                   '\n' +
-                   'The value at position 1 is not a member of ‘StrMap (Array TypeClass)’.\n'));
+           TypeError,
+           'Invalid value\n' +
+           '\n' +
+           'def :: String -> StrMap (Array TypeClass) -> Array Type -> Function -> Function\n' +
+           '                 ^^^^^^^^^^^^^^^^^^^^^^^^\n' +
+           '                            1\n' +
+           '\n' +
+           '1)  null :: Null\n' +
+           '\n' +
+           'The value at position 1 is not a member of ‘StrMap (Array TypeClass)’.\n');
 
     throws(function() { def('', {}, null, null); },
-           errorEq(TypeError,
-                   'Invalid value\n' +
-                   '\n' +
-                   'def :: String -> StrMap (Array TypeClass) -> Array Type -> Function -> Function\n' +
-                   '                                             ^^^^^^^^^^\n' +
-                   '                                                 1\n' +
-                   '\n' +
-                   '1)  null :: Null\n' +
-                   '\n' +
-                   'The value at position 1 is not a member of ‘Array Type’.\n'));
+           TypeError,
+           'Invalid value\n' +
+           '\n' +
+           'def :: String -> StrMap (Array TypeClass) -> Array Type -> Function -> Function\n' +
+           '                                             ^^^^^^^^^^\n' +
+           '                                                 1\n' +
+           '\n' +
+           '1)  null :: Null\n' +
+           '\n' +
+           'The value at position 1 is not a member of ‘Array Type’.\n');
 
     throws(function() { def('', {}, [1, 2, 3], null); },
-           errorEq(TypeError,
-                   'Invalid value\n' +
-                   '\n' +
-                   'def :: String -> StrMap (Array TypeClass) -> Array Type -> Function -> Function\n' +
-                   '                                                   ^^^^\n' +
-                   '                                                    1\n' +
-                   '\n' +
-                   '1)  1 :: Number\n' +
-                   '\n' +
-                   'The value at position 1 is not a member of ‘Type’.\n'));
+           TypeError,
+           'Invalid value\n' +
+           '\n' +
+           'def :: String -> StrMap (Array TypeClass) -> Array Type -> Function -> Function\n' +
+           '                                                   ^^^^\n' +
+           '                                                    1\n' +
+           '\n' +
+           '1)  1 :: Number\n' +
+           '\n' +
+           'The value at position 1 is not a member of ‘Type’.\n');
 
     throws(function() { def('', {}, [], null); },
-           errorEq(TypeError,
-                   'Invalid value\n' +
-                   '\n' +
-                   'def :: String -> StrMap (Array TypeClass) -> Array Type -> Function -> Function\n' +
-                   '                                                           ^^^^^^^^\n' +
-                   '                                                              1\n' +
-                   '\n' +
-                   '1)  null :: Null\n' +
-                   '\n' +
-                   'The value at position 1 is not a member of ‘Function’.\n'));
+           TypeError,
+           'Invalid value\n' +
+           '\n' +
+           'def :: String -> StrMap (Array TypeClass) -> Array Type -> Function -> Function\n' +
+           '                                                           ^^^^^^^^\n' +
+           '                                                              1\n' +
+           '\n' +
+           '1)  null :: Null\n' +
+           '\n' +
+           'The value at position 1 is not a member of ‘Function’.\n');
   });
 
   it('does not type check its arguments when checkTypes is false', function() {
@@ -282,8 +282,8 @@ describe('def', function() {
     eq($9.length, 9);
 
     throws(function() { def('$10', {}, [a, a, a, a, a, a, a, a, a, a, $.Array(a)], list); },
-           errorEq(RangeError,
-                   '‘def’ cannot define a function with arity greater than nine'));
+           RangeError,
+           '‘def’ cannot define a function with arity greater than nine');
   });
 
   it('returns a function with "inspect" and "toString" methods', function() {
@@ -363,86 +363,86 @@ describe('def', function() {
     eq(triple($.__, $.__, 3)($.__, 2)(1), [1, 2, 3]);
 
     throws(function() { triple($.__, /x/); },
-           errorEq(TypeError,
-                   'Invalid value\n' +
-                   '\n' +
-                   'triple :: Number -> Number -> Number -> Array Number\n' +
-                   '                    ^^^^^^\n' +
-                   '                      1\n' +
-                   '\n' +
-                   '1)  /x/ :: RegExp\n' +
-                   '\n' +
-                   'The value at position 1 is not a member of ‘Number’.\n'));
+           TypeError,
+           'Invalid value\n' +
+           '\n' +
+           'triple :: Number -> Number -> Number -> Array Number\n' +
+           '                    ^^^^^^\n' +
+           '                      1\n' +
+           '\n' +
+           '1)  /x/ :: RegExp\n' +
+           '\n' +
+           'The value at position 1 is not a member of ‘Number’.\n');
 
     throws(function() { triple($.__, $.__, /x/); },
-           errorEq(TypeError,
-                   'Invalid value\n' +
-                   '\n' +
-                   'triple :: Number -> Number -> Number -> Array Number\n' +
-                   '                              ^^^^^^\n' +
-                   '                                1\n' +
-                   '\n' +
-                   '1)  /x/ :: RegExp\n' +
-                   '\n' +
-                   'The value at position 1 is not a member of ‘Number’.\n'));
+           TypeError,
+           'Invalid value\n' +
+           '\n' +
+           'triple :: Number -> Number -> Number -> Array Number\n' +
+           '                              ^^^^^^\n' +
+           '                                1\n' +
+           '\n' +
+           '1)  /x/ :: RegExp\n' +
+           '\n' +
+           'The value at position 1 is not a member of ‘Number’.\n');
 
     throws(function() { triple($.__, 2, 3)(/x/); },
-           errorEq(TypeError,
-                   'Invalid value\n' +
-                   '\n' +
-                   'triple :: Number -> Number -> Number -> Array Number\n' +
-                   '          ^^^^^^\n' +
-                   '            1\n' +
-                   '\n' +
-                   '1)  /x/ :: RegExp\n' +
-                   '\n' +
-                   'The value at position 1 is not a member of ‘Number’.\n'));
+           TypeError,
+           'Invalid value\n' +
+           '\n' +
+           'triple :: Number -> Number -> Number -> Array Number\n' +
+           '          ^^^^^^\n' +
+           '            1\n' +
+           '\n' +
+           '1)  /x/ :: RegExp\n' +
+           '\n' +
+           'The value at position 1 is not a member of ‘Number’.\n');
   });
 
   it('returns a function which throws if given too many args', function() {
     throws(function() { $0(1); },
-           errorEq(TypeError,
-                   '‘$0’ requires zero arguments; received one argument'));
+           TypeError,
+           '‘$0’ requires zero arguments; received one argument');
 
     throws(function() { $1(1, 2); },
-           errorEq(TypeError,
-                   '‘$1’ requires one argument; received two arguments'));
+           TypeError,
+           '‘$1’ requires one argument; received two arguments');
 
     throws(function() { $2(1, 2, 3); },
-           errorEq(TypeError,
-                   '‘$2’ requires two arguments; received three arguments'));
+           TypeError,
+           '‘$2’ requires two arguments; received three arguments');
 
     throws(function() { $3(1, 2, 3, 4); },
-           errorEq(TypeError,
-                   '‘$3’ requires three arguments; received four arguments'));
+           TypeError,
+           '‘$3’ requires three arguments; received four arguments');
 
     throws(function() { $4(1, 2, 3, 4, 5); },
-           errorEq(TypeError,
-                   '‘$4’ requires four arguments; received five arguments'));
+           TypeError,
+           '‘$4’ requires four arguments; received five arguments');
 
     throws(function() { $5(1, 2, 3, 4, 5, 6); },
-           errorEq(TypeError,
-                   '‘$5’ requires five arguments; received six arguments'));
+           TypeError,
+           '‘$5’ requires five arguments; received six arguments');
 
     throws(function() { $6(1, 2, 3, 4, 5, 6, 7); },
-           errorEq(TypeError,
-                   '‘$6’ requires six arguments; received seven arguments'));
+           TypeError,
+           '‘$6’ requires six arguments; received seven arguments');
 
     throws(function() { $7(1, 2, 3, 4, 5, 6, 7, 8); },
-           errorEq(TypeError,
-                   '‘$7’ requires seven arguments; received eight arguments'));
+           TypeError,
+           '‘$7’ requires seven arguments; received eight arguments');
 
     throws(function() { $8(1, 2, 3, 4, 5, 6, 7, 8, 9); },
-           errorEq(TypeError,
-                   '‘$8’ requires eight arguments; received nine arguments'));
+           TypeError,
+           '‘$8’ requires eight arguments; received nine arguments');
 
     throws(function() { $9(1, 2, 3, 4, 5, 6, 7, 8, 9, 10); },
-           errorEq(TypeError,
-                   '‘$9’ requires nine arguments; received 10 arguments'));
+           TypeError,
+           '‘$9’ requires nine arguments; received 10 arguments');
 
     throws(function() { R.apply($9, R.range(0, 100)); },
-           errorEq(TypeError,
-                   '‘$9’ requires nine arguments; received 100 arguments'));
+           TypeError,
+           '‘$9’ requires nine arguments; received 100 arguments');
   });
 
   it('returns a function which type checks its arguments', function() {
@@ -450,112 +450,112 @@ describe('def', function() {
     var $9 = def('$9', {}, [N, N, N, N, N, N, N, N, N, $.Array(N)], list);
 
     throws(function() { $9('X'); },
-           errorEq(TypeError,
-                   'Invalid value\n' +
-                   '\n' +
-                   '$9 :: Number -> Number -> Number -> Number -> Number -> Number -> Number -> Number -> Number -> Array Number\n' +
-                   '      ^^^^^^\n' +
-                   '        1\n' +
-                   '\n' +
-                   '1)  "X" :: String\n' +
-                   '\n' +
-                   'The value at position 1 is not a member of ‘Number’.\n'));
+           TypeError,
+           'Invalid value\n' +
+           '\n' +
+           '$9 :: Number -> Number -> Number -> Number -> Number -> Number -> Number -> Number -> Number -> Array Number\n' +
+           '      ^^^^^^\n' +
+           '        1\n' +
+           '\n' +
+           '1)  "X" :: String\n' +
+           '\n' +
+           'The value at position 1 is not a member of ‘Number’.\n');
 
     throws(function() { $9(1, 'X'); },
-           errorEq(TypeError,
-                   'Invalid value\n' +
-                   '\n' +
-                   '$9 :: Number -> Number -> Number -> Number -> Number -> Number -> Number -> Number -> Number -> Array Number\n' +
-                   '                ^^^^^^\n' +
-                   '                  1\n' +
-                   '\n' +
-                   '1)  "X" :: String\n' +
-                   '\n' +
-                   'The value at position 1 is not a member of ‘Number’.\n'));
+           TypeError,
+           'Invalid value\n' +
+           '\n' +
+           '$9 :: Number -> Number -> Number -> Number -> Number -> Number -> Number -> Number -> Number -> Array Number\n' +
+           '                ^^^^^^\n' +
+           '                  1\n' +
+           '\n' +
+           '1)  "X" :: String\n' +
+           '\n' +
+           'The value at position 1 is not a member of ‘Number’.\n');
 
     throws(function() { $9(1, 2, 'X'); },
-           errorEq(TypeError,
-                   'Invalid value\n' +
-                   '\n' +
-                   '$9 :: Number -> Number -> Number -> Number -> Number -> Number -> Number -> Number -> Number -> Array Number\n' +
-                   '                          ^^^^^^\n' +
-                   '                            1\n' +
-                   '\n' +
-                   '1)  "X" :: String\n' +
-                   '\n' +
-                   'The value at position 1 is not a member of ‘Number’.\n'));
+           TypeError,
+           'Invalid value\n' +
+           '\n' +
+           '$9 :: Number -> Number -> Number -> Number -> Number -> Number -> Number -> Number -> Number -> Array Number\n' +
+           '                          ^^^^^^\n' +
+           '                            1\n' +
+           '\n' +
+           '1)  "X" :: String\n' +
+           '\n' +
+           'The value at position 1 is not a member of ‘Number’.\n');
 
     throws(function() { $9(1, 2, 3, 'X'); },
-           errorEq(TypeError,
-                   'Invalid value\n' +
-                   '\n' +
-                   '$9 :: Number -> Number -> Number -> Number -> Number -> Number -> Number -> Number -> Number -> Array Number\n' +
-                   '                                    ^^^^^^\n' +
-                   '                                      1\n' +
-                   '\n' +
-                   '1)  "X" :: String\n' +
-                   '\n' +
-                   'The value at position 1 is not a member of ‘Number’.\n'));
+           TypeError,
+           'Invalid value\n' +
+           '\n' +
+           '$9 :: Number -> Number -> Number -> Number -> Number -> Number -> Number -> Number -> Number -> Array Number\n' +
+           '                                    ^^^^^^\n' +
+           '                                      1\n' +
+           '\n' +
+           '1)  "X" :: String\n' +
+           '\n' +
+           'The value at position 1 is not a member of ‘Number’.\n');
 
     throws(function() { $9(1, 2, 3, 4, 'X'); },
-           errorEq(TypeError,
-                   'Invalid value\n' +
-                   '\n' +
-                   '$9 :: Number -> Number -> Number -> Number -> Number -> Number -> Number -> Number -> Number -> Array Number\n' +
-                   '                                              ^^^^^^\n' +
-                   '                                                1\n' +
-                   '\n' +
-                   '1)  "X" :: String\n' +
-                   '\n' +
-                   'The value at position 1 is not a member of ‘Number’.\n'));
+           TypeError,
+           'Invalid value\n' +
+           '\n' +
+           '$9 :: Number -> Number -> Number -> Number -> Number -> Number -> Number -> Number -> Number -> Array Number\n' +
+           '                                              ^^^^^^\n' +
+           '                                                1\n' +
+           '\n' +
+           '1)  "X" :: String\n' +
+           '\n' +
+           'The value at position 1 is not a member of ‘Number’.\n');
 
     throws(function() { $9(1, 2, 3, 4, 5, 'X'); },
-           errorEq(TypeError,
-                   'Invalid value\n' +
-                   '\n' +
-                   '$9 :: Number -> Number -> Number -> Number -> Number -> Number -> Number -> Number -> Number -> Array Number\n' +
-                   '                                                        ^^^^^^\n' +
-                   '                                                          1\n' +
-                   '\n' +
-                   '1)  "X" :: String\n' +
-                   '\n' +
-                   'The value at position 1 is not a member of ‘Number’.\n'));
+           TypeError,
+           'Invalid value\n' +
+           '\n' +
+           '$9 :: Number -> Number -> Number -> Number -> Number -> Number -> Number -> Number -> Number -> Array Number\n' +
+           '                                                        ^^^^^^\n' +
+           '                                                          1\n' +
+           '\n' +
+           '1)  "X" :: String\n' +
+           '\n' +
+           'The value at position 1 is not a member of ‘Number’.\n');
 
     throws(function() { $9(1, 2, 3, 4, 5, 6, 'X'); },
-           errorEq(TypeError,
-                   'Invalid value\n' +
-                   '\n' +
-                   '$9 :: Number -> Number -> Number -> Number -> Number -> Number -> Number -> Number -> Number -> Array Number\n' +
-                   '                                                                  ^^^^^^\n' +
-                   '                                                                    1\n' +
-                   '\n' +
-                   '1)  "X" :: String\n' +
-                   '\n' +
-                   'The value at position 1 is not a member of ‘Number’.\n'));
+           TypeError,
+           'Invalid value\n' +
+           '\n' +
+           '$9 :: Number -> Number -> Number -> Number -> Number -> Number -> Number -> Number -> Number -> Array Number\n' +
+           '                                                                  ^^^^^^\n' +
+           '                                                                    1\n' +
+           '\n' +
+           '1)  "X" :: String\n' +
+           '\n' +
+           'The value at position 1 is not a member of ‘Number’.\n');
 
     throws(function() { $9(1, 2, 3, 4, 5, 6, 7, 'X'); },
-           errorEq(TypeError,
-                   'Invalid value\n' +
-                   '\n' +
-                   '$9 :: Number -> Number -> Number -> Number -> Number -> Number -> Number -> Number -> Number -> Array Number\n' +
-                   '                                                                            ^^^^^^\n' +
-                   '                                                                              1\n' +
-                   '\n' +
-                   '1)  "X" :: String\n' +
-                   '\n' +
-                   'The value at position 1 is not a member of ‘Number’.\n'));
+           TypeError,
+           'Invalid value\n' +
+           '\n' +
+           '$9 :: Number -> Number -> Number -> Number -> Number -> Number -> Number -> Number -> Number -> Array Number\n' +
+           '                                                                            ^^^^^^\n' +
+           '                                                                              1\n' +
+           '\n' +
+           '1)  "X" :: String\n' +
+           '\n' +
+           'The value at position 1 is not a member of ‘Number’.\n');
 
     throws(function() { $9(1, 2, 3, 4, 5, 6, 7, 8, 'X'); },
-           errorEq(TypeError,
-                   'Invalid value\n' +
-                   '\n' +
-                   '$9 :: Number -> Number -> Number -> Number -> Number -> Number -> Number -> Number -> Number -> Array Number\n' +
-                   '                                                                                      ^^^^^^\n' +
-                   '                                                                                        1\n' +
-                   '\n' +
-                   '1)  "X" :: String\n' +
-                   '\n' +
-                   'The value at position 1 is not a member of ‘Number’.\n'));
+           TypeError,
+           'Invalid value\n' +
+           '\n' +
+           '$9 :: Number -> Number -> Number -> Number -> Number -> Number -> Number -> Number -> Number -> Array Number\n' +
+           '                                                                                      ^^^^^^\n' +
+           '                                                                                        1\n' +
+           '\n' +
+           '1)  "X" :: String\n' +
+           '\n' +
+           'The value at position 1 is not a member of ‘Number’.\n');
 
     eq($9(1, 2, 3, 4, 5, 6, 7, 8, 9), [1, 2, 3, 4, 5, 6, 7, 8, 9]);
   });
@@ -567,28 +567,28 @@ describe('def', function() {
     eq(sqrt(25), 5);
 
     throws(function() { sqrt(null); },
-           errorEq(TypeError,
-                   'Invalid value\n' +
-                   '\n' +
-                   'sqrt :: Number -> Number\n' +
-                   '        ^^^^^^\n' +
-                   '          1\n' +
-                   '\n' +
-                   '1)  null :: Null\n' +
-                   '\n' +
-                   'The value at position 1 is not a member of ‘Number’.\n'));
+           TypeError,
+           'Invalid value\n' +
+           '\n' +
+           'sqrt :: Number -> Number\n' +
+           '        ^^^^^^\n' +
+           '          1\n' +
+           '\n' +
+           '1)  null :: Null\n' +
+           '\n' +
+           'The value at position 1 is not a member of ‘Number’.\n');
 
     throws(function() { sqrt(undefined); },
-           errorEq(TypeError,
-                   'Invalid value\n' +
-                   '\n' +
-                   'sqrt :: Number -> Number\n' +
-                   '        ^^^^^^\n' +
-                   '          1\n' +
-                   '\n' +
-                   '1)  undefined :: Undefined\n' +
-                   '\n' +
-                   'The value at position 1 is not a member of ‘Number’.\n'));
+           TypeError,
+           'Invalid value\n' +
+           '\n' +
+           'sqrt :: Number -> Number\n' +
+           '        ^^^^^^\n' +
+           '          1\n' +
+           '\n' +
+           '1)  undefined :: Undefined\n' +
+           '\n' +
+           'The value at position 1 is not a member of ‘Number’.\n');
   });
 
   it('creates a proper curry closure', function() {
@@ -630,193 +630,193 @@ describe('def', function() {
                      R.identity);
 
     throws(function() { a00(1, 'a'); },
-           errorEq(TypeError,
-                   'Type-variable constraint violation\n' +
-                   '\n' +
-                   'a00 :: a -> a -> a\n' +
-                   '       ^    ^\n' +
-                   '       1    2\n' +
-                   '\n' +
-                   '1)  1 :: Number\n' +
-                   '\n' +
-                   '2)  "a" :: String\n' +
-                   '\n' +
-                   'Since there is no type of which all the above values are members, the type-variable constraint has been violated.\n'));
+           TypeError,
+           'Type-variable constraint violation\n' +
+           '\n' +
+           'a00 :: a -> a -> a\n' +
+           '       ^    ^\n' +
+           '       1    2\n' +
+           '\n' +
+           '1)  1 :: Number\n' +
+           '\n' +
+           '2)  "a" :: String\n' +
+           '\n' +
+           'Since there is no type of which all the above values are members, the type-variable constraint has been violated.\n');
 
     throws(function() { a00(1, ['a']); },
-           errorEq(TypeError,
-                   'Type-variable constraint violation\n' +
-                   '\n' +
-                   'a00 :: a -> a -> a\n' +
-                   '       ^    ^\n' +
-                   '       1    2\n' +
-                   '\n' +
-                   '1)  1 :: Number\n' +
-                   '\n' +
-                   '2)  ["a"] :: Array String\n' +
-                   '\n' +
-                   'Since there is no type of which all the above values are members, the type-variable constraint has been violated.\n'));
+           TypeError,
+           'Type-variable constraint violation\n' +
+           '\n' +
+           'a00 :: a -> a -> a\n' +
+           '       ^    ^\n' +
+           '       1    2\n' +
+           '\n' +
+           '1)  1 :: Number\n' +
+           '\n' +
+           '2)  ["a"] :: Array String\n' +
+           '\n' +
+           'Since there is no type of which all the above values are members, the type-variable constraint has been violated.\n');
 
     throws(function() { a00(1, Just(1)); },
-           errorEq(TypeError,
-                   'Type-variable constraint violation\n' +
-                   '\n' +
-                   'a00 :: a -> a -> a\n' +
-                   '       ^    ^\n' +
-                   '       1    2\n' +
-                   '\n' +
-                   '1)  1 :: Number\n' +
-                   '\n' +
-                   '2)  Just(1) :: Maybe Number\n' +
-                   '\n' +
-                   'Since there is no type of which all the above values are members, the type-variable constraint has been violated.\n'));
+           TypeError,
+           'Type-variable constraint violation\n' +
+           '\n' +
+           'a00 :: a -> a -> a\n' +
+           '       ^    ^\n' +
+           '       1    2\n' +
+           '\n' +
+           '1)  1 :: Number\n' +
+           '\n' +
+           '2)  Just(1) :: Maybe Number\n' +
+           '\n' +
+           'Since there is no type of which all the above values are members, the type-variable constraint has been violated.\n');
 
     throws(function() { a01(1, ['a', 'b']); },
-           errorEq(TypeError,
-                   'Type-variable constraint violation\n' +
-                   '\n' +
-                   'a01 :: a -> Array a -> a\n' +
-                   '       ^          ^\n' +
-                   '       1          2\n' +
-                   '\n' +
-                   '1)  1 :: Number\n' +
-                   '\n' +
-                   '2)  "a" :: String\n' +
-                   '    "b" :: String\n' +
-                   '\n' +
-                   'Since there is no type of which all the above values are members, the type-variable constraint has been violated.\n'));
+           TypeError,
+           'Type-variable constraint violation\n' +
+           '\n' +
+           'a01 :: a -> Array a -> a\n' +
+           '       ^          ^\n' +
+           '       1          2\n' +
+           '\n' +
+           '1)  1 :: Number\n' +
+           '\n' +
+           '2)  "a" :: String\n' +
+           '    "b" :: String\n' +
+           '\n' +
+           'Since there is no type of which all the above values are members, the type-variable constraint has been violated.\n');
 
     throws(function() { a01([1, 2], [1, 2, 3, 4]); },
-           errorEq(TypeError,
-                   'Type-variable constraint violation\n' +
-                   '\n' +
-                   'a01 :: a -> Array a -> a\n' +
-                   '       ^          ^\n' +
-                   '       1          2\n' +
-                   '\n' +
-                   '1)  [1, 2] :: Array Number\n' +
-                   '\n' +
-                   '2)  1 :: Number\n' +
-                   '    2 :: Number\n' +
-                   '    3 :: Number\n' +
-                   '    4 :: Number\n' +
-                   '\n' +
-                   'Since there is no type of which all the above values are members, the type-variable constraint has been violated.\n'));
+           TypeError,
+           'Type-variable constraint violation\n' +
+           '\n' +
+           'a01 :: a -> Array a -> a\n' +
+           '       ^          ^\n' +
+           '       1          2\n' +
+           '\n' +
+           '1)  [1, 2] :: Array Number\n' +
+           '\n' +
+           '2)  1 :: Number\n' +
+           '    2 :: Number\n' +
+           '    3 :: Number\n' +
+           '    4 :: Number\n' +
+           '\n' +
+           'Since there is no type of which all the above values are members, the type-variable constraint has been violated.\n');
 
     throws(function() { a01([1, 2], [['a', 'b'], ['c', 'd']]); },
-           errorEq(TypeError,
-                   'Type-variable constraint violation\n' +
-                   '\n' +
-                   'a01 :: a -> Array a -> a\n' +
-                   '       ^          ^\n' +
-                   '       1          2\n' +
-                   '\n' +
-                   '1)  [1, 2] :: Array Number\n' +
-                   '\n' +
-                   '2)  ["a", "b"] :: Array String\n' +
-                   '    ["c", "d"] :: Array String\n' +
-                   '\n' +
-                   'Since there is no type of which all the above values are members, the type-variable constraint has been violated.\n'));
+           TypeError,
+           'Type-variable constraint violation\n' +
+           '\n' +
+           'a01 :: a -> Array a -> a\n' +
+           '       ^          ^\n' +
+           '       1          2\n' +
+           '\n' +
+           '1)  [1, 2] :: Array Number\n' +
+           '\n' +
+           '2)  ["a", "b"] :: Array String\n' +
+           '    ["c", "d"] :: Array String\n' +
+           '\n' +
+           'Since there is no type of which all the above values are members, the type-variable constraint has been violated.\n');
 
     throws(function() { a01([[1, 2], [3, 4]], [[1, 2], [3, 4]]); },
-           errorEq(TypeError,
-                   'Type-variable constraint violation\n' +
-                   '\n' +
-                   'a01 :: a -> Array a -> a\n' +
-                   '       ^          ^\n' +
-                   '       1          2\n' +
-                   '\n' +
-                   '1)  [[1, 2], [3, 4]] :: Array (Array Number)\n' +
-                   '\n' +
-                   '2)  [1, 2] :: Array Number\n' +
-                   '    [3, 4] :: Array Number\n' +
-                   '\n' +
-                   'Since there is no type of which all the above values are members, the type-variable constraint has been violated.\n'));
+           TypeError,
+           'Type-variable constraint violation\n' +
+           '\n' +
+           'a01 :: a -> Array a -> a\n' +
+           '       ^          ^\n' +
+           '       1          2\n' +
+           '\n' +
+           '1)  [[1, 2], [3, 4]] :: Array (Array Number)\n' +
+           '\n' +
+           '2)  [1, 2] :: Array Number\n' +
+           '    [3, 4] :: Array Number\n' +
+           '\n' +
+           'Since there is no type of which all the above values are members, the type-variable constraint has been violated.\n');
 
     throws(function() { a02([1, 2], [[1, 2], [3, 4, 5, 6]]); },
-           errorEq(TypeError,
-                   'Type-variable constraint violation\n' +
-                   '\n' +
-                   'a02 :: a -> Array (Array a) -> a\n' +
-                   '       ^                 ^\n' +
-                   '       1                 2\n' +
-                   '\n' +
-                   '1)  [1, 2] :: Array Number\n' +
-                   '\n' +
-                   '2)  1 :: Number\n' +
-                   '    2 :: Number\n' +
-                   '    3 :: Number\n' +
-                   '    4 :: Number\n' +
-                   '    5 :: Number\n' +
-                   '    6 :: Number\n' +
-                   '\n' +
-                   'Since there is no type of which all the above values are members, the type-variable constraint has been violated.\n'));
+           TypeError,
+           'Type-variable constraint violation\n' +
+           '\n' +
+           'a02 :: a -> Array (Array a) -> a\n' +
+           '       ^                 ^\n' +
+           '       1                 2\n' +
+           '\n' +
+           '1)  [1, 2] :: Array Number\n' +
+           '\n' +
+           '2)  1 :: Number\n' +
+           '    2 :: Number\n' +
+           '    3 :: Number\n' +
+           '    4 :: Number\n' +
+           '    5 :: Number\n' +
+           '    6 :: Number\n' +
+           '\n' +
+           'Since there is no type of which all the above values are members, the type-variable constraint has been violated.\n');
 
     throws(function() { ab02e(1, 'x', [[Left('a'), Left('b')], [Left('c'), Left('d')]]); },
-           errorEq(TypeError,
-                   'Type-variable constraint violation\n' +
-                   '\n' +
-                   'ab02e :: a -> b -> Array (Array (Either a b)) -> a\n' +
-                   '         ^                              ^\n' +
-                   '         1                              2\n' +
-                   '\n' +
-                   '1)  1 :: Number\n' +
-                   '\n' +
-                   '2)  "a" :: String\n' +
-                   '    "b" :: String\n' +
-                   '    "c" :: String\n' +
-                   '    "d" :: String\n' +
-                   '\n' +
-                   'Since there is no type of which all the above values are members, the type-variable constraint has been violated.\n'));
+           TypeError,
+           'Type-variable constraint violation\n' +
+           '\n' +
+           'ab02e :: a -> b -> Array (Array (Either a b)) -> a\n' +
+           '         ^                              ^\n' +
+           '         1                              2\n' +
+           '\n' +
+           '1)  1 :: Number\n' +
+           '\n' +
+           '2)  "a" :: String\n' +
+           '    "b" :: String\n' +
+           '    "c" :: String\n' +
+           '    "d" :: String\n' +
+           '\n' +
+           'Since there is no type of which all the above values are members, the type-variable constraint has been violated.\n');
 
     throws(function() { ab02e(1, 'x', [[Right(1), Right(2)], [Right(3), Right(4)]]); },
-           errorEq(TypeError,
-                   'Type-variable constraint violation\n' +
-                   '\n' +
-                   'ab02e :: a -> b -> Array (Array (Either a b)) -> a\n' +
-                   '              ^                           ^\n' +
-                   '              1                           2\n' +
-                   '\n' +
-                   '1)  "x" :: String\n' +
-                   '\n' +
-                   '2)  1 :: Number\n' +
-                   '    2 :: Number\n' +
-                   '    3 :: Number\n' +
-                   '    4 :: Number\n' +
-                   '\n' +
-                   'Since there is no type of which all the above values are members, the type-variable constraint has been violated.\n'));
+           TypeError,
+           'Type-variable constraint violation\n' +
+           '\n' +
+           'ab02e :: a -> b -> Array (Array (Either a b)) -> a\n' +
+           '              ^                           ^\n' +
+           '              1                           2\n' +
+           '\n' +
+           '1)  "x" :: String\n' +
+           '\n' +
+           '2)  1 :: Number\n' +
+           '    2 :: Number\n' +
+           '    3 :: Number\n' +
+           '    4 :: Number\n' +
+           '\n' +
+           'Since there is no type of which all the above values are members, the type-variable constraint has been violated.\n');
 
     throws(function() { ab0e21(1, 'x', Left([['a', 'b'], ['c', 'd']])); },
-           errorEq(TypeError,
-                   'Type-variable constraint violation\n' +
-                   '\n' +
-                   'ab0e21 :: a -> b -> Either (Array (Array a)) (Array b) -> a\n' +
-                   '          ^                              ^\n' +
-                   '          1                              2\n' +
-                   '\n' +
-                   '1)  1 :: Number\n' +
-                   '\n' +
-                   '2)  "a" :: String\n' +
-                   '    "b" :: String\n' +
-                   '    "c" :: String\n' +
-                   '    "d" :: String\n' +
-                   '\n' +
-                   'Since there is no type of which all the above values are members, the type-variable constraint has been violated.\n'));
+           TypeError,
+           'Type-variable constraint violation\n' +
+           '\n' +
+           'ab0e21 :: a -> b -> Either (Array (Array a)) (Array b) -> a\n' +
+           '          ^                              ^\n' +
+           '          1                              2\n' +
+           '\n' +
+           '1)  1 :: Number\n' +
+           '\n' +
+           '2)  "a" :: String\n' +
+           '    "b" :: String\n' +
+           '    "c" :: String\n' +
+           '    "d" :: String\n' +
+           '\n' +
+           'Since there is no type of which all the above values are members, the type-variable constraint has been violated.\n');
 
     throws(function() { ab0e21(1, 'x', Right([1, 2])); },
-           errorEq(TypeError,
-                   'Type-variable constraint violation\n' +
-                   '\n' +
-                   'ab0e21 :: a -> b -> Either (Array (Array a)) (Array b) -> a\n' +
-                   '               ^                                    ^\n' +
-                   '               1                                    2\n' +
-                   '\n' +
-                   '1)  "x" :: String\n' +
-                   '\n' +
-                   '2)  1 :: Number\n' +
-                   '    2 :: Number\n' +
-                   '\n' +
-                   'Since there is no type of which all the above values are members, the type-variable constraint has been violated.\n'));
+           TypeError,
+           'Type-variable constraint violation\n' +
+           '\n' +
+           'ab0e21 :: a -> b -> Either (Array (Array a)) (Array b) -> a\n' +
+           '               ^                                    ^\n' +
+           '               1                                    2\n' +
+           '\n' +
+           '1)  "x" :: String\n' +
+           '\n' +
+           '2)  1 :: Number\n' +
+           '    2 :: Number\n' +
+           '\n' +
+           'Since there is no type of which all the above values are members, the type-variable constraint has been violated.\n');
   });
 
   it('returns a function which type checks its return value', function() {
@@ -824,16 +824,16 @@ describe('def', function() {
     var add = def('add', {}, [$.Number, $.Number, $.Number], R.always('XXX'));
 
     throws(function() { add(2, 2); },
-           errorEq(TypeError,
-                   'Invalid value\n' +
-                   '\n' +
-                   'add :: Number -> Number -> Number\n' +
-                   '                           ^^^^^^\n' +
-                   '                             1\n' +
-                   '\n' +
-                   '1)  "XXX" :: String\n' +
-                   '\n' +
-                   'The value at position 1 is not a member of ‘Number’.\n'));
+           TypeError,
+           'Invalid value\n' +
+           '\n' +
+           'add :: Number -> Number -> Number\n' +
+           '                           ^^^^^^\n' +
+           '                             1\n' +
+           '\n' +
+           '1)  "XXX" :: String\n' +
+           '\n' +
+           'The value at position 1 is not a member of ‘Number’.\n');
   });
 
   it('does not rely on constructor identity', function() {
@@ -866,16 +866,16 @@ describe('def', function() {
     z.push(z);
 
     throws(function() { id(z); },
-           errorEq(TypeError,
-                   'Type-variable constraint violation\n' +
-                   '\n' +
-                   'id :: a -> a\n' +
-                   '      ^\n' +
-                   '      1\n' +
-                   '\n' +
-                   '1)  [<Circular>] :: Array ???\n' +
-                   '\n' +
-                   'Since there is no type of which all the above values are members, the type-variable constraint has been violated.\n'));
+           TypeError,
+           'Type-variable constraint violation\n' +
+           '\n' +
+           'id :: a -> a\n' +
+           '      ^\n' +
+           '      1\n' +
+           '\n' +
+           '1)  [<Circular>] :: Array ???\n' +
+           '\n' +
+           'Since there is no type of which all the above values are members, the type-variable constraint has been violated.\n');
   });
 
   it('supports custom types', function() {
@@ -906,16 +906,16 @@ describe('def', function() {
     eq(even(2), true);
 
     throws(function() { even(0.5); },
-           errorEq(TypeError,
-                   'Invalid value\n' +
-                   '\n' +
-                   'even :: Integer -> Boolean\n' +
-                   '        ^^^^^^^\n' +
-                   '           1\n' +
-                   '\n' +
-                   '1)  0.5 :: Number\n' +
-                   '\n' +
-                   'The value at position 1 is not a member of ‘Integer’.\n'));
+           TypeError,
+           'Invalid value\n' +
+           '\n' +
+           'even :: Integer -> Boolean\n' +
+           '        ^^^^^^^\n' +
+           '           1\n' +
+           '\n' +
+           '1)  0.5 :: Number\n' +
+           '\n' +
+           'The value at position 1 is not a member of ‘Integer’.\n');
 
     //  fromMaybe :: a -> AnonMaybe a
     var fromMaybe =
@@ -925,18 +925,18 @@ describe('def', function() {
         function(x, maybe) { return maybe.isJust ? maybe.value : x; });
 
     throws(function() { fromMaybe('x', AnonJust(null)); },
-           errorEq(TypeError,
-                   'Type-variable constraint violation\n' +
-                   '\n' +
-                   'fromMaybe :: a -> AnonMaybe a -> a\n' +
-                   '             ^              ^\n' +
-                   '             1              2\n' +
-                   '\n' +
-                   '1)  "x" :: String\n' +
-                   '\n' +
-                   '2)  null :: Null\n' +
-                   '\n' +
-                   'Since there is no type of which all the above values are members, the type-variable constraint has been violated.\n'));
+           TypeError,
+           'Type-variable constraint violation\n' +
+           '\n' +
+           'fromMaybe :: a -> AnonMaybe a -> a\n' +
+           '             ^              ^\n' +
+           '             1              2\n' +
+           '\n' +
+           '1)  "x" :: String\n' +
+           '\n' +
+           '2)  null :: Null\n' +
+           '\n' +
+           'Since there is no type of which all the above values are members, the type-variable constraint has been violated.\n');
   });
 
   it('supports enumerated types', function() {
@@ -958,16 +958,16 @@ describe('def', function() {
         });
 
     throws(function() { convertTo('days', new Date(0)); },
-           errorEq(TypeError,
-                   'Invalid value\n' +
-                   '\n' +
-                   'convertTo :: ("milliseconds" | "seconds" | "minutes" | "hours") -> ValidDate -> ValidNumber\n' +
-                   '             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n' +
-                   '                                     1\n' +
-                   '\n' +
-                   '1)  "days" :: String\n' +
-                   '\n' +
-                   'The value at position 1 is not a member of ‘("milliseconds" | "seconds" | "minutes" | "hours")’.\n'));
+           TypeError,
+           'Invalid value\n' +
+           '\n' +
+           'convertTo :: ("milliseconds" | "seconds" | "minutes" | "hours") -> ValidDate -> ValidNumber\n' +
+           '             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n' +
+           '                                     1\n' +
+           '\n' +
+           '1)  "days" :: String\n' +
+           '\n' +
+           'The value at position 1 is not a member of ‘("milliseconds" | "seconds" | "minutes" | "hours")’.\n');
 
     eq(convertTo('seconds', new Date(1000)), 1);
 
@@ -990,16 +990,16 @@ describe('def', function() {
     eq(id(['foo', true]), ['foo', true]);
 
     throws(function() { id(['foo', false]); },
-           errorEq(TypeError,
-                   'Type-variable constraint violation\n' +
-                   '\n' +
-                   'id :: a -> a\n' +
-                   '      ^\n' +
-                   '      1\n' +
-                   '\n' +
-                   '1)  ["foo", false] :: Array ???\n' +
-                   '\n' +
-                   'Since there is no type of which all the above values are members, the type-variable constraint has been violated.\n'));
+           TypeError,
+           'Type-variable constraint violation\n' +
+           '\n' +
+           'id :: a -> a\n' +
+           '      ^\n' +
+           '      1\n' +
+           '\n' +
+           '1)  ["foo", false] :: Array ???\n' +
+           '\n' +
+           'Since there is no type of which all the above values are members, the type-variable constraint has been violated.\n');
   });
 
   it('supports record types', function() {
@@ -1028,76 +1028,76 @@ describe('def', function() {
     eq(length({start: {x: 1, y: 1}, end: {x: 4, y: 5, color: 'red'}}), 5);
 
     throws(function() { dist(null); },
-           errorEq(TypeError,
-                   'Invalid value\n' +
-                   '\n' +
-                   'dist :: { x :: Number, y :: Number } -> { x :: Number, y :: Number } -> Number\n' +
-                   '        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n' +
-                   '                     1\n' +
-                   '\n' +
-                   '1)  null :: Null\n' +
-                   '\n' +
-                   'The value at position 1 is not a member of ‘{ x :: Number, y :: Number }’.\n'));
+           TypeError,
+           'Invalid value\n' +
+           '\n' +
+           'dist :: { x :: Number, y :: Number } -> { x :: Number, y :: Number } -> Number\n' +
+           '        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n' +
+           '                     1\n' +
+           '\n' +
+           '1)  null :: Null\n' +
+           '\n' +
+           'The value at position 1 is not a member of ‘{ x :: Number, y :: Number }’.\n');
 
     throws(function() { dist({}); },
-           errorEq(TypeError,
-                   'Invalid value\n' +
-                   '\n' +
-                   'dist :: { x :: Number, y :: Number } -> { x :: Number, y :: Number } -> Number\n' +
-                   '        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n' +
-                   '                     1\n' +
-                   '\n' +
-                   '1)  {} :: Object, StrMap ???\n' +
-                   '\n' +
-                   'The value at position 1 is not a member of ‘{ x :: Number, y :: Number }’.\n'));
+           TypeError,
+           'Invalid value\n' +
+           '\n' +
+           'dist :: { x :: Number, y :: Number } -> { x :: Number, y :: Number } -> Number\n' +
+           '        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n' +
+           '                     1\n' +
+           '\n' +
+           '1)  {} :: Object, StrMap ???\n' +
+           '\n' +
+           'The value at position 1 is not a member of ‘{ x :: Number, y :: Number }’.\n');
 
     throws(function() { dist({x: 0}); },
-           errorEq(TypeError,
-                   'Invalid value\n' +
-                   '\n' +
-                   'dist :: { x :: Number, y :: Number } -> { x :: Number, y :: Number } -> Number\n' +
-                   '        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n' +
-                   '                     1\n' +
-                   '\n' +
-                   '1)  {"x": 0} :: Object, StrMap Number\n' +
-                   '\n' +
-                   'The value at position 1 is not a member of ‘{ x :: Number, y :: Number }’.\n'));
+           TypeError,
+           'Invalid value\n' +
+           '\n' +
+           'dist :: { x :: Number, y :: Number } -> { x :: Number, y :: Number } -> Number\n' +
+           '        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n' +
+           '                     1\n' +
+           '\n' +
+           '1)  {"x": 0} :: Object, StrMap Number\n' +
+           '\n' +
+           'The value at position 1 is not a member of ‘{ x :: Number, y :: Number }’.\n');
 
     throws(function() { dist({x: 0, y: null}); },
-           errorEq(TypeError,
-                   'Invalid value\n' +
-                   '\n' +
-                   'dist :: { x :: Number, y :: Number } -> { x :: Number, y :: Number } -> Number\n' +
-                   '                            ^^^^^^\n' +
-                   '                              1\n' +
-                   '\n' +
-                   '1)  null :: Null\n' +
-                   '\n' +
-                   'The value at position 1 is not a member of ‘Number’.\n'));
+           TypeError,
+           'Invalid value\n' +
+           '\n' +
+           'dist :: { x :: Number, y :: Number } -> { x :: Number, y :: Number } -> Number\n' +
+           '                            ^^^^^^\n' +
+           '                              1\n' +
+           '\n' +
+           '1)  null :: Null\n' +
+           '\n' +
+           'The value at position 1 is not a member of ‘Number’.\n');
 
     throws(function() { length({start: 0, end: 0}); },
-           errorEq(TypeError,
-                   'Invalid value\n' +
-                   '\n' +
-                   'length :: { end :: { x :: Number, y :: Number }, start :: { x :: Number, y :: Number } } -> Number\n' +
-                   '                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n' +
-                   '                                1\n' +
-                   '\n' +
-                   '1)  0 :: Number\n' +
-                   '\n' +
-                   'The value at position 1 is not a member of ‘{ x :: Number, y :: Number }’.\n'));
+           TypeError,
+           'Invalid value\n' +
+           '\n' +
+           'length :: { end :: { x :: Number, y :: Number }, start :: { x :: Number, y :: Number } } -> Number\n' +
+           '                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n' +
+           '                                1\n' +
+           '\n' +
+           '1)  0 :: Number\n' +
+           '\n' +
+           'The value at position 1 is not a member of ‘{ x :: Number, y :: Number }’.\n');
 
     throws(function() { length({start: {x: 0, y: 0}, end: {x: null, y: null}}); },
-           errorEq(TypeError,
-                   'Invalid value\n' +
-                   '\n' +
-                   'length :: { end :: { x :: Number, y :: Number }, start :: { x :: Number, y :: Number } } -> Number\n' +
-                   '                          ^^^^^^\n' +
-                   '                            1\n' +
-                   '\n' +
-                   '1)  null :: Null\n' +
-                   '\n' +
-                   'The value at position 1 is not a member of ‘Number’.\n'));
+           TypeError,
+           'Invalid value\n' +
+           '\n' +
+           'length :: { end :: { x :: Number, y :: Number }, start :: { x :: Number, y :: Number } } -> Number\n' +
+           '                          ^^^^^^\n' +
+           '                            1\n' +
+           '\n' +
+           '1)  null :: Null\n' +
+           '\n' +
+           'The value at position 1 is not a member of ‘Number’.\n');
 
     //  id :: a -> a
     var id = def('id', {}, [a, a], R.identity);
@@ -1105,15 +1105,15 @@ describe('def', function() {
     eq(id([{x: 0, y: 0}, {x: 1, y: 1}]), [{x: 0, y: 0}, {x: 1, y: 1}]);
 
     throws(function() { $.RecordType({x: /XXX/, y: /XXX/, z: $.Any}); },
-           errorEq(TypeError,
-                   'Invalid values\n' +
-                   '\n' +
-                   'The argument to ‘RecordType’ must be an object mapping field name to type.\n' +
-                   '\n' +
-                   'The following mappings are invalid:\n' +
-                   '\n' +
-                   '  - "x": /XXX/\n' +
-                   '  - "y": /XXX/\n'));
+           TypeError,
+           'Invalid values\n' +
+           '\n' +
+           'The argument to ‘RecordType’ must be an object mapping field name to type.\n' +
+           '\n' +
+           'The following mappings are invalid:\n' +
+           '\n' +
+           '  - "x": /XXX/\n' +
+           '  - "y": /XXX/\n');
   });
 
   it('supports "nullable" types', function() {
@@ -1128,16 +1128,16 @@ describe('def', function() {
     eq(toUpper('abc'), 'ABC');
 
     throws(function() { toUpper(['abc']); },
-           errorEq(TypeError,
-                   'Invalid value\n' +
-                   '\n' +
-                   'toUpper :: Nullable String -> Nullable String\n' +
-                   '                    ^^^^^^\n' +
-                   '                      1\n' +
-                   '\n' +
-                   '1)  ["abc"] :: Array String\n' +
-                   '\n' +
-                   'The value at position 1 is not a member of ‘String’.\n'));
+           TypeError,
+           'Invalid value\n' +
+           '\n' +
+           'toUpper :: Nullable String -> Nullable String\n' +
+           '                    ^^^^^^\n' +
+           '                      1\n' +
+           '\n' +
+           '1)  ["abc"] :: Array String\n' +
+           '\n' +
+           'The value at position 1 is not a member of ‘String’.\n');
 
     //  defaultTo :: a -> Nullable a -> a
     var defaultTo =
@@ -1150,18 +1150,18 @@ describe('def', function() {
     eq(defaultTo(0, 42), 42);
 
     throws(function() { defaultTo(0, 'XXX'); },
-           errorEq(TypeError,
-                   'Type-variable constraint violation\n' +
-                   '\n' +
-                   'defaultTo :: a -> Nullable a -> a\n' +
-                   '             ^             ^\n' +
-                   '             1             2\n' +
-                   '\n' +
-                   '1)  0 :: Number\n' +
-                   '\n' +
-                   '2)  "XXX" :: String\n' +
-                   '\n' +
-                   'Since there is no type of which all the above values are members, the type-variable constraint has been violated.\n'));
+           TypeError,
+           'Type-variable constraint violation\n' +
+           '\n' +
+           'defaultTo :: a -> Nullable a -> a\n' +
+           '             ^             ^\n' +
+           '             1             2\n' +
+           '\n' +
+           '1)  0 :: Number\n' +
+           '\n' +
+           '2)  "XXX" :: String\n' +
+           '\n' +
+           'Since there is no type of which all the above values are members, the type-variable constraint has been violated.\n');
 
     //  f :: Nullable a -> Nullable a
     var f = def('f', {}, [$.Nullable(a), $.Nullable(a)], R.always(42));
@@ -1170,18 +1170,18 @@ describe('def', function() {
     eq(f(0), 42);
 
     throws(function() { f('XXX'); },
-           errorEq(TypeError,
-                   'Type-variable constraint violation\n' +
-                   '\n' +
-                   'f :: Nullable a -> Nullable a\n' +
-                   '              ^             ^\n' +
-                   '              1             2\n' +
-                   '\n' +
-                   '1)  "XXX" :: String\n' +
-                   '\n' +
-                   '2)  42 :: Number\n' +
-                   '\n' +
-                   'Since there is no type of which all the above values are members, the type-variable constraint has been violated.\n'));
+           TypeError,
+           'Type-variable constraint violation\n' +
+           '\n' +
+           'f :: Nullable a -> Nullable a\n' +
+           '              ^             ^\n' +
+           '              1             2\n' +
+           '\n' +
+           '1)  "XXX" :: String\n' +
+           '\n' +
+           '2)  42 :: Number\n' +
+           '\n' +
+           'Since there is no type of which all the above values are members, the type-variable constraint has been violated.\n');
   });
 
   it('supports the "ValidDate" type', function() {
@@ -1192,16 +1192,16 @@ describe('def', function() {
                          function(date) { return date.valueOf() / 1000; });
 
     throws(function() { sinceEpoch(new Date('foo')); },
-           errorEq(TypeError,
-                   'Invalid value\n' +
-                   '\n' +
-                   'sinceEpoch :: ValidDate -> Number\n' +
-                   '              ^^^^^^^^^\n' +
-                   '                  1\n' +
-                   '\n' +
-                   '1)  new Date(NaN) :: Date\n' +
-                   '\n' +
-                   'The value at position 1 is not a member of ‘ValidDate’.\n'));
+           TypeError,
+           'Invalid value\n' +
+           '\n' +
+           'sinceEpoch :: ValidDate -> Number\n' +
+           '              ^^^^^^^^^\n' +
+           '                  1\n' +
+           '\n' +
+           '1)  new Date(NaN) :: Date\n' +
+           '\n' +
+           'The value at position 1 is not a member of ‘ValidDate’.\n');
 
     eq(sinceEpoch(new Date(123456)), 123.456);
   });
@@ -1461,34 +1461,34 @@ describe('def', function() {
     eq(keys(o), ['x', 'y', 'z']);
 
     throws(function() { keys({a: 1, b: 'XXX'}); },
-           errorEq(TypeError,
-                   'Type-variable constraint violation\n' +
-                   '\n' +
-                   'keys :: StrMap a -> Array String\n' +
-                   '               ^\n' +
-                   '               1\n' +
-                   '\n' +
-                   '1)  1 :: Number\n' +
-                   '    "XXX" :: String\n' +
-                   '\n' +
-                   'Since there is no type of which all the above values are members, the type-variable constraint has been violated.\n'));
+           TypeError,
+           'Type-variable constraint violation\n' +
+           '\n' +
+           'keys :: StrMap a -> Array String\n' +
+           '               ^\n' +
+           '               1\n' +
+           '\n' +
+           '1)  1 :: Number\n' +
+           '    "XXX" :: String\n' +
+           '\n' +
+           'Since there is no type of which all the above values are members, the type-variable constraint has been violated.\n');
 
     eq(values({}), []);
     eq(values({x: 1, y: 2, z: 3}), [1, 2, 3]);
     eq(values(o), [1, 2, 3]);
 
     throws(function() { values({a: 1, b: 'XXX'}); },
-           errorEq(TypeError,
-                   'Type-variable constraint violation\n' +
-                   '\n' +
-                   'values :: StrMap a -> Array a\n' +
-                   '                 ^\n' +
-                   '                 1\n' +
-                   '\n' +
-                   '1)  1 :: Number\n' +
-                   '    "XXX" :: String\n' +
-                   '\n' +
-                   'Since there is no type of which all the above values are members, the type-variable constraint has been violated.\n'));
+           TypeError,
+           'Type-variable constraint violation\n' +
+           '\n' +
+           'values :: StrMap a -> Array a\n' +
+           '                 ^\n' +
+           '                 1\n' +
+           '\n' +
+           '1)  1 :: Number\n' +
+           '    "XXX" :: String\n' +
+           '\n' +
+           'Since there is no type of which all the above values are members, the type-variable constraint has been violated.\n');
 
     //  testUnaryType :: Array (StrMap Number) -> Array (StrMap Number)
     var testUnaryType =
@@ -1500,16 +1500,16 @@ describe('def', function() {
     eq(testUnaryType([{x: 1}, {y: 2}, {z: 3}]), [{x: 1}, {y: 2}, {z: 3}]);
 
     throws(function() { testUnaryType([{x: /xxx/}]); },
-           errorEq(TypeError,
-                   'Invalid value\n' +
-                   '\n' +
-                   'testUnaryType :: Array (StrMap Number) -> Array (StrMap Number)\n' +
-                   '                               ^^^^^^\n' +
-                   '                                 1\n' +
-                   '\n' +
-                   '1)  /xxx/ :: RegExp\n' +
-                   '\n' +
-                   'The value at position 1 is not a member of ‘Number’.\n'));
+           TypeError,
+           'Invalid value\n' +
+           '\n' +
+           'testUnaryType :: Array (StrMap Number) -> Array (StrMap Number)\n' +
+           '                               ^^^^^^\n' +
+           '                                 1\n' +
+           '\n' +
+           '1)  /xxx/ :: RegExp\n' +
+           '\n' +
+           'The value at position 1 is not a member of ‘Number’.\n');
 
     //  testBinaryType :: Either a (StrMap b) -> Either a (StrMap b)
     var testBinaryType =
@@ -1522,16 +1522,16 @@ describe('def', function() {
     eq(testBinaryType(Right({x: 1, y: 2, z: 3})), Right({x: 1, y: 2, z: 3}));
 
     throws(function() { testBinaryType(Right({x: ['foo', false]})); },
-           errorEq(TypeError,
-                   'Type-variable constraint violation\n' +
-                   '\n' +
-                   'testBinaryType :: Either a (StrMap b) -> Either a (StrMap b)\n' +
-                   '                                   ^\n' +
-                   '                                   1\n' +
-                   '\n' +
-                   '1)  ["foo", false] :: Array ???\n' +
-                   '\n' +
-                   'Since there is no type of which all the above values are members, the type-variable constraint has been violated.\n'));
+           TypeError,
+           'Type-variable constraint violation\n' +
+           '\n' +
+           'testBinaryType :: Either a (StrMap b) -> Either a (StrMap b)\n' +
+           '                                   ^\n' +
+           '                                   1\n' +
+           '\n' +
+           '1)  ["foo", false] :: Array ???\n' +
+           '\n' +
+           'Since there is no type of which all the above values are members, the type-variable constraint has been violated.\n');
   });
 
   it('supports the "Pair" type constructor', function() {
@@ -1545,16 +1545,16 @@ describe('def', function() {
     eq(snd(['foo', 42]), 42);
 
     throws(function() { fst(['foo']); },
-           errorEq(TypeError,
-                   'Invalid value\n' +
-                   '\n' +
-                   'fst :: Pair a b -> a\n' +
-                   '       ^^^^^^^^\n' +
-                   '          1\n' +
-                   '\n' +
-                   '1)  ["foo"] :: Array String\n' +
-                   '\n' +
-                   'The value at position 1 is not a member of ‘Pair a b’.\n'));
+           TypeError,
+           'Invalid value\n' +
+           '\n' +
+           'fst :: Pair a b -> a\n' +
+           '       ^^^^^^^^\n' +
+           '          1\n' +
+           '\n' +
+           '1)  ["foo"] :: Array String\n' +
+           '\n' +
+           'The value at position 1 is not a member of ‘Pair a b’.\n');
   });
 
   it('uses R.toString-like string representations', function() {
@@ -1591,16 +1591,16 @@ describe('def', function() {
 
     values.forEach(R.apply(function(x, types) {
       throws(function() { f(x); },
-             errorEq(TypeError,
-                     'Invalid value\n' +
-                     '\n' +
-                     'f :: Null -> Null\n' +
-                     '     ^^^^\n' +
-                     '      1\n' +
-                     '\n' +
-                     '1)  ' + R.toString(x) + ' :: ' + types + '\n' +
-                     '\n' +
-                     'The value at position 1 is not a member of ‘Null’.\n'));
+             TypeError,
+             'Invalid value\n' +
+             '\n' +
+             'f :: Null -> Null\n' +
+             '     ^^^^\n' +
+             '      1\n' +
+             '\n' +
+             '1)  ' + R.toString(x) + ' :: ' + types + '\n' +
+             '\n' +
+             'The value at position 1 is not a member of ‘Null’.\n');
     }));
   });
 
@@ -1621,44 +1621,44 @@ describe('def', function() {
     eq(ab(false, 0), Pair(false, 0));
 
     throws(function() { aa(0, /x/); },
-           errorEq(TypeError,
-                   'Type-variable constraint violation\n' +
-                   '\n' +
-                   'aa :: a -> a -> Pair a a\n' +
-                   '      ^    ^\n' +
-                   '      1    2\n' +
-                   '\n' +
-                   '1)  0 :: Number\n' +
-                   '\n' +
-                   '2)  /x/ :: RegExp\n' +
-                   '\n' +
-                   'Since there is no type of which all the above values are members, the type-variable constraint has been violated.\n'));
+           TypeError,
+           'Type-variable constraint violation\n' +
+           '\n' +
+           'aa :: a -> a -> Pair a a\n' +
+           '      ^    ^\n' +
+           '      1    2\n' +
+           '\n' +
+           '1)  0 :: Number\n' +
+           '\n' +
+           '2)  /x/ :: RegExp\n' +
+           '\n' +
+           'Since there is no type of which all the above values are members, the type-variable constraint has been violated.\n');
 
     throws(function() { aa($.__, 0)(/x/); },
-           errorEq(TypeError,
-                   'Type-variable constraint violation\n' +
-                   '\n' +
-                   'aa :: a -> a -> Pair a a\n' +
-                   '      ^    ^\n' +
-                   '      1    2\n' +
-                   '\n' +
-                   '1)  /x/ :: RegExp\n' +
-                   '\n' +
-                   '2)  0 :: Number\n' +
-                   '\n' +
-                   'Since there is no type of which all the above values are members, the type-variable constraint has been violated.\n'));
+           TypeError,
+           'Type-variable constraint violation\n' +
+           '\n' +
+           'aa :: a -> a -> Pair a a\n' +
+           '      ^    ^\n' +
+           '      1    2\n' +
+           '\n' +
+           '1)  /x/ :: RegExp\n' +
+           '\n' +
+           '2)  0 :: Number\n' +
+           '\n' +
+           'Since there is no type of which all the above values are members, the type-variable constraint has been violated.\n');
 
     throws(function() { aa([Left('XXX'), 42]); },
-           errorEq(TypeError,
-                   'Type-variable constraint violation\n' +
-                   '\n' +
-                   'aa :: a -> a -> Pair a a\n' +
-                   '      ^\n' +
-                   '      1\n' +
-                   '\n' +
-                   '1)  [Left("XXX"), 42] :: Array ???\n' +
-                   '\n' +
-                   'Since there is no type of which all the above values are members, the type-variable constraint has been violated.\n'));
+           TypeError,
+           'Type-variable constraint violation\n' +
+           '\n' +
+           'aa :: a -> a -> Pair a a\n' +
+           '      ^\n' +
+           '      1\n' +
+           '\n' +
+           '1)  [Left("XXX"), 42] :: Array ???\n' +
+           '\n' +
+           'Since there is no type of which all the above values are members, the type-variable constraint has been violated.\n');
 
     //  fromMaybe :: a -> Maybe a -> a
     var fromMaybe = def('fromMaybe', {}, [a, Maybe(a), a], function(x, maybe) {
@@ -1669,16 +1669,16 @@ describe('def', function() {
     eq(fromMaybe(0, Just(42)), 42);
 
     throws(function() { fromMaybe(0, [1, 2, 3]); },
-           errorEq(TypeError,
-                   'Invalid value\n' +
-                   '\n' +
-                   'fromMaybe :: a -> Maybe a -> a\n' +
-                   '                  ^^^^^^^\n' +
-                   '                     1\n' +
-                   '\n' +
-                   '1)  [1, 2, 3] :: Array Number\n' +
-                   '\n' +
-                   'The value at position 1 is not a member of ‘Maybe a’.\n'));
+           TypeError,
+           'Invalid value\n' +
+           '\n' +
+           'fromMaybe :: a -> Maybe a -> a\n' +
+           '                  ^^^^^^^\n' +
+           '                     1\n' +
+           '\n' +
+           '1)  [1, 2, 3] :: Array Number\n' +
+           '\n' +
+           'The value at position 1 is not a member of ‘Maybe a’.\n');
 
     //  fst :: Pair a b -> a
     var fst = def('fst', {}, [$Pair(a, b), a], R.nth(0));
@@ -1686,16 +1686,16 @@ describe('def', function() {
     eq(fst(Pair('XXX', 42)), 'XXX');
 
     throws(function() { fst(['XXX', 42]); },
-           errorEq(TypeError,
-                   'Invalid value\n' +
-                   '\n' +
-                   'fst :: Pair a b -> a\n' +
-                   '       ^^^^^^^^\n' +
-                   '          1\n' +
-                   '\n' +
-                   '1)  ["XXX", 42] :: Array ???\n' +
-                   '\n' +
-                   'The value at position 1 is not a member of ‘Pair a b’.\n'));
+           TypeError,
+           'Invalid value\n' +
+           '\n' +
+           'fst :: Pair a b -> a\n' +
+           '       ^^^^^^^^\n' +
+           '          1\n' +
+           '\n' +
+           '1)  ["XXX", 42] :: Array ???\n' +
+           '\n' +
+           'The value at position 1 is not a member of ‘Pair a b’.\n');
 
     //  twin :: Pair a a -> Boolean
     var twin =
@@ -1708,18 +1708,18 @@ describe('def', function() {
     eq(twin(Pair(42, 99)), false);
 
     throws(function() { twin(Pair(42, 'XXX')); },
-           errorEq(TypeError,
-                   'Type-variable constraint violation\n' +
-                   '\n' +
-                   'twin :: Pair a a -> Boolean\n' +
-                   '             ^ ^\n' +
-                   '             1 2\n' +
-                   '\n' +
-                   '1)  42 :: Number\n' +
-                   '\n' +
-                   '2)  "XXX" :: String\n' +
-                   '\n' +
-                   'Since there is no type of which all the above values are members, the type-variable constraint has been violated.\n'));
+           TypeError,
+           'Type-variable constraint violation\n' +
+           '\n' +
+           'twin :: Pair a a -> Boolean\n' +
+           '             ^ ^\n' +
+           '             1 2\n' +
+           '\n' +
+           '1)  42 :: Number\n' +
+           '\n' +
+           '2)  "XXX" :: String\n' +
+           '\n' +
+           'Since there is no type of which all the above values are members, the type-variable constraint has been violated.\n');
 
     //  concat :: Either a b -> Either a b -> Either a b
     var concat =
@@ -1738,91 +1738,91 @@ describe('def', function() {
     eq(concat(Right('ABC'), Right('DEF')), Right('ABCDEF'));
 
     throws(function() { concat(Left('abc'), Left([1, 2, 3])); },
-           errorEq(TypeError,
-                   'Type-variable constraint violation\n' +
-                   '\n' +
-                   'concat :: Either a b -> Either a b -> Either a b\n' +
-                   '                 ^             ^\n' +
-                   '                 1             2\n' +
-                   '\n' +
-                   '1)  "abc" :: String\n' +
-                   '\n' +
-                   '2)  [1, 2, 3] :: Array Number\n' +
-                   '\n' +
-                   'Since there is no type of which all the above values are members, the type-variable constraint has been violated.\n'));
+           TypeError,
+           'Type-variable constraint violation\n' +
+           '\n' +
+           'concat :: Either a b -> Either a b -> Either a b\n' +
+           '                 ^             ^\n' +
+           '                 1             2\n' +
+           '\n' +
+           '1)  "abc" :: String\n' +
+           '\n' +
+           '2)  [1, 2, 3] :: Array Number\n' +
+           '\n' +
+           'Since there is no type of which all the above values are members, the type-variable constraint has been violated.\n');
 
     throws(function() { concat(Right('abc'), Right([1, 2, 3])); },
-           errorEq(TypeError,
-                   'Type-variable constraint violation\n' +
-                   '\n' +
-                   'concat :: Either a b -> Either a b -> Either a b\n' +
-                   '                   ^             ^\n' +
-                   '                   1             2\n' +
-                   '\n' +
-                   '1)  "abc" :: String\n' +
-                   '\n' +
-                   '2)  [1, 2, 3] :: Array Number\n' +
-                   '\n' +
-                   'Since there is no type of which all the above values are members, the type-variable constraint has been violated.\n'));
+           TypeError,
+           'Type-variable constraint violation\n' +
+           '\n' +
+           'concat :: Either a b -> Either a b -> Either a b\n' +
+           '                   ^             ^\n' +
+           '                   1             2\n' +
+           '\n' +
+           '1)  "abc" :: String\n' +
+           '\n' +
+           '2)  [1, 2, 3] :: Array Number\n' +
+           '\n' +
+           'Since there is no type of which all the above values are members, the type-variable constraint has been violated.\n');
 
     //  f :: a -> a -> a -> a
     var f = def('f', {}, [a, a, a, a], function(x, y, z) { return x; });
 
     throws(function() { f(Left('abc'), Left(/XXX/)); },
-           errorEq(TypeError,
-                   'Type-variable constraint violation\n' +
-                   '\n' +
-                   'f :: a -> a -> a -> a\n' +
-                   '     ^    ^\n' +
-                   '     1    2\n' +
-                   '\n' +
-                   '1)  Left("abc") :: Either String ???\n' +
-                   '\n' +
-                   '2)  Left(/XXX/) :: Either RegExp ???\n' +
-                   '\n' +
-                   'Since there is no type of which all the above values are members, the type-variable constraint has been violated.\n'));
+           TypeError,
+           'Type-variable constraint violation\n' +
+           '\n' +
+           'f :: a -> a -> a -> a\n' +
+           '     ^    ^\n' +
+           '     1    2\n' +
+           '\n' +
+           '1)  Left("abc") :: Either String ???\n' +
+           '\n' +
+           '2)  Left(/XXX/) :: Either RegExp ???\n' +
+           '\n' +
+           'Since there is no type of which all the above values are members, the type-variable constraint has been violated.\n');
 
     throws(function() { f(Right(123), Right(/XXX/)); },
-           errorEq(TypeError,
-                   'Type-variable constraint violation\n' +
-                   '\n' +
-                   'f :: a -> a -> a -> a\n' +
-                   '     ^    ^\n' +
-                   '     1    2\n' +
-                   '\n' +
-                   '1)  Right(123) :: Either ??? Number\n' +
-                   '\n' +
-                   '2)  Right(/XXX/) :: Either ??? RegExp\n' +
-                   '\n' +
-                   'Since there is no type of which all the above values are members, the type-variable constraint has been violated.\n'));
+           TypeError,
+           'Type-variable constraint violation\n' +
+           '\n' +
+           'f :: a -> a -> a -> a\n' +
+           '     ^    ^\n' +
+           '     1    2\n' +
+           '\n' +
+           '1)  Right(123) :: Either ??? Number\n' +
+           '\n' +
+           '2)  Right(/XXX/) :: Either ??? RegExp\n' +
+           '\n' +
+           'Since there is no type of which all the above values are members, the type-variable constraint has been violated.\n');
 
     throws(function() { f(Left('abc'), Right(123), Left(/XXX/)); },
-           errorEq(TypeError,
-                   'Type-variable constraint violation\n' +
-                   '\n' +
-                   'f :: a -> a -> a -> a\n' +
-                   '     ^         ^\n' +
-                   '     1         2\n' +
-                   '\n' +
-                   '1)  Left("abc") :: Either String ???\n' +
-                   '\n' +
-                   '2)  Left(/XXX/) :: Either RegExp ???\n' +
-                   '\n' +
-                   'Since there is no type of which all the above values are members, the type-variable constraint has been violated.\n'));
+           TypeError,
+           'Type-variable constraint violation\n' +
+           '\n' +
+           'f :: a -> a -> a -> a\n' +
+           '     ^         ^\n' +
+           '     1         2\n' +
+           '\n' +
+           '1)  Left("abc") :: Either String ???\n' +
+           '\n' +
+           '2)  Left(/XXX/) :: Either RegExp ???\n' +
+           '\n' +
+           'Since there is no type of which all the above values are members, the type-variable constraint has been violated.\n');
 
     throws(function() { f(Left('abc'), Right(123), Right(/XXX/)); },
-           errorEq(TypeError,
-                   'Type-variable constraint violation\n' +
-                   '\n' +
-                   'f :: a -> a -> a -> a\n' +
-                   '          ^    ^\n' +
-                   '          1    2\n' +
-                   '\n' +
-                   '1)  Right(123) :: Either ??? Number\n' +
-                   '\n' +
-                   '2)  Right(/XXX/) :: Either ??? RegExp\n' +
-                   '\n' +
-                   'Since there is no type of which all the above values are members, the type-variable constraint has been violated.\n'));
+           TypeError,
+           'Type-variable constraint violation\n' +
+           '\n' +
+           'f :: a -> a -> a -> a\n' +
+           '          ^    ^\n' +
+           '          1    2\n' +
+           '\n' +
+           '1)  Right(123) :: Either ??? Number\n' +
+           '\n' +
+           '2)  Right(/XXX/) :: Either ??? RegExp\n' +
+           '\n' +
+           'Since there is no type of which all the above values are members, the type-variable constraint has been violated.\n');
   });
 
   it('supports arbitrary nesting of types', function() {
@@ -1837,16 +1837,16 @@ describe('def', function() {
     eq(unnest([[null], [null], [null]]), [null, null, null]);
 
     throws(function() { unnest([1, 2, 3]); },
-           errorEq(TypeError,
-                   'Invalid value\n' +
-                   '\n' +
-                   'unnest :: Array (Array a) -> Array a\n' +
-                   '                ^^^^^^^^^\n' +
-                   '                    1\n' +
-                   '\n' +
-                   '1)  1 :: Number, Integer\n' +
-                   '\n' +
-                   'The value at position 1 is not a member of ‘Array a’.\n'));
+           TypeError,
+           'Invalid value\n' +
+           '\n' +
+           'unnest :: Array (Array a) -> Array a\n' +
+           '                ^^^^^^^^^\n' +
+           '                    1\n' +
+           '\n' +
+           '1)  1 :: Number, Integer\n' +
+           '\n' +
+           'The value at position 1 is not a member of ‘Array a’.\n');
 
     //  concatComplex :: Array (Either String Integer) -> Array (Either String Integer) -> Array (Either String Integer)
     var concatComplex =
@@ -1858,64 +1858,64 @@ describe('def', function() {
         R.always([Left(/xxx/)]));
 
     throws(function() { concatComplex([Left(/xxx/), Right(0), Right(0.1), Right(0.2)]); },
-           errorEq(TypeError,
-                   'Invalid value\n' +
-                   '\n' +
-                   'concatComplex :: Array (Either String Integer) -> Array (Either String Integer) -> Array (Either String Integer)\n' +
-                   '                               ^^^^^^\n' +
-                   '                                 1\n' +
-                   '\n' +
-                   '1)  /xxx/ :: RegExp\n' +
-                   '\n' +
-                   'The value at position 1 is not a member of ‘String’.\n'));
+           TypeError,
+           'Invalid value\n' +
+           '\n' +
+           'concatComplex :: Array (Either String Integer) -> Array (Either String Integer) -> Array (Either String Integer)\n' +
+           '                               ^^^^^^\n' +
+           '                                 1\n' +
+           '\n' +
+           '1)  /xxx/ :: RegExp\n' +
+           '\n' +
+           'The value at position 1 is not a member of ‘String’.\n');
 
     throws(function() { concatComplex([Left('abc'), Right(0), Right(0.1), Right(0.2)]); },
-           errorEq(TypeError,
-                   'Invalid value\n' +
-                   '\n' +
-                   'concatComplex :: Array (Either String Integer) -> Array (Either String Integer) -> Array (Either String Integer)\n' +
-                   '                                      ^^^^^^^\n' +
-                   '                                         1\n' +
-                   '\n' +
-                   '1)  0.1 :: Number\n' +
-                   '\n' +
-                   'The value at position 1 is not a member of ‘Integer’.\n'));
+           TypeError,
+           'Invalid value\n' +
+           '\n' +
+           'concatComplex :: Array (Either String Integer) -> Array (Either String Integer) -> Array (Either String Integer)\n' +
+           '                                      ^^^^^^^\n' +
+           '                                         1\n' +
+           '\n' +
+           '1)  0.1 :: Number\n' +
+           '\n' +
+           'The value at position 1 is not a member of ‘Integer’.\n');
 
     throws(function() { concatComplex([], [Left(/xxx/), Right(0), Right(0.1), Right(0.2)]); },
-           errorEq(TypeError,
-                   'Invalid value\n' +
-                   '\n' +
-                   'concatComplex :: Array (Either String Integer) -> Array (Either String Integer) -> Array (Either String Integer)\n' +
-                   '                                                                ^^^^^^\n' +
-                   '                                                                  1\n' +
-                   '\n' +
-                   '1)  /xxx/ :: RegExp\n' +
-                   '\n' +
-                   'The value at position 1 is not a member of ‘String’.\n'));
+           TypeError,
+           'Invalid value\n' +
+           '\n' +
+           'concatComplex :: Array (Either String Integer) -> Array (Either String Integer) -> Array (Either String Integer)\n' +
+           '                                                                ^^^^^^\n' +
+           '                                                                  1\n' +
+           '\n' +
+           '1)  /xxx/ :: RegExp\n' +
+           '\n' +
+           'The value at position 1 is not a member of ‘String’.\n');
 
     throws(function() { concatComplex([], [Left('abc'), Right(0), Right(0.1), Right(0.2)]); },
-           errorEq(TypeError,
-                   'Invalid value\n' +
-                   '\n' +
-                   'concatComplex :: Array (Either String Integer) -> Array (Either String Integer) -> Array (Either String Integer)\n' +
-                   '                                                                       ^^^^^^^\n' +
-                   '                                                                          1\n' +
-                   '\n' +
-                   '1)  0.1 :: Number\n' +
-                   '\n' +
-                   'The value at position 1 is not a member of ‘Integer’.\n'));
+           TypeError,
+           'Invalid value\n' +
+           '\n' +
+           'concatComplex :: Array (Either String Integer) -> Array (Either String Integer) -> Array (Either String Integer)\n' +
+           '                                                                       ^^^^^^^\n' +
+           '                                                                          1\n' +
+           '\n' +
+           '1)  0.1 :: Number\n' +
+           '\n' +
+           'The value at position 1 is not a member of ‘Integer’.\n');
 
     throws(function() { concatComplex([], []); },
-           errorEq(TypeError,
-                   'Invalid value\n' +
-                   '\n' +
-                   'concatComplex :: Array (Either String Integer) -> Array (Either String Integer) -> Array (Either String Integer)\n' +
-                   '                                                                                                 ^^^^^^\n' +
-                   '                                                                                                   1\n' +
-                   '\n' +
-                   '1)  /xxx/ :: RegExp\n' +
-                   '\n' +
-                   'The value at position 1 is not a member of ‘String’.\n'));
+           TypeError,
+           'Invalid value\n' +
+           '\n' +
+           'concatComplex :: Array (Either String Integer) -> Array (Either String Integer) -> Array (Either String Integer)\n' +
+           '                                                                                                 ^^^^^^\n' +
+           '                                                                                                   1\n' +
+           '\n' +
+           '1)  /xxx/ :: RegExp\n' +
+           '\n' +
+           'The value at position 1 is not a member of ‘String’.\n');
   });
 
   it('does not allow heterogeneous arrays', function() {
@@ -1935,30 +1935,30 @@ describe('def', function() {
     eq(concat([Left('XXX')], [Right(42)]), [Left('XXX'), Right(42)]);
 
     throws(function() { concat([[1, 2, 3], [Left('XXX'), Right(42)]]); },
-           errorEq(TypeError,
-                   'Type-variable constraint violation\n' +
-                   '\n' +
-                   'concat :: Array a -> Array a -> Array a\n' +
-                   '                ^\n' +
-                   '                1\n' +
-                   '\n' +
-                   '1)  [1, 2, 3] :: Array Number\n' +
-                   '    [Left("XXX"), Right(42)] :: Array (Either String Number)\n' +
-                   '\n' +
-                   'Since there is no type of which all the above values are members, the type-variable constraint has been violated.\n'));
+           TypeError,
+           'Type-variable constraint violation\n' +
+           '\n' +
+           'concat :: Array a -> Array a -> Array a\n' +
+           '                ^\n' +
+           '                1\n' +
+           '\n' +
+           '1)  [1, 2, 3] :: Array Number\n' +
+           '    [Left("XXX"), Right(42)] :: Array (Either String Number)\n' +
+           '\n' +
+           'Since there is no type of which all the above values are members, the type-variable constraint has been violated.\n');
 
     throws(function() { concat([[1, 2, 3], [Right(42), Left('XXX')]]); },
-           errorEq(TypeError,
-                   'Type-variable constraint violation\n' +
-                   '\n' +
-                   'concat :: Array a -> Array a -> Array a\n' +
-                   '                ^\n' +
-                   '                1\n' +
-                   '\n' +
-                   '1)  [1, 2, 3] :: Array Number\n' +
-                   '    [Right(42), Left("XXX")] :: Array (Either String Number)\n' +
-                   '\n' +
-                   'Since there is no type of which all the above values are members, the type-variable constraint has been violated.\n'));
+           TypeError,
+           'Type-variable constraint violation\n' +
+           '\n' +
+           'concat :: Array a -> Array a -> Array a\n' +
+           '                ^\n' +
+           '                1\n' +
+           '\n' +
+           '1)  [1, 2, 3] :: Array Number\n' +
+           '    [Right(42), Left("XXX")] :: Array (Either String Number)\n' +
+           '\n' +
+           'Since there is no type of which all the above values are members, the type-variable constraint has been violated.\n');
 
     //  concatNested :: Array (Array a) -> Array (Array a) -> Array (Array a)
     var concatNested =
@@ -1968,55 +1968,55 @@ describe('def', function() {
         R.always([['a', 'b', 'c'], [1, 2, 3]]));
 
     throws(function() { concatNested([['a', 'b', 'c'], [1, 2, 3]]); },
-           errorEq(TypeError,
-                   'Type-variable constraint violation\n' +
-                   '\n' +
-                   'concatNested :: Array (Array a) -> Array (Array a) -> Array (Array a)\n' +
-                   '                             ^\n' +
-                   '                             1\n' +
-                   '\n' +
-                   '1)  "a" :: String\n' +
-                   '    "b" :: String\n' +
-                   '    "c" :: String\n' +
-                   '    1 :: Number\n' +
-                   '    2 :: Number\n' +
-                   '    3 :: Number\n' +
-                   '\n' +
-                   'Since there is no type of which all the above values are members, the type-variable constraint has been violated.\n'));
+           TypeError,
+           'Type-variable constraint violation\n' +
+           '\n' +
+           'concatNested :: Array (Array a) -> Array (Array a) -> Array (Array a)\n' +
+           '                             ^\n' +
+           '                             1\n' +
+           '\n' +
+           '1)  "a" :: String\n' +
+           '    "b" :: String\n' +
+           '    "c" :: String\n' +
+           '    1 :: Number\n' +
+           '    2 :: Number\n' +
+           '    3 :: Number\n' +
+           '\n' +
+           'Since there is no type of which all the above values are members, the type-variable constraint has been violated.\n');
 
     throws(function() { concatNested([], [['a', 'b', 'c'], [1, 2, 3]]); },
-           errorEq(TypeError,
-                   'Type-variable constraint violation\n' +
-                   '\n' +
-                   'concatNested :: Array (Array a) -> Array (Array a) -> Array (Array a)\n' +
-                   '                                                ^\n' +
-                   '                                                1\n' +
-                   '\n' +
-                   '1)  "a" :: String\n' +
-                   '    "b" :: String\n' +
-                   '    "c" :: String\n' +
-                   '    1 :: Number\n' +
-                   '    2 :: Number\n' +
-                   '    3 :: Number\n' +
-                   '\n' +
-                   'Since there is no type of which all the above values are members, the type-variable constraint has been violated.\n'));
+           TypeError,
+           'Type-variable constraint violation\n' +
+           '\n' +
+           'concatNested :: Array (Array a) -> Array (Array a) -> Array (Array a)\n' +
+           '                                                ^\n' +
+           '                                                1\n' +
+           '\n' +
+           '1)  "a" :: String\n' +
+           '    "b" :: String\n' +
+           '    "c" :: String\n' +
+           '    1 :: Number\n' +
+           '    2 :: Number\n' +
+           '    3 :: Number\n' +
+           '\n' +
+           'Since there is no type of which all the above values are members, the type-variable constraint has been violated.\n');
 
     throws(function() { concatNested([], []); },
-           errorEq(TypeError,
-                   'Type-variable constraint violation\n' +
-                   '\n' +
-                   'concatNested :: Array (Array a) -> Array (Array a) -> Array (Array a)\n' +
-                   '                                                                   ^\n' +
-                   '                                                                   1\n' +
-                   '\n' +
-                   '1)  "a" :: String\n' +
-                   '    "b" :: String\n' +
-                   '    "c" :: String\n' +
-                   '    1 :: Number\n' +
-                   '    2 :: Number\n' +
-                   '    3 :: Number\n' +
-                   '\n' +
-                   'Since there is no type of which all the above values are members, the type-variable constraint has been violated.\n'));
+           TypeError,
+           'Type-variable constraint violation\n' +
+           '\n' +
+           'concatNested :: Array (Array a) -> Array (Array a) -> Array (Array a)\n' +
+           '                                                                   ^\n' +
+           '                                                                   1\n' +
+           '\n' +
+           '1)  "a" :: String\n' +
+           '    "b" :: String\n' +
+           '    "c" :: String\n' +
+           '    1 :: Number\n' +
+           '    2 :: Number\n' +
+           '    3 :: Number\n' +
+           '\n' +
+           'Since there is no type of which all the above values are members, the type-variable constraint has been violated.\n');
   });
 
   it('permits the use of arrays as tuples', function() {
@@ -2040,16 +2040,16 @@ describe('def', function() {
     eq(id([Left('abc'), Right(123)]), [Left('abc'), Right(123)]);
 
     throws(function() { id([Left('abc'), 123, 456]); },
-           errorEq(TypeError,
-                   'Type-variable constraint violation\n' +
-                   '\n' +
-                   'id :: a -> a\n' +
-                   '      ^\n' +
-                   '      1\n' +
-                   '\n' +
-                   '1)  [Left("abc"), 123, 456] :: Array ???\n' +
-                   '\n' +
-                   'Since there is no type of which all the above values are members, the type-variable constraint has been violated.\n'));
+           TypeError,
+           'Type-variable constraint violation\n' +
+           '\n' +
+           'id :: a -> a\n' +
+           '      ^\n' +
+           '      1\n' +
+           '\n' +
+           '1)  [Left("abc"), 123, 456] :: Array ???\n' +
+           '\n' +
+           'Since there is no type of which all the above values are members, the type-variable constraint has been violated.\n');
   });
 
   it('supports higher-order functions', function() {
@@ -2070,40 +2070,40 @@ describe('def', function() {
     eq(f(R.length, ['foo', 'bar', 'baz', 'quux']), [3, 3, 3, 4]);
 
     throws(function() { g(/xxx/); },
-           errorEq(TypeError,
-                   'Invalid value\n' +
-                   '\n' +
-                   'g :: (String -> Number) -> Array String -> Array Number\n' +
-                   '     ^^^^^^^^^^^^^^^^^^\n' +
-                   '             1\n' +
-                   '\n' +
-                   '1)  /xxx/ :: RegExp\n' +
-                   '\n' +
-                   'The value at position 1 is not a member of ‘String -> Number’.\n'));
+           TypeError,
+           'Invalid value\n' +
+           '\n' +
+           'g :: (String -> Number) -> Array String -> Array Number\n' +
+           '     ^^^^^^^^^^^^^^^^^^\n' +
+           '             1\n' +
+           '\n' +
+           '1)  /xxx/ :: RegExp\n' +
+           '\n' +
+           'The value at position 1 is not a member of ‘String -> Number’.\n');
 
     throws(function() { g(R.length, ['a', 'b', 'c']); },
-           errorEq(TypeError,
-                   'Invalid value\n' +
-                   '\n' +
-                   'g :: (String -> Number) -> Array String -> Array Number\n' +
-                   '      ^^^^^^\n' +
-                   '        1\n' +
-                   '\n' +
-                   '1)  ["a", "b", "c"] :: Array String\n' +
-                   '\n' +
-                   'The value at position 1 is not a member of ‘String’.\n'));
+           TypeError,
+           'Invalid value\n' +
+           '\n' +
+           'g :: (String -> Number) -> Array String -> Array Number\n' +
+           '      ^^^^^^\n' +
+           '        1\n' +
+           '\n' +
+           '1)  ["a", "b", "c"] :: Array String\n' +
+           '\n' +
+           'The value at position 1 is not a member of ‘String’.\n');
 
     throws(function() { f(R.identity, ['a', 'b', 'c']); },
-           errorEq(TypeError,
-                   'Invalid value\n' +
-                   '\n' +
-                   'f :: (String -> Number) -> Array String -> Array Number\n' +
-                   '                ^^^^^^\n' +
-                   '                  1\n' +
-                   '\n' +
-                   '1)  "a" :: String\n' +
-                   '\n' +
-                   'The value at position 1 is not a member of ‘Number’.\n'));
+           TypeError,
+           'Invalid value\n' +
+           '\n' +
+           'f :: (String -> Number) -> Array String -> Array Number\n' +
+           '                ^^^^^^\n' +
+           '                  1\n' +
+           '\n' +
+           '1)  "a" :: String\n' +
+           '\n' +
+           'The value at position 1 is not a member of ‘Number’.\n');
 
     //  map :: (a -> b) -> Array a -> Array b
     var map =
@@ -2124,38 +2124,38 @@ describe('def', function() {
     eq(map(length, ['foo', 'bar']), [3, 3]);
 
     throws(function() { map(length, ['foo', 'bar', 'baz', 'quux']); },
-           errorEq(TypeError,
-                   'Type-variable constraint violation\n' +
-                   '\n' +
-                   'map :: (a -> b) -> Array a -> Array b\n' +
-                   '        ^                ^\n' +
-                   '        1                2\n' +
-                   '\n' +
-                   '1)  "foo" :: String\n' +
-                   '    "bar" :: String\n' +
-                   '    "baz" :: String\n' +
-                   '    null :: Null\n' +
-                   '\n' +
-                   '2)  "foo" :: String\n' +
-                   '    "bar" :: String\n' +
-                   '    "baz" :: String\n' +
-                   '    "quux" :: String\n' +
-                   '\n' +
-                   'Since there is no type of which all the above values are members, the type-variable constraint has been violated.\n'));
+           TypeError,
+           'Type-variable constraint violation\n' +
+           '\n' +
+           'map :: (a -> b) -> Array a -> Array b\n' +
+           '        ^                ^\n' +
+           '        1                2\n' +
+           '\n' +
+           '1)  "foo" :: String\n' +
+           '    "bar" :: String\n' +
+           '    "baz" :: String\n' +
+           '    null :: Null\n' +
+           '\n' +
+           '2)  "foo" :: String\n' +
+           '    "bar" :: String\n' +
+           '    "baz" :: String\n' +
+           '    "quux" :: String\n' +
+           '\n' +
+           'Since there is no type of which all the above values are members, the type-variable constraint has been violated.\n');
 
     throws(function() { map(function(s) { return s === 'baz' ? null : s.length; }, ['foo', 'bar', 'baz']); },
-           errorEq(TypeError,
-                   'Type-variable constraint violation\n' +
-                   '\n' +
-                   'map :: (a -> b) -> Array a -> Array b\n' +
-                   '             ^\n' +
-                   '             1\n' +
-                   '\n' +
-                   '1)  3 :: Number\n' +
-                   '    3 :: Number\n' +
-                   '    null :: Null\n' +
-                   '\n' +
-                   'Since there is no type of which all the above values are members, the type-variable constraint has been violated.\n'));
+           TypeError,
+           'Type-variable constraint violation\n' +
+           '\n' +
+           'map :: (a -> b) -> Array a -> Array b\n' +
+           '             ^\n' +
+           '             1\n' +
+           '\n' +
+           '1)  3 :: Number\n' +
+           '    3 :: Number\n' +
+           '    null :: Null\n' +
+           '\n' +
+           'Since there is no type of which all the above values are members, the type-variable constraint has been violated.\n');
 
     //  reduce_ :: ((a, b) -> a) -> a -> Array b -> a
     var reduce_ =
@@ -2173,16 +2173,16 @@ describe('def', function() {
     eq(reduce_(function(x, y) { return x + y; }, 0, [1, 2, 3, 4, 5, 6]), 21);
 
     throws(function() { reduce_(null); },
-           errorEq(TypeError,
-                   'Invalid value\n' +
-                   '\n' +
-                   'reduce_ :: ((a, b) -> a) -> a -> Array b -> a\n' +
-                   '           ^^^^^^^^^^^^^\n' +
-                   '                 1\n' +
-                   '\n' +
-                   '1)  null :: Null\n' +
-                   '\n' +
-                   'The value at position 1 is not a member of ‘(a, b) -> a’.\n'));
+           TypeError,
+           'Invalid value\n' +
+           '\n' +
+           'reduce_ :: ((a, b) -> a) -> a -> Array b -> a\n' +
+           '           ^^^^^^^^^^^^^\n' +
+           '                 1\n' +
+           '\n' +
+           '1)  null :: Null\n' +
+           '\n' +
+           'The value at position 1 is not a member of ‘(a, b) -> a’.\n');
 
     //  unfoldr :: (b -> Maybe (Pair a b)) -> b -> Array a
     var unfoldr =
@@ -2207,16 +2207,16 @@ describe('def', function() {
     eq(unfoldr(h, 1), [1, 2, 3, 4]);
 
     throws(function() { unfoldr(null); },
-           errorEq(TypeError,
-                   'Invalid value\n' +
-                   '\n' +
-                   'unfoldr :: (b -> Maybe (Pair a b)) -> b -> Array a\n' +
-                   '           ^^^^^^^^^^^^^^^^^^^^^^^\n' +
-                   '                      1\n' +
-                   '\n' +
-                   '1)  null :: Null\n' +
-                   '\n' +
-                   'The value at position 1 is not a member of ‘b -> Maybe (Pair a b)’.\n'));
+           TypeError,
+           'Invalid value\n' +
+           '\n' +
+           'unfoldr :: (b -> Maybe (Pair a b)) -> b -> Array a\n' +
+           '           ^^^^^^^^^^^^^^^^^^^^^^^\n' +
+           '                      1\n' +
+           '\n' +
+           '1)  null :: Null\n' +
+           '\n' +
+           'The value at position 1 is not a member of ‘b -> Maybe (Pair a b)’.\n');
 
     //  T :: a -> (a -> b) -> b
     var T =
@@ -2226,14 +2226,14 @@ describe('def', function() {
         function(x, f) { return f(/* x */); });
 
     throws(function() { T(100, Math.sqrt); },
-           errorEq(TypeError,
-                   '‘T’ applied ‘a -> b’ to the wrong number of arguments\n' +
-                   '\n' +
-                   'T :: a -> (a -> b) -> b\n' +
-                   '           ^\n' +
-                   '           1\n' +
-                   '\n' +
-                   'Expected one argument but received zero arguments.\n'));
+           TypeError,
+           '‘T’ applied ‘a -> b’ to the wrong number of arguments\n' +
+           '\n' +
+           'T :: a -> (a -> b) -> b\n' +
+           '           ^\n' +
+           '           1\n' +
+           '\n' +
+           'Expected one argument but received zero arguments.\n');
   });
 
   it('supports type-class constraints', function() {
@@ -2255,28 +2255,28 @@ describe('def', function() {
     eq(or(Just(3), Just(4)), Just(3));
 
     throws(function() { or(Left(1)); },
-           errorEq(TypeError,
-                   'Type-class constraint violation\n' +
-                   '\n' +
-                   'or :: Alternative a => a -> a -> a\n' +
-                   '      ^^^^^^^^^^^^^    ^\n' +
-                   '                       1\n' +
-                   '\n' +
-                   '1)  Left(1) :: Either Number ???, Either Integer ???\n' +
-                   '\n' +
-                   '‘or’ requires ‘a’ to satisfy the Alternative type-class constraint; the value at position 1 does not.\n'));
+           TypeError,
+           'Type-class constraint violation\n' +
+           '\n' +
+           'or :: Alternative a => a -> a -> a\n' +
+           '      ^^^^^^^^^^^^^    ^\n' +
+           '                       1\n' +
+           '\n' +
+           '1)  Left(1) :: Either Number ???, Either Integer ???\n' +
+           '\n' +
+           '‘or’ requires ‘a’ to satisfy the Alternative type-class constraint; the value at position 1 does not.\n');
 
     throws(function() { or($.__, Right(1)); },
-           errorEq(TypeError,
-                   'Type-class constraint violation\n' +
-                   '\n' +
-                   'or :: Alternative a => a -> a -> a\n' +
-                   '      ^^^^^^^^^^^^^         ^\n' +
-                   '                            1\n' +
-                   '\n' +
-                   '1)  Right(1) :: Either ??? Number, Either ??? Integer\n' +
-                   '\n' +
-                   '‘or’ requires ‘a’ to satisfy the Alternative type-class constraint; the value at position 1 does not.\n'));
+           TypeError,
+           'Type-class constraint violation\n' +
+           '\n' +
+           'or :: Alternative a => a -> a -> a\n' +
+           '      ^^^^^^^^^^^^^         ^\n' +
+           '                            1\n' +
+           '\n' +
+           '1)  Right(1) :: Either ??? Number, Either ??? Integer\n' +
+           '\n' +
+           '‘or’ requires ‘a’ to satisfy the Alternative type-class constraint; the value at position 1 does not.\n');
 
     //  Semigroup :: TypeClass
     var Semigroup =
@@ -2291,56 +2291,56 @@ describe('def', function() {
     eq(concat('abc', 'def'), 'abcdef');
 
     throws(function() { concat(/x/); },
-           errorEq(TypeError,
-                   'Type-class constraint violation\n' +
-                   '\n' +
-                   'concat :: Semigroup a => a -> a -> a\n' +
-                   '          ^^^^^^^^^^^    ^\n' +
-                   '                         1\n' +
-                   '\n' +
-                   '1)  /x/ :: RegExp\n' +
-                   '\n' +
-                   '‘concat’ requires ‘a’ to satisfy the Semigroup type-class constraint; the value at position 1 does not.\n'));
+           TypeError,
+           'Type-class constraint violation\n' +
+           '\n' +
+           'concat :: Semigroup a => a -> a -> a\n' +
+           '          ^^^^^^^^^^^    ^\n' +
+           '                         1\n' +
+           '\n' +
+           '1)  /x/ :: RegExp\n' +
+           '\n' +
+           '‘concat’ requires ‘a’ to satisfy the Semigroup type-class constraint; the value at position 1 does not.\n');
 
     throws(function() { concat($.__, /x/); },
-           errorEq(TypeError,
-                   'Type-class constraint violation\n' +
-                   '\n' +
-                   'concat :: Semigroup a => a -> a -> a\n' +
-                   '          ^^^^^^^^^^^         ^\n' +
-                   '                              1\n' +
-                   '\n' +
-                   '1)  /x/ :: RegExp\n' +
-                   '\n' +
-                   '‘concat’ requires ‘a’ to satisfy the Semigroup type-class constraint; the value at position 1 does not.\n'));
+           TypeError,
+           'Type-class constraint violation\n' +
+           '\n' +
+           'concat :: Semigroup a => a -> a -> a\n' +
+           '          ^^^^^^^^^^^         ^\n' +
+           '                              1\n' +
+           '\n' +
+           '1)  /x/ :: RegExp\n' +
+           '\n' +
+           '‘concat’ requires ‘a’ to satisfy the Semigroup type-class constraint; the value at position 1 does not.\n');
 
     throws(function() { concat([], ''); },
-           errorEq(TypeError,
-                   'Type-variable constraint violation\n' +
-                   '\n' +
-                   'concat :: Semigroup a => a -> a -> a\n' +
-                   '                         ^    ^\n' +
-                   '                         1    2\n' +
-                   '\n' +
-                   '1)  [] :: Array ???\n' +
-                   '\n' +
-                   '2)  "" :: String\n' +
-                   '\n' +
-                   'Since there is no type of which all the above values are members, the type-variable constraint has been violated.\n'));
+           TypeError,
+           'Type-variable constraint violation\n' +
+           '\n' +
+           'concat :: Semigroup a => a -> a -> a\n' +
+           '                         ^    ^\n' +
+           '                         1    2\n' +
+           '\n' +
+           '1)  [] :: Array ???\n' +
+           '\n' +
+           '2)  "" :: String\n' +
+           '\n' +
+           'Since there is no type of which all the above values are members, the type-variable constraint has been violated.\n');
 
     throws(function() { concat('', []); },
-           errorEq(TypeError,
-                   'Type-variable constraint violation\n' +
-                   '\n' +
-                   'concat :: Semigroup a => a -> a -> a\n' +
-                   '                         ^    ^\n' +
-                   '                         1    2\n' +
-                   '\n' +
-                   '1)  "" :: String\n' +
-                   '\n' +
-                   '2)  [] :: Array ???\n' +
-                   '\n' +
-                   'Since there is no type of which all the above values are members, the type-variable constraint has been violated.\n'));
+           TypeError,
+           'Type-variable constraint violation\n' +
+           '\n' +
+           'concat :: Semigroup a => a -> a -> a\n' +
+           '                         ^    ^\n' +
+           '                         1    2\n' +
+           '\n' +
+           '1)  "" :: String\n' +
+           '\n' +
+           '2)  [] :: Array ???\n' +
+           '\n' +
+           'Since there is no type of which all the above values are members, the type-variable constraint has been violated.\n');
 
     //  Monad :: TypeClass
     var Monad =
@@ -2367,28 +2367,28 @@ describe('def', function() {
     eq(filter(R.F, Nothing), Nothing);
 
     throws(function() { filter(R.F, [1, 2, 3]); },
-           errorEq(TypeError,
-                   'Type-class constraint violation\n' +
-                   '\n' +
-                   'filter :: (Monad m, Monoid m) => (a -> Boolean) -> m a -> m a\n' +
-                   '           ^^^^^^^                                 ^^^\n' +
-                   '                                                    1\n' +
-                   '\n' +
-                   '1)  [1, 2, 3] :: Array Number, Array Integer\n' +
-                   '\n' +
-                   '‘filter’ requires ‘m’ to satisfy the Monad type-class constraint; the value at position 1 does not.\n'));
+           TypeError,
+           'Type-class constraint violation\n' +
+           '\n' +
+           'filter :: (Monad m, Monoid m) => (a -> Boolean) -> m a -> m a\n' +
+           '           ^^^^^^^                                 ^^^\n' +
+           '                                                    1\n' +
+           '\n' +
+           '1)  [1, 2, 3] :: Array Number, Array Integer\n' +
+           '\n' +
+           '‘filter’ requires ‘m’ to satisfy the Monad type-class constraint; the value at position 1 does not.\n');
 
     throws(function() { filter(R.F, Right(42)); },
-           errorEq(TypeError,
-                   'Type-class constraint violation\n' +
-                   '\n' +
-                   'filter :: (Monad m, Monoid m) => (a -> Boolean) -> m a -> m a\n' +
-                   '                    ^^^^^^^^                       ^^^\n' +
-                   '                                                    1\n' +
-                   '\n' +
-                   '1)  Right(42) :: Either ??? Number, Either ??? Integer\n' +
-                   '\n' +
-                   '‘filter’ requires ‘m’ to satisfy the Monoid type-class constraint; the value at position 1 does not.\n'));
+           TypeError,
+           'Type-class constraint violation\n' +
+           '\n' +
+           'filter :: (Monad m, Monoid m) => (a -> Boolean) -> m a -> m a\n' +
+           '                    ^^^^^^^^                       ^^^\n' +
+           '                                                    1\n' +
+           '\n' +
+           '1)  Right(42) :: Either ??? Number, Either ??? Integer\n' +
+           '\n' +
+           '‘filter’ requires ‘m’ to satisfy the Monoid type-class constraint; the value at position 1 does not.\n');
 
     //  concatMaybes :: Semigroup a => Maybe a -> Maybe a -> Maybe a
     var concatMaybes =
@@ -2398,40 +2398,40 @@ describe('def', function() {
         R.always(Just(/xxx/)));
 
     throws(function() { concatMaybes(Just(/xxx/)); },
-           errorEq(TypeError,
-                   'Type-class constraint violation\n' +
-                   '\n' +
-                   'concatMaybes :: Semigroup a => Maybe a -> Maybe a -> Maybe a\n' +
-                   '                ^^^^^^^^^^^          ^\n' +
-                   '                                     1\n' +
-                   '\n' +
-                   '1)  /xxx/ :: RegExp\n' +
-                   '\n' +
-                   '‘concatMaybes’ requires ‘a’ to satisfy the Semigroup type-class constraint; the value at position 1 does not.\n'));
+           TypeError,
+           'Type-class constraint violation\n' +
+           '\n' +
+           'concatMaybes :: Semigroup a => Maybe a -> Maybe a -> Maybe a\n' +
+           '                ^^^^^^^^^^^          ^\n' +
+           '                                     1\n' +
+           '\n' +
+           '1)  /xxx/ :: RegExp\n' +
+           '\n' +
+           '‘concatMaybes’ requires ‘a’ to satisfy the Semigroup type-class constraint; the value at position 1 does not.\n');
 
     throws(function() { concatMaybes(Just('abc'), Just(/xxx/)); },
-           errorEq(TypeError,
-                   'Type-class constraint violation\n' +
-                   '\n' +
-                   'concatMaybes :: Semigroup a => Maybe a -> Maybe a -> Maybe a\n' +
-                   '                ^^^^^^^^^^^                     ^\n' +
-                   '                                                1\n' +
-                   '\n' +
-                   '1)  /xxx/ :: RegExp\n' +
-                   '\n' +
-                   '‘concatMaybes’ requires ‘a’ to satisfy the Semigroup type-class constraint; the value at position 1 does not.\n'));
+           TypeError,
+           'Type-class constraint violation\n' +
+           '\n' +
+           'concatMaybes :: Semigroup a => Maybe a -> Maybe a -> Maybe a\n' +
+           '                ^^^^^^^^^^^                     ^\n' +
+           '                                                1\n' +
+           '\n' +
+           '1)  /xxx/ :: RegExp\n' +
+           '\n' +
+           '‘concatMaybes’ requires ‘a’ to satisfy the Semigroup type-class constraint; the value at position 1 does not.\n');
 
     throws(function() { concatMaybes(Just('abc'), Just('def')); },
-           errorEq(TypeError,
-                   'Type-class constraint violation\n' +
-                   '\n' +
-                   'concatMaybes :: Semigroup a => Maybe a -> Maybe a -> Maybe a\n' +
-                   '                ^^^^^^^^^^^                                ^\n' +
-                   '                                                           1\n' +
-                   '\n' +
-                   '1)  /xxx/ :: RegExp\n' +
-                   '\n' +
-                   '‘concatMaybes’ requires ‘a’ to satisfy the Semigroup type-class constraint; the value at position 1 does not.\n'));
+           TypeError,
+           'Type-class constraint violation\n' +
+           '\n' +
+           'concatMaybes :: Semigroup a => Maybe a -> Maybe a -> Maybe a\n' +
+           '                ^^^^^^^^^^^                                ^\n' +
+           '                                                           1\n' +
+           '\n' +
+           '1)  /xxx/ :: RegExp\n' +
+           '\n' +
+           '‘concatMaybes’ requires ‘a’ to satisfy the Semigroup type-class constraint; the value at position 1 does not.\n');
 
     //  sillyConst :: (Alternative a, Semigroup b) => a -> b -> a
     var sillyConst =
@@ -2443,16 +2443,16 @@ describe('def', function() {
     eq(sillyConst(Just(42), [1, 2, 3]), Just(42));
 
     throws(function() { sillyConst([1, 2, 3]); },
-           errorEq(TypeError,
-                   'Type-class constraint violation\n' +
-                   '\n' +
-                   'sillyConst :: (Alternative a, Semigroup b) => a -> b -> a\n' +
-                   '               ^^^^^^^^^^^^^                  ^\n' +
-                   '                                              1\n' +
-                   '\n' +
-                   '1)  [1, 2, 3] :: Array Number, Array Integer\n' +
-                   '\n' +
-                   '‘sillyConst’ requires ‘a’ to satisfy the Alternative type-class constraint; the value at position 1 does not.\n'));
+           TypeError,
+           'Type-class constraint violation\n' +
+           '\n' +
+           'sillyConst :: (Alternative a, Semigroup b) => a -> b -> a\n' +
+           '               ^^^^^^^^^^^^^                  ^\n' +
+           '                                              1\n' +
+           '\n' +
+           '1)  [1, 2, 3] :: Array Number, Array Integer\n' +
+           '\n' +
+           '‘sillyConst’ requires ‘a’ to satisfy the Alternative type-class constraint; the value at position 1 does not.\n');
   });
 
   it('supports unary type variables', function() {
@@ -2479,18 +2479,18 @@ describe('def', function() {
     eq(map(R.inc, Just(42)), Just(43));
 
     throws(function() { map(R.inc, [1, 2, 3]); },
-           errorEq(TypeError,
-                   '‘map’ applied ‘a -> b’ to the wrong number of arguments\n' +
-                   '\n' +
-                   'map :: Functor f => (a -> b) -> f a -> f b\n' +
-                   '                     ^\n' +
-                   '                     1\n' +
-                   '\n' +
-                   'Expected one argument but received three arguments:\n' +
-                   '\n' +
-                   '  - 1\n' +
-                   '  - 0\n' +
-                   '  - [1, 2, 3]\n'));
+           TypeError,
+           '‘map’ applied ‘a -> b’ to the wrong number of arguments\n' +
+           '\n' +
+           'map :: Functor f => (a -> b) -> f a -> f b\n' +
+           '                     ^\n' +
+           '                     1\n' +
+           '\n' +
+           'Expected one argument but received three arguments:\n' +
+           '\n' +
+           '  - 1\n' +
+           '  - 0\n' +
+           '  - [1, 2, 3]\n');
 
     //  Foldable :: TypeClass
     var Foldable = $.TypeClass('my-package/Foldable', hasMethods(['reduce']));
@@ -2511,28 +2511,28 @@ describe('def', function() {
     eq(sum(Right(42)), 42);
 
     throws(function() { sum({x: 1, y: 2, z: 3}); },
-           errorEq(TypeError,
-                   'Type-class constraint violation\n' +
-                   '\n' +
-                   'sum :: Foldable f => f FiniteNumber -> FiniteNumber\n' +
-                   '       ^^^^^^^^^^    ^^^^^^^^^^^^^^\n' +
-                   '                           1\n' +
-                   '\n' +
-                   '1)  {"x": 1, "y": 2, "z": 3} :: Object, StrMap Number\n' +
-                   '\n' +
-                   '‘sum’ requires ‘f’ to satisfy the Foldable type-class constraint; the value at position 1 does not.\n'));
+           TypeError,
+           'Type-class constraint violation\n' +
+           '\n' +
+           'sum :: Foldable f => f FiniteNumber -> FiniteNumber\n' +
+           '       ^^^^^^^^^^    ^^^^^^^^^^^^^^\n' +
+           '                           1\n' +
+           '\n' +
+           '1)  {"x": 1, "y": 2, "z": 3} :: Object, StrMap Number\n' +
+           '\n' +
+           '‘sum’ requires ‘f’ to satisfy the Foldable type-class constraint; the value at position 1 does not.\n');
 
     throws(function() { sum(['foo', 'bar', 'baz']); },
-           errorEq(TypeError,
-                   'Invalid value\n' +
-                   '\n' +
-                   'sum :: Foldable f => f FiniteNumber -> FiniteNumber\n' +
-                   '                       ^^^^^^^^^^^^\n' +
-                   '                            1\n' +
-                   '\n' +
-                   '1)  "foo" :: String\n' +
-                   '\n' +
-                   'The value at position 1 is not a member of ‘FiniteNumber’.\n'));
+           TypeError,
+           'Invalid value\n' +
+           '\n' +
+           'sum :: Foldable f => f FiniteNumber -> FiniteNumber\n' +
+           '                       ^^^^^^^^^^^^\n' +
+           '                            1\n' +
+           '\n' +
+           '1)  "foo" :: String\n' +
+           '\n' +
+           'The value at position 1 is not a member of ‘FiniteNumber’.\n');
   });
 
 });
