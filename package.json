@@ -10,12 +10,13 @@
   "scripts": {
     "test": "make test lint"
   },
-  "dependencies": {},
+  "dependencies": {
+    "sanctuary-type-classes": "1.0.x"
+  },
   "devDependencies": {
     "eslint": "2.9.x",
     "istanbul": "0.4.x",
     "mocha": "3.x.x",
-    "ramda": "0.21.x",
     "remember-bower": "0.1.x",
     "sanctuary-style": "0.3.x",
     "xyz": "1.1.x"

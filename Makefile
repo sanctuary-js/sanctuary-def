@@ -20,6 +20,7 @@ lint:
 	$(ESLINT) \
 	  --global define \
 	  --global module \
+	  --global require \
 	  --global self \
 	  -- index.js
 	$(ESLINT) \
