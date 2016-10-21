@@ -2557,6 +2557,29 @@ describe('def', function() {
            'The value at position 1 is not a member of ‘FiniteNumber’.\n');
   });
 
+  it('only determines actual types when necessary', function() {
+    //  count :: Integer
+    var count = 0;
+
+    //  Void :: Type
+    var Void = $.NullaryType('my-package/Void', function(x) { count += 1; return false; });
+
+    var env = [$.Array, Maybe, $.Number, Void];
+    var def = $.create({checkTypes: true, env: env});
+
+    //  head :: Array a -> Maybe a
+    var head =
+    def('head',
+        {},
+        [$.Array(a), Maybe(a)],
+        function(xs) { return xs.length > 0 ? Just(xs[0]) : Nothing; });
+
+    eq(head([]), Nothing);
+    eq(count, 0);
+    eq(head([1, 2, 3]), Just(1));
+    eq(count, 1);
+  });
+
 });
 
 describe('test', function() {
