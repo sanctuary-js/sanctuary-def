@@ -1114,6 +1114,28 @@ describe('def', function() {
            '\n' +
            '  - "x": /XXX/\n' +
            '  - "y": /XXX/\n');
+
+    //  Foo :: Type
+    var Foo = $.RecordType({x: a, y: a});
+
+    //  foo :: Foo -> Foo
+    var foo = def('foo', {}, [Foo, Foo], R.identity);
+
+    eq(foo({x: 1, y: 2, z: 3}), {x: 1, y: 2, z: 3});
+
+    throws(function() { foo({x: 'abc', y: 123}); },
+           TypeError,
+           'Type-variable constraint violation\n' +
+           '\n' +
+           'foo :: { x :: a, y :: a } -> { x :: a, y :: a }\n' +
+           '              ^       ^\n' +
+           '              1       2\n' +
+           '\n' +
+           '1)  "abc" :: String\n' +
+           '\n' +
+           '2)  123 :: Number\n' +
+           '\n' +
+           'Since there is no type of which all the above values are members, the type-variable constraint has been violated.\n');
   });
 
   it('supports "nullable" types', function() {
