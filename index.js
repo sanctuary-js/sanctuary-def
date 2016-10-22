@@ -1023,8 +1023,7 @@
           }, Right({typeVarMap: typeVarMap, types: [expType]}));
 
         default:
-          return Right({typeVarMap: typeVarMap,
-                        types: determineActualTypesStrict(env, env, values)});
+          return Right({typeVarMap: typeVarMap, types: [expType]});
       }
     };
   };
