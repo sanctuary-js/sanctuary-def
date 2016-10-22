@@ -1012,6 +1012,16 @@
             });
           });
 
+        case RECORD:
+          return expType.keys.reduce(function(e, k) {
+            return e.chain(function(r) {
+              return recur(r.typeVarMap,
+                           expType.types[k].type,
+                           chain(values, expType.types[k].extractor),
+                           propPath.concat([k]));
+            });
+          }, Right({typeVarMap: typeVarMap, types: [expType]}));
+
         default:
           return Right({typeVarMap: typeVarMap,
                         types: determineActualTypesStrict(env, env, values)});
