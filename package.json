@@ -16,7 +16,7 @@
     "istanbul": "0.4.x",
     "mocha": "3.x.x",
     "ramda": "0.21.x",
-    "sanctuary-style": "0.1.x",
+    "sanctuary-style": "0.3.x",
     "xyz": "1.0.x"
   },
   "files": [
