@@ -4,14 +4,14 @@
 
   /* istanbul ignore else */
   if (typeof module === 'object' && typeof module.exports === 'object') {
-    module.exports = f();
+    module.exports = f(require('sanctuary-type-classes'));
   } else if (typeof define === 'function' && define.amd != null) {
-    define([], f);
+    define(['sanctuary-type-classes'], f);
   } else {
-    self.sanctuaryDef = f();
+    self.sanctuaryDef = f(self.sanctuaryTypeClasses);
   }
 
-}(function() {
+}(function(Z) {
 
   'use strict';
 
@@ -21,8 +21,6 @@
   var MIN_SAFE_INTEGER = -MAX_SAFE_INTEGER;
 
   var forEach           = Array.prototype.forEach;
-  var map               = Array.prototype.map;
-  var push              = Array.prototype.push;
   var slice             = Array.prototype.slice;
   var hasOwnProperty    = Object.prototype.hasOwnProperty;
   var toString          = Object.prototype.toString;
@@ -33,8 +31,8 @@
       '@@type': 'sanctuary-def/Either',
       isLeft: true,
       isRight: false,
-      chain: function(f) { return Left(x); },
-      map: function(f) { return Left(x); },
+      'fantasy-land/chain': function(f) { return Left(x); },
+      'fantasy-land/map': function(f) { return Left(x); },
       value: x
     };
   };
@@ -45,8 +43,8 @@
       '@@type': 'sanctuary-def/Either',
       isLeft: false,
       isRight: true,
-      chain: function(f) { return f(x); },
-      map: function(f) { return Right(f(x)); },
+      'fantasy-land/chain': function(f) { return f(x); },
+      'fantasy-land/map': function(f) { return Right(f(x)); },
       value: x
     };
   };
@@ -59,13 +57,6 @@
 
   //  always2 :: a -> (b, c) -> a
   var always2 = function(x) { return function(y, z) { return x; }; };
-
-  //  chain :: (Array a, a -> Array b) -> Array b
-  var chain = function(xs, f) {
-    var result = [];
-    xs.forEach(function(x) { push.apply(result, f(x)); });
-    return result;
-  };
 
   //  id :: a -> a
   var id = function(x) { return x; };
@@ -89,22 +80,6 @@
 
   //  or :: (Array a, Array a) -> Array a
   var or = function(xs, ys) { return isEmpty(xs) ? ys : xs; };
-
-  //  quote :: String -> String
-  var quote = function(s) {
-    var escaped = s
-      .replace(/\\/g, '\\\\')
-      // \b matches word boundary; [\b] matches backspace
-      .replace(/[\b]/g, '\\b')
-      .replace(/\f/g, '\\f')
-      .replace(/\n/g, '\\n')
-      .replace(/\r/g, '\\r')
-      .replace(/\t/g, '\\t')
-      .replace(/\v/g, '\\v')
-      .replace(/\0/g, '\\0');
-
-    return '"' + escaped.replace(/"/g, '\\"') + '"';
-  };
 
   //  range :: (Number, Number) -> Array Number
   var range = function(start, stop) {
@@ -163,72 +138,6 @@
   //  stripNamespace :: String -> String
   var stripNamespace = function(s) { return s.slice(s.indexOf('/') + 1); };
 
-  var _show = function show(x, seen) {
-    var recur = function(y) {
-      var xs = seen.concat([x]);
-      return xs.indexOf(y) >= 0 ? '<Circular>' : show(y, xs);
-    };
-
-    //  formatKeyVal :: Object -> String -> String
-    var formatKeyVal = function(obj) {
-      return function(key) {
-        return quote(key) + ': ' + recur(obj[key]);
-      };
-    };
-
-    switch (toString.call(x)) {
-      case '[object Arguments]':
-        return '(function() { return arguments; }(' +
-               map.call(x, recur).join(', ') + '))';
-      case '[object Array]':
-        var $reprs = x.map(recur);
-        Object.keys(x).sort().forEach(function(k) {
-          if (!/^\d+$/.test(k)) $reprs.push(formatKeyVal(x)(k));
-        });
-        return '[' + $reprs.join(', ') + ']';
-      case '[object Boolean]':
-        return typeof x === 'object' ?
-          'new Boolean(' + recur(x.valueOf()) + ')' :
-          x.toString();
-      case '[object Date]':
-        return 'new Date(' +
-               (isNaN(x.valueOf()) ? recur(NaN) : quote(x.toISOString())) +
-               ')';
-      case '[object Null]':
-        return 'null';
-      case '[object Number]':
-        return typeof x === 'object' ?
-          'new Number(' + recur(x.valueOf()) + ')' :
-          1 / x === -Infinity ? '-0' : x.toString(10);
-      case '[object String]':
-        return typeof x === 'object' ?
-          'new String(' + recur(x.valueOf()) + ')' :
-          quote(x);
-      case '[object Undefined]':
-        return 'undefined';
-      default:
-        if (typeof x.toString === 'function') {
-          var repr = x.toString();
-          if (repr !== '[object Object]') return repr;
-        }
-        var keys = Object.keys(x).sort();
-        return '{' + keys.map(formatKeyVal(x)).join(', ') + '}';
-    }
-  };
-
-  //  show :: a -> String
-  var show = function(x) { return _show(x, []); };
-
-  //  TypeClass :: (String, (a -> Boolean)) -> TypeClass
-  $.TypeClass = function(name, test) {
-    return {
-      '@@type': 'sanctuary-def/TypeClass',
-      _test: test,
-      name: name,
-      toString: always(stripNamespace(name))
-    };
-  };
-
   //  createType :: ... -> Type
   var createType = function(
     typeName,   // :: String
@@ -247,7 +156,7 @@
           var result = t.type.validate(ys[idx2]);
           if (result.isLeft) {
             var value = result.value.value;
-            var propPath = [k].concat(result.value.propPath);
+            var propPath = Z.concat([k], result.value.propPath);
             return Left({value: value, propPath: propPath});
           }
         }
@@ -384,21 +293,12 @@
 
   //  EnumType :: Array Any -> Type
   var EnumType = $.EnumType = function(members) {
-    var types = members.map($$type);
-    var reprs = members.map(show);
-
     var format = function(outer, inner) {
-      return outer('(' + reprs.join(' | ') + ')');
+      return outer('(' + Z.map(Z.toString, members).join(' | ') + ')');
     };
 
     var test = function(x) {
-      //  We use `show` to perform value-based equality checks (since we
-      //  don't have access to `R.equals` and don't want to implement it).
-      //  We avoid a lot of unnecessary work by checking the type of `x`
-      //  before determining its string representation. Only if `x` is of
-      //  the same type as one or more of the `members` do we incur the
-      //  cost of determining its string representation.
-      return types.indexOf($$type(x)) >= 0 && reprs.indexOf(show(x)) >= 0;
+      return members.some(function(member) { return Z.equals(x, member); });
     };
 
     return createType(ENUM, '', format, test, [], {});
@@ -417,20 +317,21 @@
         'The argument to ‘RecordType’ must be an object ' +
           'mapping field name to type.\n\n' +
         'The following mappings are invalid:\n\n' +
-        invalidFieldNames.reduce(function(s, k) {
-          return s + '  - ' + show(k) + ': ' + show(fields[k]) + '\n';
-        }, '')
+        Z.reduce(function(s, k) {
+          var v = fields[k];
+          return s + '  - ' + Z.toString(k) + ': ' + Z.toString(v) + '\n';
+        }, '', invalidFieldNames)
       ));
     }
 
     var format = function(outer, inner) {
-      return wrap(outer('{'))(outer(' }'))(keys.map(function(k) {
+      return wrap(outer('{'))(outer(' }'))(Z.map(function(k) {
         var t = fields[k];
         return outer(' ' + k + ' :: ') +
                unless(t.type === RECORD || isEmpty(t.keys),
                       stripOutermostParens,
                       inner(k)(String(t)));
-      }).join(outer(',')));
+      }, keys).join(outer(',')));
     };
 
     var test = function(x) {
@@ -488,17 +389,18 @@
     'sanctuary-def/StrMap',
     function(x) { return $.Object._test(x); },
     function(strMap) {
-      return Object.keys(strMap).sort().map(function(k) { return strMap[k]; });
+      return Z.map(function(k) { return strMap[k]; },
+                   Object.keys(strMap).sort());
     }
   );
 
   //  applyParameterizedTypes :: Array Type -> Array Type
   var applyParameterizedTypes = function(types) {
-    return types.map(function(x) {
+    return Z.map(function(x) {
       return typeof x === 'function' ?
-        x.apply(null, range(0, x.length).map(K(Unknown))) :
+        x.apply(null, Z.map(K(Unknown), range(0, x.length))) :
         x;
-    });
+    }, types);
   };
 
   //  defaultEnv :: Array Type
@@ -525,7 +427,7 @@
   );
 
   //  Pair :: (Type, Type) -> Type
-  $.Pair = $.BinaryType(
+  $.Pair = BinaryType(
     'sanctuary-def/Pair',
     function(x) { return $$typeEq('Array')(x) && x.length === 2; },
     function(pair) { return [pair[0]]; },
@@ -639,7 +541,7 @@
   var Type = type0('sanctuary-def/Type');
 
   //  TypeClass :: Type
-  var TypeClass = type0('sanctuary-def/TypeClass');
+  var TypeClass = type0('sanctuary-type-classes/TypeClass');
 
   //  arity :: (Number, Function) -> Function
   var arity = function(n, f) {
@@ -719,17 +621,17 @@
         //  Abort if a circular reference is encountered; add the current
         //  object to the list of seen objects otherwise.
         if (seen.indexOf(value) >= 0) return [];
-        seen$ = seen.concat([value]);
+        seen$ = Z.concat(seen, [value]);
       } else {
         seen$ = seen;
       }
-      return chain(types, function(t) {
+      return Z.chain(function(t) {
         return (
           t.name === 'sanctuary-def/Nullable' || !t._test(value) ?
             [] :
           t.type === UNARY ?
-            recur(loose, env, env, seen$, t.types.$1.extractor(value))
-            .map(UnaryType.from(t)) :
+            Z.map(UnaryType.from(t),
+                  recur(loose, env, env, seen$, t.types.$1.extractor(value))) :
           t.type === BINARY ?
             BinaryType.xprod(
               t,
@@ -743,12 +645,12 @@
           // else
             [t]
         );
-      });
+      }, types);
     };
 
     return isEmpty(values) ?
       [Unknown] :
-      or(values.reduce(refine, types), loose ? [Inconsistent] : []);
+      or(Z.reduce(refine, types, values), loose ? [Inconsistent] : []);
   };
 
   //  rejectInconsistent :: Array Type -> Array Type
@@ -803,15 +705,14 @@
       $typeVarMap[typeVar.name] = {types: env.slice(), valuesByPath: {}};
     }
 
-    var key = JSON.stringify([index].concat(propPath));
+    var key = JSON.stringify(Z.concat([index], propPath));
     if (!hasOwnProperty.call($typeVarMap[typeVar.name].valuesByPath, key)) {
       $typeVarMap[typeVar.name].valuesByPath[key] = [];
     }
 
     values.forEach(function(value) {
       $typeVarMap[typeVar.name].valuesByPath[key].push(value);
-      $typeVarMap[typeVar.name].types = chain(
-        $typeVarMap[typeVar.name].types,
+      $typeVarMap[typeVar.name].types = Z.chain(
         function(t) {
           var xs;
           var invalid = !test(env, t, value);
@@ -830,8 +731,8 @@
             t.type === UNARY ?
               t.types.$1.type.type === UNKNOWN &&
               !isEmpty(xs = t.types.$1.extractor(value)) ?
-                determineActualTypesStrict(env, env, xs)
-                  .map(UnaryType.from(t)) :
+                Z.map(UnaryType.from(t),
+                      determineActualTypesStrict(env, env, xs)) :
                 [t] :
             t.type === BINARY ?
               BinaryType.xprod(
@@ -848,7 +749,8 @@
             // else
               [t]
           );
-        }
+        },
+        $typeVarMap[typeVar.name].types
       );
     });
 
@@ -859,7 +761,7 @@
   var underlineTypeVars = function(typeInfo, valuesByPath) {
     //  Note: Sorting these keys lexicographically is not "correct", but it
     //  does the right thing for indexes less than 10.
-    var paths = Object.keys(valuesByPath).sort().map(JSON.parse);
+    var paths = Z.map(JSON.parse, Object.keys(valuesByPath).sort());
     return underline(
       typeInfo,
       K(K(_)),
@@ -867,7 +769,7 @@
         return function(f) {
           return function(t) {
             return function(propPath) {
-              var indexedPropPath = [index].concat(propPath);
+              var indexedPropPath = Z.concat([index], propPath);
               return function(s) {
                 if (t.type === VARIABLE) {
                   var key = JSON.stringify(indexedPropPath);
@@ -918,7 +820,7 @@
           var typeClasses = constraints[typeVarName];
           for (idx = 0; idx < values.length; idx += 1) {
             for (var idx2 = 0; idx2 < typeClasses.length; idx2 += 1) {
-              if (!typeClasses[idx2]._test(values[idx])) {
+              if (!typeClasses[idx2].test(values[idx])) {
                 return Left(function() {
                   return typeClassConstraintViolation(
                     env,
@@ -953,91 +855,91 @@
               typeVarMap$[typeVarName].valuesByPath
             );
           }) :
-          okTypes.reduce(function(e, t) {
+          Z.reduce(function(e, t) {
             return isEmpty(expType.keys) || isEmpty(t.keys) ?
               e :
-              e.chain(function(r) {
+              Z.chain(function(r) {
                 var $1 = expType.types[expType.keys[0]].type;
                 var k = last(t.keys);
-                var innerValues = chain(values, t.types[k].extractor);
-                return innerValues.reduce(function(e, x) {
-                  return e.chain(function(r) {
+                var innerValues = Z.chain(t.types[k].extractor, values);
+                return Z.reduce(function(e, x) {
+                  return Z.chain(function(r) {
                     return $1.type === VARIABLE || test(env, $1, x) ?
                       Right(r) :
                       Left(function() {
                         return invalidValue(env,
                                             typeInfo,
                                             index,
-                                            propPath.concat([k]),
+                                            Z.concat(propPath, [k]),
                                             x);
                       });
-                  });
-                }, Right(r));
-              });
-          }, Right({typeVarMap: typeVarMap$, types: okTypes}));
+                  }, e);
+                }, Right(r), innerValues);
+              }, e);
+          }, Right({typeVarMap: typeVarMap$, types: okTypes}), okTypes);
 
       case UNARY:
-        return recur(
-          env,
-          typeInfo,
-          typeVarMap,
-          expType.types.$1.type,
-          index,
-          propPath.concat(['$1']),
-          chain(values, expType.types.$1.extractor)
-        )
-        .map(function(result) {
-          return {
-            typeVarMap: result.typeVarMap,
-            types: or(result.types, [expType.types.$1.type])
-                   .map(UnaryType.from(expType))
-          };
-        });
-
-      case BINARY:
-        return recur(
-          env,
-          typeInfo,
-          typeVarMap,
-          expType.types.$1.type,
-          index,
-          propPath.concat(['$1']),
-          chain(values, expType.types.$1.extractor)
-        )
-        .chain(function(result) {
-          var $1s = result.types;
-          return recur(
-            env,
-            typeInfo,
-            result.typeVarMap,
-            expType.types.$2.type,
-            index,
-            propPath.concat(['$2']),
-            chain(values, expType.types.$2.extractor)
-          )
-          .map(function(result) {
-            var $2s = result.types;
+        return Z.map(
+          function(result) {
             return {
               typeVarMap: result.typeVarMap,
-              types: BinaryType.xprod(expType,
-                                      or($1s, [expType.types.$1.type]),
-                                      or($2s, [expType.types.$2.type]))
+              types: Z.map(UnaryType.from(expType),
+                           or(result.types, [expType.types.$1.type]))
             };
-          });
-        });
+          },
+          recur(env,
+                typeInfo,
+                typeVarMap,
+                expType.types.$1.type,
+                index,
+                Z.concat(propPath, ['$1']),
+                Z.chain(expType.types.$1.extractor, values))
+        );
+
+      case BINARY:
+        return Z.chain(
+          function(result) {
+            var $1s = result.types;
+            return Z.map(
+              function(result) {
+                var $2s = result.types;
+                return {
+                  typeVarMap: result.typeVarMap,
+                  types: BinaryType.xprod(expType,
+                                          or($1s, [expType.types.$1.type]),
+                                          or($2s, [expType.types.$2.type]))
+                };
+              },
+              recur(env,
+                    typeInfo,
+                    result.typeVarMap,
+                    expType.types.$2.type,
+                    index,
+                    Z.concat(propPath, ['$2']),
+                    Z.chain(expType.types.$2.extractor, values))
+            );
+          },
+          recur(env,
+                typeInfo,
+                typeVarMap,
+                expType.types.$1.type,
+                index,
+                Z.concat(propPath, ['$1']),
+                Z.chain(expType.types.$1.extractor, values))
+        );
 
       case RECORD:
-        return expType.keys.reduce(function(e, k) {
-          return e.chain(function(r) {
+        return Z.reduce(function(e, k) {
+          return Z.chain(function(r) {
             return recur(env,
                          typeInfo,
                          r.typeVarMap,
                          expType.types[k].type,
                          index,
-                         propPath.concat([k]),
-                         chain(values, expType.types[k].extractor));
-          });
-        }, Right({typeVarMap: typeVarMap, types: [expType]}));
+                         Z.concat(propPath, [k]),
+                         Z.chain(expType.types[k].extractor, values));
+          }, e);
+        }, Right({typeVarMap: typeVarMap, types: [expType]}), expType.keys);
 
       default:
         return Right({typeVarMap: typeVarMap, types: [expType]});
@@ -1187,17 +1089,17 @@
 
   //  showValuesAndTypes :: (Array Type, Array Any, Integer) -> String
   var showValuesAndTypes = function(env, values, pos) {
-    return String(pos) + ')  ' + values.map(function(x) {
+    return String(pos) + ')  ' + Z.map(function(x) {
       var types = determineActualTypesLoose(env, env, [x]);
-      return show(x) + ' :: ' + types.map(showType).join(', ');
-    }, '').join('\n    ');
+      return Z.toString(x) + ' :: ' + Z.map(showType, types).join(', ');
+    }, values).join('\n    ');
   };
 
   //  typeSignature :: TypeInfo -> String
   var typeSignature = function(typeInfo) {
     return typeInfo.name + ' :: ' +
              constraintsRepr(typeInfo.constraints, id, K(K(id))) +
-             typeInfo.types.map(showType).join(' -> ');
+             Z.map(showType, typeInfo.types).join(' -> ');
   };
 
   //  _underline :: ... -> String
@@ -1213,7 +1115,7 @@
                   stripOutermostParens,
                   formatType3(t)(propPath)(t.format(_, function(k) {
                     return K(recur(t.types[k].type,
-                                   propPath.concat([k]),
+                                   Z.concat(propPath, [k]),
                                    formatType3));
                   })));
   };
@@ -1230,8 +1132,9 @@
       var counter = st.counter;
       var replace = function(s) { return label(String(counter += 1))(s); };
       return {
-        carets: st.carets.concat([_underline(t, [], formatType4(r('^')))]),
-        numbers: st.numbers.concat([_underline(t, [], formatType4(replace))]),
+        carets: Z.concat(st.carets, [_underline(t, [], formatType4(r('^')))]),
+        numbers: Z.concat(st.numbers,
+                          [_underline(t, [], formatType4(replace))]),
         counter: counter
       };
     }, {carets: [], numbers: [], counter: 0});
@@ -1247,8 +1150,9 @@
 
   //  resolvePropPath :: (Type, Array String) -> Type
   var resolvePropPath = function(t, propPath) {
-    var f = function(t, prop) { return t.types[prop].type; };
-    return propPath.reduce(f, t);
+    return Z.reduce(function(t, prop) { return t.types[prop].type; },
+                    t,
+                    propPath);
   };
 
   //  formatType6 ::
@@ -1259,7 +1163,7 @@
       return function(f) {
         return function(t) {
           return function(propPath_) {
-            var indexedPropPath_ = [index_].concat(propPath_);
+            var indexedPropPath_ = Z.concat([index_], propPath_);
             var p = isPrefix(indexedPropPath_)(indexedPropPath);
             var q = isPrefix(indexedPropPath)(indexedPropPath_);
             return p && q ? f : p ? id : _;
@@ -1290,11 +1194,12 @@
                       _;
                   };
                 },
-                formatType6([index].concat(propPath))) +
+                formatType6(Z.concat([index], propPath))) +
       '\n' +
       showValuesAndTypes(env, [value], 1) + '\n\n' +
       q(typeInfo.name) + ' requires ' + q(expType.name) + ' to satisfy the ' +
-      typeClass + ' type-class constraint; the value at position 1 does not.\n'
+      stripNamespace(typeClass.name) + ' type-class constraint; ' +
+      'the value at position 1 does not.\n'
     ));
   };
 
@@ -1309,7 +1214,7 @@
     //  If we apply an ‘a -> a -> a -> a’ function to Left('x'), Right(1), and
     //  Right(null) we'd like to avoid underlining the first argument position,
     //  since Left('x') is compatible with the other ‘a’ values.
-    var key = JSON.stringify([index].concat(propPath));
+    var key = JSON.stringify(Z.concat([index], propPath));
     var values = valuesByPath[key];
 
     //  Note: Sorting these keys lexicographically is not "correct", but it
@@ -1320,24 +1225,26 @@
         //  Keep X, the position at which the violation was observed.
         k === key ||
         //  Keep positions whose values are incompatible with the values at X.
-        isEmpty(determineActualTypesStrict(env, env, values.concat(values_)))
+        isEmpty(determineActualTypesStrict(env,
+                                           env,
+                                           Z.concat(values, values_)))
       );
     });
 
     return new TypeError(trimTrailingSpaces(
       'Type-variable constraint violation\n\n' +
       underlineTypeVars(typeInfo,
-                        keys.reduce(function($valuesByPath, k) {
+                        Z.reduce(function($valuesByPath, k) {
                           $valuesByPath[k] = valuesByPath[k];
                           return $valuesByPath;
-                        }, {})) +
-      keys.reduce(function(st, k) {
+                        }, {}, keys)) +
+      Z.reduce(function(st, k) {
         var values = valuesByPath[k];
         return isEmpty(values) ? st : {
           idx: st.idx + 1,
           s: st.s + '\n' + showValuesAndTypes(env, values, st.idx + 1) + '\n'
         };
-      }, {idx: 0, s: ''}).s + '\n' +
+      }, {idx: 0, s: ''}, keys).s + '\n' +
       'Since there is no type of which all the above values are ' +
       'members, the type-variable constraint has been violated.\n'
     ));
@@ -1355,7 +1262,7 @@
       'Invalid value\n\n' +
       underline(typeInfo,
                 K(K(_)),
-                formatType6([index].concat(propPath))) +
+                formatType6(Z.concat([index], propPath))) +
       '\n' +
       showValuesAndTypes(env, [value], 1) + '\n\n' +
       'The value at position 1 is not a member of ' +
@@ -1400,8 +1307,9 @@
       ' but received ' + numArgs(args.length) +
       (args.length === 0 ?
          '.\n' :
-         args.reduce(function(s, x) { return s + '  - ' + show(x) + '\n'; },
-                     ':\n\n'))
+         Z.reduce(function(s, x) { return s + '  - ' + Z.toString(x) + '\n'; },
+                  ':\n\n',
+                  args))
     ));
   };
 
