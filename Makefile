@@ -1,6 +1,7 @@
 ESLINT = node_modules/.bin/eslint --config node_modules/sanctuary-style/eslint-es3.json --env es3
 ISTANBUL = node_modules/.bin/istanbul
 NPM = npm
+REMEMBER_BOWER = node_modules/.bin/remember-bower
 XYZ = node_modules/.bin/xyz --repo git@github.com:sanctuary-js/sanctuary-def.git --script scripts/prepublish
 
 
@@ -27,6 +28,7 @@ lint:
 	  --rule 'dot-notation: [error, {allowKeywords: true}]' \
 	  --rule 'max-len: [off]' \
 	  -- test
+	$(REMEMBER_BOWER) $(shell pwd)
 
 
 .PHONY: release-major release-minor release-patch
