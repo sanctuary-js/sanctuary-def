@@ -935,6 +935,26 @@ example, is `v`. One could replace `Functor => f` with `Map k` or with
 This shallow inspection makes it possible to constrain a value's "outer"
 and "inner" types independently.
 
+#### `BinaryTypeVariable`
+
+As its name suggests, `BinaryTypeVariable` combines [`BinaryType`](#binarytype)
+and [`TypeVariable`](#typevariable).
+
+To define a binary type variable `t a b` one must provide:
+
+  - a name (conventionally matching `^[a-z]$`);
+
+  - the type of `a` (exposed as `t.types.$1.type`); and
+
+  - the type of `b` (exposed as `t.types.$2.type`).
+
+```haskell
+BinaryTypeVariable :: String -> Type -> Type -> Type
+```
+
+The more detailed explanation of [`UnaryTypeVariable`](#unarytypevariable)
+also applies to `BinaryTypeVariable`.
+
 ### Type classes
 
 `concatS`, defined earlier, is a function which concatenates two strings.

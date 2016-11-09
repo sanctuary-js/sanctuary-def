@@ -211,6 +211,19 @@
     };
   };
 
+  //  BinaryTypeVariable :: String -> ((Type, Type) -> Type)
+  $.BinaryTypeVariable = function(name) {
+    return function($1, $2) {
+      var format = function(outer, inner) {
+        return outer('(' + name + ' ') + inner('$1')(String($1)) + outer(' ') +
+                                         inner('$2')(String($2)) + outer(')');
+      };
+      var types = {$1: {extractor: K([]), type: $1},
+                   $2: {extractor: K([]), type: $2}};
+      return createType(VARIABLE, name, format, K(true), ['$1', '$2'], types);
+    };
+  };
+
   //  NullaryType :: (String, (x -> Boolean)) -> Type
   var NullaryType = $.NullaryType = function(name, test) {
     var format = function(outer, inner) {
@@ -719,13 +732,16 @@
           return (
             invalid ?
               [] :
-            typeVar.keys.length === 1 ?
+            typeVar.keys.length > 0 ?
               [t].filter(function(t) {
                 return (
-                  !isEmpty(t.keys) &&
                   t.type !== RECORD &&
-                  (isEmpty(xs = t.types[last(t.keys)].extractor(value))
-                   || !isEmpty(determineActualTypesStrict(env, env, xs)))
+                  t.keys.length >= typeVar.keys.length &&
+                  t.keys.slice(-typeVar.keys.length).every(function(k) {
+                    var xs = t.types[k].extractor(value);
+                    return isEmpty(xs) ||
+                           !isEmpty(determineActualTypesStrict(env, env, xs));
+                  })
                 );
               }) :
             t.type === UNARY ?

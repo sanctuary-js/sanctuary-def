@@ -39,6 +39,8 @@ var def = $.create({checkTypes: true, env: $.env});
 
 var a = $.TypeVariable('a');
 var b = $.TypeVariable('b');
+var c = $.TypeVariable('c');
+var d = $.TypeVariable('d');
 var m = $.UnaryTypeVariable('m');
 
 var list = function() { return Array.prototype.slice.call(arguments); };
@@ -174,6 +176,8 @@ var Pair = function(x, y) {
     1: y,
     '@@type': 'my-package/Pair',
     'fantasy-land/equals': function(other) { return Z.equals(other[0], x) && Z.equals(other[1], y); },
+    'fantasy-land/map': function(f) { return Pair(x, f(y)); },
+    'fantasy-land/bimap': function(f, g) { return Pair(f(x), g(y)); },
     length: 2,
     toString: always('Pair(' + Z.toString(x) + ', ' + Z.toString(y) + ')')
   };
@@ -2478,7 +2482,7 @@ describe('def', function() {
     var env = $.env.concat([Either, Maybe]);
     var def = $.create({checkTypes: true, env: env});
 
-    //  f :: Type
+    //  f :: Type -> Type
     var f = $.UnaryTypeVariable('f');
 
     //  map :: Functor f => (a -> b) -> f a -> f b
@@ -2546,6 +2550,24 @@ describe('def', function() {
            '1)  Infinity :: Number\n' +
            '\n' +
            'The value at position 1 is not a member of ‘FiniteNumber’.\n');
+  });
+
+  it('supports binary type variables', function() {
+    var env = $.env.concat([$Pair]);
+    var def = $.create({checkTypes: true, env: env});
+
+    //  f :: (Type, Type) -> Type
+    var f = $.BinaryTypeVariable('f');
+
+    //  bimap :: Bifunctor f => (a -> b) -> (c -> d) -> f a c -> f b d
+    var bimap =
+    def('bimap',
+        {f: [Z.Bifunctor]},
+        [$.Function([a, b]), $.Function([c, d]), f(a, c), f(b, d)],
+        Z.bimap);
+
+    eq(bimap.toString(), 'bimap :: Bifunctor f => (a -> b) -> (c -> d) -> f a c -> f b d');
+    eq(bimap(length, Math.sqrt, Pair('Sanctuary', 25)), Pair(9, 5));
   });
 
   it('only determines actual types when necessary', function() {
