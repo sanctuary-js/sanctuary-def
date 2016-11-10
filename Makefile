@@ -2,17 +2,25 @@ ESLINT = node_modules/.bin/eslint --config node_modules/sanctuary-style/eslint-e
 ISTANBUL = node_modules/.bin/istanbul
 NPM = npm
 REMEMBER_BOWER = node_modules/.bin/remember-bower
+TRANSCRIBE = node_modules/.bin/transcribe
 XYZ = node_modules/.bin/xyz --repo git@github.com:sanctuary-js/sanctuary-def.git --script scripts/prepublish
 
 
 .PHONY: all
-all: LICENSE
+all: LICENSE README.md
 
 .PHONY: LICENSE
 LICENSE:
 	cp -- '$@' '$@.orig'
 	sed 's/Copyright (c) .* Sanctuary/Copyright (c) $(shell git log --date=format:%Y --pretty=format:%ad | sort -r | head -n 1) Sanctuary/' '$@.orig' >'$@'
 	rm -- '$@.orig'
+
+README.md: index.js
+	$(TRANSCRIBE) \
+	  --heading-level 4 \
+	  --url 'https://github.com/sanctuary-js/sanctuary-def/blob/v$(VERSION)/{filename}#L{line}' \
+	  -- $^ \
+	| LC_ALL=C sed 's/<h4 name="\(.*\)#\(.*\)">\(.*\)\1#\2/<h4 name="\1.prototype.\2">\3\1#\2/' >'$@'
 
 
 .PHONY: lint
@@ -22,6 +30,8 @@ lint:
 	  --global module \
 	  --global require \
 	  --global self \
+	  --rule 'func-style: [off]' \
+	  --rule 'max-len: [error, {code: 79, ignorePattern: "^ *//(#|[.] //) ", ignoreUrls: true}]' \
 	  -- index.js
 	$(ESLINT) \
 	  --env node \
@@ -30,6 +40,12 @@ lint:
 	  --rule 'max-len: [off]' \
 	  -- test
 	$(REMEMBER_BOWER) $(shell pwd)
+	@echo 'Checking for missing link definitions...'
+	grep '^[ ]*//[.]' index.js \
+	| grep -o '\[[^]]*\]\[[^]]*\]' \
+	| sed -n -e 's:\[\(.*\)\]\[\]:\1:p' -e 's:\[.*\]\[\(.*\)\]:\1:p' \
+	| sort -u \
+	| xargs -I '{}' sh -c "grep '^//[.] \[{}\]: ' index.js"
 
 
 .PHONY: release-major release-minor release-patch

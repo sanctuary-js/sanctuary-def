@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 set -e
 
+rm -f README.md
 make
-git add LICENSE
+git add LICENSE README.md
