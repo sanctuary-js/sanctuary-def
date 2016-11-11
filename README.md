@@ -1,8 +1,9 @@
 # sanctuary-def
 
-sanctuary-def is a run-time type system for JavaScript. It facilitates the
-definition of curried JavaScript functions which are explicit about the number
-of arguments to which they may be applied and the types of those arguments.
+sanctuary-def is a run-time type system for JavaScript. It facilitates
+the definition of curried JavaScript functions which are explicit about
+the number of arguments to which they may be applied and the types of
+those arguments.
 
 It is conventional to import the package as `$`:
 
@@ -10,11 +11,10 @@ It is conventional to import the package as `$`:
 const $ = require('sanctuary-def');
 ```
 
-The next step is to define an environment. An environment is a list of
-[types](#types) such as `$.Number` and `$.String`. [`$.env`](#env) is an
-environment containing all the built-in JavaScript types. It may be used
-as the basis for environments which include custom types in addition to
-the built-in types:
+The next step is to define an environment. An environment is an array
+of [types][]. [`env`][] is an environment containing all the built-in
+JavaScript types. It may be used as the basis for environments which
+include custom types in addition to the built-in types:
 
 ```javascript
 //    Integer :: Type
@@ -52,8 +52,8 @@ const add =
 def('add', {}, [$.Number, $.Number, $.Number], (x, y) => x + y);
 ```
 
-`[$.Number, $.Number, $.Number]` specifies that `add` takes two arguments of
-type `Number` and returns a value of type `Number`.
+`[$.Number, $.Number, $.Number]` specifies that `add` takes two arguments
+of type `Number` and returns a value of type `Number`.
 
 Applying `add` to two arguments gives the expected result:
 
@@ -70,10 +70,10 @@ add(2, 2, 2);
 // ! TypeError: ‘add’ requires two arguments; received three arguments
 ```
 
-Applying `add` to fewer than two arguments results in a function awaiting the
-remaining arguments. This is known as partial application. Partial application
-is convenient as it allows more specific functions to be defined in terms of
-more general ones:
+Applying `add` to fewer than two arguments results in a function
+awaiting the remaining arguments. This is known as partial application.
+Partial application is convenient as it allows more specific functions
+to be defined in terms of more general ones:
 
 ```javascript
 //    inc :: Number -> Number
@@ -83,41 +83,25 @@ inc(7);
 // => 8
 ```
 
-One may wish to partially apply a function whose parameters are in the "wrong"
-order. All functions defined via sanctuary-def accommodate this by accepting
-"placeholders". A placeholder is an object with a `'@@functional/placeholder'`
-property whose value is `true`. `$.__` is one such object. A placeholder
-indicates an argument yet to be provided. For example:
-
-```javascript
-//    concatS :: String -> String -> String
-const concatS =
-def('concatS', {}, [$.String, $.String, $.String], (x, y) => x + y);
-
-//    exclaim :: String -> String
-const exclaim = concatS($.__, '!');
-
-exclaim('ahoy');
-// => 'ahoy!'
-```
-
-JavaScript's implicit type coercion often obfuscates the source of type errors.
-Consider the following function:
+JavaScript's implicit type coercion often obfuscates the source of type
+errors. Consider the following function:
 
 ```javascript
 //    _add :: (Number, Number) -> Number
 const _add = (x, y) => x + y;
 ```
 
-The type signature indicates that `_add` takes two arguments of type `Number`,
-but this is not enforced. This allows type errors to be silently ignored:
+The type signature indicates that `_add` takes two arguments of type
+`Number`, but this is not enforced. This allows type errors to be silently
+ignored:
 
 ```javascript
 _add('2', '2');
 // => '22'
 ```
 
-`add`, on the other hand, throws if applied to arguments of the wrong types:
+`add`, on the other hand, throws if applied to arguments of the wrong
+types:
 
 ```javascript
 add('2', '2');
@@ -148,233 +132,151 @@ add('X');
 //   The value at position 1 is not a member of ‘Number’.
 ```
 
+<h4 name="__"><code><a href="https://github.com/sanctuary-js/sanctuary-def/blob/v0.7.0/index.js#L164">__ :: Placeholder</a></code></h4>
+
+The special placeholder value.
+
+One may wish to partially apply a function whose parameters are in the
+"wrong" order. Functions defined via sanctuary-def accommodate this by
+accepting placeholders for arguments yet to be provided. For example:
+
+```javascript
+//    concatS :: String -> String -> String
+const concatS =
+def('concatS', {}, [$.String, $.String, $.String], (x, y) => x + y);
+
+//    exclaim :: String -> String
+const exclaim = concatS($.__, '!');
+
+exclaim('ahoy');
+// => 'ahoy!'
+```
+
 ### Types
 
 Conceptually, a type is a set of values. One can think of a value of
 type `Type` as a function of type `Any -> Boolean` which tests values
 for membership in the set (though this is an oversimplification).
 
-#### `Any`
-
-```haskell
-$.Any :: Type
-```
+<h4 name="Any"><code><a href="https://github.com/sanctuary-js/sanctuary-def/blob/v0.7.0/index.js#L398">Any :: Type</a></code></h4>
 
 Type comprising every JavaScript value.
 
-#### `AnyFunction`
-
-```haskell
-$.AnyFunction :: Type
-```
+<h4 name="AnyFunction"><code><a href="https://github.com/sanctuary-js/sanctuary-def/blob/v0.7.0/index.js#L403">AnyFunction :: Type</a></code></h4>
 
 Type comprising every Function value.
 
-#### `Arguments`
+<h4 name="Arguments"><code><a href="https://github.com/sanctuary-js/sanctuary-def/blob/v0.7.0/index.js#L408">Arguments :: Type</a></code></h4>
 
-```haskell
-$.Arguments :: Type
-```
+Type comprising every [`arguments`][arguments] object.
 
-Type comprising every [`arguments`][] object.
-
-#### `Array`
-
-```haskell
-$.Array :: Type -> Type
-```
+<h4 name="Array"><code><a href="https://github.com/sanctuary-js/sanctuary-def/blob/v0.7.0/index.js#L413">Array :: Type -> Type</a></code></h4>
 
 Constructor for homogeneous Array types.
 
-#### `Boolean`
-
-```haskell
-$.Boolean :: Type
-```
+<h4 name="Boolean"><code><a href="https://github.com/sanctuary-js/sanctuary-def/blob/v0.7.0/index.js#L418">Boolean :: Type</a></code></h4>
 
 Type comprising `true` and `false` (and their object counterparts).
 
-#### `Date`
-
-```haskell
-$.Date :: Type
-```
+<h4 name="Date"><code><a href="https://github.com/sanctuary-js/sanctuary-def/blob/v0.7.0/index.js#L423">Date :: Type</a></code></h4>
 
 Type comprising every Date value.
 
-#### `Error`
-
-```haskell
-$.Error :: Type
-```
+<h4 name="Error"><code><a href="https://github.com/sanctuary-js/sanctuary-def/blob/v0.7.0/index.js#L428">Error :: Type</a></code></h4>
 
 Type comprising every Error value, including values of more specific
 constructors such as [`SyntaxError`][] and [`TypeError`][].
 
-#### `FiniteNumber`
+<h4 name="FiniteNumber"><code><a href="https://github.com/sanctuary-js/sanctuary-def/blob/v0.7.0/index.js#L434">FiniteNumber :: Type</a></code></h4>
 
-```haskell
-$.FiniteNumber :: Type
-```
-
-Type comprising every [`ValidNumber`](#validnumber) value except `Infinity` and
+Type comprising every [`ValidNumber`][] value except `Infinity` and
 `-Infinity` (and their object counterparts).
 
-#### `Function`
-
-```haskell
-$.Function :: Array Type -> Type
-```
+<h4 name="Function"><code><a href="https://github.com/sanctuary-js/sanctuary-def/blob/v0.7.0/index.js#L443">Function :: Array Type -> Type</a></code></h4>
 
 Constructor for Function types.
 
 Examples:
 
-  - `$.Function([$.Date, $.String])` represents the `Date -> String` type; and
-  - `$.Function([a, b, a])` represents the `(a, b) -> a` type.
+  - `$.Function([$.Date, $.String])` represents the `Date -> String`
+    type; and
+  - `$.Function([a, b, a])` represents the `(a, b) -> a` type.
 
-#### `Integer`
-
-```haskell
-$.Integer :: Type
-```
+<h4 name="Integer"><code><a href="https://github.com/sanctuary-js/sanctuary-def/blob/v0.7.0/index.js#L480">Integer :: Type</a></code></h4>
 
 Type comprising every integer in the range
 [[`Number.MIN_SAFE_INTEGER`][min] .. [`Number.MAX_SAFE_INTEGER`][max]].
 
-#### `NegativeFiniteNumber`
+<h4 name="NegativeFiniteNumber"><code><a href="https://github.com/sanctuary-js/sanctuary-def/blob/v0.7.0/index.js#L494">NegativeFiniteNumber :: Type</a></code></h4>
 
-```haskell
-$.NegativeFiniteNumber :: Type
-```
+Type comprising every [`FiniteNumber`][] value less than zero.
 
-Type comprising every [`FiniteNumber`](#finitenumber) value less than zero.
+<h4 name="NegativeInteger"><code><a href="https://github.com/sanctuary-js/sanctuary-def/blob/v0.7.0/index.js#L502">NegativeInteger :: Type</a></code></h4>
 
-#### `NegativeInteger`
+Type comprising every [`Integer`][] value less than zero.
 
-```haskell
-$.NegativeInteger :: Type
-```
+<h4 name="NegativeNumber"><code><a href="https://github.com/sanctuary-js/sanctuary-def/blob/v0.7.0/index.js#L510">NegativeNumber :: Type</a></code></h4>
 
-Type comprising every [`Integer`](#integer) value less than zero.
+Type comprising every [`Number`][] value less than zero.
 
-#### `NegativeNumber`
+<h4 name="NonZeroFiniteNumber"><code><a href="https://github.com/sanctuary-js/sanctuary-def/blob/v0.7.0/index.js#L518">NonZeroFiniteNumber :: Type</a></code></h4>
 
-```haskell
-$.NegativeNumber :: Type
-```
-
-Type comprising every [`Number`](#number) value less than zero.
-
-#### `NonZeroFiniteNumber`
-
-```haskell
-$.NonZeroFiniteNumber :: Type
-```
-
-Type comprising every [`FiniteNumber`](#finitenumber) value except `0` and `-0`
+Type comprising every [`FiniteNumber`][] value except `0` and `-0`
 (and their object counterparts).
 
-#### `NonZeroInteger`
+<h4 name="NonZeroInteger"><code><a href="https://github.com/sanctuary-js/sanctuary-def/blob/v0.7.0/index.js#L529">NonZeroInteger :: Type</a></code></h4>
 
-```haskell
-$.NonZeroInteger :: Type
-```
+Type comprising every non-zero [`Integer`][] value.
 
-Type comprising every non-zero [`Integer`](#integer) value.
+<h4 name="NonZeroValidNumber"><code><a href="https://github.com/sanctuary-js/sanctuary-def/blob/v0.7.0/index.js#L539">NonZeroValidNumber :: Type</a></code></h4>
 
-#### `NonZeroValidNumber`
-
-```haskell
-$.NonZeroValidNumber :: Type
-```
-
-Type comprising every [`ValidNumber`](#validnumber) value except `0` and `-0`
+Type comprising every [`ValidNumber`][] value except `0` and `-0`
 (and their object counterparts).
 
-#### `Null`
-
-```haskell
-$.Null :: Type
-```
+<h4 name="Null"><code><a href="https://github.com/sanctuary-js/sanctuary-def/blob/v0.7.0/index.js#L550">Null :: Type</a></code></h4>
 
 Type whose sole member is `null`.
 
-#### `Nullable`
-
-```haskell
-$.Nullable :: Type -> Type
-```
+<h4 name="Nullable"><code><a href="https://github.com/sanctuary-js/sanctuary-def/blob/v0.7.0/index.js#L555">Nullable :: Type -> Type</a></code></h4>
 
 Constructor for types which include `null` as a member.
 
-#### `Number`
-
-```haskell
-$.Number :: Type
-```
+<h4 name="Number"><code><a href="https://github.com/sanctuary-js/sanctuary-def/blob/v0.7.0/index.js#L564">Number :: Type</a></code></h4>
 
 Type comprising every Number value (including `NaN` and Number objects).
 
-#### `Object`
+<h4 name="Object"><code><a href="https://github.com/sanctuary-js/sanctuary-def/blob/v0.7.0/index.js#L569">Object :: Type</a></code></h4>
 
-```haskell
-$.Object :: Type
-```
-
-Type comprising every "plain" Object value. Specifically, values created via:
+Type comprising every "plain" Object value. Specifically, values
+created via:
 
   - object literal syntax;
   - [`Object.create`][]; or
   - the `new` operator in conjunction with `Object` or a custom
     constructor function.
 
-#### `Pair`
+<h4 name="Pair"><code><a href="https://github.com/sanctuary-js/sanctuary-def/blob/v0.7.0/index.js#L580">Pair :: (Type, Type) -> Type</a></code></h4>
 
-```haskell
-$.Pair :: (Type, Type) -> Type
-```
+Constructor for tuple types of length 2. Arrays are said to represent
+tuples. `['foo', 42]` is a member of `Pair String Number`.
 
-Constructor for tuple types of length 2. Arrays are said to represent tuples.
-`['foo', 42]` is a member of `Pair String Number`.
+<h4 name="PositiveFiniteNumber"><code><a href="https://github.com/sanctuary-js/sanctuary-def/blob/v0.7.0/index.js#L591">PositiveFiniteNumber :: Type</a></code></h4>
 
-#### `PositiveFiniteNumber`
+Type comprising every [`FiniteNumber`][] value greater than zero.
 
-```haskell
-$.PositiveFiniteNumber :: Type
-```
+<h4 name="PositiveInteger"><code><a href="https://github.com/sanctuary-js/sanctuary-def/blob/v0.7.0/index.js#L599">PositiveInteger :: Type</a></code></h4>
 
-Type comprising every [`FiniteNumber`](#finitenumber) value greater than zero.
+Type comprising every [`Integer`][] value greater than zero.
 
-#### `PositiveInteger`
+<h4 name="PositiveNumber"><code><a href="https://github.com/sanctuary-js/sanctuary-def/blob/v0.7.0/index.js#L607">PositiveNumber :: Type</a></code></h4>
 
-```haskell
-$.PositiveInteger :: Type
-```
+Type comprising every [`Number`][] value greater than zero.
 
-Type comprising every [`Integer`](#integer) value greater than zero.
-
-#### `PositiveNumber`
-
-```haskell
-$.PositiveNumber :: Type
-```
-
-Type comprising every [`Number`](#number) value greater than zero.
-
-#### `RegExp`
-
-```haskell
-$.RegExp :: Type
-```
+<h4 name="RegExp"><code><a href="https://github.com/sanctuary-js/sanctuary-def/blob/v0.7.0/index.js#L615">RegExp :: Type</a></code></h4>
 
 Type comprising every RegExp value.
 
-#### `RegexFlags`
-
-```haskell
-$.RegexFlags :: Type
-```
+<h4 name="RegexFlags"><code><a href="https://github.com/sanctuary-js/sanctuary-def/blob/v0.7.0/index.js#L620">RegexFlags :: Type</a></code></h4>
 
 Type comprising the canonical RegExp flags:
 
@@ -387,86 +289,63 @@ Type comprising the canonical RegExp flags:
   - `'im'`
   - `'gim'`
 
-#### `StrMap`
-
-```haskell
-$.StrMap :: Type -> Type
-```
+<h4 name="StrMap"><code><a href="https://github.com/sanctuary-js/sanctuary-def/blob/v0.7.0/index.js#L634">StrMap :: Type -> Type</a></code></h4>
 
 Constructor for homogeneous Object types.
 
 `{foo: 1, bar: 2, baz: 3}`, for example, is a member of `StrMap Number`;
 `{foo: 1, bar: 2, baz: 'XXX'}` is not.
 
-#### `String`
-
-```haskell
-$.String :: Type
-```
+<h4 name="String"><code><a href="https://github.com/sanctuary-js/sanctuary-def/blob/v0.7.0/index.js#L649">String :: Type</a></code></h4>
 
 Type comprising every String value (including String objects).
 
-#### `Undefined`
-
-```haskell
-$.Undefined :: Type
-```
+<h4 name="Undefined"><code><a href="https://github.com/sanctuary-js/sanctuary-def/blob/v0.7.0/index.js#L654">Undefined :: Type</a></code></h4>
 
 Type whose sole member is `undefined`.
 
-#### `ValidDate`
+<h4 name="Unknown"><code><a href="https://github.com/sanctuary-js/sanctuary-def/blob/v0.7.0/index.js#L659">Unknown :: Type</a></code></h4>
 
-```haskell
-$.ValidDate :: Type
-```
+Type used internally to represent missing type information. The type of
+`[]`, for example, is `Array ???`. This type is exported solely for use
+by other Sanctuary packages.
 
-Type comprising every [`Date`](#date) value except `new Date(NaN)`.
+<h4 name="ValidDate"><code><a href="https://github.com/sanctuary-js/sanctuary-def/blob/v0.7.0/index.js#L666">ValidDate :: Type</a></code></h4>
 
-#### `ValidNumber`
+Type comprising every [`Date`][] value except `new Date(NaN)`.
 
-```haskell
-$.ValidNumber :: Type
-```
+<h4 name="ValidNumber"><code><a href="https://github.com/sanctuary-js/sanctuary-def/blob/v0.7.0/index.js#L674">ValidNumber :: Type</a></code></h4>
 
-Type comprising every [`Number`](#number) value except `NaN` (and its object
+Type comprising every [`Number`][] value except `NaN` (and its object
 counterpart).
 
-### `env`
+<h4 name="env"><code><a href="https://github.com/sanctuary-js/sanctuary-def/blob/v0.7.0/index.js#L683">env :: Array Type</a></code></h4>
 
-`$.env` is a list of [types](#types):
+An array of [types][]:
 
-  - [`$.AnyFunction`](#anyfunction)
-  - [`$.Arguments`](#arguments)
-  - [`$.Array`](#array)
-  - [`$.Boolean`](#boolean)
-  - [`$.Date`](#date)
-  - [`$.Error`](#error)
-  - [`$.Null`](#null)
-  - [`$.Number`](#number)
-  - [`$.Object`](#object)
-  - [`$.RegExp`](#regexp)
-  - [`$.StrMap`](#strmap)
-  - [`$.String`](#string)
-  - [`$.Undefined`](#undefined)
+  - [`AnyFunction`][]
+  - [`Arguments`][]
+  - [`Array`][]
+  - [`Boolean`][]
+  - [`Date`][]
+  - [`Error`][]
+  - [`Null`][]
+  - [`Number`][]
+  - [`Object`][]
+  - [`RegExp`][]
+  - [`StrMap`][]
+  - [`String`][]
+  - [`Undefined`][]
 
-### `test`
+<h4 name="test"><code><a href="https://github.com/sanctuary-js/sanctuary-def/blob/v0.7.0/index.js#L1126">test :: (Array Type, Type, a) -> Boolean</a></code></h4>
 
-`$.test` takes three arguments:
+Takes an environment, a type, and any value. Returns `true` if the value
+is a member of the type; `false` otherwise.
 
-  - an environment (a list of [types](#types));
-  - a type; and
-  - a value.
+The environment is only significant if the type contains
+[type variables][].
 
-It returns `true` if the value is a member of the specified type; `false`
-otherwise.
-
-The environment is only significant when the second argument to `$.test`
-contains [type variables](#typevariable). In other cases, simply provide
-`[]` or [`$.env`](#env).
-
-It's common to define a more restrictive type in terms of a more general one.
-`$.test` enables this. For example, one could use `$.test([], $.Integer, x)`
-in the definition of NonNegativeInteger:
+One may define a more restrictive type in terms of a more general one:
 
 ```javascript
 //    NonNegativeInteger :: Type
@@ -476,19 +355,17 @@ const NonNegativeInteger = $.NullaryType(
 );
 ```
 
-Using types as predicates is useful in other contexts too. For example, one
-could define a record type for each endpoint of a REST API and validate the
-bodies of incoming POST requests against these types.
+Using types as predicates is useful in other contexts too. One could,
+for example, define a [record type][] for each endpoint of a REST API
+and validate the bodies of incoming POST requests against these types.
 
 ### Type constructors
 
 sanctuary-def provides several functions for defining types.
 
-#### `NullaryType`
+<h4 name="NullaryType"><code><a href="https://github.com/sanctuary-js/sanctuary-def/blob/v0.7.0/index.js#L1157">NullaryType :: (String, Any -> Boolean) -> Type</a></code></h4>
 
-`NullaryType` is used to construct types with no type variables. `$.Number` is
-defined via `NullaryType`, as are many of the other exported types exported by
-sanctuary-def.
+Type constructor for types with no type variables (such as [`Number`][]).
 
 To define a nullary type `t` one must provide:
 
@@ -496,10 +373,6 @@ To define a nullary type `t` one must provide:
 
   - a predicate which accepts any JavaScript value and returns `true` if
     (and only if) the value is a member of `t`.
-
-```haskell
-NullaryType :: String -> (Any -> Boolean) -> Type
-```
 
 For example:
 
@@ -549,30 +422,9 @@ rem(42, 0);
 //   The value at position 1 is not a member of ‘NonZeroInteger’.
 ```
 
-#### `UnaryType`
+<h4 name="UnaryType"><code><a href="https://github.com/sanctuary-js/sanctuary-def/blob/v0.7.0/index.js#L1223">UnaryType :: (String, Any -> Boolean, t a -> Array a) -> (Type -> Type)</a></code></h4>
 
-`UnaryType` is used to construct types with one type variable. `$.Array` is
-defined via `UnaryType`.
-
-```javascript
-//    sum :: Array Number -> Number
-const sum =
-def('sum', {}, [$.Array($.Number), $.Number], xs => xs.reduce((x, y) => x + y, 0));
-
-sum([1, 2, 3, 4]);
-// => 10
-
-sum(['1', '2', '3', '4']);
-// ! TypeError: Invalid value
-//
-//   sum :: Array Number -> Number
-//                ^^^^^^
-//                  1
-//
-//   1)  "1" :: String
-//
-//   The value at position 1 is not a member of ‘Number’.
-```
+Type constructor for types with one type variable (such as [`Array`][]).
 
 To define a unary type `t a` one must provide:
 
@@ -586,10 +438,6 @@ To define a unary type `t a` one must provide:
     `t.types.$1.extractor`); and
 
   - the type of `a` (exposed as `t.types.$1.type`).
-
-```haskell
-UnaryType :: String -> (Any -> Boolean) -> (t a -> Array a) -> Type -> Type
-```
 
 For example:
 
@@ -614,7 +462,7 @@ const Just = x => ({
   '@@type': 'my-package/Maybe',
   isJust: true,
   isNothing: false,
-  toString: () => 'Just(' + JSON.stringify(x) + ')',
+  toString: () => 'Just(' + Z.toString(x) + ')',
   value: x,
 });
 
@@ -642,9 +490,9 @@ fromMaybe(0, Just('XXX'));
 //   Since there is no type of which all the above values are members, the type-variable constraint has been violated.
 ```
 
-#### `BinaryType`
+<h4 name="BinaryType"><code><a href="https://github.com/sanctuary-js/sanctuary-def/blob/v0.7.0/index.js#L1307">BinaryType :: (String, Any -> Boolean, t a b -> Array a, t a b -> Array b) -> ((Type, Type) -> Type)</a></code></h4>
 
-`BinaryType` is used to construct types with two type variables.
+Type constructor for types with two type variables (such as [`Pair`][]).
 
 To define a binary type `t a b` one must provide:
 
@@ -666,10 +514,6 @@ To define a binary type `t a b` one must provide:
 
   - the type of `b` (exposed as `t.types.$2.type`).
 
-```haskell
-BinaryType :: String -> (Any -> Boolean) -> (t a b -> Array a) -> (t a b -> Array b) -> Type -> Type -> Type
-```
-
 For example:
 
 ```javascript
@@ -687,7 +531,7 @@ const Pair = def('Pair', {}, [a, b, $Pair(a, b)], (x, y) => ({
   '1': y,
   '@@type': 'my-package/Pair',
   length: 2,
-  toString: () => 'Pair(' + JSON.stringify(x) + ', ' + JSON.stringify(y) + ')',
+  toString: () => 'Pair(' + Z.toString(x) + ', ' + Z.toString(y) + ')',
 }));
 
 //    Rank :: Type
@@ -726,23 +570,20 @@ showCard(Pair('X', '♠'));
 //   The value at position 1 is not a member of ‘Rank’.
 ```
 
-#### `EnumType`
+<h4 name="EnumType"><code><a href="https://github.com/sanctuary-js/sanctuary-def/blob/v0.7.0/index.js#L1415">EnumType :: Array Any -> Type</a></code></h4>
 
-`EnumType` is used to construct [enumerated types][enumerated-type].
+`EnumType` is used to construct [enumerated types][].
 
 To define an enumerated type one must provide:
 
   - an array of distinct values.
 
-```haskell
-EnumType :: Array Any -> Type
-```
-
 For example:
 
 ```javascript
 //    TimeUnit :: Type
-const TimeUnit = $.EnumType(['milliseconds', 'seconds', 'minutes', 'hours']);
+const TimeUnit =
+$.EnumType(['milliseconds', 'seconds', 'minutes', 'hours']);
 
 //    convertTo :: TimeUnit -> ValidDate -> ValidNumber
 const convertTo =
@@ -773,18 +614,14 @@ convertTo('days', new Date(1000));
 //   The value at position 1 is not a member of ‘("milliseconds" | "seconds" | "minutes" | "hours")’.
 ```
 
-#### `RecordType`
+<h4 name="RecordType"><code><a href="https://github.com/sanctuary-js/sanctuary-def/blob/v0.7.0/index.js#L1471">RecordType :: StrMap Type -> Type</a></code></h4>
 
-`RecordType` is used to construct record types. The type definition specifies
-the name and type of each required field.
+`RecordType` is used to construct record types. The type definition
+specifies the name and type of each required field.
 
 To define a record type one must provide:
 
   - an object mapping field name to type.
-
-```haskell
-RecordType :: StrMap Type -> Type
-```
 
 For example:
 
@@ -795,7 +632,8 @@ const Point = $.RecordType({x: $.FiniteNumber, y: $.FiniteNumber});
 //    dist :: Point -> Point -> FiniteNumber
 const dist =
 def('dist', {}, [Point, Point, $.FiniteNumber],
-    (p, q) => Math.sqrt(Math.pow(p.x - q.x, 2) + Math.pow(p.y - q.y, 2)));
+    (p, q) => Math.sqrt(Math.pow(p.x - q.x, 2) +
+                        Math.pow(p.y - q.y, 2)));
 
 dist({x: 0, y: 0}, {x: 3, y: 4});
 // => 5
@@ -826,14 +664,11 @@ dist(0);
 //   The value at position 1 is not a member of ‘{ x :: FiniteNumber, y :: FiniteNumber }’.
 ```
 
-#### `TypeVariable`
+<h4 name="TypeVariable"><code><a href="https://github.com/sanctuary-js/sanctuary-def/blob/v0.7.0/index.js#L1563">TypeVariable :: String -> Type</a></code></h4>
 
-Polymorphism is powerful. Not being able to define a function for all types
-would be very limiting indeed: one couldn't even define the identity function!
-
-```haskell
-TypeVariable :: String -> Type
-```
+Polymorphism is powerful. Not being able to define a function for
+all types would be very limiting indeed: one couldn't even define the
+identity function!
 
 Before defining a polymorphic function one must define one or more type
 variables:
@@ -883,10 +718,9 @@ cmp(0, '1');
 //   Since there is no type of which all the above values are members, the type-variable constraint has been violated.
 ```
 
-#### `UnaryTypeVariable`
+<h4 name="UnaryTypeVariable"><code><a href="https://github.com/sanctuary-js/sanctuary-def/blob/v0.7.0/index.js#L1621">UnaryTypeVariable :: String -> (Type -> Type)</a></code></h4>
 
-As its name suggests, `UnaryTypeVariable` combines [`UnaryType`](#unarytype)
-and [`TypeVariable`](#typevariable).
+Combines [`UnaryType`][] and [`TypeVariable`][].
 
 To define a unary type variable `t a` one must provide:
 
@@ -894,34 +728,30 @@ To define a unary type variable `t a` one must provide:
 
   - the type of `a` (exposed as `t.types.$1.type`).
 
-```haskell
-UnaryTypeVariable :: String -> Type -> Type
-```
-
 Consider the type of a generalized `map`:
 
 ```haskell
 map :: Functor f => (a -> b) -> f a -> f b
 ```
 
-`f` is a unary type variable. With two (regular) type variables, one unary
-type variable, and one [type class](#type-classes) it's possible to define
-a fully polymorphic `map` function:
+`f` is a unary type variable. With two (nullary) type variables, one
+unary type variable, and one [type class][] it's possible to define a
+fully polymorphic `map` function:
 
 ```javascript
+const $ = require('sanctuary-def');
+const Z = require('sanctuary-type-classes');
+
 const a = $.TypeVariable('a');
 const b = $.TypeVariable('b');
 const f = $.UnaryTypeVariable('f');
 
-//    Functor :: TypeClass
-const Functor = ...;
-
 //    map :: Functor f => (a -> b) -> f a -> f b
 const map =
 def('map',
-    {f: [Functor]},
+    {f: [Z.Functor]},
     [$.Function([a, b]), f(a), f(b)],
-    (fn, functor) => functor.map(fn));
+    Z.map);
 ```
 
 Whereas a regular type variable is fully resolved (`a` might become
@@ -935,10 +765,9 @@ example, is `v`. One could replace `Functor => f` with `Map k` or with
 This shallow inspection makes it possible to constrain a value's "outer"
 and "inner" types independently.
 
-#### `BinaryTypeVariable`
+<h4 name="BinaryTypeVariable"><code><a href="https://github.com/sanctuary-js/sanctuary-def/blob/v0.7.0/index.js#L1678">BinaryTypeVariable :: String -> ((Type, Type) -> Type)</a></code></h4>
 
-As its name suggests, `BinaryTypeVariable` combines [`BinaryType`](#binarytype)
-and [`TypeVariable`](#typevariable).
+Combines [`BinaryType`][] and [`TypeVariable`][].
 
 To define a binary type variable `t a b` one must provide:
 
@@ -948,18 +777,14 @@ To define a binary type variable `t a b` one must provide:
 
   - the type of `b` (exposed as `t.types.$2.type`).
 
-```haskell
-BinaryTypeVariable :: String -> Type -> Type -> Type
-```
-
-The more detailed explanation of [`UnaryTypeVariable`](#unarytypevariable)
-also applies to `BinaryTypeVariable`.
+The more detailed explanation of [`UnaryTypeVariable`][] also applies to
+`BinaryTypeVariable`.
 
 ### Type classes
 
 `concatS`, defined earlier, is a function which concatenates two strings.
-This is overly restrictive, since other types support concatenation (Array,
-for example).
+This is overly restrictive, since other types support concatenation
+(Array, for example).
 
 One could use a type variable to define a polymorphic "concat" function:
 
@@ -988,11 +813,12 @@ _concat([1, 2], 'buzz');
 //   Since there is no type of which all the above values are members, the type-variable constraint has been violated.
 ```
 
-The type of `_concat` is misleading: it suggests that it can operate on any
-two values of *any* one type. In fact there's an implicit constraint, since
-the type must support concatenation (in [mathematical][semigroup] terms, the
-type must have a [semigroup][FL:Semigroup]). The run-time type errors that
-result when this constraint is violated are not particularly descriptive:
+The type of `_concat` is misleading: it suggests that it can operate on
+any two values of *any* one type. In fact there's an implicit constraint,
+since the type must support concatenation (in [mathematical][semigroup]
+terms, the type must have a [semigroup][FL:Semigroup]). The run-time type
+errors that result when this constraint is violated are not particularly
+descriptive:
 
 ```javascript
 _concat({}, {});
@@ -1002,8 +828,9 @@ _concat(null, null);
 // ! TypeError: Cannot read property 'concat' of null
 ```
 
-The solution is to constrain `a` by first defining a [`TypeClass`][] value,
-then specifying the constraint in the definition of the "concat" function:
+The solution is to constrain `a` by first defining a [`TypeClass`][]
+value, then specifying the constraint in the definition of the "concat"
+function:
 
 ```javascript
 const Z = require('sanctuary-type-classes');
@@ -1045,17 +872,42 @@ concat(null, null);
 //   ‘concat’ requires ‘a’ to satisfy the Semigroup type-class constraint; the value at position 1 does not.
 ```
 
-Multiple constraints may be placed on a type variable by including multiple
-`TypeClass` values in the list (e.g. `{a: [Foo, Bar, Baz]}`).
+Multiple constraints may be placed on a type variable by including
+multiple `TypeClass` values in the array (e.g. `{a: [Foo, Bar, Baz]}`).
 
-
-[FL:Semigroup]:     https://github.com/fantasyland/fantasy-land#semigroup
-[`Object.create`]:  https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/create
-[`SyntaxError`]:    https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/SyntaxError
-[`TypeClass`]:      https://github.com/sanctuary-js/sanctuary-type-classes#TypeClass
-[`TypeError`]:      https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/TypeError
-[`arguments`]:      https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Functions/arguments
-[enumerated-type]:  https://en.wikipedia.org/wiki/Enumerated_type
-[max]:              https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number/MAX_SAFE_INTEGER
-[min]:              https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number/MIN_SAFE_INTEGER
-[semigroup]:        https://en.wikipedia.org/wiki/Semigroup
+[FL:Semigroup]:         https://github.com/fantasyland/fantasy-land#semigroup
+[`AnyFunction`]:        #AnyFunction
+[`Arguments`]:          #Arguments
+[`Array`]:              #Array
+[`BinaryType`]:         #BinaryType
+[`Boolean`]:            #Boolean
+[`Date`]:               #Date
+[`Error`]:              #Error
+[`FiniteNumber`]:       #FiniteNumber
+[`Integer`]:            #Integer
+[`Null`]:               #Null
+[`Number`]:             #Number
+[`Object`]:             #Object
+[`Object.create`]:      https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/create
+[`Pair`]:               #Pair
+[`RegExp`]:             #RegExp
+[`StrMap`]:             #StrMap
+[`String`]:             #String
+[`SyntaxError`]:        https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/SyntaxError
+[`TypeClass`]:          https://github.com/sanctuary-js/sanctuary-type-classes#TypeClass
+[`TypeError`]:          https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/TypeError
+[`TypeVariable`]:       #TypeVariable
+[`UnaryType`]:          #UnaryType
+[`UnaryTypeVariable`]:  #UnaryTypeVariable
+[`Undefined`]:          #Undefined
+[`ValidNumber`]:        #ValidNumber
+[`env`]:                #env
+[arguments]:            https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Functions/arguments
+[enumerated types]:     https://en.wikipedia.org/wiki/Enumerated_type
+[max]:                  https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number/MAX_SAFE_INTEGER
+[min]:                  https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Number/MIN_SAFE_INTEGER
+[record type]:          #RecordType
+[semigroup]:            https://en.wikipedia.org/wiki/Semigroup
+[type class]:           #type-classes
+[type variables]:       #TypeVariable
+[types]:                #types
