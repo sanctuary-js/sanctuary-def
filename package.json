@@ -11,7 +11,7 @@
     "test": "make test lint"
   },
   "dependencies": {
-    "sanctuary-type-classes": "1.0.x"
+    "sanctuary-type-classes": "1.2.x"
   },
   "devDependencies": {
     "eslint": "2.9.x",
