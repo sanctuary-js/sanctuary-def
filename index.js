@@ -477,6 +477,16 @@
     return createType(FUNCTION, '', format, test, $keys, $types);
   };
 
+  //# GlobalRegExp :: Type
+  //.
+  //. Type comprising every [`RegExp`][] value whose `global` flag is `true`.
+  //.
+  //. See also [`NonGlobalRegExp`][].
+  $.GlobalRegExp = NullaryType(
+    'sanctuary-def/GlobalRegExp',
+    function(x) { return $.RegExp._test(x) && x.global; }
+  );
+
   //# Integer :: Type
   //.
   //. Type comprising every integer in the range
@@ -513,6 +523,16 @@
   $.NegativeNumber = NullaryType(
     'sanctuary-def/NegativeNumber',
     function(x) { return $.Number._test(x) && x < 0; }
+  );
+
+  //# NonGlobalRegExp :: Type
+  //.
+  //. Type comprising every [`RegExp`][] value whose `global` flag is `false`.
+  //.
+  //. See also [`GlobalRegExp`][].
+  $.NonGlobalRegExp = NullaryType(
+    'sanctuary-def/NonGlobalRegExp',
+    function(x) { return $.RegExp._test(x) && !x.global; }
   );
 
   //# NonZeroFiniteNumber :: Type
@@ -2303,7 +2323,9 @@
 //. [`Date`]:               #Date
 //. [`Error`]:              #Error
 //. [`FiniteNumber`]:       #FiniteNumber
+//. [`GlobalRegExp`]:       #GlobalRegExp
 //. [`Integer`]:            #Integer
+//. [`NonGlobalRegExp`]:    #NonGlobalRegExp
 //. [`Null`]:               #Null
 //. [`Number`]:             #Number
 //. [`Object`]:             #Object
