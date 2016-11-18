@@ -21,7 +21,7 @@
     "types"
   ],
   "dependencies": {
-    "sanctuary-type-classes": "1.0.x"
+    "sanctuary-type-classes": "1.2.x"
   },
   "ignore": [
     "/.git/",
