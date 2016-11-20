@@ -862,12 +862,11 @@ describe('def', function() {
   });
 
   it('does not rely on constructor identity', function() {
-    //  inc :: Number -> Number
-    var inc = def('inc', {}, [$.Number, $.Number], function(x) { return x + 1; });
+    //  inc :: Date -> Date
+    var inc = def('inc', {}, [$.Date, $.Date], function(date) { return new Date(date.valueOf() + 1); });
 
-    eq(inc(42), 43);
-    eq(inc(new Number(42)), 43);
-    eq(inc(vm.runInNewContext('new Number(42)')), 43);
+    eq(inc(new Date(42)), new Date(43));
+    eq(inc(vm.runInNewContext('new Date(42)')), new Date(43));
 
     //  len :: Array String -> Number
     var len = def('len', {}, [$.Array($.String), $.Number], length);
@@ -1261,17 +1260,12 @@ describe('def', function() {
     };
     eq(isPositiveNumber(null), false);
     eq(isPositiveNumber(NaN), false);
-    eq(isPositiveNumber(new Number(NaN)), false);
     eq(isPositiveNumber(-1), false);
-    eq(isPositiveNumber(new Number(-1)), false);
     eq(isPositiveNumber(0), false);
-    eq(isPositiveNumber(new Number(0)), false);
     eq(isPositiveNumber(-0), false);
-    eq(isPositiveNumber(new Number(-0)), false);
     eq(isPositiveNumber(0.5), true);
-    eq(isPositiveNumber(new Number(0.5)), true);
     eq(isPositiveNumber(Infinity), true);
-    eq(isPositiveNumber(new Number(Infinity)), true);
+    eq(isPositiveNumber(new Number(Infinity)), false);
   });
 
   it('supports the "NegativeNumber" type', function() {
@@ -1282,17 +1276,12 @@ describe('def', function() {
     };
     eq(isNegativeNumber(null), false);
     eq(isNegativeNumber(NaN), false);
-    eq(isNegativeNumber(new Number(NaN)), false);
     eq(isNegativeNumber(1), false);
-    eq(isNegativeNumber(new Number(1)), false);
     eq(isNegativeNumber(0), false);
-    eq(isNegativeNumber(new Number(0)), false);
     eq(isNegativeNumber(-0), false);
-    eq(isNegativeNumber(new Number(-0)), false);
     eq(isNegativeNumber(-0.5), true);
-    eq(isNegativeNumber(new Number(-0.5)), true);
     eq(isNegativeNumber(-Infinity), true);
-    eq(isNegativeNumber(new Number(-Infinity)), true);
+    eq(isNegativeNumber(new Number(-Infinity)), false);
   });
 
   it('supports the "ValidNumber" type', function() {
@@ -1302,9 +1291,8 @@ describe('def', function() {
       return $.test($.env, $.ValidNumber, x);
     };
     eq(isValidNumber(NaN), false);
-    eq(isValidNumber(new Number(NaN)), false);
     eq(isValidNumber(1), true);
-    eq(isValidNumber(new Number(1)), true);
+    eq(isValidNumber(new Number(1)), false);
   });
 
   it('supports the "NonZeroValidNumber" type', function() {
@@ -1314,11 +1302,9 @@ describe('def', function() {
       return $.test($.env, $.NonZeroValidNumber, x);
     };
     eq(isNonZeroValidNumber(0), false);
-    eq(isNonZeroValidNumber(new Number(0)), false);
     eq(isNonZeroValidNumber(-0), false);
-    eq(isNonZeroValidNumber(new Number(-0)), false);
     eq(isNonZeroValidNumber(1), true);
-    eq(isNonZeroValidNumber(new Number(1)), true);
+    eq(isNonZeroValidNumber(new Number(1)), false);
   });
 
   it('supports the "FiniteNumber" type', function() {
@@ -1328,11 +1314,9 @@ describe('def', function() {
       return $.test($.env, $.FiniteNumber, x);
     };
     eq(isFiniteNumber(Infinity), false);
-    eq(isFiniteNumber(new Number(Infinity)), false);
     eq(isFiniteNumber(-Infinity), false);
-    eq(isFiniteNumber(new Number(-Infinity)), false);
     eq(isFiniteNumber(1), true);
-    eq(isFiniteNumber(new Number(1)), true);
+    eq(isFiniteNumber(new Number(1)), false);
   });
 
   it('supports the "PositiveFiniteNumber" type', function() {
@@ -1343,17 +1327,12 @@ describe('def', function() {
     };
     eq(isPositiveFiniteNumber(null), false);
     eq(isPositiveFiniteNumber(NaN), false);
-    eq(isPositiveFiniteNumber(new Number(NaN)), false);
     eq(isPositiveFiniteNumber(Infinity), false);
-    eq(isPositiveFiniteNumber(new Number(Infinity)), false);
     eq(isPositiveFiniteNumber(-1), false);
-    eq(isPositiveFiniteNumber(new Number(-1)), false);
     eq(isPositiveFiniteNumber(0), false);
-    eq(isPositiveFiniteNumber(new Number(0)), false);
     eq(isPositiveFiniteNumber(-0), false);
-    eq(isPositiveFiniteNumber(new Number(-0)), false);
     eq(isPositiveFiniteNumber(0.5), true);
-    eq(isPositiveFiniteNumber(new Number(0.5)), true);
+    eq(isPositiveFiniteNumber(new Number(0.5)), false);
   });
 
   it('supports the "NegativeFiniteNumber" type', function() {
@@ -1364,17 +1343,12 @@ describe('def', function() {
     };
     eq(isNegativeFiniteNumber(null), false);
     eq(isNegativeFiniteNumber(NaN), false);
-    eq(isNegativeFiniteNumber(new Number(NaN)), false);
     eq(isNegativeFiniteNumber(-Infinity), false);
-    eq(isNegativeFiniteNumber(new Number(-Infinity)), false);
     eq(isNegativeFiniteNumber(1), false);
-    eq(isNegativeFiniteNumber(new Number(1)), false);
     eq(isNegativeFiniteNumber(0), false);
-    eq(isNegativeFiniteNumber(new Number(0)), false);
     eq(isNegativeFiniteNumber(-0), false);
-    eq(isNegativeFiniteNumber(new Number(-0)), false);
     eq(isNegativeFiniteNumber(-0.5), true);
-    eq(isNegativeFiniteNumber(new Number(-0.5)), true);
+    eq(isNegativeFiniteNumber(new Number(-0.5)), false);
   });
 
   it('supports the "NonZeroFiniteNumber" type', function() {
@@ -1384,15 +1358,11 @@ describe('def', function() {
       return $.test($.env, $.NonZeroFiniteNumber, x);
     };
     eq(isNonZeroFiniteNumber(0), false);
-    eq(isNonZeroFiniteNumber(new Number(0)), false);
     eq(isNonZeroFiniteNumber(-0), false);
-    eq(isNonZeroFiniteNumber(new Number(-0)), false);
     eq(isNonZeroFiniteNumber(Infinity), false);
-    eq(isNonZeroFiniteNumber(new Number(Infinity)), false);
     eq(isNonZeroFiniteNumber(-Infinity), false);
-    eq(isNonZeroFiniteNumber(new Number(-Infinity)), false);
     eq(isNonZeroFiniteNumber(1), true);
-    eq(isNonZeroFiniteNumber(new Number(1)), true);
+    eq(isNonZeroFiniteNumber(new Number(1)), false);
   });
 
   it('supports the "Integer" type', function() {
@@ -1402,13 +1372,10 @@ describe('def', function() {
       return $.test($.env, $.Integer, x);
     };
     eq(isInteger(3.14), false);
-    eq(isInteger(new Number(3.14)), false);
     eq(isInteger(9007199254740992), false);
-    eq(isInteger(new Number(9007199254740992)), false);
     eq(isInteger(-9007199254740992), false);
-    eq(isInteger(new Number(-9007199254740992)), false);
     eq(isInteger(1), true);
-    eq(isInteger(new Number(1)), true);
+    eq(isInteger(new Number(1)), false);
   });
 
   it('supports the "NonZeroInteger" type', function() {
@@ -1418,13 +1385,10 @@ describe('def', function() {
       return $.test($.env, $.NonZeroInteger, x);
     };
     eq(isNonZeroInteger(0), false);
-    eq(isNonZeroInteger(new Number(0)), false);
     eq(isNonZeroInteger(-0), false);
-    eq(isNonZeroInteger(new Number(-0)), false);
     eq(isNonZeroInteger(3.14), false);
-    eq(isNonZeroInteger(new Number(3.14)), false);
     eq(isNonZeroInteger(1), true);
-    eq(isNonZeroInteger(new Number(1)), true);
+    eq(isNonZeroInteger(new Number(1)), false);
   });
 
   it('supports the "PositiveInteger" type', function() {
@@ -1434,11 +1398,9 @@ describe('def', function() {
       return $.test($.env, $.PositiveInteger, x);
     };
     eq(isPositiveInteger(1.5), false);
-    eq(isPositiveInteger(new Number(1.5)), false);
     eq(isPositiveInteger(-1), false);
-    eq(isPositiveInteger(new Number(-1)), false);
     eq(isPositiveInteger(1), true);
-    eq(isPositiveInteger(new Number(1)), true);
+    eq(isPositiveInteger(new Number(1)), false);
   });
 
   it('supports the "NegativeInteger" type', function() {
@@ -1448,11 +1410,9 @@ describe('def', function() {
       return $.test($.env, $.NegativeInteger, x);
     };
     eq(isNegativeInteger(-1.5), false);
-    eq(isNegativeInteger(new Number(-1.5)), false);
     eq(isNegativeInteger(1), false);
-    eq(isNegativeInteger(new Number(1)), false);
     eq(isNegativeInteger(-1), true);
-    eq(isNegativeInteger(new Number(-1)), true);
+    eq(isNegativeInteger(new Number(-1)), false);
   });
 
   it('supports the "GlobalRegExp" type', function() {
@@ -1657,16 +1617,13 @@ describe('def', function() {
 
     var values = [
       [(function() { return arguments; }(1, 2, 3)), 'Arguments'],
-      [new Boolean(false), 'Boolean'],
+      [new Boolean(false), ''],
       [new Date(0), 'Date'],
       [new Date('XXX'), 'Date'],
-      [new Number(-0), 'Number'],
-      [new String(''), 'String'],
+      [new Number(-0), ''],
+      [new String(''), ''],
       [/x/.exec('xyz'), 'Array String'],
-      [
-        (function() { var xs = [1, 2, 3]; xs.z = 0; xs.a = 0; return xs; }()),
-        'Array Number'
-      ],
+      [(function() { var xs = [1, 2, 3]; xs.z = 0; xs.a = 0; return xs; }()), 'Array Number'],
       [{toString: null}, 'Object, StrMap Null'],
       [new Point(0, 0), 'Object, StrMap Number'],
       [o1, 'Object, StrMap ???']
@@ -1683,7 +1640,7 @@ describe('def', function() {
              '     ^^^^\n' +
              '      1\n' +
              '\n' +
-             '1)  ' + Z.toString(x) + ' :: ' + types + '\n' +
+             '1)  ' + Z.toString(x) + ' ::' + (types.length > 0 ? ' ' + types : '') + '\n' +
              '\n' +
              'The value at position 1 is not a member of ‘Null’.\n');
     });

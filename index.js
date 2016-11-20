@@ -358,7 +358,7 @@
 
   //  $$type :: a -> String
   var $$type = function(x) {
-    return x != null && toString.call(x['@@type']) === '[object String]' ?
+    return x != null && typeof x['@@type'] === 'string' ?
       x['@@type'] :
       toString.call(x).slice('[object '.length, -']'.length);
   };
@@ -370,9 +370,19 @@
     };
   };
 
+  //  typeofEq :: String -> a -> Boolean
+  var typeofEq = function(typeof_) {
+    return function(x) {
+      return typeof x === typeof_;
+    };
+  };
+
   //  type0 :: String -> Type
   var type0 = function(name) {
-    return NullaryType(name, $$typeEq(name));
+    var test = name === 'Boolean' || name === 'Number' || name === 'String' ?
+      typeofEq(name.toLowerCase()) :
+      $$typeEq(name);
+    return NullaryType(name, test);
   };
 
   //  type1 :: (String, (t a -> Array a)) -> Type -> Type
@@ -417,7 +427,7 @@
 
   //# Boolean :: Type
   //.
-  //. Type comprising `true` and `false` (and their object counterparts).
+  //. Type comprising `true` and `false`.
   $.Boolean = type0('Boolean');
 
   //# Date :: Type
@@ -434,7 +444,7 @@
   //# FiniteNumber :: Type
   //.
   //. Type comprising every [`ValidNumber`][] value except `Infinity` and
-  //. `-Infinity` (and their object counterparts).
+  //. `-Infinity`.
   $.FiniteNumber = NullaryType(
     'sanctuary-def/FiniteNumber',
     function(x) { return $.ValidNumber._test(x) && isFinite(x); }
@@ -495,7 +505,7 @@
     'sanctuary-def/Integer',
     function(x) {
       return $.ValidNumber._test(x) &&
-             Math.floor(x) == x &&  // eslint-disable-line eqeqeq
+             Math.floor(x) === x &&
              x >= MIN_SAFE_INTEGER &&
              x <= MAX_SAFE_INTEGER;
     }
@@ -537,34 +547,26 @@
 
   //# NonZeroFiniteNumber :: Type
   //.
-  //. Type comprising every [`FiniteNumber`][] value except `0` and `-0`
-  //. (and their object counterparts).
+  //. Type comprising every [`FiniteNumber`][] value except `0` and `-0`.
   $.NonZeroFiniteNumber = NullaryType(
     'sanctuary-def/NonZeroFiniteNumber',
-    function(x) {
-      return $.FiniteNumber._test(x) && x != 0;  // eslint-disable-line eqeqeq
-    }
+    function(x) { return $.FiniteNumber._test(x) && x !== 0; }
   );
 
   //# NonZeroInteger :: Type
   //.
-  //. Type comprising every non-zero [`Integer`][] value.
+  //. Type comprising every [`Integer`][] value except `0` and `-0`.
   $.NonZeroInteger = NullaryType(
     'sanctuary-def/NonZeroInteger',
-    function(x) {
-      return $.Integer._test(x) && x != 0;  // eslint-disable-line eqeqeq
-    }
+    function(x) { return $.Integer._test(x) && x !== 0; }
   );
 
   //# NonZeroValidNumber :: Type
   //.
-  //. Type comprising every [`ValidNumber`][] value except `0` and `-0`
-  //. (and their object counterparts).
+  //. Type comprising every [`ValidNumber`][] value except `0` and `-0`.
   $.NonZeroValidNumber = NullaryType(
     'sanctuary-def/NonZeroValidNumber',
-    function(x) {
-      return $.ValidNumber._test(x) && x != 0;  // eslint-disable-line eqeqeq
-    }
+    function(x) { return $.ValidNumber._test(x) && x !== 0; }
   );
 
   //# Null :: Type
@@ -583,7 +585,7 @@
 
   //# Number :: Type
   //.
-  //. Type comprising every Number value (including `NaN` and Number objects).
+  //. Type comprising every primitive Number value (including `NaN`).
   $.Number = type0('Number');
 
   //# Object :: Type
@@ -668,7 +670,7 @@
 
   //# String :: Type
   //.
-  //. Type comprising every String value (including String objects).
+  //. Type comprising every primitive String value.
   $.String = type0('String');
 
   //# Undefined :: Type
@@ -693,8 +695,7 @@
 
   //# ValidNumber :: Type
   //.
-  //. Type comprising every [`Number`][] value except `NaN` (and its object
-  //. counterpart).
+  //. Type comprising every [`Number`][] value except `NaN`.
   $.ValidNumber = NullaryType(
     'sanctuary-def/ValidNumber',
     function(x) { return $.Number._test(x) && !isNaN(x); }
@@ -1191,8 +1192,8 @@
   //. //    Integer :: Type
   //. const Integer = $.NullaryType(
   //.   'my-package/Integer',
-  //.   x => Object.prototype.toString.call(x) === '[object Number]' &&
-  //.        Math.floor(x) === Number(x) &&
+  //.   x => typeof x === 'number' &&
+  //.        Math.floor(x) === x &&
   //.        x >= Number.MIN_SAFE_INTEGER &&
   //.        x <= Number.MAX_SAFE_INTEGER
   //. );
@@ -1200,7 +1201,7 @@
   //. //    NonZeroInteger :: Type
   //. const NonZeroInteger = $.NullaryType(
   //.   'my-package/NonZeroInteger',
-  //.   x => $.test([], Integer, x) && Number(x) !== 0
+  //.   x => $.test([], Integer, x) && x !== 0
   //. );
   //.
   //. //    rem :: Integer -> NonZeroInteger -> Integer
