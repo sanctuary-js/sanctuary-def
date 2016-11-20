@@ -1455,6 +1455,42 @@ describe('def', function() {
     eq(isNegativeInteger(new Number(-1)), true);
   });
 
+  it('supports the "GlobalRegExp" type', function() {
+    eq($.GlobalRegExp.name, 'sanctuary-def/GlobalRegExp');
+
+    var isGlobalRegExp = function(x) {
+      return $.test($.env, $.GlobalRegExp, x);
+    };
+    eq(isGlobalRegExp(null), false);
+    eq(isGlobalRegExp({global: true}), false);
+    eq(isGlobalRegExp(/x/), false);
+    eq(isGlobalRegExp(/x/i), false);
+    eq(isGlobalRegExp(/x/m), false);
+    eq(isGlobalRegExp(/x/im), false);
+    eq(isGlobalRegExp(/x/g), true);
+    eq(isGlobalRegExp(/x/gi), true);
+    eq(isGlobalRegExp(/x/gm), true);
+    eq(isGlobalRegExp(/x/gim), true);
+  });
+
+  it('supports the "NonGlobalRegExp" type', function() {
+    eq($.NonGlobalRegExp.name, 'sanctuary-def/NonGlobalRegExp');
+
+    var isNonGlobalRegExp = function(x) {
+      return $.test($.env, $.NonGlobalRegExp, x);
+    };
+    eq(isNonGlobalRegExp(null), false);
+    eq(isNonGlobalRegExp({global: false}), false);
+    eq(isNonGlobalRegExp(/x/g), false);
+    eq(isNonGlobalRegExp(/x/gi), false);
+    eq(isNonGlobalRegExp(/x/gm), false);
+    eq(isNonGlobalRegExp(/x/gim), false);
+    eq(isNonGlobalRegExp(/x/), true);
+    eq(isNonGlobalRegExp(/x/i), true);
+    eq(isNonGlobalRegExp(/x/m), true);
+    eq(isNonGlobalRegExp(/x/im), true);
+  });
+
   it('supports the "RegexFlags" type', function() {
     var isRegexFlags = function(x) {
       return $.test($.env, $.RegexFlags, x);
