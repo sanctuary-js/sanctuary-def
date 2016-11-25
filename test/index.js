@@ -207,11 +207,11 @@ describe('create', function() {
   });
 
   it('type checks its arguments', function() {
-    throws(function() { $.create(true, []); },
+    throws(function() { $.create(true); },
            TypeError,
            'Invalid value\n' +
            '\n' +
-           'create :: { checkTypes :: Boolean, env :: Array Any } -> Function\n' +
+           'create :: { checkTypes :: Boolean, env :: Array Any } -> ((String, StrMap (Array TypeClass), Array Type, Function) -> Function)\n' +
            '          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n' +
            '                               1\n' +
            '\n' +
@@ -225,10 +225,6 @@ describe('create', function() {
 describe('def', function() {
 
   it('type checks its arguments when checkTypes is true', function() {
-    throws(function() { def(); },
-           TypeError,
-           '‘def’ requires four arguments; received zero arguments');
-
     throws(function() { def(null, null, null, null); },
            TypeError,
            'Invalid value\n' +
@@ -466,43 +462,83 @@ describe('def', function() {
   it('returns a function which throws if given too many args', function() {
     throws(function() { $0(1); },
            TypeError,
-           '‘$0’ requires zero arguments; received one argument');
+           'Function applied to too many arguments\n' +
+           '\n' +
+           '$0 :: () -> Array a\n' +
+           '\n' +
+           '$0 expected zero arguments but received one argument.\n');
 
     throws(function() { $1(1, 2); },
            TypeError,
-           '‘$1’ requires one argument; received two arguments');
+           'Function applied to too many arguments\n' +
+           '\n' +
+           '$1 :: a -> Array a\n' +
+           '\n' +
+           '$1 expected at most one argument but received two arguments.\n');
 
     throws(function() { $2(1, 2, 3); },
            TypeError,
-           '‘$2’ requires two arguments; received three arguments');
+           'Function applied to too many arguments\n' +
+           '\n' +
+           '$2 :: a -> a -> Array a\n' +
+           '\n' +
+           '$2 expected at most two arguments but received three arguments.\n');
 
     throws(function() { $3(1, 2, 3, 4); },
            TypeError,
-           '‘$3’ requires three arguments; received four arguments');
+           'Function applied to too many arguments\n' +
+           '\n' +
+           '$3 :: a -> a -> a -> Array a\n' +
+           '\n' +
+           '$3 expected at most three arguments but received four arguments.\n');
 
     throws(function() { $4(1, 2, 3, 4, 5); },
            TypeError,
-           '‘$4’ requires four arguments; received five arguments');
+           'Function applied to too many arguments\n' +
+           '\n' +
+           '$4 :: a -> a -> a -> a -> Array a\n' +
+           '\n' +
+           '$4 expected at most four arguments but received five arguments.\n');
 
     throws(function() { $5(1, 2, 3, 4, 5, 6); },
            TypeError,
-           '‘$5’ requires five arguments; received six arguments');
+           'Function applied to too many arguments\n' +
+           '\n' +
+           '$5 :: a -> a -> a -> a -> a -> Array a\n' +
+           '\n' +
+           '$5 expected at most five arguments but received six arguments.\n');
 
     throws(function() { $6(1, 2, 3, 4, 5, 6, 7); },
            TypeError,
-           '‘$6’ requires six arguments; received seven arguments');
+           'Function applied to too many arguments\n' +
+           '\n' +
+           '$6 :: a -> a -> a -> a -> a -> a -> Array a\n' +
+           '\n' +
+           '$6 expected at most six arguments but received seven arguments.\n');
 
     throws(function() { $7(1, 2, 3, 4, 5, 6, 7, 8); },
            TypeError,
-           '‘$7’ requires seven arguments; received eight arguments');
+           'Function applied to too many arguments\n' +
+           '\n' +
+           '$7 :: a -> a -> a -> a -> a -> a -> a -> Array a\n' +
+           '\n' +
+           '$7 expected at most seven arguments but received eight arguments.\n');
 
     throws(function() { $8(1, 2, 3, 4, 5, 6, 7, 8, 9); },
            TypeError,
-           '‘$8’ requires eight arguments; received nine arguments');
+           'Function applied to too many arguments\n' +
+           '\n' +
+           '$8 :: a -> a -> a -> a -> a -> a -> a -> a -> Array a\n' +
+           '\n' +
+           '$8 expected at most eight arguments but received nine arguments.\n');
 
     throws(function() { $9(1, 2, 3, 4, 5, 6, 7, 8, 9, 10); },
            TypeError,
-           '‘$9’ requires nine arguments; received 10 arguments');
+           'Function applied to too many arguments\n' +
+           '\n' +
+           '$9 :: a -> a -> a -> a -> a -> a -> a -> a -> a -> Array a\n' +
+           '\n' +
+           '$9 expected at most nine arguments but received 10 arguments.\n');
   });
 
   it('returns a function which type checks its arguments', function() {
@@ -1023,6 +1059,10 @@ describe('def', function() {
   });
 
   it('supports enumerated types', function() {
+    eq(typeof $.EnumType, 'function');
+    eq($.EnumType.length, 1);
+    eq($.EnumType.toString(), 'EnumType :: Array Any -> Type');
+
     //  TimeUnit :: Type
     var TimeUnit = $.EnumType(['milliseconds', 'seconds', 'minutes', 'hours']);
 
@@ -1086,6 +1126,10 @@ describe('def', function() {
   });
 
   it('supports record types', function() {
+    eq(typeof $.RecordType, 'function');
+    eq($.RecordType.length, 1);
+    eq($.RecordType.toString(), 'RecordType :: StrMap Type -> Type');
+
     //  Point :: Type
     var Point = $.RecordType({x: $.Number, y: $.Number});
 
@@ -1193,14 +1237,15 @@ describe('def', function() {
 
     throws(function() { $.RecordType({x: /XXX/, y: /XXX/, z: $.Any}); },
            TypeError,
-           'Invalid values\n' +
+           'Invalid value\n' +
            '\n' +
-           'The argument to ‘RecordType’ must be an object mapping field name to type.\n' +
+           'RecordType :: StrMap Type -> Type\n' +
+           '                     ^^^^\n' +
+           '                      1\n' +
            '\n' +
-           'The following mappings are invalid:\n' +
+           '1)  /XXX/ :: RegExp\n' +
            '\n' +
-           '  - "x": /XXX/\n' +
-           '  - "y": /XXX/\n');
+           'The value at position 1 is not a member of ‘Type’.\n');
 
     //  Foo :: Type
     var Foo = $.RecordType({x: a, y: a});
@@ -1226,6 +1271,22 @@ describe('def', function() {
   });
 
   it('supports "nullable" types', function() {
+    eq(typeof $.Nullable, 'function');
+    eq($.Nullable.length, 1);
+    eq($.Nullable.toString(), 'Nullable :: Type -> Type');
+
+    throws(function() { $.Nullable(null); },
+           TypeError,
+           'Invalid value\n' +
+           '\n' +
+           'Nullable :: Type -> Type\n' +
+           '            ^^^^\n' +
+           '             1\n' +
+           '\n' +
+           '1)  null :: Null\n' +
+           '\n' +
+           'The value at position 1 is not a member of ‘Type’.\n');
+
     //  toUpper :: Nullable String -> Nullable String
     var toUpper =
     def('toUpper',
@@ -1553,6 +1614,11 @@ describe('def', function() {
   });
 
   it('supports the "StrMap" type constructor', function() {
+    eq(typeof $.StrMap, 'function');
+    eq($.StrMap.length, 1);
+    eq($.StrMap.toString(), 'StrMap :: Type -> Type');
+    eq($.StrMap(a).toString(), '(StrMap a)');
+
     //  id :: a -> a
     var id = def('id', {}, [a, a], identity);
 
@@ -1661,6 +1727,12 @@ describe('def', function() {
   });
 
   it('supports the "Pair" type constructor', function() {
+    eq(typeof $.Pair, 'function');
+    eq($.Pair.length, 2);
+    eq($.Pair.toString(), 'Pair :: Type -> Type -> Type');
+    eq($.Pair(a, b).toString(), '(Pair a b)');
+    eq($.Pair(a)(b).toString(), '(Pair a b)');
+
     //  fst :: Pair a b -> a
     var fst = def('fst', {}, [$.Pair(a, b), a], function(pair) { return pair[0]; });
 
@@ -2704,6 +2776,12 @@ describe('def', function() {
 
 describe('test', function() {
 
+  it('is a ternary function', function() {
+    eq(typeof $.test, 'function');
+    eq($.test.length, 3);
+    eq($.test.toString(), 'test :: Array Type -> Type -> Any -> Boolean');
+  });
+
   it('supports nullary types', function() {
     eq($.test($.env, $.Number, null), false);
     eq($.test($.env, $.Number, '42'), false);
@@ -2721,9 +2799,13 @@ describe('test', function() {
 
   it('supports binary types', function() {
     eq($.test($.env, $Pair($.Number, $.String), Pair(42, 42)), false);
+    eq($.test($.env, $Pair($.Number)($.String), Pair(42, 42)), false);
     eq($.test($.env, $Pair($.Number, $.String), Pair('', '')), false);
+    eq($.test($.env, $Pair($.Number)($.String), Pair('', '')), false);
     eq($.test($.env, $Pair($.Number, $.String), Pair('', 42)), false);
+    eq($.test($.env, $Pair($.Number)($.String), Pair('', 42)), false);
     eq($.test($.env, $Pair($.Number, $.String), Pair(42, '')), true);
+    eq($.test($.env, $Pair($.Number)($.String), Pair(42, '')), true);
   });
 
   it('supports type variables', function() {
@@ -2737,6 +2819,137 @@ describe('test', function() {
     eq($.test($.env, $Pair(a, a), Pair('foo', 42)), false);
     eq($.test($.env, $Pair(a, a), Pair('foo', 'bar')), true);
     eq($.test($.env, $Pair(a, b), Pair('foo', 42)), true);
+  });
+
+});
+
+describe('NullaryType', function() {
+
+  it('is a ternary function', function() {
+    eq(typeof $.NullaryType, 'function');
+    eq($.NullaryType.length, 3);
+    eq($.NullaryType.toString(), 'NullaryType :: String -> String -> (Any -> Boolean) -> Type');
+  });
+
+});
+
+describe('UnaryType', function() {
+
+  it('is a quaternary function', function() {
+    eq(typeof $.UnaryType, 'function');
+    eq($.UnaryType.length, 4);
+    eq($.UnaryType.toString(), 'UnaryType :: String -> String -> (Any -> Boolean) -> (t a -> Array a) -> (Type -> Type)');
+  });
+
+  it('returns a type constructor which type checks its arguments', function() {
+    throws(function() { Maybe({x: $.Number, y: $.Number}); },
+           TypeError,
+           'Invalid value\n' +
+           '\n' +
+           'Maybe :: Type -> Type\n' +
+           '         ^^^^\n' +
+           '          1\n' +
+           '\n' +
+           '1)  {"x": Number, "y": Number} :: Object, StrMap ???\n' +
+           '\n' +
+           'The value at position 1 is not a member of ‘Type’.\n');
+  });
+
+});
+
+describe('BinaryType', function() {
+
+  it('is a quinary function', function() {
+    eq(typeof $.BinaryType, 'function');
+    eq($.BinaryType.length, 5);
+    eq($.BinaryType.toString(), 'BinaryType :: String -> String -> (Any -> Boolean) -> (t a b -> Array a) -> (t a b -> Array b) -> ((Type, Type) -> Type)');
+  });
+
+  it('returns a type constructor which type checks its arguments', function() {
+    throws(function() { Either($.Number, {x: $.Number, y: $.Number}); },
+           TypeError,
+           'Invalid value\n' +
+           '\n' +
+           'Either :: Type -> Type -> Type\n' +
+           '                  ^^^^\n' +
+           '                   1\n' +
+           '\n' +
+           '1)  {"x": Number, "y": Number} :: Object, StrMap ???\n' +
+           '\n' +
+           'The value at position 1 is not a member of ‘Type’.\n');
+  });
+
+});
+
+describe('TypeVariable', function() {
+
+  it('is a unary function', function() {
+    eq(typeof $.TypeVariable, 'function');
+    eq($.TypeVariable.length, 1);
+    eq($.TypeVariable.toString(), 'TypeVariable :: String -> Type');
+  });
+
+});
+
+describe('UnaryTypeVariable', function() {
+
+  it('is a unary function', function() {
+    eq(typeof $.UnaryTypeVariable, 'function');
+    eq($.UnaryTypeVariable.length, 1);
+    eq($.UnaryTypeVariable.toString(), 'UnaryTypeVariable :: String -> (Type -> Type)');
+  });
+
+  it('returns a function which type checks its arguments', function() {
+    var f = $.UnaryTypeVariable('f');
+
+    eq(typeof f, 'function');
+    eq(f.length, 1);
+    eq(f.toString(), 'f :: Type -> Type');
+    eq(f(a).toString(), '(f a)');
+
+    throws(function() { f(Number); },
+           TypeError,
+           'Invalid value\n' +
+           '\n' +
+           'f :: Type -> Type\n' +
+           '     ^^^^\n' +
+           '      1\n' +
+           '\n' +
+           '1)  function Number() { [native code] } :: Function\n' +
+           '\n' +
+           'The value at position 1 is not a member of ‘Type’.\n');
+  });
+
+});
+
+describe('BinaryTypeVariable', function() {
+
+  it('is a unary function', function() {
+    eq(typeof $.BinaryTypeVariable, 'function');
+    eq($.BinaryTypeVariable.length, 1);
+    eq($.BinaryTypeVariable.toString(), 'BinaryTypeVariable :: String -> ((Type, Type) -> Type)');
+  });
+
+  it('returns a function which type checks its arguments', function() {
+    var p = $.BinaryTypeVariable('p');
+
+    eq(typeof p, 'function');
+    eq(p.length, 2);
+    eq(p.toString(), 'p :: Type -> Type -> Type');
+    eq(p(a, b).toString(), '(p a b)');
+    eq(p(a)(b).toString(), '(p a b)');
+
+    throws(function() { p(Number); },
+           TypeError,
+           'Invalid value\n' +
+           '\n' +
+           'p :: Type -> Type -> Type\n' +
+           '     ^^^^\n' +
+           '      1\n' +
+           '\n' +
+           '1)  function Number() { [native code] } :: Function\n' +
+           '\n' +
+           'The value at position 1 is not a member of ‘Type’.\n');
   });
 
 });
