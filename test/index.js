@@ -328,6 +328,17 @@ describe('def', function() {
 
     eq(add.inspect(), 'add :: Number -> Number -> Number');
     eq(add.toString(), 'add :: Number -> Number -> Number');
+
+    eq($0.toString(), '$0 :: () -> Array a');
+    eq($1.toString(), '$1 :: a -> Array a');
+    eq($2.toString(), '$2 :: a -> a -> Array a');
+    eq($3.toString(), '$3 :: a -> a -> a -> Array a');
+    eq($4.toString(), '$4 :: a -> a -> a -> a -> Array a');
+    eq($5.toString(), '$5 :: a -> a -> a -> a -> a -> Array a');
+    eq($6.toString(), '$6 :: a -> a -> a -> a -> a -> a -> Array a');
+    eq($7.toString(), '$7 :: a -> a -> a -> a -> a -> a -> a -> Array a');
+    eq($8.toString(), '$8 :: a -> a -> a -> a -> a -> a -> a -> a -> Array a');
+    eq($9.toString(), '$9 :: a -> a -> a -> a -> a -> a -> a -> a -> a -> Array a');
   });
 
   it('returns a curried function', function() {
