@@ -34,6 +34,9 @@ var throws = function(f, type, message) {
   });
 };
 
+//  version :: String
+var version = '0.7.0';  // updated programmatically
+
 
 var def = $.create({checkTypes: true, env: $.env});
 
@@ -63,6 +66,7 @@ var MIN_SAFE_INTEGER = -MAX_SAFE_INTEGER;
 //  Integer :: Type
 var Integer = $.NullaryType(
   'my-package/Integer',
+  'http://example.com/my-package#Integer',
   function(x) {
     return $.Number._test(x) &&
            Math.floor(x) === Number(x) &&
@@ -115,6 +119,7 @@ var Just = function Just(x) {
 //  Maybe :: Type
 var Maybe = $.UnaryType(
   'my-package/Maybe',
+  'http://example.com/my-package#Maybe',
   function(x) { return x != null && x['@@type'] === 'my-package/Maybe'; },
   function(maybe) { return maybe.isJust ? [maybe.value] : []; }
 );
@@ -163,6 +168,7 @@ var Right = function Right(x) {
 //  Either :: Type
 var Either = $.BinaryType(
   'my-package/Either',
+  'http://example.com/my-package#Either',
   function(x) { return x != null && x['@@type'] === 'my-package/Either'; },
   function(either) { return either.isLeft ? [either.value] : []; },
   function(either) { return either.isRight ? [either.value] : []; }
@@ -186,6 +192,7 @@ var Pair = function(x, y) {
 //  $Pair :: Type
 var $Pair = $.BinaryType(
   'my-package/Pair',
+  'http://example.com/my-package#Pair',
   function(x) { return x != null && x['@@type'] === 'my-package/Pair'; },
   function(pair) { return [pair[0]]; },
   function(pair) { return [pair[1]]; }
@@ -232,7 +239,9 @@ describe('def', function() {
            '\n' +
            '1)  null :: Null\n' +
            '\n' +
-           'The value at position 1 is not a member of ‘String’.\n');
+           'The value at position 1 is not a member of ‘String’.\n' +
+           '\n' +
+           'See https://github.com/sanctuary-js/sanctuary-def/tree/v' + version + '#String for information about the String type.\n');
 
     throws(function() { def('', null, null, null); },
            TypeError,
@@ -244,7 +253,9 @@ describe('def', function() {
            '\n' +
            '1)  null :: Null\n' +
            '\n' +
-           'The value at position 1 is not a member of ‘StrMap (Array TypeClass)’.\n');
+           'The value at position 1 is not a member of ‘StrMap (Array TypeClass)’.\n' +
+           '\n' +
+           'See https://github.com/sanctuary-js/sanctuary-def/tree/v' + version + '#StrMap for information about the sanctuary-def/StrMap type.\n');
 
     throws(function() { def('', {}, null, null); },
            TypeError,
@@ -256,7 +267,9 @@ describe('def', function() {
            '\n' +
            '1)  null :: Null\n' +
            '\n' +
-           'The value at position 1 is not a member of ‘Array Type’.\n');
+           'The value at position 1 is not a member of ‘Array Type’.\n' +
+           '\n' +
+           'See https://github.com/sanctuary-js/sanctuary-def/tree/v' + version + '#Array for information about the Array type.\n');
 
     throws(function() { def('', {}, [1, 2, 3], null); },
            TypeError,
@@ -280,7 +293,9 @@ describe('def', function() {
            '\n' +
            '1)  null :: Null\n' +
            '\n' +
-           'The value at position 1 is not a member of ‘Function’.\n');
+           'The value at position 1 is not a member of ‘Function’.\n' +
+           '\n' +
+           'See https://github.com/sanctuary-js/sanctuary-def/tree/v' + version + '#Function for information about the Function type.\n');
   });
 
   it('does not type check its arguments when checkTypes is false', function() {
@@ -415,7 +430,9 @@ describe('def', function() {
            '\n' +
            '1)  /x/ :: RegExp\n' +
            '\n' +
-           'The value at position 1 is not a member of ‘Number’.\n');
+           'The value at position 1 is not a member of ‘Number’.\n' +
+           '\n' +
+           'See https://github.com/sanctuary-js/sanctuary-def/tree/v' + version + '#Number for information about the Number type.\n');
 
     throws(function() { triple($.__, $.__, /x/); },
            TypeError,
@@ -427,7 +444,9 @@ describe('def', function() {
            '\n' +
            '1)  /x/ :: RegExp\n' +
            '\n' +
-           'The value at position 1 is not a member of ‘Number’.\n');
+           'The value at position 1 is not a member of ‘Number’.\n' +
+           '\n' +
+           'See https://github.com/sanctuary-js/sanctuary-def/tree/v' + version + '#Number for information about the Number type.\n');
 
     throws(function() { triple($.__, 2, 3)(/x/); },
            TypeError,
@@ -439,7 +458,9 @@ describe('def', function() {
            '\n' +
            '1)  /x/ :: RegExp\n' +
            '\n' +
-           'The value at position 1 is not a member of ‘Number’.\n');
+           'The value at position 1 is not a member of ‘Number’.\n' +
+           '\n' +
+           'See https://github.com/sanctuary-js/sanctuary-def/tree/v' + version + '#Number for information about the Number type.\n');
   });
 
   it('returns a function which throws if given too many args', function() {
@@ -498,7 +519,9 @@ describe('def', function() {
            '\n' +
            '1)  "X" :: String\n' +
            '\n' +
-           'The value at position 1 is not a member of ‘Number’.\n');
+           'The value at position 1 is not a member of ‘Number’.\n' +
+           '\n' +
+           'See https://github.com/sanctuary-js/sanctuary-def/tree/v' + version + '#Number for information about the Number type.\n');
 
     throws(function() { $9(1, 'X'); },
            TypeError,
@@ -510,7 +533,9 @@ describe('def', function() {
            '\n' +
            '1)  "X" :: String\n' +
            '\n' +
-           'The value at position 1 is not a member of ‘Number’.\n');
+           'The value at position 1 is not a member of ‘Number’.\n' +
+           '\n' +
+           'See https://github.com/sanctuary-js/sanctuary-def/tree/v' + version + '#Number for information about the Number type.\n');
 
     throws(function() { $9(1, 2, 'X'); },
            TypeError,
@@ -522,7 +547,9 @@ describe('def', function() {
            '\n' +
            '1)  "X" :: String\n' +
            '\n' +
-           'The value at position 1 is not a member of ‘Number’.\n');
+           'The value at position 1 is not a member of ‘Number’.\n' +
+           '\n' +
+           'See https://github.com/sanctuary-js/sanctuary-def/tree/v' + version + '#Number for information about the Number type.\n');
 
     throws(function() { $9(1, 2, 3, 'X'); },
            TypeError,
@@ -534,7 +561,9 @@ describe('def', function() {
            '\n' +
            '1)  "X" :: String\n' +
            '\n' +
-           'The value at position 1 is not a member of ‘Number’.\n');
+           'The value at position 1 is not a member of ‘Number’.\n' +
+           '\n' +
+           'See https://github.com/sanctuary-js/sanctuary-def/tree/v' + version + '#Number for information about the Number type.\n');
 
     throws(function() { $9(1, 2, 3, 4, 'X'); },
            TypeError,
@@ -546,7 +575,9 @@ describe('def', function() {
            '\n' +
            '1)  "X" :: String\n' +
            '\n' +
-           'The value at position 1 is not a member of ‘Number’.\n');
+           'The value at position 1 is not a member of ‘Number’.\n' +
+           '\n' +
+           'See https://github.com/sanctuary-js/sanctuary-def/tree/v' + version + '#Number for information about the Number type.\n');
 
     throws(function() { $9(1, 2, 3, 4, 5, 'X'); },
            TypeError,
@@ -558,7 +589,9 @@ describe('def', function() {
            '\n' +
            '1)  "X" :: String\n' +
            '\n' +
-           'The value at position 1 is not a member of ‘Number’.\n');
+           'The value at position 1 is not a member of ‘Number’.\n' +
+           '\n' +
+           'See https://github.com/sanctuary-js/sanctuary-def/tree/v' + version + '#Number for information about the Number type.\n');
 
     throws(function() { $9(1, 2, 3, 4, 5, 6, 'X'); },
            TypeError,
@@ -570,7 +603,9 @@ describe('def', function() {
            '\n' +
            '1)  "X" :: String\n' +
            '\n' +
-           'The value at position 1 is not a member of ‘Number’.\n');
+           'The value at position 1 is not a member of ‘Number’.\n' +
+           '\n' +
+           'See https://github.com/sanctuary-js/sanctuary-def/tree/v' + version + '#Number for information about the Number type.\n');
 
     throws(function() { $9(1, 2, 3, 4, 5, 6, 7, 'X'); },
            TypeError,
@@ -582,7 +617,9 @@ describe('def', function() {
            '\n' +
            '1)  "X" :: String\n' +
            '\n' +
-           'The value at position 1 is not a member of ‘Number’.\n');
+           'The value at position 1 is not a member of ‘Number’.\n' +
+           '\n' +
+           'See https://github.com/sanctuary-js/sanctuary-def/tree/v' + version + '#Number for information about the Number type.\n');
 
     throws(function() { $9(1, 2, 3, 4, 5, 6, 7, 8, 'X'); },
            TypeError,
@@ -594,7 +631,9 @@ describe('def', function() {
            '\n' +
            '1)  "X" :: String\n' +
            '\n' +
-           'The value at position 1 is not a member of ‘Number’.\n');
+           'The value at position 1 is not a member of ‘Number’.\n' +
+           '\n' +
+           'See https://github.com/sanctuary-js/sanctuary-def/tree/v' + version + '#Number for information about the Number type.\n');
 
     eq($9(1, 2, 3, 4, 5, 6, 7, 8, 9), [1, 2, 3, 4, 5, 6, 7, 8, 9]);
   });
@@ -615,7 +654,9 @@ describe('def', function() {
            '\n' +
            '1)  null :: Null\n' +
            '\n' +
-           'The value at position 1 is not a member of ‘Number’.\n');
+           'The value at position 1 is not a member of ‘Number’.\n' +
+           '\n' +
+           'See https://github.com/sanctuary-js/sanctuary-def/tree/v' + version + '#Number for information about the Number type.\n');
 
     throws(function() { sqrt(undefined); },
            TypeError,
@@ -627,7 +668,9 @@ describe('def', function() {
            '\n' +
            '1)  undefined :: Undefined\n' +
            '\n' +
-           'The value at position 1 is not a member of ‘Number’.\n');
+           'The value at position 1 is not a member of ‘Number’.\n' +
+           '\n' +
+           'See https://github.com/sanctuary-js/sanctuary-def/tree/v' + version + '#Number for information about the Number type.\n');
   });
 
   it('creates a proper curry closure', function() {
@@ -869,7 +912,9 @@ describe('def', function() {
            '\n' +
            '1)  "XXX" :: String\n' +
            '\n' +
-           'The value at position 1 is not a member of ‘Number’.\n');
+           'The value at position 1 is not a member of ‘Number’.\n' +
+           '\n' +
+           'See https://github.com/sanctuary-js/sanctuary-def/tree/v' + version + '#Number for information about the Number type.\n');
   });
 
   it('does not rely on constructor identity', function() {
@@ -928,6 +973,7 @@ describe('def', function() {
     //  AnonMaybe :: Type
     var AnonMaybe = $.UnaryType(
       'my-package/AnonMaybe',
+      'http://example.com/my-package#AnonMaybe',
       function(x) { return x != null && x['@@type'] === 'my-package/AnonMaybe'; },
       function(maybe) { return maybe.isJust ? [maybe.value] : []; }
     );
@@ -950,7 +996,9 @@ describe('def', function() {
            '\n' +
            '1)  0.5 :: Number\n' +
            '\n' +
-           'The value at position 1 is not a member of ‘Integer’.\n');
+           'The value at position 1 is not a member of ‘Integer’.\n' +
+           '\n' +
+           'See http://example.com/my-package#Integer for information about the my-package/Integer type.\n');
 
     //  fromMaybe :: a -> AnonMaybe a
     var fromMaybe =
@@ -1108,7 +1156,9 @@ describe('def', function() {
            '\n' +
            '1)  null :: Null\n' +
            '\n' +
-           'The value at position 1 is not a member of ‘Number’.\n');
+           'The value at position 1 is not a member of ‘Number’.\n' +
+           '\n' +
+           'See https://github.com/sanctuary-js/sanctuary-def/tree/v' + version + '#Number for information about the Number type.\n');
 
     throws(function() { length({start: 0, end: 0}); },
            TypeError,
@@ -1132,7 +1182,9 @@ describe('def', function() {
            '\n' +
            '1)  null :: Null\n' +
            '\n' +
-           'The value at position 1 is not a member of ‘Number’.\n');
+           'The value at position 1 is not a member of ‘Number’.\n' +
+           '\n' +
+           'See https://github.com/sanctuary-js/sanctuary-def/tree/v' + version + '#Number for information about the Number type.\n');
 
     //  id :: a -> a
     var id = def('id', {}, [a, a], identity);
@@ -1194,7 +1246,9 @@ describe('def', function() {
            '\n' +
            '1)  ["abc"] :: Array String\n' +
            '\n' +
-           'The value at position 1 is not a member of ‘String’.\n');
+           'The value at position 1 is not a member of ‘String’.\n' +
+           '\n' +
+           'See https://github.com/sanctuary-js/sanctuary-def/tree/v' + version + '#String for information about the String type.\n');
 
     //  defaultTo :: a -> Nullable a -> a
     var defaultTo =
@@ -1258,13 +1312,16 @@ describe('def', function() {
            '\n' +
            '1)  new Date(NaN) :: Date\n' +
            '\n' +
-           'The value at position 1 is not a member of ‘ValidDate’.\n');
+           'The value at position 1 is not a member of ‘ValidDate’.\n' +
+           '\n' +
+           'See https://github.com/sanctuary-js/sanctuary-def/tree/v' + version + '#ValidDate for information about the sanctuary-def/ValidDate type.\n');
 
     eq(sinceEpoch(new Date(123456)), 123.456);
   });
 
   it('supports the "PositiveNumber" type', function() {
     eq($.PositiveNumber.name, 'sanctuary-def/PositiveNumber');
+    eq($.PositiveNumber.url, 'https://github.com/sanctuary-js/sanctuary-def/tree/v' + version + '#PositiveNumber');
 
     var isPositiveNumber = function(x) {
       return $.test($.env, $.PositiveNumber, x);
@@ -1281,6 +1338,7 @@ describe('def', function() {
 
   it('supports the "NegativeNumber" type', function() {
     eq($.NegativeNumber.name, 'sanctuary-def/NegativeNumber');
+    eq($.NegativeNumber.url, 'https://github.com/sanctuary-js/sanctuary-def/tree/v' + version + '#NegativeNumber');
 
     var isNegativeNumber = function(x) {
       return $.test($.env, $.NegativeNumber, x);
@@ -1297,6 +1355,7 @@ describe('def', function() {
 
   it('supports the "ValidNumber" type', function() {
     eq($.ValidNumber.name, 'sanctuary-def/ValidNumber');
+    eq($.ValidNumber.url, 'https://github.com/sanctuary-js/sanctuary-def/tree/v' + version + '#ValidNumber');
 
     var isValidNumber = function(x) {
       return $.test($.env, $.ValidNumber, x);
@@ -1308,6 +1367,7 @@ describe('def', function() {
 
   it('supports the "NonZeroValidNumber" type', function() {
     eq($.NonZeroValidNumber.name, 'sanctuary-def/NonZeroValidNumber');
+    eq($.NonZeroValidNumber.url, 'https://github.com/sanctuary-js/sanctuary-def/tree/v' + version + '#NonZeroValidNumber');
 
     var isNonZeroValidNumber = function(x) {
       return $.test($.env, $.NonZeroValidNumber, x);
@@ -1320,6 +1380,7 @@ describe('def', function() {
 
   it('supports the "FiniteNumber" type', function() {
     eq($.FiniteNumber.name, 'sanctuary-def/FiniteNumber');
+    eq($.FiniteNumber.url, 'https://github.com/sanctuary-js/sanctuary-def/tree/v' + version + '#FiniteNumber');
 
     var isFiniteNumber = function(x) {
       return $.test($.env, $.FiniteNumber, x);
@@ -1332,6 +1393,7 @@ describe('def', function() {
 
   it('supports the "PositiveFiniteNumber" type', function() {
     eq($.PositiveFiniteNumber.name, 'sanctuary-def/PositiveFiniteNumber');
+    eq($.PositiveFiniteNumber.url, 'https://github.com/sanctuary-js/sanctuary-def/tree/v' + version + '#PositiveFiniteNumber');
 
     var isPositiveFiniteNumber = function(x) {
       return $.test($.env, $.PositiveFiniteNumber, x);
@@ -1348,6 +1410,7 @@ describe('def', function() {
 
   it('supports the "NegativeFiniteNumber" type', function() {
     eq($.NegativeFiniteNumber.name, 'sanctuary-def/NegativeFiniteNumber');
+    eq($.NegativeFiniteNumber.url, 'https://github.com/sanctuary-js/sanctuary-def/tree/v' + version + '#NegativeFiniteNumber');
 
     var isNegativeFiniteNumber = function(x) {
       return $.test($.env, $.NegativeFiniteNumber, x);
@@ -1364,6 +1427,7 @@ describe('def', function() {
 
   it('supports the "NonZeroFiniteNumber" type', function() {
     eq($.NonZeroFiniteNumber.name, 'sanctuary-def/NonZeroFiniteNumber');
+    eq($.NonZeroFiniteNumber.url, 'https://github.com/sanctuary-js/sanctuary-def/tree/v' + version + '#NonZeroFiniteNumber');
 
     var isNonZeroFiniteNumber = function(x) {
       return $.test($.env, $.NonZeroFiniteNumber, x);
@@ -1378,6 +1442,7 @@ describe('def', function() {
 
   it('supports the "Integer" type', function() {
     eq($.Integer.name, 'sanctuary-def/Integer');
+    eq($.Integer.url, 'https://github.com/sanctuary-js/sanctuary-def/tree/v' + version + '#Integer');
 
     var isInteger = function(x) {
       return $.test($.env, $.Integer, x);
@@ -1391,6 +1456,7 @@ describe('def', function() {
 
   it('supports the "NonZeroInteger" type', function() {
     eq($.NonZeroInteger.name, 'sanctuary-def/NonZeroInteger');
+    eq($.NonZeroInteger.url, 'https://github.com/sanctuary-js/sanctuary-def/tree/v' + version + '#NonZeroInteger');
 
     var isNonZeroInteger = function(x) {
       return $.test($.env, $.NonZeroInteger, x);
@@ -1404,6 +1470,7 @@ describe('def', function() {
 
   it('supports the "PositiveInteger" type', function() {
     eq($.PositiveInteger.name, 'sanctuary-def/PositiveInteger');
+    eq($.PositiveInteger.url, 'https://github.com/sanctuary-js/sanctuary-def/tree/v' + version + '#PositiveInteger');
 
     var isPositiveInteger = function(x) {
       return $.test($.env, $.PositiveInteger, x);
@@ -1416,6 +1483,7 @@ describe('def', function() {
 
   it('supports the "NegativeInteger" type', function() {
     eq($.NegativeInteger.name, 'sanctuary-def/NegativeInteger');
+    eq($.NegativeInteger.url, 'https://github.com/sanctuary-js/sanctuary-def/tree/v' + version + '#NegativeInteger');
 
     var isNegativeInteger = function(x) {
       return $.test($.env, $.NegativeInteger, x);
@@ -1428,6 +1496,7 @@ describe('def', function() {
 
   it('supports the "GlobalRegExp" type', function() {
     eq($.GlobalRegExp.name, 'sanctuary-def/GlobalRegExp');
+    eq($.GlobalRegExp.url, 'https://github.com/sanctuary-js/sanctuary-def/tree/v' + version + '#GlobalRegExp');
 
     var isGlobalRegExp = function(x) {
       return $.test($.env, $.GlobalRegExp, x);
@@ -1446,6 +1515,7 @@ describe('def', function() {
 
   it('supports the "NonGlobalRegExp" type', function() {
     eq($.NonGlobalRegExp.name, 'sanctuary-def/NonGlobalRegExp');
+    eq($.NonGlobalRegExp.url, 'https://github.com/sanctuary-js/sanctuary-def/tree/v' + version + '#NonGlobalRegExp');
 
     var isNonGlobalRegExp = function(x) {
       return $.test($.env, $.NonGlobalRegExp, x);
@@ -1563,7 +1633,9 @@ describe('def', function() {
            '\n' +
            '1)  /xxx/ :: RegExp\n' +
            '\n' +
-           'The value at position 1 is not a member of ‘Number’.\n');
+           'The value at position 1 is not a member of ‘Number’.\n' +
+           '\n' +
+           'See https://github.com/sanctuary-js/sanctuary-def/tree/v' + version + '#Number for information about the Number type.\n');
 
     //  testBinaryType :: Either a (StrMap b) -> Either a (StrMap b)
     var testBinaryType =
@@ -1608,7 +1680,9 @@ describe('def', function() {
            '\n' +
            '1)  ["foo"] :: Array String\n' +
            '\n' +
-           'The value at position 1 is not a member of ‘Pair a b’.\n');
+           'The value at position 1 is not a member of ‘Pair a b’.\n' +
+           '\n' +
+           'See https://github.com/sanctuary-js/sanctuary-def/tree/v' + version + '#Pair for information about the sanctuary-def/Pair type.\n');
   });
 
   it('uses Z.toString-like string representations', function() {
@@ -1653,7 +1727,9 @@ describe('def', function() {
              '\n' +
              '1)  ' + Z.toString(x) + ' ::' + (types.length > 0 ? ' ' + types : '') + '\n' +
              '\n' +
-             'The value at position 1 is not a member of ‘Null’.\n');
+             'The value at position 1 is not a member of ‘Null’.\n' +
+             '\n' +
+             'See https://github.com/sanctuary-js/sanctuary-def/tree/v' + version + '#Null for information about the Null type.\n');
     });
   });
 
@@ -1731,7 +1807,9 @@ describe('def', function() {
            '\n' +
            '1)  [1, 2, 3] :: Array Number\n' +
            '\n' +
-           'The value at position 1 is not a member of ‘Maybe a’.\n');
+           'The value at position 1 is not a member of ‘Maybe a’.\n' +
+           '\n' +
+           'See http://example.com/my-package#Maybe for information about the my-package/Maybe type.\n');
 
     //  fst :: Pair a b -> a
     var fst = def('fst', {}, [$Pair(a, b), a], function(pair) { return pair[0]; });
@@ -1748,7 +1826,9 @@ describe('def', function() {
            '\n' +
            '1)  ["XXX", 42] :: Array ???\n' +
            '\n' +
-           'The value at position 1 is not a member of ‘Pair a b’.\n');
+           'The value at position 1 is not a member of ‘Pair a b’.\n' +
+           '\n' +
+           'See http://example.com/my-package#Pair for information about the my-package/Pair type.\n');
 
     //  twin :: Pair a a -> Boolean
     var twin =
@@ -1898,7 +1978,9 @@ describe('def', function() {
            '\n' +
            '1)  1 :: Number, Integer\n' +
            '\n' +
-           'The value at position 1 is not a member of ‘Array a’.\n');
+           'The value at position 1 is not a member of ‘Array a’.\n' +
+           '\n' +
+           'See https://github.com/sanctuary-js/sanctuary-def/tree/v' + version + '#Array for information about the Array type.\n');
 
     //  concatComplex :: Array (Either String Integer) -> Array (Either String Integer) -> Array (Either String Integer)
     var concatComplex =
@@ -1919,7 +2001,9 @@ describe('def', function() {
            '\n' +
            '1)  /xxx/ :: RegExp\n' +
            '\n' +
-           'The value at position 1 is not a member of ‘String’.\n');
+           'The value at position 1 is not a member of ‘String’.\n' +
+           '\n' +
+           'See https://github.com/sanctuary-js/sanctuary-def/tree/v' + version + '#String for information about the String type.\n');
 
     throws(function() { concatComplex([Left('abc'), Right(0), Right(0.1), Right(0.2)]); },
            TypeError,
@@ -1931,7 +2015,9 @@ describe('def', function() {
            '\n' +
            '1)  0.1 :: Number\n' +
            '\n' +
-           'The value at position 1 is not a member of ‘Integer’.\n');
+           'The value at position 1 is not a member of ‘Integer’.\n' +
+           '\n' +
+           'See https://github.com/sanctuary-js/sanctuary-def/tree/v' + version + '#Integer for information about the sanctuary-def/Integer type.\n');
 
     throws(function() { concatComplex([], [Left(/xxx/), Right(0), Right(0.1), Right(0.2)]); },
            TypeError,
@@ -1943,7 +2029,9 @@ describe('def', function() {
            '\n' +
            '1)  /xxx/ :: RegExp\n' +
            '\n' +
-           'The value at position 1 is not a member of ‘String’.\n');
+           'The value at position 1 is not a member of ‘String’.\n' +
+           '\n' +
+           'See https://github.com/sanctuary-js/sanctuary-def/tree/v' + version + '#String for information about the String type.\n');
 
     throws(function() { concatComplex([], [Left('abc'), Right(0), Right(0.1), Right(0.2)]); },
            TypeError,
@@ -1955,7 +2043,9 @@ describe('def', function() {
            '\n' +
            '1)  0.1 :: Number\n' +
            '\n' +
-           'The value at position 1 is not a member of ‘Integer’.\n');
+           'The value at position 1 is not a member of ‘Integer’.\n' +
+           '\n' +
+           'See https://github.com/sanctuary-js/sanctuary-def/tree/v' + version + '#Integer for information about the sanctuary-def/Integer type.\n');
 
     throws(function() { concatComplex([], []); },
            TypeError,
@@ -1967,7 +2057,9 @@ describe('def', function() {
            '\n' +
            '1)  /xxx/ :: RegExp\n' +
            '\n' +
-           'The value at position 1 is not a member of ‘String’.\n');
+           'The value at position 1 is not a member of ‘String’.\n' +
+           '\n' +
+           'See https://github.com/sanctuary-js/sanctuary-def/tree/v' + version + '#String for information about the String type.\n');
   });
 
   it('does not allow heterogeneous arrays', function() {
@@ -2073,6 +2165,7 @@ describe('def', function() {
     //  Pair :: Type
     var Pair = $.BinaryType(
       'my-package/Pair',
+      'http://example.com/my-package#Pair',
       function(x) { return Object.prototype.toString.call(x) === '[object Array]' && x.length === 2; },
       function(pair) { return [pair[0]]; },
       function(pair) { return [pair[1]]; }
@@ -2141,7 +2234,9 @@ describe('def', function() {
            '\n' +
            '1)  ["a", "b", "c"] :: Array String\n' +
            '\n' +
-           'The value at position 1 is not a member of ‘String’.\n');
+           'The value at position 1 is not a member of ‘String’.\n' +
+           '\n' +
+           'See https://github.com/sanctuary-js/sanctuary-def/tree/v' + version + '#String for information about the String type.\n');
 
     throws(function() { f(identity, ['a', 'b', 'c']); },
            TypeError,
@@ -2153,7 +2248,9 @@ describe('def', function() {
            '\n' +
            '1)  "a" :: String\n' +
            '\n' +
-           'The value at position 1 is not a member of ‘Number’.\n');
+           'The value at position 1 is not a member of ‘Number’.\n' +
+           '\n' +
+           'See https://github.com/sanctuary-js/sanctuary-def/tree/v' + version + '#Number for information about the Number type.\n');
 
     //  map :: (a -> b) -> Array a -> Array b
     var map =
@@ -2553,7 +2650,9 @@ describe('def', function() {
            '\n' +
            '1)  Infinity :: Number\n' +
            '\n' +
-           'The value at position 1 is not a member of ‘FiniteNumber’.\n');
+           'The value at position 1 is not a member of ‘FiniteNumber’.\n' +
+           '\n' +
+           'See https://github.com/sanctuary-js/sanctuary-def/tree/v' + version + '#FiniteNumber for information about the sanctuary-def/FiniteNumber type.\n');
   });
 
   it('supports binary type variables', function() {
@@ -2579,7 +2678,11 @@ describe('def', function() {
     var count = 0;
 
     //  Void :: Type
-    var Void = $.NullaryType('my-package/Void', function(x) { count += 1; return false; });
+    var Void = $.NullaryType(
+      'my-package/Void',
+      'http://example.com/my-package#Void',
+      function(x) { count += 1; return false; }
+    );
 
     var env = [$.Array, Maybe, $.Number, Void];
     var def = $.create({checkTypes: true, env: env});
