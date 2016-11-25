@@ -226,6 +226,9 @@
   //  id :: a -> a
   var id = function(x) { return x; };
 
+  //  init :: Array a -> Array a
+  var init = function(xs) { return xs.slice(0, -1); };
+
   //  isEmpty :: Array a -> Boolean
   var isEmpty = function(xs) { return xs.length === 0; };
 
@@ -469,7 +472,7 @@
       var parenthesize = wrap(outer('('))(outer(')'));
       return parenthesize(unless(types.length === 2,
                                  parenthesize,
-                                 xs.slice(0, -1).join(outer(', '))) +
+                                 init(xs).join(outer(', '))) +
                           outer(' -> ') +
                           last(xs));
     };
@@ -1873,7 +1876,7 @@
                    t,
                    x);
       };
-      expType.keys.slice(0, -1).forEach(function(k, idx) {
+      init(expType.keys).forEach(function(k, idx) {
         checkValue$([k], expType.types[k].type, args[idx]);
       });
 
@@ -1962,9 +1965,14 @@
 
   //  typeSignature :: TypeInfo -> String
   var typeSignature = function(typeInfo) {
+    var reprs = Z.map(showType, typeInfo.types);
+    var arity = reprs.length - 1;
     return typeInfo.name + ' :: ' +
              constraintsRepr(typeInfo.constraints, id, K(K(id))) +
-             Z.map(showType, typeInfo.types).join(' -> ');
+             when(arity === 0,
+                  wrap('(')(')'),
+                  init(reprs).join(' -> ')) +
+             ' -> ' + last(reprs);
   };
 
   //  _underline :: ... -> String
