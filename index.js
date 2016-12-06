@@ -159,8 +159,6 @@
 
   'use strict';
 
-  var $ = {};
-
   //# __ :: Placeholder
   //.
   //. The special placeholder value.
@@ -180,12 +178,11 @@
   //. exclaim('ahoy');
   //. // => 'ahoy!'
   //. ```
-  $.__ = {'@@functional/placeholder': true};
+  var __ = {'@@functional/placeholder': true};
 
   var MAX_SAFE_INTEGER = Math.pow(2, 53) - 1;
   var MIN_SAFE_INTEGER = -MAX_SAFE_INTEGER;
 
-  var forEach           = Array.prototype.forEach;
   var slice             = Array.prototype.slice;
   var hasOwnProperty    = Object.prototype.hasOwnProperty;
   var toString          = Object.prototype.toString;
@@ -411,7 +408,7 @@
   function applyParameterizedTypes(types) {
     return Z.map(function(x) {
       return typeof x === 'function' ?
-        x.apply(null, Z.map(K($.Unknown), range(0, x.length))) :
+        x.apply(null, Z.map(K(Unknown), range(0, x.length))) :
         x;
     }, types);
   }
@@ -425,46 +422,46 @@
   //# Any :: Type
   //.
   //. Type comprising every JavaScript value.
-  $.Any = NullaryTypeWithUrl('sanctuary-def/Any', K(true));
+  var Any = NullaryTypeWithUrl('sanctuary-def/Any', K(true));
 
   //# AnyFunction :: Type
   //.
   //. Type comprising every Function value.
-  $.AnyFunction = NullaryTypeWithUrl('Function', $$typeEq('Function'));
+  var AnyFunction = NullaryTypeWithUrl('Function', $$typeEq('Function'));
 
   //# Arguments :: Type
   //.
   //. Type comprising every [`arguments`][arguments] object.
-  $.Arguments = NullaryTypeWithUrl('Arguments', $$typeEq('Arguments'));
+  var Arguments = NullaryTypeWithUrl('Arguments', $$typeEq('Arguments'));
 
   //# Array :: Type -> Type
   //.
   //. Constructor for homogeneous Array types.
-  $.Array = UnaryTypeWithUrl('Array', $$typeEq('Array'), id);
+  var Array_ = UnaryTypeWithUrl('Array', $$typeEq('Array'), id);
 
   //# Boolean :: Type
   //.
   //. Type comprising `true` and `false`.
-  $.Boolean = NullaryTypeWithUrl('Boolean', typeofEq('boolean'));
+  var Boolean_ = NullaryTypeWithUrl('Boolean', typeofEq('boolean'));
 
   //# Date :: Type
   //.
   //. Type comprising every Date value.
-  $.Date = NullaryTypeWithUrl('Date', $$typeEq('Date'));
+  var Date_ = NullaryTypeWithUrl('Date', $$typeEq('Date'));
 
   //# Error :: Type
   //.
   //. Type comprising every Error value, including values of more specific
   //. constructors such as [`SyntaxError`][] and [`TypeError`][].
-  $.Error = NullaryTypeWithUrl('Error', $$typeEq('Error'));
+  var Error_ = NullaryTypeWithUrl('Error', $$typeEq('Error'));
 
   //# FiniteNumber :: Type
   //.
   //. Type comprising every [`ValidNumber`][] value except `Infinity` and
   //. `-Infinity`.
-  $.FiniteNumber = NullaryTypeWithUrl(
+  var FiniteNumber = NullaryTypeWithUrl(
     'sanctuary-def/FiniteNumber',
-    function(x) { return $.ValidNumber._test(x) && isFinite(x); }
+    function(x) { return ValidNumber._test(x) && isFinite(x); }
   );
 
   //# Function :: Array Type -> Type
@@ -476,7 +473,7 @@
   //.   - `$.Function([$.Date, $.String])` represents the `Date -> String`
   //.     type; and
   //.   - `$.Function([a, b, a])` represents the `(a, b) -> a` type.
-  $.Function = function(types) {
+  function Function_(types) {
     function format(outer, inner) {
       var xs = types.map(function(t, idx) {
         return unless(t.type === RECORD || isEmpty(t.keys),
@@ -491,7 +488,7 @@
                           last(xs));
     }
 
-    var test = $.AnyFunction._test;
+    var test = AnyFunction._test;
 
     var $keys = [];
     var $types = {};
@@ -502,26 +499,26 @@
     });
 
     return createType(FUNCTION, '', '', format, test, $keys, $types);
-  };
+  }
 
   //# GlobalRegExp :: Type
   //.
   //. Type comprising every [`RegExp`][] value whose `global` flag is `true`.
   //.
   //. See also [`NonGlobalRegExp`][].
-  $.GlobalRegExp = NullaryTypeWithUrl(
+  var GlobalRegExp = NullaryTypeWithUrl(
     'sanctuary-def/GlobalRegExp',
-    function(x) { return $.RegExp._test(x) && x.global; }
+    function(x) { return RegExp_._test(x) && x.global; }
   );
 
   //# Integer :: Type
   //.
   //. Type comprising every integer in the range
   //. [[`Number.MIN_SAFE_INTEGER`][min] .. [`Number.MAX_SAFE_INTEGER`][max]].
-  $.Integer = NullaryTypeWithUrl(
+  var Integer = NullaryTypeWithUrl(
     'sanctuary-def/Integer',
     function(x) {
-      return $.ValidNumber._test(x) &&
+      return ValidNumber._test(x) &&
              Math.floor(x) === x &&
              x >= MIN_SAFE_INTEGER &&
              x <= MAX_SAFE_INTEGER;
@@ -531,25 +528,25 @@
   //# NegativeFiniteNumber :: Type
   //.
   //. Type comprising every [`FiniteNumber`][] value less than zero.
-  $.NegativeFiniteNumber = NullaryTypeWithUrl(
+  var NegativeFiniteNumber = NullaryTypeWithUrl(
     'sanctuary-def/NegativeFiniteNumber',
-    function(x) { return $.FiniteNumber._test(x) && x < 0; }
+    function(x) { return FiniteNumber._test(x) && x < 0; }
   );
 
   //# NegativeInteger :: Type
   //.
   //. Type comprising every [`Integer`][] value less than zero.
-  $.NegativeInteger = NullaryTypeWithUrl(
+  var NegativeInteger = NullaryTypeWithUrl(
     'sanctuary-def/NegativeInteger',
-    function(x) { return $.Integer._test(x) && x < 0; }
+    function(x) { return Integer._test(x) && x < 0; }
   );
 
   //# NegativeNumber :: Type
   //.
   //. Type comprising every [`Number`][] value less than zero.
-  $.NegativeNumber = NullaryTypeWithUrl(
+  var NegativeNumber = NullaryTypeWithUrl(
     'sanctuary-def/NegativeNumber',
-    function(x) { return $.Number._test(x) && x < 0; }
+    function(x) { return Number_._test(x) && x < 0; }
   );
 
   //# NonGlobalRegExp :: Type
@@ -557,44 +554,44 @@
   //. Type comprising every [`RegExp`][] value whose `global` flag is `false`.
   //.
   //. See also [`GlobalRegExp`][].
-  $.NonGlobalRegExp = NullaryTypeWithUrl(
+  var NonGlobalRegExp = NullaryTypeWithUrl(
     'sanctuary-def/NonGlobalRegExp',
-    function(x) { return $.RegExp._test(x) && !x.global; }
+    function(x) { return RegExp_._test(x) && !x.global; }
   );
 
   //# NonZeroFiniteNumber :: Type
   //.
   //. Type comprising every [`FiniteNumber`][] value except `0` and `-0`.
-  $.NonZeroFiniteNumber = NullaryTypeWithUrl(
+  var NonZeroFiniteNumber = NullaryTypeWithUrl(
     'sanctuary-def/NonZeroFiniteNumber',
-    function(x) { return $.FiniteNumber._test(x) && x !== 0; }
+    function(x) { return FiniteNumber._test(x) && x !== 0; }
   );
 
   //# NonZeroInteger :: Type
   //.
   //. Type comprising every [`Integer`][] value except `0` and `-0`.
-  $.NonZeroInteger = NullaryTypeWithUrl(
+  var NonZeroInteger = NullaryTypeWithUrl(
     'sanctuary-def/NonZeroInteger',
-    function(x) { return $.Integer._test(x) && x !== 0; }
+    function(x) { return Integer._test(x) && x !== 0; }
   );
 
   //# NonZeroValidNumber :: Type
   //.
   //. Type comprising every [`ValidNumber`][] value except `0` and `-0`.
-  $.NonZeroValidNumber = NullaryTypeWithUrl(
+  var NonZeroValidNumber = NullaryTypeWithUrl(
     'sanctuary-def/NonZeroValidNumber',
-    function(x) { return $.ValidNumber._test(x) && x !== 0; }
+    function(x) { return ValidNumber._test(x) && x !== 0; }
   );
 
   //# Null :: Type
   //.
   //. Type whose sole member is `null`.
-  $.Null = NullaryTypeWithUrl('Null', $$typeEq('Null'));
+  var Null = NullaryTypeWithUrl('Null', $$typeEq('Null'));
 
   //# Nullable :: Type -> Type
   //.
   //. Constructor for types which include `null` as a member.
-  $.Nullable = UnaryTypeWithUrl(
+  var Nullable = UnaryTypeWithUrl(
     'sanctuary-def/Nullable',
     K(true),
     function(nullable) { return nullable === null ? [] : [nullable]; }
@@ -603,7 +600,7 @@
   //# Number :: Type
   //.
   //. Type comprising every primitive Number value (including `NaN`).
-  $.Number = NullaryTypeWithUrl('Number', typeofEq('number'));
+  var Number_ = NullaryTypeWithUrl('Number', typeofEq('number'));
 
   //# Object :: Type
   //.
@@ -614,13 +611,13 @@
   //.   - [`Object.create`][]; or
   //.   - the `new` operator in conjunction with `Object` or a custom
   //.     constructor function.
-  $.Object = NullaryTypeWithUrl('Object', $$typeEq('Object'));
+  var Object_ = NullaryTypeWithUrl('Object', $$typeEq('Object'));
 
-  //# Pair :: (Type, Type) -> Type
+  //# Pair :: Type -> Type -> Type
   //.
   //. Constructor for tuple types of length 2. Arrays are said to represent
   //. tuples. `['foo', 42]` is a member of `Pair String Number`.
-  $.Pair = BinaryTypeWithUrl(
+  var Pair = BinaryTypeWithUrl(
     'sanctuary-def/Pair',
     function(x) { return $$typeEq('Array')(x) && x.length === 2; },
     function(pair) { return [pair[0]]; },
@@ -630,31 +627,31 @@
   //# PositiveFiniteNumber :: Type
   //.
   //. Type comprising every [`FiniteNumber`][] value greater than zero.
-  $.PositiveFiniteNumber = NullaryTypeWithUrl(
+  var PositiveFiniteNumber = NullaryTypeWithUrl(
     'sanctuary-def/PositiveFiniteNumber',
-    function(x) { return $.FiniteNumber._test(x) && x > 0; }
+    function(x) { return FiniteNumber._test(x) && x > 0; }
   );
 
   //# PositiveInteger :: Type
   //.
   //. Type comprising every [`Integer`][] value greater than zero.
-  $.PositiveInteger = NullaryTypeWithUrl(
+  var PositiveInteger = NullaryTypeWithUrl(
     'sanctuary-def/PositiveInteger',
-    function(x) { return $.Integer._test(x) && x > 0; }
+    function(x) { return Integer._test(x) && x > 0; }
   );
 
   //# PositiveNumber :: Type
   //.
   //. Type comprising every [`Number`][] value greater than zero.
-  $.PositiveNumber = NullaryTypeWithUrl(
+  var PositiveNumber = NullaryTypeWithUrl(
     'sanctuary-def/PositiveNumber',
-    function(x) { return $.Number._test(x) && x > 0; }
+    function(x) { return Number_._test(x) && x > 0; }
   );
 
   //# RegExp :: Type
   //.
   //. Type comprising every RegExp value.
-  $.RegExp = NullaryTypeWithUrl('RegExp', $$typeEq('RegExp'));
+  var RegExp_ = NullaryTypeWithUrl('RegExp', $$typeEq('RegExp'));
 
   //# RegexFlags :: Type
   //.
@@ -668,7 +665,7 @@
   //.   - `'gm'`
   //.   - `'im'`
   //.   - `'gim'`
-  $.RegexFlags = EnumType(['', 'g', 'i', 'm', 'gi', 'gm', 'im', 'gim']);
+  var RegexFlags = EnumType(['', 'g', 'i', 'm', 'gi', 'gm', 'im', 'gim']);
 
   //# StrMap :: Type -> Type
   //.
@@ -676,9 +673,9 @@
   //.
   //. `{foo: 1, bar: 2, baz: 3}`, for example, is a member of `StrMap Number`;
   //. `{foo: 1, bar: 2, baz: 'XXX'}` is not.
-  $.StrMap = UnaryTypeWithUrl(
+  var StrMap = UnaryTypeWithUrl(
     'sanctuary-def/StrMap',
-    function(x) { return $.Object._test(x); },
+    Object_._test,
     function(strMap) {
       return Z.map(function(k) { return strMap[k]; },
                    Object.keys(strMap).sort());
@@ -688,34 +685,34 @@
   //# String :: Type
   //.
   //. Type comprising every primitive String value.
-  $.String = NullaryTypeWithUrl('String', typeofEq('string'));
+  var String_ = NullaryTypeWithUrl('String', typeofEq('string'));
 
   //# Undefined :: Type
   //.
   //. Type whose sole member is `undefined`.
-  $.Undefined = NullaryTypeWithUrl('Undefined', $$typeEq('Undefined'));
+  var Undefined = NullaryTypeWithUrl('Undefined', $$typeEq('Undefined'));
 
   //# Unknown :: Type
   //.
   //. Type used internally to represent missing type information. The type of
   //. `[]`, for example, is `Array ???`. This type is exported solely for use
   //. by other Sanctuary packages.
-  $.Unknown = createType(UNKNOWN, '', '', always2('???'), K(true), [], {});
+  var Unknown = createType(UNKNOWN, '', '', always2('???'), K(true), [], {});
 
   //# ValidDate :: Type
   //.
   //. Type comprising every [`Date`][] value except `new Date(NaN)`.
-  $.ValidDate = NullaryTypeWithUrl(
+  var ValidDate = NullaryTypeWithUrl(
     'sanctuary-def/ValidDate',
-    function(x) { return $.Date._test(x) && !isNaN(x.valueOf()); }
+    function(x) { return Date_._test(x) && !isNaN(x.valueOf()); }
   );
 
   //# ValidNumber :: Type
   //.
   //. Type comprising every [`Number`][] value except `NaN`.
-  $.ValidNumber = NullaryTypeWithUrl(
+  var ValidNumber = NullaryTypeWithUrl(
     'sanctuary-def/ValidNumber',
-    function(x) { return $.Number._test(x) && !isNaN(x); }
+    function(x) { return Number_._test(x) && !isNaN(x); }
   );
 
   //# env :: Array Type
@@ -735,20 +732,20 @@
   //.   - [`StrMap`][]
   //.   - [`String`][]
   //.   - [`Undefined`][]
-  $.env = applyParameterizedTypes([
-    $.AnyFunction,
-    $.Arguments,
-    $.Array,
-    $.Boolean,
-    $.Date,
-    $.Error,
-    $.Null,
-    $.Number,
-    $.Object,
-    $.RegExp,
-    $.StrMap,
-    $.String,
-    $.Undefined
+  var env = applyParameterizedTypes([
+    AnyFunction,
+    Arguments,
+    Array_,
+    Boolean_,
+    Date_,
+    Error_,
+    Null,
+    Number_,
+    Object_,
+    RegExp_,
+    StrMap,
+    String_,
+    Undefined
   ]);
 
   //  Type :: Type
@@ -764,6 +761,11 @@
     '',
     $$typeEq('sanctuary-type-classes/TypeClass')
   );
+
+  //  Unchecked :: String -> Type
+  function Unchecked(s) { return NullaryType(s, '', K(true)); }
+
+  var def = _create({checkTypes: true, env: env});
 
   //  arity :: (Number, Function) -> Function
   function arity(n, f) {
@@ -873,7 +875,7 @@
     }
 
     return isEmpty(values) ?
-      [$.Unknown] :
+      [Unknown] :
       or(Z.reduce(refine, types, values), loose ? [Inconsistent] : []);
   }
 
@@ -939,7 +941,7 @@
       $typeVarMap[typeVar.name].types = Z.chain(
         function(t) {
           var xs;
-          var invalid = !$.test(env, t, value);
+          var invalid = !test(env, t, value);
           return (
             invalid ?
               [] :
@@ -1091,7 +1093,7 @@
                 var innerValues = Z.chain(t.types[k].extractor, values);
                 return Z.reduce(function(e, x) {
                   return Z.chain(function(r) {
-                    return $1.type === VARIABLE || $.test(env, $1, x) ?
+                    return $1.type === VARIABLE || test(env, $1, x) ?
                       Right(r) :
                       Left(function() {
                         return invalidValue(env,
@@ -1173,7 +1175,7 @@
     }
   }
 
-  //# test :: (Array Type, Type, a) -> Boolean
+  //# test :: Array Type -> Type -> a -> Boolean
   //.
   //. Takes an environment, a type, and any value. Returns `true` if the value
   //. is a member of the type; `false` otherwise.
@@ -1195,17 +1197,17 @@
   //. Using types as predicates is useful in other contexts too. One could,
   //. for example, define a [record type][] for each endpoint of a REST API
   //. and validate the bodies of incoming POST requests against these types.
-  $.test = function(_env, t, x) {
+  function test(_env, t, x) {
     var env = applyParameterizedTypes(_env);
     var typeInfo = {name: 'name', constraints: {}, types: [t]};
     return satisfactoryTypes(env, typeInfo, {}, t, 0, [], [x]).isRight;
-  };
+  }
 
   //. ### Type constructors
   //.
   //. sanctuary-def provides several functions for defining types.
 
-  //# NullaryType :: (String, String, Any -> Boolean) -> Type
+  //# NullaryType :: String -> String -> (Any -> Boolean) -> Type
   //.
   //. Type constructor for types with no type variables (such as [`Number`][]).
   //.
@@ -1273,9 +1275,14 @@
     }
     return createType(NULLARY, name, url, format, test, [], {});
   }
-  $.NullaryType = NullaryType;
 
-  //# UnaryType :: (String, String, Any -> Boolean, t a -> Array a) -> (Type -> Type)
+  var CheckedNullaryType =
+  def('NullaryType',
+      {},
+      [String_, String_, Function_([Any, Boolean_]), Type],
+      NullaryType);
+
+  //# UnaryType :: String -> String -> (Any -> Boolean) -> (t a -> Array a) -> (Type -> Type)
   //.
   //. Type constructor for types with one type variable (such as [`Array`][]).
   //.
@@ -1355,14 +1362,28 @@
       return createType(UNARY, name, url, format, test, ['$1'], types);
     };
   }
-  $.UnaryType = UnaryType;
+
+  var CheckedUnaryType =
+  def('UnaryType',
+      {},
+      [String_,
+       String_,
+       Function_([Any, Boolean_]),
+       Function_([Unchecked('t a'), Array_(Unchecked('a'))]),
+       Function_([Type, Type])],
+      function(name, url, test, _1) {
+        return def(stripNamespace(name),
+                   {},
+                   [Type, Type],
+                   UnaryType(name, url, test, _1));
+      });
 
   //  fromUnaryType :: Type -> (Type -> Type)
   function fromUnaryType(t) {
     return UnaryType(t.name, t.url, t._test, t.types.$1.extractor);
   }
 
-  //# BinaryType :: (String, String, Any -> Boolean, t a b -> Array a, t a b -> Array b) -> ((Type, Type) -> Type)
+  //# BinaryType :: String -> String -> (Any -> Boolean) -> (t a b -> Array a) -> (t a b -> Array b) -> (Type -> Type -> Type)
   //.
   //. Type constructor for types with two type variables (such as [`Pair`][]).
   //.
@@ -1456,7 +1477,22 @@
       return createType(BINARY, name, url, format, test, ['$1', '$2'], types);
     };
   }
-  $.BinaryType = BinaryType;
+
+  var CheckedBinaryType =
+  def('BinaryType',
+      {},
+      [String_,
+       String_,
+       Function_([Any, Boolean_]),
+       Function_([Unchecked('t a b'), Array_(Unchecked('a'))]),
+       Function_([Unchecked('t a b'), Array_(Unchecked('b'))]),
+       Function_([Type, Type, Type])],
+      function(name, url, test, _1, _2) {
+        return def(stripNamespace(name),
+                   {},
+                   [Type, Type, Type],
+                   BinaryType(name, url, test, _1, _2));
+      });
 
   //  xprod :: (Type, Array Type, Array Type) -> Array Type
   function xprod(t, $1s, $2s) {
@@ -1528,7 +1564,8 @@
 
     return createType(ENUM, '', '', format, test, [], {});
   }
-  $.EnumType = EnumType;
+
+  var CheckedEnumType = def('EnumType', {}, [Array_(Any), Type], EnumType);
 
   //# RecordType :: StrMap Type -> Type
   //.
@@ -1582,22 +1619,6 @@
   function RecordType(fields) {
     var keys = Object.keys(fields).sort();
 
-    var invalidFieldNames = keys.filter(function(k) {
-      return $$type(fields[k]) !== 'sanctuary-def/Type';
-    });
-    if (!isEmpty(invalidFieldNames)) {
-      throw new TypeError(trimTrailingSpaces(
-        'Invalid values\n\n' +
-        'The argument to ‘RecordType’ must be an object ' +
-          'mapping field name to type.\n\n' +
-        'The following mappings are invalid:\n\n' +
-        Z.reduce(function(s, k) {
-          var v = fields[k];
-          return s + '  - ' + Z.toString(k) + ': ' + Z.toString(v) + '\n';
-        }, '', invalidFieldNames)
-      ));
-    }
-
     function format(outer, inner) {
       return wrap(outer('{'))(outer(' }'))(Z.map(function(k) {
         var t = fields[k];
@@ -1620,7 +1641,9 @@
 
     return createType(RECORD, '', '', format, test, keys, $types);
   }
-  $.RecordType = RecordType;
+
+  var CheckedRecordType =
+  def('RecordType', {}, [StrMap(Type), Type], RecordType);
 
   //# TypeVariable :: String -> Type
   //.
@@ -1678,7 +1701,9 @@
   function TypeVariable(name) {
     return createType(VARIABLE, name, '', always2(name), K(true), [], {});
   }
-  $.TypeVariable = TypeVariable;
+
+  var CheckedTypeVariable =
+  def('TypeVariable', {}, [String_, Type], TypeVariable);
 
   //# UnaryTypeVariable :: String -> (Type -> Type)
   //.
@@ -1735,9 +1760,16 @@
       return createType(VARIABLE, name, '', format, K(true), ['$1'], types);
     };
   }
-  $.UnaryTypeVariable = UnaryTypeVariable;
 
-  //# BinaryTypeVariable :: String -> ((Type, Type) -> Type)
+  var CheckedUnaryTypeVariable =
+  def('UnaryTypeVariable',
+      {},
+      [String_, Function_([Type, Type])],
+      function(name) {
+        return def(name, {}, [Type, Type], UnaryTypeVariable(name));
+      });
+
+  //# BinaryTypeVariable :: String -> (Type -> Type -> Type)
   //.
   //. Combines [`BinaryType`][] and [`TypeVariable`][].
   //.
@@ -1763,7 +1795,14 @@
       return createType(VARIABLE, name, '', format, K(true), keys, types);
     };
   }
-  $.BinaryTypeVariable = BinaryTypeVariable;
+
+  var CheckedBinaryTypeVariable =
+  def('BinaryTypeVariable',
+      {},
+      [String_, Function_([Type, Type, Type])],
+      function(name) {
+        return def(name, {}, [Type, Type, Type], BinaryTypeVariable(name));
+      });
 
   //. ### Type classes
   //.
@@ -1882,7 +1921,7 @@
           $typeVarMapBox[0][t.name].valuesByPath
         );
       }
-    } else if (!$.test(env, t, value)) {
+    } else if (!test(env, t, value)) {
       throw invalidValue(env, typeInfo, index, propPath, value);
     }
   }
@@ -1900,11 +1939,7 @@
       var expType = typeInfo.types[index];
       var numArgsExpected = expType.keys.length - 1;
       if (args.length !== numArgsExpected) {
-        throw invalidArgumentsLength_(env,
-                                      typeInfo,
-                                      index,
-                                      numArgsExpected,
-                                      args);
+        throw invalidArgumentsLength(typeInfo, index, numArgsExpected, args);
       }
       function checkValue$(propPath, t, x) {
         checkValue(env,
@@ -1944,11 +1979,19 @@
     });
   }
 
-  //  invalidArgumentsLength :: (String, Integer, Integer) -> Error
-  function invalidArgumentsLength(name, expectedLength, actualLength) {
-    return new TypeError(q(name) +
-                         ' requires ' + numArgs(expectedLength) + ';' +
-                         ' received ' + numArgs(actualLength));
+  //  tooManyArguments :: (TypeInfo, Integer) -> Error
+  //
+  //  This function is used in `curry` when a function defined via `def`
+  //  is applied to too many arguments.
+  function tooManyArguments(typeInfo, numArgsReceived) {
+    var numArgsExpected = typeInfo.types.length - 1;
+    return new TypeError(trimTrailingSpaces(
+      'Function applied to too many arguments\n\n' +
+      typeSignature(typeInfo) + '\n\n' +
+      typeInfo.name + ' expected' +
+      (numArgsExpected > 0 ? ' at most ' : ' ') + numArgs(numArgsExpected) +
+      ' but received ' + numArgs(numArgsReceived) + '.\n'
+    ));
   }
 
   //  constraintsRepr :: ... -> String
@@ -2185,9 +2228,12 @@
     ));
   }
 
-  //  invalidArgumentsLength_ :: ... -> Error
-  function invalidArgumentsLength_(
-    env,                // :: Array Type
+  //  invalidArgumentsLength :: ... -> Error
+  //
+  //  This function is used in `wrapFunction` to ensure that higher-order
+  //  functions defined via `def` only ever apply a function argument to
+  //  the correct number of arguments.
+  function invalidArgumentsLength(
     typeInfo,           // :: TypeInfo
     index,              // :: Integer
     numArgsExpected,    // :: Integer
@@ -2234,134 +2280,174 @@
     return either.value;
   }
 
-  //  Options :: Type
-  var Options = RecordType({checkTypes: $.Boolean, env: $.Array($.Any)});
-
-  //  create :: Options -> Function
-  $.create = function(opts) {
-    assertRight(satisfactoryTypes($.env,
-                                  {name: 'create',
-                                   constraints: {},
-                                   types: [Options, $.AnyFunction]},
-                                  {},
-                                  Options,
-                                  0,
-                                  [],
-                                  [opts]));
-
-    //  checkTypes :: Boolean
-    var checkTypes = opts.checkTypes;
-
-    //  env :: Array Type
-    var env = applyParameterizedTypes(opts.env);
-
-    //  curry :: ... -> Function
-    function curry(
-      typeInfo,     // :: TypeInfo
-      _typeVarMap,  // :: TypeVarMap
-      _values,      // :: Array Any
-      _indexes,     // :: Array Integer
-      impl          // :: Function
-    ) {
-      var n = typeInfo.types.length - 1;
-      var curried = arity(_indexes.length, function() {
-        if (checkTypes) {
-          var delta = _indexes.length - arguments.length;
-          if (delta < 0) {
-            throw invalidArgumentsLength(typeInfo.name, n, n - delta);
-          }
-        }
-        var typeVarMap = _typeVarMap;
-        var values = _values.slice();
-        var indexes = [];
-        for (var idx = 0; idx < _indexes.length; idx += 1) {
-          var index = _indexes[idx];
-
-          if (idx < arguments.length &&
-              !(typeof arguments[idx] === 'object' &&
-                arguments[idx] != null &&
-                arguments[idx]['@@functional/placeholder'] === true)) {
-
-            var value = arguments[idx];
-            if (checkTypes) {
-              var result = satisfactoryTypes(env,
-                                             typeInfo,
-                                             typeVarMap,
-                                             typeInfo.types[index],
-                                             index,
-                                             [],
-                                             [value]);
-              typeVarMap = assertRight(result).typeVarMap;
-            }
-            values[index] = value;
-          } else {
-            indexes.push(index);
-          }
-        }
-        if (isEmpty(indexes)) {
-          if (checkTypes) {
-            var returnValue = impl.apply(this,
-                                         wrapFunctions(env,
-                                                       typeInfo,
-                                                       [typeVarMap],
-                                                       values));
-            assertRight(satisfactoryTypes(env,
-                                          typeInfo,
-                                          typeVarMap,
-                                          typeInfo.types[n],
-                                          n,
-                                          [],
-                                          [returnValue]));
-            return returnValue;
-          } else {
-            return impl.apply(this, values);
-          }
-        } else {
-          return curry(typeInfo, typeVarMap, values, indexes, impl);
-        }
-      });
-      curried.inspect = curried.toString = always(typeSignature(typeInfo));
-      return curried;
-    }
-
-    return function def(name, constraints, expTypes, impl) {
-      if (checkTypes) {
-        if (arguments.length !== def.length) {
-          throw invalidArgumentsLength('def', def.length, arguments.length);
-        }
-
-        var types = [$.String,
-                     $.StrMap($.Array(TypeClass)),
-                     $.Array(Type),
-                     $.AnyFunction,
-                     $.AnyFunction];
-        var typeInfo = {name: 'def', constraints: {}, types: types};
-        forEach.call(arguments, function(arg, idx) {
-          assertRight(satisfactoryTypes($.env,
-                                        typeInfo,
-                                        {},
-                                        types[idx],
-                                        idx,
-                                        [],
-                                        [arg]));
-        });
+  //  curry :: ... -> Function
+  function curry(
+    opts,         // :: Options
+    typeInfo,     // :: TypeInfo
+    _typeVarMap,  // :: TypeVarMap
+    _values,      // :: Array Any
+    _indexes,     // :: Array Integer
+    impl          // :: Function
+  ) {
+    var n = typeInfo.types.length - 1;
+    var curried = arity(_indexes.length, function() {
+      if (opts.checkTypes) {
+        var delta = _indexes.length - arguments.length;
+        if (delta < 0) throw tooManyArguments(typeInfo, n - delta);
       }
+      var typeVarMap = _typeVarMap;
+      var values = _values.slice();
+      var indexes = [];
+      for (var idx = 0; idx < _indexes.length; idx += 1) {
+        var index = _indexes[idx];
 
+        if (idx < arguments.length &&
+            !(typeof arguments[idx] === 'object' &&
+              arguments[idx] != null &&
+              arguments[idx]['@@functional/placeholder'] === true)) {
+
+          var value = arguments[idx];
+          if (opts.checkTypes) {
+            var result = satisfactoryTypes(opts.env,
+                                           typeInfo,
+                                           typeVarMap,
+                                           typeInfo.types[index],
+                                           index,
+                                           [],
+                                           [value]);
+            typeVarMap = assertRight(result).typeVarMap;
+          }
+          values[index] = value;
+        } else {
+          indexes.push(index);
+        }
+      }
+      if (isEmpty(indexes)) {
+        if (opts.checkTypes) {
+          var returnValue = impl.apply(this,
+                                       wrapFunctions(opts.env,
+                                                     typeInfo,
+                                                     [typeVarMap],
+                                                     values));
+          assertRight(satisfactoryTypes(opts.env,
+                                        typeInfo,
+                                        typeVarMap,
+                                        typeInfo.types[n],
+                                        n,
+                                        [],
+                                        [returnValue]));
+          return returnValue;
+        } else {
+          return impl.apply(this, values);
+        }
+      } else {
+        return curry(opts, typeInfo, typeVarMap, values, indexes, impl);
+      }
+    });
+    curried.inspect = curried.toString = always(typeSignature(typeInfo));
+    return curried;
+  }
+
+  function _create(opts) {
+    function def(name, constraints, expTypes, impl) {
       var values = new Array(expTypes.length - 1);
       if (values.length > 9) {
-        throw new RangeError(q('def') + ' cannot define a function ' +
+        throw new RangeError(q(def.name) + ' cannot define a function ' +
                              'with arity greater than nine');
       }
-
-      return curry({name: name, constraints: constraints, types: expTypes},
+      return curry({checkTypes: opts.checkTypes,
+                    env: applyParameterizedTypes(opts.env)},
+                   {name: name, constraints: constraints, types: expTypes},
                    {},
                    values,
                    range(0, values.length),
                    impl);
-    };
-  };
+    }
+    return def(def.name,
+               {},
+               [String_,
+                StrMap(Array_(TypeClass)),
+                Array_(Type),
+                AnyFunction,
+                AnyFunction],
+               def);
+  }
 
-  return $;
+  var create =
+  def('create',
+      {},
+      [RecordType({checkTypes: Boolean_, env: Array_(Any)}),
+       Function_([String_,
+                  StrMap(Array_(TypeClass)),
+                  Array_(Type),
+                  AnyFunction,
+                  AnyFunction])],
+      _create);
+
+  //  fromUncheckedUnaryType :: (Type -> Type) -> (Type -> Type)
+  function fromUncheckedUnaryType(typeConstructor) {
+    var t = typeConstructor(Unknown);
+    var _1 = t.types.$1.extractor;
+    return CheckedUnaryType(t.name, t.url, t._test, _1);
+  }
+
+  //  fromUncheckedBinaryType :: ((Type, Type) -> Type) ->
+  //                             (Type -> Type -> Type)
+  function fromUncheckedBinaryType(typeConstructor) {
+    var t = typeConstructor(Unknown, Unknown);
+    var _1 = t.types.$1.extractor;
+    var _2 = t.types.$2.extractor;
+    return CheckedBinaryType(t.name, t.url, t._test, _1, _2);
+  }
+
+  return {
+    __: __,
+    Any: Any,
+    AnyFunction: AnyFunction,
+    Arguments: Arguments,
+    Array: fromUncheckedUnaryType(Array_),
+    Boolean: Boolean_,
+    Date: Date_,
+    Error: Error_,
+    FiniteNumber: FiniteNumber,
+    Function: def('Function', {}, [Array_(Type), Type], Function_),
+    GlobalRegExp: GlobalRegExp,
+    Integer: Integer,
+    NegativeFiniteNumber: NegativeFiniteNumber,
+    NegativeInteger: NegativeInteger,
+    NegativeNumber: NegativeNumber,
+    NonGlobalRegExp: NonGlobalRegExp,
+    NonZeroFiniteNumber: NonZeroFiniteNumber,
+    NonZeroInteger: NonZeroInteger,
+    NonZeroValidNumber: NonZeroValidNumber,
+    Null: Null,
+    Nullable: fromUncheckedUnaryType(Nullable),
+    Number: Number_,
+    Object: Object_,
+    Pair: fromUncheckedBinaryType(Pair),
+    PositiveFiniteNumber: PositiveFiniteNumber,
+    PositiveInteger: PositiveInteger,
+    PositiveNumber: PositiveNumber,
+    RegExp: RegExp_,
+    RegexFlags: RegexFlags,
+    StrMap: fromUncheckedUnaryType(StrMap),
+    String: String_,
+    Undefined: Undefined,
+    Unknown: Unknown,
+    ValidDate: ValidDate,
+    ValidNumber: ValidNumber,
+    env: env,
+    create: create,
+    test: def('test', {}, [Array_(Type), Type, Any, Boolean_], test),
+    NullaryType: CheckedNullaryType,
+    UnaryType: CheckedUnaryType,
+    BinaryType: CheckedBinaryType,
+    EnumType: CheckedEnumType,
+    RecordType: CheckedRecordType,
+    TypeVariable: CheckedTypeVariable,
+    UnaryTypeVariable: CheckedUnaryTypeVariable,
+    BinaryTypeVariable: CheckedBinaryTypeVariable
+  };
 
 }));
 
