@@ -35,7 +35,7 @@ function throws(f, type, message) {
 }
 
 //  version :: String
-var version = '0.7.0';  // updated programmatically
+var version = '0.8.0';  // updated programmatically
 
 
 var def = $.create({checkTypes: true, env: $.env});
