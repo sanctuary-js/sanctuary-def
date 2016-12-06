@@ -30,7 +30,6 @@ lint:
 	  --global module \
 	  --global require \
 	  --global self \
-	  --rule 'func-style: [error, declaration]' \
 	  --rule 'max-len: [error, {code: 79, ignorePattern: "^ *//(#|[.] //) ", ignoreUrls: true}]' \
 	  -- index.js
 	$(ESLINT) \
