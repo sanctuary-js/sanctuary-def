@@ -9,30 +9,30 @@ var $ = require('..');
 
 
 //  always :: a -> () -> a
-var always = function(x) { return function() { return x; }; };
+function always(x) { return function() { return x; }; }
 
 //  eq :: (a, b) -> Undefined !
-var eq = function(actual, expected) {
-  assert.strictEqual(arguments.length, 2);
+function eq(actual, expected) {
+  assert.strictEqual(arguments.length, eq.length);
   assert.strictEqual(Z.toString(actual), Z.toString(expected));
   assert.strictEqual(Z.equals(actual, expected), true);
-};
+}
 
 //  identity :: a -> a
-var identity = function(x) { return x; };
+function identity(x) { return x; }
 
 //  length :: { length :: a } -> a
-var length = function(x) { return x.length; };
+function length(x) { return x.length; }
 
 //  notImplemented :: () -> Undefined !
-var notImplemented = function() { throw new Error('Not implemented'); };
+function notImplemented() { throw new Error('Not implemented'); }
 
 //  throws :: (Function, TypeRep a, String) -> Undefined
-var throws = function(f, type, message) {
+function throws(f, type, message) {
   assert.throws(f, function(err) {
     return err.constructor === type && err.message === message;
   });
-};
+}
 
 //  version :: String
 var version = '0.7.0';  // updated programmatically
@@ -46,7 +46,7 @@ var c = $.TypeVariable('c');
 var d = $.TypeVariable('d');
 var m = $.UnaryTypeVariable('m');
 
-var list = function() { return Array.prototype.slice.call(arguments); };
+function list() { return Array.prototype.slice.call(arguments); }
 
 var $0 = def('$0', {}, [$.Array(a)], list);
 var $1 = def('$1', {}, [a, $.Array(a)], list);
@@ -98,7 +98,7 @@ var Nothing = {
 };
 
 //  Just :: a -> Maybe a
-var Just = function Just(x) {
+function Just(x) {
   return {
     '@@type': 'my-package/Maybe',
     'fantasy-land/equals': function(other) { return other.isJust && Z.equals(other.value, x); },
@@ -114,7 +114,7 @@ var Just = function Just(x) {
     toString: always('Just(' + Z.toString(x) + ')'),
     value: x
   };
-};
+}
 
 //  Maybe :: Type
 var Maybe = $.UnaryType(
@@ -130,7 +130,7 @@ var EitherTypeDict = {
 };
 
 //  Left :: a -> Either a b
-var Left = function Left(x) {
+function Left(x) {
   return {
     '@@type': 'my-package/Either',
     'fantasy-land/equals': function(other) { return other.isLeft && Z.equals(other.value, x); },
@@ -145,10 +145,10 @@ var Left = function Left(x) {
     toString: always('Left(' + Z.toString(x) + ')'),
     value: x
   };
-};
+}
 
 //  Right :: b -> Either a b
-var Right = function Right(x) {
+function Right(x) {
   return {
     '@@type': 'my-package/Either',
     'fantasy-land/equals': function(other) { return other.isRight && Z.equals(other.value, x); },
@@ -163,7 +163,7 @@ var Right = function Right(x) {
     toString: always('Right(' + Z.toString(x) + ')'),
     value: x
   };
-};
+}
 
 //  Either :: Type
 var Either = $.BinaryType(
@@ -176,7 +176,7 @@ var Either = $.BinaryType(
 
 
 //  Pair :: a -> b -> Pair a b
-var Pair = function(x, y) {
+function Pair(x, y) {
   return {
     0: x,
     1: y,
@@ -187,7 +187,7 @@ var Pair = function(x, y) {
     length: 2,
     toString: always('Pair(' + Z.toString(x) + ', ' + Z.toString(y) + ')')
   };
-};
+}
 
 //  $Pair :: Type
 var $Pair = $.BinaryType(
@@ -960,7 +960,7 @@ describe('def', function() {
 
   it('supports custom types', function() {
     //  AnonJust :: a -> AnonMaybe a
-    var AnonJust = function(x) {
+    function AnonJust(x) {
       return {
         '@@type': 'my-package/AnonMaybe',
         isNothing: false,
@@ -968,7 +968,7 @@ describe('def', function() {
         toString: always('AnonJust(' + Z.toString(x) + ')'),
         value: x
       };
-    };
+    }
 
     //  AnonMaybe :: Type
     var AnonMaybe = $.UnaryType(
@@ -1323,9 +1323,9 @@ describe('def', function() {
     eq($.PositiveNumber.name, 'sanctuary-def/PositiveNumber');
     eq($.PositiveNumber.url, 'https://github.com/sanctuary-js/sanctuary-def/tree/v' + version + '#PositiveNumber');
 
-    var isPositiveNumber = function(x) {
+    function isPositiveNumber(x) {
       return $.test($.env, $.PositiveNumber, x);
-    };
+    }
     eq(isPositiveNumber(null), false);
     eq(isPositiveNumber(NaN), false);
     eq(isPositiveNumber(-1), false);
@@ -1340,9 +1340,9 @@ describe('def', function() {
     eq($.NegativeNumber.name, 'sanctuary-def/NegativeNumber');
     eq($.NegativeNumber.url, 'https://github.com/sanctuary-js/sanctuary-def/tree/v' + version + '#NegativeNumber');
 
-    var isNegativeNumber = function(x) {
+    function isNegativeNumber(x) {
       return $.test($.env, $.NegativeNumber, x);
-    };
+    }
     eq(isNegativeNumber(null), false);
     eq(isNegativeNumber(NaN), false);
     eq(isNegativeNumber(1), false);
@@ -1357,9 +1357,9 @@ describe('def', function() {
     eq($.ValidNumber.name, 'sanctuary-def/ValidNumber');
     eq($.ValidNumber.url, 'https://github.com/sanctuary-js/sanctuary-def/tree/v' + version + '#ValidNumber');
 
-    var isValidNumber = function(x) {
+    function isValidNumber(x) {
       return $.test($.env, $.ValidNumber, x);
-    };
+    }
     eq(isValidNumber(NaN), false);
     eq(isValidNumber(1), true);
     eq(isValidNumber(new Number(1)), false);
@@ -1369,9 +1369,9 @@ describe('def', function() {
     eq($.NonZeroValidNumber.name, 'sanctuary-def/NonZeroValidNumber');
     eq($.NonZeroValidNumber.url, 'https://github.com/sanctuary-js/sanctuary-def/tree/v' + version + '#NonZeroValidNumber');
 
-    var isNonZeroValidNumber = function(x) {
+    function isNonZeroValidNumber(x) {
       return $.test($.env, $.NonZeroValidNumber, x);
-    };
+    }
     eq(isNonZeroValidNumber(0), false);
     eq(isNonZeroValidNumber(-0), false);
     eq(isNonZeroValidNumber(1), true);
@@ -1382,9 +1382,9 @@ describe('def', function() {
     eq($.FiniteNumber.name, 'sanctuary-def/FiniteNumber');
     eq($.FiniteNumber.url, 'https://github.com/sanctuary-js/sanctuary-def/tree/v' + version + '#FiniteNumber');
 
-    var isFiniteNumber = function(x) {
+    function isFiniteNumber(x) {
       return $.test($.env, $.FiniteNumber, x);
-    };
+    }
     eq(isFiniteNumber(Infinity), false);
     eq(isFiniteNumber(-Infinity), false);
     eq(isFiniteNumber(1), true);
@@ -1395,9 +1395,9 @@ describe('def', function() {
     eq($.PositiveFiniteNumber.name, 'sanctuary-def/PositiveFiniteNumber');
     eq($.PositiveFiniteNumber.url, 'https://github.com/sanctuary-js/sanctuary-def/tree/v' + version + '#PositiveFiniteNumber');
 
-    var isPositiveFiniteNumber = function(x) {
+    function isPositiveFiniteNumber(x) {
       return $.test($.env, $.PositiveFiniteNumber, x);
-    };
+    }
     eq(isPositiveFiniteNumber(null), false);
     eq(isPositiveFiniteNumber(NaN), false);
     eq(isPositiveFiniteNumber(Infinity), false);
@@ -1412,9 +1412,9 @@ describe('def', function() {
     eq($.NegativeFiniteNumber.name, 'sanctuary-def/NegativeFiniteNumber');
     eq($.NegativeFiniteNumber.url, 'https://github.com/sanctuary-js/sanctuary-def/tree/v' + version + '#NegativeFiniteNumber');
 
-    var isNegativeFiniteNumber = function(x) {
+    function isNegativeFiniteNumber(x) {
       return $.test($.env, $.NegativeFiniteNumber, x);
-    };
+    }
     eq(isNegativeFiniteNumber(null), false);
     eq(isNegativeFiniteNumber(NaN), false);
     eq(isNegativeFiniteNumber(-Infinity), false);
@@ -1429,9 +1429,9 @@ describe('def', function() {
     eq($.NonZeroFiniteNumber.name, 'sanctuary-def/NonZeroFiniteNumber');
     eq($.NonZeroFiniteNumber.url, 'https://github.com/sanctuary-js/sanctuary-def/tree/v' + version + '#NonZeroFiniteNumber');
 
-    var isNonZeroFiniteNumber = function(x) {
+    function isNonZeroFiniteNumber(x) {
       return $.test($.env, $.NonZeroFiniteNumber, x);
-    };
+    }
     eq(isNonZeroFiniteNumber(0), false);
     eq(isNonZeroFiniteNumber(-0), false);
     eq(isNonZeroFiniteNumber(Infinity), false);
@@ -1444,9 +1444,9 @@ describe('def', function() {
     eq($.Integer.name, 'sanctuary-def/Integer');
     eq($.Integer.url, 'https://github.com/sanctuary-js/sanctuary-def/tree/v' + version + '#Integer');
 
-    var isInteger = function(x) {
+    function isInteger(x) {
       return $.test($.env, $.Integer, x);
-    };
+    }
     eq(isInteger(3.14), false);
     eq(isInteger(9007199254740992), false);
     eq(isInteger(-9007199254740992), false);
@@ -1458,9 +1458,9 @@ describe('def', function() {
     eq($.NonZeroInteger.name, 'sanctuary-def/NonZeroInteger');
     eq($.NonZeroInteger.url, 'https://github.com/sanctuary-js/sanctuary-def/tree/v' + version + '#NonZeroInteger');
 
-    var isNonZeroInteger = function(x) {
+    function isNonZeroInteger(x) {
       return $.test($.env, $.NonZeroInteger, x);
-    };
+    }
     eq(isNonZeroInteger(0), false);
     eq(isNonZeroInteger(-0), false);
     eq(isNonZeroInteger(3.14), false);
@@ -1472,9 +1472,9 @@ describe('def', function() {
     eq($.PositiveInteger.name, 'sanctuary-def/PositiveInteger');
     eq($.PositiveInteger.url, 'https://github.com/sanctuary-js/sanctuary-def/tree/v' + version + '#PositiveInteger');
 
-    var isPositiveInteger = function(x) {
+    function isPositiveInteger(x) {
       return $.test($.env, $.PositiveInteger, x);
-    };
+    }
     eq(isPositiveInteger(1.5), false);
     eq(isPositiveInteger(-1), false);
     eq(isPositiveInteger(1), true);
@@ -1485,9 +1485,9 @@ describe('def', function() {
     eq($.NegativeInteger.name, 'sanctuary-def/NegativeInteger');
     eq($.NegativeInteger.url, 'https://github.com/sanctuary-js/sanctuary-def/tree/v' + version + '#NegativeInteger');
 
-    var isNegativeInteger = function(x) {
+    function isNegativeInteger(x) {
       return $.test($.env, $.NegativeInteger, x);
-    };
+    }
     eq(isNegativeInteger(-1.5), false);
     eq(isNegativeInteger(1), false);
     eq(isNegativeInteger(-1), true);
@@ -1498,9 +1498,9 @@ describe('def', function() {
     eq($.GlobalRegExp.name, 'sanctuary-def/GlobalRegExp');
     eq($.GlobalRegExp.url, 'https://github.com/sanctuary-js/sanctuary-def/tree/v' + version + '#GlobalRegExp');
 
-    var isGlobalRegExp = function(x) {
+    function isGlobalRegExp(x) {
       return $.test($.env, $.GlobalRegExp, x);
-    };
+    }
     eq(isGlobalRegExp(null), false);
     eq(isGlobalRegExp({global: true}), false);
     eq(isGlobalRegExp(/x/), false);
@@ -1517,9 +1517,9 @@ describe('def', function() {
     eq($.NonGlobalRegExp.name, 'sanctuary-def/NonGlobalRegExp');
     eq($.NonGlobalRegExp.url, 'https://github.com/sanctuary-js/sanctuary-def/tree/v' + version + '#NonGlobalRegExp');
 
-    var isNonGlobalRegExp = function(x) {
+    function isNonGlobalRegExp(x) {
       return $.test($.env, $.NonGlobalRegExp, x);
-    };
+    }
     eq(isNonGlobalRegExp(null), false);
     eq(isNonGlobalRegExp({global: false}), false);
     eq(isNonGlobalRegExp(/x/g), false);
@@ -1533,9 +1533,9 @@ describe('def', function() {
   });
 
   it('supports the "RegexFlags" type', function() {
-    var isRegexFlags = function(x) {
+    function isRegexFlags(x) {
       return $.test($.env, $.RegexFlags, x);
-    };
+    }
     eq(isRegexFlags(''), true);
     eq(isRegexFlags('g'), true);
     eq(isRegexFlags('i'), true);
@@ -1689,10 +1689,10 @@ describe('def', function() {
     //  f :: Null -> Null
     var f = def('f', {}, [$.Null, $.Null], identity);
 
-    var Point = function Point(x, y) {
+    function Point(x, y) {
       this.x = x;
       this.y = y;
-    };
+    }
     Point.prototype._private = true;
 
     var o1 = {id: 1};
@@ -2338,7 +2338,7 @@ describe('def', function() {
         });
 
     //  h :: Integer -> Maybe (Pair Integer Integer)
-    var h = function(n) { return n >= 5 ? Nothing : Just([n, n + 1]); };
+    function h(n) { return n >= 5 ? Nothing : Just([n, n + 1]); }
 
     eq(unfoldr(h, 5), []);
     eq(unfoldr(h, 4), [4]);
@@ -2484,7 +2484,7 @@ describe('def', function() {
         Z.filterM);
 
     //  even :: Integer -> Boolean
-    var even = function(x) { return x % 2 === 0; };
+    function even(x) { return x % 2 === 0; }
 
     eq(filter(even, Nothing), Nothing);
     eq(filter(even, Just(9)), Nothing);
