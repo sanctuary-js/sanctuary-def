@@ -1988,7 +1988,7 @@
     return new TypeError(trimTrailingSpaces(
       'Function applied to too many arguments\n\n' +
       typeSignature(typeInfo) + '\n\n' +
-      typeInfo.name + ' expected' +
+      q(typeInfo.name) + ' expected' +
       (numArgsExpected > 0 ? ' at most ' : ' ') + numArgs(numArgsExpected) +
       ' but received ' + numArgs(numArgsReceived) + '.\n'
     ));
