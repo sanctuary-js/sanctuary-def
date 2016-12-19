@@ -466,7 +466,7 @@ describe('def', function() {
            '\n' +
            '$0 :: () -> Array a\n' +
            '\n' +
-           '$0 expected zero arguments but received one argument.\n');
+           '‘$0’ expected zero arguments but received one argument.\n');
 
     throws(function() { $1(1, 2); },
            TypeError,
@@ -474,7 +474,7 @@ describe('def', function() {
            '\n' +
            '$1 :: a -> Array a\n' +
            '\n' +
-           '$1 expected at most one argument but received two arguments.\n');
+           '‘$1’ expected at most one argument but received two arguments.\n');
 
     throws(function() { $2(1, 2, 3); },
            TypeError,
@@ -482,7 +482,7 @@ describe('def', function() {
            '\n' +
            '$2 :: a -> a -> Array a\n' +
            '\n' +
-           '$2 expected at most two arguments but received three arguments.\n');
+           '‘$2’ expected at most two arguments but received three arguments.\n');
 
     throws(function() { $3(1, 2, 3, 4); },
            TypeError,
@@ -490,7 +490,7 @@ describe('def', function() {
            '\n' +
            '$3 :: a -> a -> a -> Array a\n' +
            '\n' +
-           '$3 expected at most three arguments but received four arguments.\n');
+           '‘$3’ expected at most three arguments but received four arguments.\n');
 
     throws(function() { $4(1, 2, 3, 4, 5); },
            TypeError,
@@ -498,7 +498,7 @@ describe('def', function() {
            '\n' +
            '$4 :: a -> a -> a -> a -> Array a\n' +
            '\n' +
-           '$4 expected at most four arguments but received five arguments.\n');
+           '‘$4’ expected at most four arguments but received five arguments.\n');
 
     throws(function() { $5(1, 2, 3, 4, 5, 6); },
            TypeError,
@@ -506,7 +506,7 @@ describe('def', function() {
            '\n' +
            '$5 :: a -> a -> a -> a -> a -> Array a\n' +
            '\n' +
-           '$5 expected at most five arguments but received six arguments.\n');
+           '‘$5’ expected at most five arguments but received six arguments.\n');
 
     throws(function() { $6(1, 2, 3, 4, 5, 6, 7); },
            TypeError,
@@ -514,7 +514,7 @@ describe('def', function() {
            '\n' +
            '$6 :: a -> a -> a -> a -> a -> a -> Array a\n' +
            '\n' +
-           '$6 expected at most six arguments but received seven arguments.\n');
+           '‘$6’ expected at most six arguments but received seven arguments.\n');
 
     throws(function() { $7(1, 2, 3, 4, 5, 6, 7, 8); },
            TypeError,
@@ -522,7 +522,7 @@ describe('def', function() {
            '\n' +
            '$7 :: a -> a -> a -> a -> a -> a -> a -> Array a\n' +
            '\n' +
-           '$7 expected at most seven arguments but received eight arguments.\n');
+           '‘$7’ expected at most seven arguments but received eight arguments.\n');
 
     throws(function() { $8(1, 2, 3, 4, 5, 6, 7, 8, 9); },
            TypeError,
@@ -530,7 +530,7 @@ describe('def', function() {
            '\n' +
            '$8 :: a -> a -> a -> a -> a -> a -> a -> a -> Array a\n' +
            '\n' +
-           '$8 expected at most eight arguments but received nine arguments.\n');
+           '‘$8’ expected at most eight arguments but received nine arguments.\n');
 
     throws(function() { $9(1, 2, 3, 4, 5, 6, 7, 8, 9, 10); },
            TypeError,
@@ -538,7 +538,7 @@ describe('def', function() {
            '\n' +
            '$9 :: a -> a -> a -> a -> a -> a -> a -> a -> a -> Array a\n' +
            '\n' +
-           '$9 expected at most nine arguments but received 10 arguments.\n');
+           '‘$9’ expected at most nine arguments but received 10 arguments.\n');
   });
 
   it('returns a function which type checks its arguments', function() {
