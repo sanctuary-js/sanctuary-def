@@ -1356,7 +1356,90 @@ describe('def', function() {
            'Since there is no type of which all the above values are members, the type-variable constraint has been violated.\n');
   });
 
-  it('supports the "ValidDate" type', function() {
+  it('provides the "Any" type', function() {
+    eq($.Any.name, 'sanctuary-def/Any');
+    eq($.Any.url, 'https://github.com/sanctuary-js/sanctuary-def/tree/v' + version + '#Any');
+  });
+
+  it('provides the "AnyFunction" type', function() {
+    eq($.AnyFunction.name, 'Function');
+    eq($.AnyFunction.url, 'https://github.com/sanctuary-js/sanctuary-def/tree/v' + version + '#Function');
+  });
+
+  it('provides the "Arguments" type', function() {
+    eq($.Arguments.name, 'Arguments');
+    eq($.Arguments.url, 'https://github.com/sanctuary-js/sanctuary-def/tree/v' + version + '#Arguments');
+  });
+
+  it('provides the "Array" type constructor', function() {
+    eq($.Array(a).name, 'Array');
+    eq($.Array(a).url, 'https://github.com/sanctuary-js/sanctuary-def/tree/v' + version + '#Array');
+  });
+
+  it('provides the "Boolean" type', function() {
+    eq($.Boolean.name, 'Boolean');
+    eq($.Boolean.url, 'https://github.com/sanctuary-js/sanctuary-def/tree/v' + version + '#Boolean');
+  });
+
+  it('provides the "Date" type', function() {
+    eq($.Date.name, 'Date');
+    eq($.Date.url, 'https://github.com/sanctuary-js/sanctuary-def/tree/v' + version + '#Date');
+  });
+
+  it('provides the "Error" type', function() {
+    eq($.Error.name, 'Error');
+    eq($.Error.url, 'https://github.com/sanctuary-js/sanctuary-def/tree/v' + version + '#Error');
+  });
+
+  it('provides the "Function" type constructor', function() {
+    eq($.Function([a, a]).name, '');
+    eq($.Function([a, a]).url, '');
+  });
+
+  it('provides the "Null" type', function() {
+    eq($.Null.name, 'Null');
+    eq($.Null.url, 'https://github.com/sanctuary-js/sanctuary-def/tree/v' + version + '#Null');
+  });
+
+  it('provides the "Nullable" type constructor', function() {
+    eq($.Nullable(a).name, 'sanctuary-def/Nullable');
+    eq($.Nullable(a).url, 'https://github.com/sanctuary-js/sanctuary-def/tree/v' + version + '#Nullable');
+  });
+
+  it('provides the "Number" type', function() {
+    eq($.Number.name, 'Number');
+    eq($.Number.url, 'https://github.com/sanctuary-js/sanctuary-def/tree/v' + version + '#Number');
+  });
+
+  it('provides the "Object" type', function() {
+    eq($.Object.name, 'Object');
+    eq($.Object.url, 'https://github.com/sanctuary-js/sanctuary-def/tree/v' + version + '#Object');
+  });
+
+  it('provides the "RegExp" type', function() {
+    eq($.RegExp.name, 'RegExp');
+    eq($.RegExp.url, 'https://github.com/sanctuary-js/sanctuary-def/tree/v' + version + '#RegExp');
+  });
+
+  it('provides the "String" type', function() {
+    eq($.String.name, 'String');
+    eq($.String.url, 'https://github.com/sanctuary-js/sanctuary-def/tree/v' + version + '#String');
+  });
+
+  it('provides the "Undefined" type', function() {
+    eq($.Undefined.name, 'Undefined');
+    eq($.Undefined.url, 'https://github.com/sanctuary-js/sanctuary-def/tree/v' + version + '#Undefined');
+  });
+
+  it('provides the "Unknown" type', function() {
+    eq($.Unknown.name, '');
+    eq($.Unknown.url, '');
+  });
+
+  it('provides the "ValidDate" type', function() {
+    eq($.ValidDate.name, 'sanctuary-def/ValidDate');
+    eq($.ValidDate.url, 'https://github.com/sanctuary-js/sanctuary-def/tree/v' + version + '#ValidDate');
+
     //  sinceEpoch :: ValidDate -> Number
     var sinceEpoch = def('sinceEpoch',
                          {},
@@ -1380,7 +1463,7 @@ describe('def', function() {
     eq(sinceEpoch(new Date(123456)), 123.456);
   });
 
-  it('supports the "PositiveNumber" type', function() {
+  it('provides the "PositiveNumber" type', function() {
     eq($.PositiveNumber.name, 'sanctuary-def/PositiveNumber');
     eq($.PositiveNumber.url, 'https://github.com/sanctuary-js/sanctuary-def/tree/v' + version + '#PositiveNumber');
 
@@ -1397,7 +1480,7 @@ describe('def', function() {
     eq(isPositiveNumber(new Number(Infinity)), false);
   });
 
-  it('supports the "NegativeNumber" type', function() {
+  it('provides the "NegativeNumber" type', function() {
     eq($.NegativeNumber.name, 'sanctuary-def/NegativeNumber');
     eq($.NegativeNumber.url, 'https://github.com/sanctuary-js/sanctuary-def/tree/v' + version + '#NegativeNumber');
 
@@ -1414,7 +1497,7 @@ describe('def', function() {
     eq(isNegativeNumber(new Number(-Infinity)), false);
   });
 
-  it('supports the "ValidNumber" type', function() {
+  it('provides the "ValidNumber" type', function() {
     eq($.ValidNumber.name, 'sanctuary-def/ValidNumber');
     eq($.ValidNumber.url, 'https://github.com/sanctuary-js/sanctuary-def/tree/v' + version + '#ValidNumber');
 
@@ -1426,7 +1509,7 @@ describe('def', function() {
     eq(isValidNumber(new Number(1)), false);
   });
 
-  it('supports the "NonZeroValidNumber" type', function() {
+  it('provides the "NonZeroValidNumber" type', function() {
     eq($.NonZeroValidNumber.name, 'sanctuary-def/NonZeroValidNumber');
     eq($.NonZeroValidNumber.url, 'https://github.com/sanctuary-js/sanctuary-def/tree/v' + version + '#NonZeroValidNumber');
 
@@ -1439,7 +1522,7 @@ describe('def', function() {
     eq(isNonZeroValidNumber(new Number(1)), false);
   });
 
-  it('supports the "FiniteNumber" type', function() {
+  it('provides the "FiniteNumber" type', function() {
     eq($.FiniteNumber.name, 'sanctuary-def/FiniteNumber');
     eq($.FiniteNumber.url, 'https://github.com/sanctuary-js/sanctuary-def/tree/v' + version + '#FiniteNumber');
 
@@ -1452,7 +1535,7 @@ describe('def', function() {
     eq(isFiniteNumber(new Number(1)), false);
   });
 
-  it('supports the "PositiveFiniteNumber" type', function() {
+  it('provides the "PositiveFiniteNumber" type', function() {
     eq($.PositiveFiniteNumber.name, 'sanctuary-def/PositiveFiniteNumber');
     eq($.PositiveFiniteNumber.url, 'https://github.com/sanctuary-js/sanctuary-def/tree/v' + version + '#PositiveFiniteNumber');
 
@@ -1469,7 +1552,7 @@ describe('def', function() {
     eq(isPositiveFiniteNumber(new Number(0.5)), false);
   });
 
-  it('supports the "NegativeFiniteNumber" type', function() {
+  it('provides the "NegativeFiniteNumber" type', function() {
     eq($.NegativeFiniteNumber.name, 'sanctuary-def/NegativeFiniteNumber');
     eq($.NegativeFiniteNumber.url, 'https://github.com/sanctuary-js/sanctuary-def/tree/v' + version + '#NegativeFiniteNumber');
 
@@ -1486,7 +1569,7 @@ describe('def', function() {
     eq(isNegativeFiniteNumber(new Number(-0.5)), false);
   });
 
-  it('supports the "NonZeroFiniteNumber" type', function() {
+  it('provides the "NonZeroFiniteNumber" type', function() {
     eq($.NonZeroFiniteNumber.name, 'sanctuary-def/NonZeroFiniteNumber');
     eq($.NonZeroFiniteNumber.url, 'https://github.com/sanctuary-js/sanctuary-def/tree/v' + version + '#NonZeroFiniteNumber');
 
@@ -1501,7 +1584,7 @@ describe('def', function() {
     eq(isNonZeroFiniteNumber(new Number(1)), false);
   });
 
-  it('supports the "Integer" type', function() {
+  it('provides the "Integer" type', function() {
     eq($.Integer.name, 'sanctuary-def/Integer');
     eq($.Integer.url, 'https://github.com/sanctuary-js/sanctuary-def/tree/v' + version + '#Integer');
 
@@ -1515,7 +1598,7 @@ describe('def', function() {
     eq(isInteger(new Number(1)), false);
   });
 
-  it('supports the "NonZeroInteger" type', function() {
+  it('provides the "NonZeroInteger" type', function() {
     eq($.NonZeroInteger.name, 'sanctuary-def/NonZeroInteger');
     eq($.NonZeroInteger.url, 'https://github.com/sanctuary-js/sanctuary-def/tree/v' + version + '#NonZeroInteger');
 
@@ -1529,7 +1612,7 @@ describe('def', function() {
     eq(isNonZeroInteger(new Number(1)), false);
   });
 
-  it('supports the "PositiveInteger" type', function() {
+  it('provides the "PositiveInteger" type', function() {
     eq($.PositiveInteger.name, 'sanctuary-def/PositiveInteger');
     eq($.PositiveInteger.url, 'https://github.com/sanctuary-js/sanctuary-def/tree/v' + version + '#PositiveInteger');
 
@@ -1542,7 +1625,7 @@ describe('def', function() {
     eq(isPositiveInteger(new Number(1)), false);
   });
 
-  it('supports the "NegativeInteger" type', function() {
+  it('provides the "NegativeInteger" type', function() {
     eq($.NegativeInteger.name, 'sanctuary-def/NegativeInteger');
     eq($.NegativeInteger.url, 'https://github.com/sanctuary-js/sanctuary-def/tree/v' + version + '#NegativeInteger');
 
@@ -1555,7 +1638,7 @@ describe('def', function() {
     eq(isNegativeInteger(new Number(-1)), false);
   });
 
-  it('supports the "GlobalRegExp" type', function() {
+  it('provides the "GlobalRegExp" type', function() {
     eq($.GlobalRegExp.name, 'sanctuary-def/GlobalRegExp');
     eq($.GlobalRegExp.url, 'https://github.com/sanctuary-js/sanctuary-def/tree/v' + version + '#GlobalRegExp');
 
@@ -1574,7 +1657,7 @@ describe('def', function() {
     eq(isGlobalRegExp(/x/gim), true);
   });
 
-  it('supports the "NonGlobalRegExp" type', function() {
+  it('provides the "NonGlobalRegExp" type', function() {
     eq($.NonGlobalRegExp.name, 'sanctuary-def/NonGlobalRegExp');
     eq($.NonGlobalRegExp.url, 'https://github.com/sanctuary-js/sanctuary-def/tree/v' + version + '#NonGlobalRegExp');
 
@@ -1593,7 +1676,10 @@ describe('def', function() {
     eq(isNonGlobalRegExp(/x/im), true);
   });
 
-  it('supports the "RegexFlags" type', function() {
+  it('provides the "RegexFlags" type', function() {
+    eq($.RegexFlags.name, '');
+    eq($.RegexFlags.url, '');
+
     function isRegexFlags(x) {
       return $.test($.env, $.RegexFlags, x);
     }
@@ -1613,10 +1699,12 @@ describe('def', function() {
     eq(isRegexFlags('y'), false);
   });
 
-  it('supports the "StrMap" type constructor', function() {
+  it('provides the "StrMap" type constructor', function() {
     eq(typeof $.StrMap, 'function');
     eq($.StrMap.length, 1);
     eq($.StrMap.toString(), 'StrMap :: Type -> Type');
+    eq($.StrMap(a).name, 'sanctuary-def/StrMap');
+    eq($.StrMap(a).url, 'https://github.com/sanctuary-js/sanctuary-def/tree/v' + version + '#StrMap');
     eq($.StrMap(a).toString(), '(StrMap a)');
 
     //  id :: a -> a
@@ -1726,10 +1814,12 @@ describe('def', function() {
            'Since there is no type of which all the above values are members, the type-variable constraint has been violated.\n');
   });
 
-  it('supports the "Pair" type constructor', function() {
+  it('provides the "Pair" type constructor', function() {
     eq(typeof $.Pair, 'function');
     eq($.Pair.length, 2);
     eq($.Pair.toString(), 'Pair :: Type -> Type -> Type');
+    eq($.Pair(a, b).name, 'sanctuary-def/Pair');
+    eq($.Pair(a, b).url, 'https://github.com/sanctuary-js/sanctuary-def/tree/v' + version + '#Pair');
     eq($.Pair(a, b).toString(), '(Pair a b)');
     eq($.Pair(a)(b).toString(), '(Pair a b)');
 
