@@ -148,14 +148,16 @@
 
   /* istanbul ignore else */
   if (typeof module === 'object' && typeof module.exports === 'object') {
-    module.exports = f(require('sanctuary-type-classes'));
+    module.exports = f(require('sanctuary-type-classes'),
+                       require('sanctuary-type-identifiers'));
   } else if (typeof define === 'function' && define.amd != null) {
-    define(['sanctuary-type-classes'], f);
+    define(['sanctuary-type-classes', 'sanctuary-type-identifiers'], f);
   } else {
-    self.sanctuaryDef = f(self.sanctuaryTypeClasses);
+    self.sanctuaryDef = f(self.sanctuaryTypeClasses,
+                          self.sanctuaryTypeIdentifiers);
   }
 
-}(function(Z) {
+}(function(Z, type) {
 
   'use strict';
 
@@ -185,31 +187,28 @@
 
   var slice             = Array.prototype.slice;
   var hasOwnProperty    = Object.prototype.hasOwnProperty;
-  var toString          = Object.prototype.toString;
+
+  function Either(tag, value) {
+    this.isLeft = tag === 'Left';
+    this.isRight = tag === 'Right';
+    this.value = value;
+  }
+
+  Either['@@type'] = 'sanctuary-def/Either';
+
+  Either.prototype['fantasy-land/map'] = function(f) {
+    return this.isLeft ? this : Right(f(this.value));
+  };
+
+  Either.prototype['fantasy-land/chain'] = function(f) {
+    return this.isLeft ? this : f(this.value);
+  };
 
   //  Left :: a -> Either a b
-  function Left(x) {
-    return {
-      '@@type': 'sanctuary-def/Either',
-      isLeft: true,
-      isRight: false,
-      'fantasy-land/chain': function(f) { return Left(x); },
-      'fantasy-land/map': function(f) { return Left(x); },
-      value: x
-    };
-  }
+  function Left(x) { return new Either('Left', x); }
 
   //  Right :: b -> Either a b
-  function Right(x) {
-    return {
-      '@@type': 'sanctuary-def/Either',
-      isLeft: false,
-      isRight: true,
-      'fantasy-land/chain': function(f) { return f(x); },
-      'fantasy-land/map': function(f) { return Right(f(x)); },
-      value: x
-    };
-  }
+  function Right(x) { return new Either('Right', x); }
 
   //  K :: a -> b -> a
   function K(x) { return function(y) { return x; }; }
@@ -310,9 +309,9 @@
   //  stripNamespace :: String -> String
   function stripNamespace(s) { return s.slice(s.indexOf('/') + 1); }
 
-  //  createType :: ... -> Type
-  function createType(
-    typeName,   // :: String
+  //  _Type :: ... -> Type
+  function _Type(
+    type,       // :: String
     name,       // :: String
     url,        // :: String
     format,     // :: (String -> String, String -> String -> String) -> String
@@ -320,36 +319,37 @@
     keys,       // :: Array String
     types       // :: StrMap { extractor :: a -> Array b, type :: Type }
   ) {
-    function validate(x) {
-      if (!test(x)) return Left({value: x, propPath: []});
-      for (var idx = 0; idx < keys.length; idx += 1) {
-        var k = keys[idx];
-        var t = types[k];
-        for (var idx2 = 0, ys = t.extractor(x); idx2 < ys.length; idx2 += 1) {
-          var result = t.type.validate(ys[idx2]);
-          if (result.isLeft) {
-            var value = result.value.value;
-            var propPath = Z.concat([k], result.value.propPath);
-            return Left({value: value, propPath: propPath});
-          }
+    this._test = test;
+    this.format = format;
+    this.keys = keys;
+    this.name = name;
+    this.type = type;
+    this.types = types;
+    this.url = url;
+  }
+
+  _Type['@@type'] = 'sanctuary-def/Type';
+
+  _Type.prototype.validate = function(x) {
+    if (!this._test(x)) return Left({value: x, propPath: []});
+    for (var idx = 0; idx < this.keys.length; idx += 1) {
+      var k = this.keys[idx];
+      var t = this.types[k];
+      for (var idx2 = 0, ys = t.extractor(x); idx2 < ys.length; idx2 += 1) {
+        var result = t.type.validate(ys[idx2]);
+        if (result.isLeft) {
+          var value = result.value.value;
+          var propPath = Z.concat([k], result.value.propPath);
+          return Left({value: value, propPath: propPath});
         }
       }
-      return Right(x);
     }
+    return Right(x);
+  };
 
-    return {
-      '@@type': 'sanctuary-def/Type',
-      _test: function(x) { return validate(x).isRight; },
-      format: format,
-      keys: keys,
-      name: name,
-      toString: always(format(id, K(id))),
-      type: typeName,
-      types: types,
-      url: url,
-      validate: validate
-    };
-  }
+  _Type.prototype.toString = function() {
+    return this.format(id, K(id));
+  };
 
   var BINARY        = 'BINARY';
   var FUNCTION      = 'FUNCTION';
@@ -362,19 +362,12 @@
 
   //  Inconsistent :: Type
   var Inconsistent =
-  createType(INCONSISTENT, '', '', always2('???'), K(false), [], {});
+  new _Type(INCONSISTENT, '', '', always2('???'), K(false), [], {});
 
-  //  $$type :: a -> String
-  function $$type(x) {
-    return x != null && typeof x['@@type'] === 'string' ?
-      x['@@type'] :
-      toString.call(x).slice('[object '.length, -']'.length);
-  }
-
-  //  $$typeEq :: String -> a -> Boolean
-  function $$typeEq(name) {
+  //  typeEq :: String -> a -> Boolean
+  function typeEq(name) {
     return function(x) {
-      return $$type(x) === name;
+      return type(x) === name;
     };
   }
 
@@ -438,17 +431,17 @@
   //# AnyFunction :: Type
   //.
   //. Type comprising every Function value.
-  var AnyFunction = NullaryTypeWithUrl('Function', $$typeEq('Function'));
+  var AnyFunction = NullaryTypeWithUrl('Function', typeEq('Function'));
 
   //# Arguments :: Type
   //.
   //. Type comprising every [`arguments`][arguments] object.
-  var Arguments = NullaryTypeWithUrl('Arguments', $$typeEq('Arguments'));
+  var Arguments = NullaryTypeWithUrl('Arguments', typeEq('Arguments'));
 
   //# Array :: Type -> Type
   //.
   //. Constructor for homogeneous Array types.
-  var Array_ = UnaryTypeWithUrl('Array', $$typeEq('Array'), id);
+  var Array_ = UnaryTypeWithUrl('Array', typeEq('Array'), id);
 
   //# Boolean :: Type
   //.
@@ -458,13 +451,13 @@
   //# Date :: Type
   //.
   //. Type comprising every Date value.
-  var Date_ = NullaryTypeWithUrl('Date', $$typeEq('Date'));
+  var Date_ = NullaryTypeWithUrl('Date', typeEq('Date'));
 
   //# Error :: Type
   //.
   //. Type comprising every Error value, including values of more specific
   //. constructors such as [`SyntaxError`][] and [`TypeError`][].
-  var Error_ = NullaryTypeWithUrl('Error', $$typeEq('Error'));
+  var Error_ = NullaryTypeWithUrl('Error', typeEq('Error'));
 
   //# FiniteNumber :: Type
   //.
@@ -509,7 +502,7 @@
       $types[k] = {extractor: K([]), type: t};
     });
 
-    return createType(FUNCTION, '', '', format, test, $keys, $types);
+    return new _Type(FUNCTION, '', '', format, test, $keys, $types);
   }
 
   //# GlobalRegExp :: Type
@@ -597,7 +590,7 @@
   //# Null :: Type
   //.
   //. Type whose sole member is `null`.
-  var Null = NullaryTypeWithUrl('Null', $$typeEq('Null'));
+  var Null = NullaryTypeWithUrl('Null', typeEq('Null'));
 
   //# Nullable :: Type -> Type
   //.
@@ -622,7 +615,7 @@
   //.   - [`Object.create`][]; or
   //.   - the `new` operator in conjunction with `Object` or a custom
   //.     constructor function.
-  var Object_ = NullaryTypeWithUrl('Object', $$typeEq('Object'));
+  var Object_ = NullaryTypeWithUrl('Object', typeEq('Object'));
 
   //# Pair :: Type -> Type -> Type
   //.
@@ -630,7 +623,7 @@
   //. tuples. `['foo', 42]` is a member of `Pair String Number`.
   var Pair = BinaryTypeWithUrl(
     'sanctuary-def/Pair',
-    function(x) { return $$typeEq('Array')(x) && x.length === 2; },
+    function(x) { return typeEq('Array')(x) && x.length === 2; },
     function(pair) { return [pair[0]]; },
     function(pair) { return [pair[1]]; }
   );
@@ -662,7 +655,7 @@
   //# RegExp :: Type
   //.
   //. Type comprising every RegExp value.
-  var RegExp_ = NullaryTypeWithUrl('RegExp', $$typeEq('RegExp'));
+  var RegExp_ = NullaryTypeWithUrl('RegExp', typeEq('RegExp'));
 
   //# RegexFlags :: Type
   //.
@@ -704,14 +697,14 @@
   //# Undefined :: Type
   //.
   //. Type whose sole member is `undefined`.
-  var Undefined = NullaryTypeWithUrl('Undefined', $$typeEq('Undefined'));
+  var Undefined = NullaryTypeWithUrl('Undefined', typeEq('Undefined'));
 
   //# Unknown :: Type
   //.
   //. Type used internally to represent missing type information. The type of
   //. `[]`, for example, is `Array ???`. This type is exported solely for use
   //. by other Sanctuary packages.
-  var Unknown = createType(UNKNOWN, '', '', always2('???'), K(true), [], {});
+  var Unknown = new _Type(UNKNOWN, '', '', always2('???'), K(true), [], {});
 
   //# ValidDate :: Type
   //.
@@ -766,14 +759,14 @@
   var Type = NullaryType(
     'sanctuary-def/Type',
     '',
-    $$typeEq('sanctuary-def/Type')
+    typeEq('sanctuary-def/Type')
   );
 
   //  TypeClass :: Type
   var TypeClass = NullaryType(
     'sanctuary-type-classes/TypeClass',
     '',
-    $$typeEq('sanctuary-type-classes/TypeClass')
+    typeEq('sanctuary-type-classes/TypeClass')
   );
 
   //  Unchecked :: String -> Type
@@ -867,7 +860,7 @@
       }
       return Z.chain(function(t) {
         return (
-          t.name === 'sanctuary-def/Nullable' || !t._test(value) ?
+          t.name === 'sanctuary-def/Nullable' || t.validate(value).isLeft ?
             [] :
           t.type === UNARY ?
             Z.map(fromUnaryType(t),
@@ -1287,7 +1280,7 @@
     function format(outer, inner) {
       return outer(stripNamespace(name));
     }
-    return createType(NULLARY, name, url, format, test, [], {});
+    return new _Type(NULLARY, name, url, format, test, [], {});
   }
 
   var CheckedNullaryType =
@@ -1318,17 +1311,25 @@
   //. For example:
   //.
   //. ```javascript
+  //. const type = require('sanctuary-type-identifiers');
+  //.
+  //. //    maybeTypeIdent :: String
+  //. const maybeTypeIdent = 'my-package/Maybe';
+  //.
   //. //    Maybe :: Type -> Type
   //. const Maybe = $.UnaryType(
-  //.   'my-package/Maybe',
+  //.   maybeTypeIdent,
   //.   'http://example.com/my-package#Maybe',
-  //.   x => x != null && x['@@type'] === 'my-package/Maybe',
+  //.   x => type(x) === maybeTypeIdent,
   //.   maybe => maybe.isJust ? [maybe.value] : []
   //. );
   //.
+  //. //    MaybeTypeRep :: TypeRep Maybe
+  //. const MaybeTypeRep = {'@@type': maybeTypeIdent};
+  //.
   //. //    Nothing :: Maybe a
   //. const Nothing = {
-  //.   '@@type': 'my-package/Maybe',
+  //.   constructor: MaybeTypeRep,
   //.   isJust: false,
   //.   isNothing: true,
   //.   toString: () => 'Nothing',
@@ -1336,7 +1337,7 @@
   //.
   //. //    Just :: a -> Maybe a
   //. const Just = x => ({
-  //.   '@@type': 'my-package/Maybe',
+  //.   constructor: MaybeTypeRep,
   //.   isJust: true,
   //.   isNothing: false,
   //.   toString: () => 'Just(' + Z.toString(x) + ')',
@@ -1373,7 +1374,7 @@
                inner('$1')(String($1)) + outer(')');
       }
       var types = {$1: {extractor: _1, type: $1}};
-      return createType(UNARY, name, url, format, test, ['$1'], types);
+      return new _Type(UNARY, name, url, format, test, ['$1'], types);
     };
   }
 
@@ -1426,20 +1427,28 @@
   //. For example:
   //.
   //. ```javascript
+  //. const type = require('sanctuary-type-identifiers');
+  //.
+  //. //    pairTypeIdent :: String
+  //. const pairTypeIdent = 'my-package/Pair';
+  //.
   //. //    $Pair :: Type -> Type -> Type
   //. const $Pair = $.BinaryType(
-  //.   'my-package/Pair',
+  //.   pairTypeIdent,
   //.   'http://example.com/my-package#Pair',
-  //.   x => x != null && x['@@type'] === 'my-package/Pair',
+  //.   x => type(x) === pairTypeIdent,
   //.   pair => [pair[0]],
   //.   pair => [pair[1]]
   //. );
+  //.
+  //. //    PairTypeRep :: TypeRep Pair
+  //. const PairTypeRep = {'@@type': pairTypeIdent};
   //.
   //. //    Pair :: a -> b -> Pair a b
   //. const Pair = def('Pair', {}, [a, b, $Pair(a, b)], (x, y) => ({
   //.   '0': x,
   //.   '1': y,
-  //.   '@@type': 'my-package/Pair',
+  //.   constructor: PairTypeRep,
   //.   length: 2,
   //.   toString: () => 'Pair(' + Z.toString(x) + ', ' + Z.toString(y) + ')',
   //. }));
@@ -1488,7 +1497,7 @@
       }
       var types = {$1: {extractor: _1, type: $1},
                    $2: {extractor: _2, type: $2}};
-      return createType(BINARY, name, url, format, test, ['$1', '$2'], types);
+      return new _Type(BINARY, name, url, format, test, ['$1', '$2'], types);
     };
   }
 
@@ -1625,7 +1634,7 @@
       $types[k] = {extractor: function(x) { return [x[k]]; }, type: fields[k]};
     });
 
-    return createType(RECORD, '', '', format, test, keys, $types);
+    return new _Type(RECORD, '', '', format, test, keys, $types);
   }
 
   var CheckedRecordType =
@@ -1685,7 +1694,7 @@
   //. //   Since there is no type of which all the above values are members, the type-variable constraint has been violated.
   //. ```
   function TypeVariable(name) {
-    return createType(VARIABLE, name, '', always2(name), K(true), [], {});
+    return new _Type(VARIABLE, name, '', always2(name), K(true), [], {});
   }
 
   var CheckedTypeVariable =
@@ -1743,7 +1752,7 @@
         return outer('(' + name + ' ') + inner('$1')(String($1)) + outer(')');
       }
       var types = {$1: {extractor: K([]), type: $1}};
-      return createType(VARIABLE, name, '', format, K(true), ['$1'], types);
+      return new _Type(VARIABLE, name, '', format, K(true), ['$1'], types);
     };
   }
 
@@ -1778,7 +1787,7 @@
       var keys = ['$1', '$2'];
       var types = {$1: {extractor: K([]), type: $1},
                    $2: {extractor: K([]), type: $2}};
-      return createType(VARIABLE, name, '', format, K(true), keys, types);
+      return new _Type(VARIABLE, name, '', format, K(true), keys, types);
     };
   }
 

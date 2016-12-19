@@ -4,6 +4,7 @@ var assert = require('assert');
 var vm = require('vm');
 
 var Z = require('sanctuary-type-classes');
+var type = require('sanctuary-type-identifiers');
 
 var $ = require('..');
 
@@ -76,100 +77,109 @@ var Integer = $.NullaryType(
 );
 
 
-var MaybeTypeDict = {
-  'fantasy-land/empty': function() { return Nothing; },
-  'fantasy-land/of': function(x) { return Just(x); }
+function _Maybe(tag, value) {
+  this.isNothing = tag === 'Nothing';
+  this.isJust = tag === 'Just';
+  if (this.isJust) this.value = value;
+}
+
+_Maybe['@@type'] = 'my-package/Maybe';
+
+_Maybe['fantasy-land/empty'] = function() { return Nothing; };
+
+_Maybe['fantasy-land/of'] = Just;
+
+_Maybe.prototype['fantasy-land/equals'] = function(other) {
+  return this.isNothing ? other.isNothing
+                        : other.isJust && Z.equals(this.value, other.value);
+};
+
+_Maybe.prototype['fantasy-land/concat'] = notImplemented;
+
+_Maybe.prototype['fantasy-land/map'] = function(f) {
+  return this.isNothing ? this : Just(f(this.value));
+};
+
+_Maybe.prototype['fantasy-land/ap'] = notImplemented;
+
+_Maybe.prototype['fantasy-land/chain'] = function(f) {
+  return this.isNothing ? this : f(this.value);
+};
+
+_Maybe.prototype['fantasy-land/reduce'] = function(f, x) {
+  return this.isNothing ? x : f(x, this.value);
+};
+
+_Maybe.prototype.or = function(other) {
+  return this.isNothing ? other : this;
+};
+
+_Maybe.prototype.inspect =
+_Maybe.prototype.toString = function() {
+  return this.isNothing ? 'Nothing' : 'Just(' + Z.toString(this.value) + ')';
 };
 
 //  Nothing :: Maybe a
-var Nothing = {
-  '@@type': 'my-package/Maybe',
-  'fantasy-land/equals': function(other) { return other.isNothing; },
-  'fantasy-land/concat': notImplemented,
-  'fantasy-land/map': function(f) { return this; },
-  'fantasy-land/ap': notImplemented,
-  'fantasy-land/chain': function(f) { return this; },
-  'fantasy-land/reduce': function(f, initial) { return initial; },
-  constructor: MaybeTypeDict,
-  isJust: false,
-  isNothing: true,
-  or: identity,
-  toString: always('Nothing')
-};
+var Nothing = new _Maybe('Nothing');
 
 //  Just :: a -> Maybe a
-function Just(x) {
-  return {
-    '@@type': 'my-package/Maybe',
-    'fantasy-land/equals': function(other) { return other.isJust && Z.equals(other.value, x); },
-    'fantasy-land/concat': notImplemented,
-    'fantasy-land/map': function(f) { return Just(f(x)); },
-    'fantasy-land/ap': notImplemented,
-    'fantasy-land/chain': function(f) { return f(x); },
-    'fantasy-land/reduce': function(f, initial) { return f(initial, x); },
-    constructor: MaybeTypeDict,
-    isJust: true,
-    isNothing: false,
-    or: function() { return this; },
-    toString: always('Just(' + Z.toString(x) + ')'),
-    value: x
-  };
-}
+function Just(x) { return new _Maybe('Just', x); }
 
 //  Maybe :: Type
 var Maybe = $.UnaryType(
   'my-package/Maybe',
   'http://example.com/my-package#Maybe',
-  function(x) { return x != null && x['@@type'] === 'my-package/Maybe'; },
+  function(x) { return type(x) === 'my-package/Maybe'; },
   function(maybe) { return maybe.isJust ? [maybe.value] : []; }
 );
 
 
-var EitherTypeDict = {
-  'fantasy-land/of': function(x) { return Right(x); }
+function _Either(tag, value) {
+  this.isLeft = tag === 'Left';
+  this.isRight = tag === 'Right';
+  this.value = value;
+}
+
+_Either['@@type'] = 'my-package/Either';
+
+_Either['fantasy-land/of'] = Right;
+
+_Either.prototype['fantasy-land/equals'] = function(other) {
+  return this.isLeft === other.isLeft && Z.equals(this.value, other.value);
+};
+
+_Either.prototype['fantasy-land/concat'] = function(other) {
+  return this.isLeft ?
+    other.isLeft ? Left(Z.concat(this.value, other.value)) : other :
+    other.isLeft ? this : Right(Z.concat(this.value, other.value));
+};
+
+_Either.prototype['fantasy-land/map'] = notImplemented;
+
+_Either.prototype['fantasy-land/ap'] = notImplemented;
+
+_Either.prototype['fantasy-land/chain'] = notImplemented;
+
+_Either.prototype['fantasy-land/reduce'] = function(f, x) {
+  return this.isLeft ? x : f(x, this.value);
+};
+
+_Either.prototype.inspect =
+_Either.prototype.toString = function() {
+  return (this.isLeft ? 'Left' : 'Right') + '(' + Z.toString(this.value) + ')';
 };
 
 //  Left :: a -> Either a b
-function Left(x) {
-  return {
-    '@@type': 'my-package/Either',
-    'fantasy-land/equals': function(other) { return other.isLeft && Z.equals(other.value, x); },
-    'fantasy-land/concat': function(other) { return other.isLeft ? Left(Z.concat(x, other.value)) : other; },
-    'fantasy-land/map': notImplemented,
-    'fantasy-land/ap': notImplemented,
-    'fantasy-land/chain': notImplemented,
-    'fantasy-land/reduce': function(f, initial) { return initial; },
-    constructor: EitherTypeDict,
-    isLeft: true,
-    isRight: false,
-    toString: always('Left(' + Z.toString(x) + ')'),
-    value: x
-  };
-}
+function Left(x) { return new _Either('Left', x); }
 
 //  Right :: b -> Either a b
-function Right(x) {
-  return {
-    '@@type': 'my-package/Either',
-    'fantasy-land/equals': function(other) { return other.isRight && Z.equals(other.value, x); },
-    'fantasy-land/concat': function(other) { return other.isRight ? Right(Z.concat(x, other.value)) : this; },
-    'fantasy-land/map': notImplemented,
-    'fantasy-land/ap': notImplemented,
-    'fantasy-land/chain': notImplemented,
-    'fantasy-land/reduce': function(f, initial) { return f(initial, x); },
-    constructor: EitherTypeDict,
-    isLeft: false,
-    isRight: true,
-    toString: always('Right(' + Z.toString(x) + ')'),
-    value: x
-  };
-}
+function Right(x) { return new _Either('Right', x); }
 
 //  Either :: Type
 var Either = $.BinaryType(
   'my-package/Either',
   'http://example.com/my-package#Either',
-  function(x) { return x != null && x['@@type'] === 'my-package/Either'; },
+  function(x) { return type(x) === 'my-package/Either'; },
   function(either) { return either.isLeft ? [either.value] : []; },
   function(either) { return either.isRight ? [either.value] : []; }
 );
@@ -177,23 +187,37 @@ var Either = $.BinaryType(
 
 //  Pair :: a -> b -> Pair a b
 function Pair(x, y) {
-  return {
-    0: x,
-    1: y,
-    '@@type': 'my-package/Pair',
-    'fantasy-land/equals': function(other) { return Z.equals(other[0], x) && Z.equals(other[1], y); },
-    'fantasy-land/map': function(f) { return Pair(x, f(y)); },
-    'fantasy-land/bimap': function(f, g) { return Pair(f(x), g(y)); },
-    length: 2,
-    toString: always('Pair(' + Z.toString(x) + ', ' + Z.toString(y) + ')')
-  };
+  if (!(this instanceof Pair)) return new Pair(x, y);
+  this[0] = x;
+  this[1] = y;
 }
+
+Pair['@@type'] = 'my-package/Pair';
+
+Pair.prototype['fantasy-land/equals'] = function(other) {
+  return Z.equals(this[0], other[0]) && Z.equals(this[1], other[1]);
+};
+
+Pair.prototype['fantasy-land/map'] = function(f) {
+  return Pair(this[0], f(this[1]));
+};
+
+Pair.prototype['fantasy-land/bimap'] = function(f, g) {
+  return Pair(f(this[0]), g(this[1]));
+};
+
+Pair.prototype.length = 2;
+
+Pair.prototype.inspect =
+Pair.prototype.toString = function() {
+  return 'Pair(' + Z.toString(this[0]) + ', ' + Z.toString(this[1]) + ')';
+};
 
 //  $Pair :: Type
 var $Pair = $.BinaryType(
   'my-package/Pair',
   'http://example.com/my-package#Pair',
-  function(x) { return x != null && x['@@type'] === 'my-package/Pair'; },
+  function(x) { return type(x) === 'my-package/Pair'; },
   function(pair) { return [pair[0]]; },
   function(pair) { return [pair[1]]; }
 );
@@ -995,61 +1019,20 @@ describe('def', function() {
   });
 
   it('supports custom types', function() {
-    //  AnonJust :: a -> AnonMaybe a
-    function AnonJust(x) {
-      return {
-        '@@type': 'my-package/AnonMaybe',
-        isNothing: false,
-        isJust: true,
-        toString: always('AnonJust(' + Z.toString(x) + ')'),
-        value: x
-      };
-    }
-
-    //  AnonMaybe :: Type
-    var AnonMaybe = $.UnaryType(
-      'my-package/AnonMaybe',
-      'http://example.com/my-package#AnonMaybe',
-      function(x) { return x != null && x['@@type'] === 'my-package/AnonMaybe'; },
-      function(maybe) { return maybe.isJust ? [maybe.value] : []; }
-    );
-
-    //  even :: Integer -> Boolean
-    var even = def('even', {}, [Integer, $.Boolean], function(x) {
-      return x % 2 === 0;
-    });
-
-    eq(even(1), false);
-    eq(even(2), true);
-
-    throws(function() { even(0.5); },
-           TypeError,
-           'Invalid value\n' +
-           '\n' +
-           'even :: Integer -> Boolean\n' +
-           '        ^^^^^^^\n' +
-           '           1\n' +
-           '\n' +
-           '1)  0.5 :: Number\n' +
-           '\n' +
-           'The value at position 1 is not a member of ‘Integer’.\n' +
-           '\n' +
-           'See http://example.com/my-package#Integer for information about the my-package/Integer type.\n');
-
-    //  fromMaybe :: a -> AnonMaybe a
+    //  fromMaybe :: a -> Maybe a
     var fromMaybe =
     def('fromMaybe',
         {},
-        [a, AnonMaybe(a), a],
+        [a, Maybe(a), a],
         function(x, maybe) { return maybe.isJust ? maybe.value : x; });
 
-    throws(function() { fromMaybe('x', AnonJust(null)); },
+    throws(function() { fromMaybe('x', Just(null)); },
            TypeError,
            'Type-variable constraint violation\n' +
            '\n' +
-           'fromMaybe :: a -> AnonMaybe a -> a\n' +
-           '             ^              ^\n' +
-           '             1              2\n' +
+           'fromMaybe :: a -> Maybe a -> a\n' +
+           '             ^          ^\n' +
+           '             1          2\n' +
            '\n' +
            '1)  "x" :: String\n' +
            '\n' +
@@ -1364,6 +1347,16 @@ describe('def', function() {
   it('provides the "AnyFunction" type', function() {
     eq($.AnyFunction.name, 'Function');
     eq($.AnyFunction.url, 'https://github.com/sanctuary-js/sanctuary-def/tree/v' + version + '#Function');
+
+    function Identity(x) { this.value = x; }
+    Identity['@@type'] = 'my-package/Identity';
+
+    function isAnyFunction(x) {
+      return $.test($.env, $.AnyFunction, x);
+    }
+    eq(isAnyFunction(null), false);
+    eq(isAnyFunction(Math.abs), true);
+    eq(isAnyFunction(Identity), true);
   });
 
   it('provides the "Arguments" type', function() {
