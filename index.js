@@ -243,6 +243,13 @@
   //  last :: Array a -> a
   function last(xs) { return xs[xs.length - 1]; }
 
+  //  memberOf :: Array a -> a -> Boolean
+  function memberOf(xs) {
+    return function(y) {
+      return xs.some(function(x) { return Z.equals(x, y); });
+    };
+  }
+
   //  or :: (Array a, Array a) -> Array a
   function or(xs, ys) { return isEmpty(xs) ? ys : xs; }
 
@@ -345,7 +352,6 @@
   }
 
   var BINARY        = 'BINARY';
-  var ENUM          = 'ENUM';
   var FUNCTION      = 'FUNCTION';
   var INCONSISTENT  = 'INCONSISTENT';
   var NULLARY       = 'NULLARY';
@@ -389,6 +395,11 @@
   //  NullaryTypeWithUrl :: (String, Any -> Boolean) -> Type
   function NullaryTypeWithUrl(name, test) {
     return NullaryType(name, functionUrl(name), test);
+  }
+
+  //  EnumTypeWithUrl :: (String, Array Any) -> Type
+  function EnumTypeWithUrl(name, members) {
+    return EnumType(name, functionUrl(name), members);
   }
 
   //  UnaryTypeWithUrl ::
@@ -665,7 +676,10 @@
   //.   - `'gm'`
   //.   - `'im'`
   //.   - `'gim'`
-  var RegexFlags = EnumType(['', 'g', 'i', 'm', 'gi', 'gm', 'im', 'gim']);
+  var RegexFlags = EnumTypeWithUrl(
+    'sanctuary-def/RegexFlags',
+    ['', 'g', 'i', 'm', 'gi', 'gm', 'im', 'gim']
+  );
 
   //# StrMap :: Type -> Type
   //.
@@ -1510,62 +1524,34 @@
     return $types;
   }
 
-  //# EnumType :: Array Any -> Type
+  //# EnumType :: String -> String -> Array Any -> Type
   //.
-  //. `EnumType` is used to construct [enumerated types][].
+  //. Type constructor for [enumerated types][] (such as [`RegexFlags`][]).
   //.
-  //. To define an enumerated type one must provide:
+  //. To define an enumerated type `t` one must provide:
+  //.
+  //.   - the name of `t` (exposed as `t.name`);
+  //.
+  //.   - the documentation URL of `t` (exposed as `t.url`); and
   //.
   //.   - an array of distinct values.
   //.
   //. For example:
   //.
   //. ```javascript
-  //. //    TimeUnit :: Type
-  //. const TimeUnit =
-  //. $.EnumType(['milliseconds', 'seconds', 'minutes', 'hours']);
-  //.
-  //. //    convertTo :: TimeUnit -> ValidDate -> ValidNumber
-  //. const convertTo =
-  //. def('convertTo',
-  //.     {},
-  //.     [TimeUnit, $.ValidDate, $.ValidNumber],
-  //.     function recur(unit, date) {
-  //.       switch (unit) {
-  //.         case 'milliseconds': return date.valueOf();
-  //.         case 'seconds':      return recur('milliseconds', date) / 1000;
-  //.         case 'minutes':      return recur('seconds', date) / 60;
-  //.         case 'hours':        return recur('minutes', date) / 60;
-  //.       }
-  //.     });
-  //.
-  //. convertTo('seconds', new Date(1000));
-  //. // => 1
-  //.
-  //. convertTo('days', new Date(1000));
-  //. // ! TypeError: Invalid value
-  //. //
-  //. //   convertTo :: ("milliseconds" | "seconds" | "minutes" | "hours") -> ValidDate -> ValidNumber
-  //. //                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  //. //                                        1
-  //. //
-  //. //   1)  "days" :: String
-  //. //
-  //. //   The value at position 1 is not a member of ‘("milliseconds" | "seconds" | "minutes" | "hours")’.
+  //. //    Denomination :: Type
+  //. const Denomination = $.EnumType(
+  //.   'my-package/Denomination',
+  //.   'http://example.com/my-package#Denomination',
+  //.   [10, 20, 50, 100, 200]
+  //. );
   //. ```
-  function EnumType(members) {
-    function format(outer, inner) {
-      return outer('(' + Z.map(Z.toString, members).join(' | ') + ')');
-    }
-
-    function test(x) {
-      return members.some(function(member) { return Z.equals(x, member); });
-    }
-
-    return createType(ENUM, '', '', format, test, [], {});
+  function EnumType(name, url, members) {
+    return NullaryType(name, url, memberOf(members));
   }
 
-  var CheckedEnumType = def('EnumType', {}, [Array_(Any), Type], EnumType);
+  var CheckedEnumType =
+  def('EnumType', {}, [String_, String_, Array_(Any), Type], EnumType);
 
   //# RecordType :: StrMap Type -> Type
   //.
@@ -2469,6 +2455,7 @@
 //. [`Object.create`]:      https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/create
 //. [`Pair`]:               #Pair
 //. [`RegExp`]:             #RegExp
+//. [`RegexFlags`]:         #RegexFlags
 //. [`StrMap`]:             #StrMap
 //. [`String`]:             #String
 //. [`SyntaxError`]:        https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/SyntaxError
