@@ -1060,11 +1060,11 @@ describe('def', function() {
 
   it('supports enumerated types', function() {
     eq(typeof $.EnumType, 'function');
-    eq($.EnumType.length, 1);
-    eq($.EnumType.toString(), 'EnumType :: Array Any -> Type');
+    eq($.EnumType.length, 3);
+    eq($.EnumType.toString(), 'EnumType :: String -> String -> Array Any -> Type');
 
     //  TimeUnit :: Type
-    var TimeUnit = $.EnumType(['milliseconds', 'seconds', 'minutes', 'hours']);
+    var TimeUnit = $.EnumType('my-package/TimeUnit', '', ['milliseconds', 'seconds', 'minutes', 'hours']);
 
     //  convertTo :: TimeUnit -> ValidDate -> ValidNumber
     var convertTo =
@@ -1084,18 +1084,18 @@ describe('def', function() {
            TypeError,
            'Invalid value\n' +
            '\n' +
-           'convertTo :: ("milliseconds" | "seconds" | "minutes" | "hours") -> ValidDate -> ValidNumber\n' +
-           '             ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n' +
-           '                                     1\n' +
+           'convertTo :: TimeUnit -> ValidDate -> ValidNumber\n' +
+           '             ^^^^^^^^\n' +
+           '                1\n' +
            '\n' +
            '1)  "days" :: String\n' +
            '\n' +
-           'The value at position 1 is not a member of ‘("milliseconds" | "seconds" | "minutes" | "hours")’.\n');
+           'The value at position 1 is not a member of ‘TimeUnit’.\n');
 
     eq(convertTo('seconds', new Date(1000)), 1);
 
     //  SillyType :: Type
-    var SillyType = $.EnumType(['foo', true, 42]);
+    var SillyType = $.EnumType('my-package/SillyType', '', ['foo', true, 42]);
 
     var _env = $.env.concat([SillyType]);
     var _def = $.create({checkTypes: true, env: _env});
@@ -1677,8 +1677,8 @@ describe('def', function() {
   });
 
   it('provides the "RegexFlags" type', function() {
-    eq($.RegexFlags.name, '');
-    eq($.RegexFlags.url, '');
+    eq($.RegexFlags.name, 'sanctuary-def/RegexFlags');
+    eq($.RegexFlags.url, 'https://github.com/sanctuary-js/sanctuary-def/tree/v' + version + '#RegexFlags');
 
     function isRegexFlags(x) {
       return $.test($.env, $.RegexFlags, x);
