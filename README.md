@@ -58,7 +58,7 @@ of type `Number` and returns a value of type `Number`.
 Applying `subtr` to two arguments gives the expected result:
 
 ```javascript
-add(5, 2);
+subtr(5, 2);
 // => 3
 ```
 
@@ -66,7 +66,7 @@ Applying `subtr` to greater than two arguments results in an exception being
 thrown:
 
 ```javascript
-add(5, 2, 1);
+subtr(5, 2, 1);
 // ! TypeError: ‘subtr’ requires two arguments; received three arguments
 ```
 
@@ -76,11 +76,11 @@ Partial application is convenient as it allows more specific functions
 to be defined in terms of more general ones:
 
 ```javascript
-//    inc :: Number -> Number
-const inc = add(1);
+//    subtrFrom10 :: Number -> Number
+const subtrFrom10 = subtr(10);
 
-inc(7);
-// => 8
+subtrFrom10(7);
+// => 3
 ```
 
 JavaScript's implicit type coercion often obfuscates the source of type
@@ -88,7 +88,7 @@ errors. Consider the following function:
 
 ```javascript
 //    _subtr :: (Number, Number) -> Number
-const _subtr = (x, y) => x + y;
+const _subtr = (x, y) => x + (-y);
 ```
 
 The type signature indicates that `_subtr` takes two arguments of type
@@ -96,8 +96,8 @@ The type signature indicates that `_subtr` takes two arguments of type
 ignored:
 
 ```javascript
-_subtr('2', '2');
-// => '22'
+_subtr('5', '2');
+// => '5-2'
 ```
 
 `subtr`, on the other hand, throws if applied to arguments of the wrong
@@ -107,7 +107,7 @@ types:
 subtr('5', '2');
 // ! TypeError: Invalid value
 //
-//   add :: Number -> Number -> Number
+//   subtr :: Number -> Number -> Number
 //          ^^^^^^
 //            1
 //
@@ -123,7 +123,7 @@ arguments have been provided), so type errors are reported early:
 subtr('X');
 // ! TypeError: Invalid value
 //
-//   add :: Number -> Number -> Number
+//   subtr :: Number -> Number -> Number
 //          ^^^^^^
 //            1
 //
