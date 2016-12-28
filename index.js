@@ -87,7 +87,7 @@
 //.
 //. ```javascript
 //. //    inc :: Number -> Number
-//. const inc = subtrFrom 10(10);
+//. const inc = subtrFrom10(10);
 //.
 //. subtrFrom10(2);
 //. // => 8
