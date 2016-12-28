@@ -47,71 +47,71 @@ const def = $.create({
 `def` is a function for defining functions. For example:
 
 ```javascript
-//    subtr :: Number -> Number -> Number
-const subtr =
-def('subtr', {}, [$.Number, $.Number, $.Number], (x, y) => x - y);
+//    add :: Number -> Number -> Number
+const add =
+def('add', {}, [$.Number, $.Number, $.Number], (x, y) => x + y);
 ```
 
-`[$.Number, $.Number, $.Number]` specifies that `subtr` takes two arguments
+`[$.Number, $.Number, $.Number]` specifies that `add` takes two arguments
 of type `Number` and returns a value of type `Number`.
 
-Applying `subtr` to two arguments gives the expected result:
+Applying `add` to two arguments gives the expected result:
 
 ```javascript
-subtr(5, 2);
-// => 3
+add(2, 2);
+// => 4
 ```
 
-Applying `subtr` to greater than two arguments results in an exception being
+Applying `add` to greater than two arguments results in an exception being
 thrown:
 
 ```javascript
-subtr(5, 2, 1);
-// ! TypeError: ‘subtr’ requires two arguments; received three arguments
+add(2, 2, 2);
+// ! TypeError: ‘add’ requires two arguments; received three arguments
 ```
 
-Applying `subtr` to fewer than two arguments results in a function
+Applying `add` to fewer than two arguments results in a function
 awaiting the remaining arguments. This is known as partial application.
 Partial application is convenient as it allows more specific functions
 to be defined in terms of more general ones:
 
 ```javascript
-//    subtrFrom10 :: Number -> Number
-const subtrFrom10 = subtr(10);
+//    inc :: Number -> Number
+const inc = add(1);
 
-subtrFrom10(7);
-// => 3
+inc(7);
+// => 8
 ```
 
 JavaScript's implicit type coercion often obfuscates the source of type
 errors. Consider the following function:
 
 ```javascript
-//    _subtr :: (Number, Number) -> Number
-const _subtr = (x, y) => x + (-y);
+//    _add :: (Number, Number) -> Number
+const _add = (x, y) => x + y;
 ```
 
-The type signature indicates that `_subtr` takes two arguments of type
+The type signature indicates that `_add` takes two arguments of type
 `Number`, but this is not enforced. This allows type errors to be silently
 ignored:
 
 ```javascript
-_subtr('5', '2');
-// => '5-2'
+_add('2', '2');
+// => '22'
 ```
 
-`subtr`, on the other hand, throws if applied to arguments of the wrong
+`add`, on the other hand, throws if applied to arguments of the wrong
 types:
 
 ```javascript
-subtr('5', '2');
+add('2', '2');
 // ! TypeError: Invalid value
 //
-//   subtr :: Number -> Number -> Number
+//   add :: Number -> Number -> Number
 //          ^^^^^^
 //            1
 //
-//   1)  "5" :: String
+//   1)  "2" :: String
 //
 //   The value at position 1 is not a member of ‘Number’.
 ```
@@ -120,10 +120,10 @@ Type checking is performed as arguments are provided (rather than once all
 arguments have been provided), so type errors are reported early:
 
 ```javascript
-subtr('X');
+add('X');
 // ! TypeError: Invalid value
 //
-//   subtr :: Number -> Number -> Number
+//   add :: Number -> Number -> Number
 //          ^^^^^^
 //            1
 //
