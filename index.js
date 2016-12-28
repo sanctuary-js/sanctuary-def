@@ -57,39 +57,39 @@
 //. `def` is a function for defining functions. For example:
 //.
 //. ```javascript
-//. //    add :: Number -> Number -> Number
-//. const add =
-//. def('add', {}, [$.Number, $.Number, $.Number], (x, y) => x + y);
+//. //    subtr :: Number -> Number -> Number
+//. const subtr =
+//. def('subtr', {}, [$.Number, $.Number, $.Number], (x, y) => x - y);
 //. ```
 //.
-//. `[$.Number, $.Number, $.Number]` specifies that `add` takes two arguments
+//. `[$.Number, $.Number, $.Number]` specifies that `subtr` takes two arguments
 //. of type `Number` and returns a value of type `Number`.
 //.
-//. Applying `add` to two arguments gives the expected result:
+//. Applying `subtr` to two arguments gives the expected result:
 //.
 //. ```javascript
-//. add(2, 2);
+//. subtr(6, 2);
 //. // => 4
 //. ```
 //.
-//. Applying `add` to greater than two arguments results in an exception being
-//. thrown:
+//. Applying `subtr` to greater than two arguments results
+//. in an exception being thrown:
 //.
 //. ```javascript
-//. add(2, 2, 2);
-//. // ! TypeError: ‘add’ requires two arguments; received three arguments
+//. subtr(6, 2, 1);
+//. // ! TypeError: ‘subtr’ requires two arguments; received three arguments
 //. ```
 //.
-//. Applying `add` to fewer than two arguments results in a function
+//. Applying `subtr` to fewer than two arguments results in a function
 //. awaiting the remaining arguments. This is known as partial application.
 //. Partial application is convenient as it allows more specific functions
 //. to be defined in terms of more general ones:
 //.
 //. ```javascript
 //. //    inc :: Number -> Number
-//. const inc = add(1);
+//. const inc = subtrFrom 10(10);
 //.
-//. inc(7);
+//. subtrFrom10(2);
 //. // => 8
 //. ```
 //.
@@ -97,31 +97,40 @@
 //. errors. Consider the following function:
 //.
 //. ```javascript
-//. //    _add :: (Number, Number) -> Number
-//. const _add = (x, y) => x + y;
+//. //    _subtr :: (Number, Number) -> Number
+//. const _subtr = (x, y) => x + (-y);
 //. ```
 //.
-//. The type signature indicates that `_add` takes two arguments of type
+//. The type signature indicates that `_subtr` takes two arguments of type
 //. `Number`, but this is not enforced. This allows type errors to be silently
 //. ignored:
 //.
 //. ```javascript
-//. _add('2', '2');
-//. // => '22'
+//. _subtr('5', '2');
+//. // => '5-2'
 //. ```
 //.
-//. `add`, on the other hand, throws if applied to arguments of the wrong
+//. Even worse, without careful type checking,
+//. a seemingly equivalent implementation leads to the different result:
+//.
+//. ```javascript
+//. const _subtr = (x, y) => x - y;
+//. _subtr('5', '2');
+//. // => 3
+//. ```
+//.
+//. `subtr`, on the other hand, throws if applied to arguments of the wrong
 //. types:
 //.
 //. ```javascript
-//. add('2', '2');
+//. subtr('5', '2');
 //. // ! TypeError: Invalid value
 //. //
-//. //   add :: Number -> Number -> Number
+//. //   subtr :: Number -> Number -> Number
 //. //          ^^^^^^
 //. //            1
 //. //
-//. //   1)  "2" :: String
+//. //   1)  "5" :: String
 //. //
 //. //   The value at position 1 is not a member of ‘Number’.
 //. ```
@@ -130,10 +139,10 @@
 //. arguments have been provided), so type errors are reported early:
 //.
 //. ```javascript
-//. add('X');
+//. subtr('X');
 //. // ! TypeError: Invalid value
 //. //
-//. //   add :: Number -> Number -> Number
+//. //   subtr :: Number -> Number -> Number
 //. //          ^^^^^^
 //. //            1
 //. //
