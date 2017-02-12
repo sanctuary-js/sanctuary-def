@@ -1,9 +1,9 @@
 ESLINT = node_modules/.bin/eslint --config node_modules/sanctuary-style/eslint-es3.json --env es3
 ISTANBUL = node_modules/.bin/istanbul
-NPM = npm
 REMEMBER_BOWER = node_modules/.bin/remember-bower
 TRANSCRIBE = node_modules/.bin/transcribe
 XYZ = node_modules/.bin/xyz --repo git@github.com:sanctuary-js/sanctuary-def.git --script scripts/prepublish
+YARN = yarn
 
 
 .PHONY: all
@@ -54,7 +54,10 @@ release-major release-minor release-patch:
 
 .PHONY: setup
 setup:
-	$(NPM) install
+	$(YARN)
+
+yarn.lock: package.json
+	$(YARN)
 
 
 .PHONY: test
