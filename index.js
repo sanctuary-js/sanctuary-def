@@ -11,9 +11,9 @@
 //. # sanctuary-def
 //.
 //. sanctuary-def is a run-time type system for JavaScript. It facilitates
-//. the definition of curried JavaScript functions which are explicit about
-//. the number of arguments to which they may be applied and the types of
-//. those arguments.
+//. the creation of [Ramda][]-style curried functions which are explicit
+//. about the number of arguments to which they may be applied and the
+//. types of those arguments.
 //.
 //. It is conventional to import the package as `$`:
 //.
@@ -2447,6 +2447,7 @@
 }));
 
 //. [FL:Semigroup]:         https://github.com/fantasyland/fantasy-land#semigroup
+//. [Ramda]:                http://ramdajs.com/
 //. [`AnyFunction`]:        #AnyFunction
 //. [`Arguments`]:          #Arguments
 //. [`Array`]:              #Array
