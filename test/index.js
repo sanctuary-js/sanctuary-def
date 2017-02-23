@@ -2862,7 +2862,7 @@ describe('test', function() {
   it('is a ternary function', function() {
     eq(typeof $.test, 'function');
     eq($.test.length, 3);
-    eq($.test.toString(), 'test :: Array Type -> Type -> Any -> Boolean');
+    eq($.test.toString(), 'test :: Array VariadicType -> Type -> Any -> Boolean');
   });
 
   it('supports nullary types', function() {
@@ -2902,6 +2902,18 @@ describe('test', function() {
     eq($.test($.env, $Pair(a, a), Pair('foo', 42)), false);
     eq($.test($.env, $Pair(a, a), Pair('foo', 'bar')), true);
     eq($.test($.env, $Pair(a, b), Pair('foo', 42)), true);
+  });
+
+  it('supports environments with unary types', function() {
+    eq($.test($.env.concat([$.Array]), $.Array(a), null), false);
+    eq($.test($.env.concat([$.Array]), $.Array(a), [1]), true);
+    eq($.test($.env.concat([$.Array]), $.Array(a), [[]]), true);
+  });
+
+  it('supports environments with binary types', function() {
+    eq($.test($.env.concat([$Pair]), $Pair(a, b), null), false);
+    eq($.test($.env.concat([$Pair]), $Pair(a, b), Pair(1, '2')), true);
+    eq($.test($.env.concat([$Pair]), $Pair(a, b), Pair(Pair(1, '2'), Pair(1, '2'))), true);
   });
 
 });
