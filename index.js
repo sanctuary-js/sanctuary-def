@@ -841,7 +841,6 @@
   function _determineActualTypes(
     loose,          // :: Boolean
     env,            // :: Array Type
-    types,          // :: Array Type
     seen,           // :: Array Object
     values          // :: Array Any
   ) {
@@ -864,15 +863,15 @@
             [] :
           t.type === UNARY ?
             Z.map(fromUnaryType(t),
-                  recur(loose, env, env, seen$, t.types.$1.extractor(value))) :
+                  recur(loose, env, seen$, t.types.$1.extractor(value))) :
           t.type === BINARY ?
             xprod(
               t,
               t.types.$1.type.type === UNKNOWN ?
-                recur(loose, env, env, seen$, t.types.$1.extractor(value)) :
+                recur(loose, env, seen$, t.types.$1.extractor(value)) :
                 [t.types.$1.type],
               t.types.$2.type.type === UNKNOWN ?
-                recur(loose, env, env, seen$, t.types.$2.extractor(value)) :
+                recur(loose, env, seen$, t.types.$2.extractor(value)) :
                 [t.types.$2.type]
             ) :
           // else
@@ -883,7 +882,7 @@
 
     return isEmpty(values) ?
       [Unknown] :
-      or(Z.reduce(refine, types, values), loose ? [Inconsistent] : []);
+      or(Z.reduce(refine, env, values), loose ? [Inconsistent] : []);
   }
 
   //  rejectInconsistent :: Array Type -> Array Type
@@ -893,17 +892,15 @@
     });
   }
 
-  //  determineActualTypesStrict ::
-  //    (Array Type, Array Type, Array Any) -> Array Type
-  function determineActualTypesStrict(env, types, values) {
-    var types$ = _determineActualTypes(false, env, types, [], values);
+  //  determineActualTypesStrict :: (Array Type, Array Any) -> Array Type
+  function determineActualTypesStrict(env, values) {
+    var types$ = _determineActualTypes(false, env, [], values);
     return rejectInconsistent(types$);
   }
 
-  //  determineActualTypesLoose ::
-  //    (Array Type, Array Type, Array Any) -> Array Type
-  function determineActualTypesLoose(env, types, values) {
-    var types$ = _determineActualTypes(true, env, types, [], values);
+  //  determineActualTypesLoose :: (Array Type, Array Any) -> Array Type
+  function determineActualTypesLoose(env, values) {
+    var types$ = _determineActualTypes(true, env, [], values);
     return rejectInconsistent(types$);
   }
 
@@ -960,7 +957,7 @@
                   t.keys.slice(-typeVar.keys.length).every(function(k) {
                     var xs = t.types[k].extractor(value);
                     return isEmpty(xs) ||
-                           !isEmpty(determineActualTypesStrict(env, env, xs));
+                           !isEmpty(determineActualTypesStrict(env, xs));
                   })
                 );
               }) :
@@ -968,17 +965,17 @@
               t.types.$1.type.type === UNKNOWN &&
               !isEmpty(xs = t.types.$1.extractor(value)) ?
                 Z.map(fromUnaryType(t),
-                      determineActualTypesStrict(env, env, xs)) :
+                      determineActualTypesStrict(env, xs)) :
                 [t] :
             t.type === BINARY ?
               xprod(t,
                     t.types.$1.type.type === UNKNOWN &&
                     !isEmpty(xs = t.types.$1.extractor(value)) ?
-                      determineActualTypesStrict(env, env, xs) :
+                      determineActualTypesStrict(env, xs) :
                       [t.types.$1.type],
                     t.types.$2.type.type === UNKNOWN &&
                     !isEmpty(xs = t.types.$2.extractor(value)) ?
-                      determineActualTypesStrict(env, env, xs) :
+                      determineActualTypesStrict(env, xs) :
                       [t.types.$2.type]) :
             // else
               [t]
@@ -2035,7 +2032,7 @@
   //  showValuesAndTypes :: (Array Type, Array Any, Integer) -> String
   function showValuesAndTypes(env, values, pos) {
     return String(pos) + ')  ' + Z.map(function(x) {
-      var types = determineActualTypesLoose(env, env, [x]);
+      var types = determineActualTypesLoose(env, [x]);
       return Z.toString(x) + ' :: ' + Z.map(showType, types).join(', ');
     }, values).join('\n    ');
   }
@@ -2175,9 +2172,7 @@
         //  Keep X, the position at which the violation was observed.
         k === key ||
         //  Keep positions whose values are incompatible with the values at X.
-        isEmpty(determineActualTypesStrict(env,
-                                           env,
-                                           Z.concat(values, values_)))
+        isEmpty(determineActualTypesStrict(env, Z.concat(values, values_)))
       );
     });
 
