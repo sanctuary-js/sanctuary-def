@@ -37,6 +37,30 @@
 //. const env = $.env.concat([Integer, NonZeroInteger]);
 //. ```
 //.
+//. Type constructors such as `List :: Type -> Type` cannot be included in
+//. an environment as they're not of the correct type. One could, though,
+//. use a type constructor to define a fixed number of concrete types:
+//.
+//. ```javascript
+//. //    env :: Array Type
+//. const env = $.env.concat([
+//.   List($.Number),               // :: Type
+//.   List($.String),               // :: Type
+//.   List(List($.Number)),         // :: Type
+//.   List(List($.String)),         // :: Type
+//.   List(List(List($.Number))),   // :: Type
+//.   List(List(List($.String))),   // :: Type
+//. ]);
+//. ```
+//.
+//. Not only would this be tedious, but one could never enumerate all possible
+//. types as there are infinitely many. Instead, one should use [`Unknown`][]:
+//.
+//. ```javascript
+//. //    env :: Array Type
+//. const env = $.env.concat([List($.Unknown)]);
+//. ```
+//.
 //. The next step is to define a `def` function for the environment:
 //.
 //. ```javascript
@@ -408,15 +432,6 @@
     return BinaryType(name, functionUrl(name), test, _1, _2);
   }
 
-  //  applyParameterizedTypes :: Array Type -> Array Type
-  function applyParameterizedTypes(types) {
-    return Z.map(function(x) {
-      return typeof x === 'function' ?
-        x.apply(null, Z.map(K(Unknown), range(0, x.length))) :
-        x;
-    }, types);
-  }
-
   //. ### Types
   //.
   //. Conceptually, a type is a set of values. One can think of a value of
@@ -701,9 +716,20 @@
 
   //# Unknown :: Type
   //.
-  //. Type used internally to represent missing type information. The type of
-  //. `[]`, for example, is `Array ???`. This type is exported solely for use
-  //. by other Sanctuary packages.
+  //. Type used to represent missing type information. The type of `[]`,
+  //. for example, is `Array ???`.
+  //.
+  //. May be used with type constructors when defining environments. Given a
+  //. type constructor `List :: Type -> Type`, one could use `List($.Unknown)`
+  //. to include an infinite number of types in an environment:
+  //.
+  //.   - `List Number`
+  //.   - `List String`
+  //.   - `List (List Number)`
+  //.   - `List (List String)`
+  //.   - `List (List (List Number))`
+  //.   - `List (List (List String))`
+  //.   - `...`
   var Unknown = new _Type(UNKNOWN, '', '', always2('???'), K(true), [], {});
 
   //# ValidDate :: Type
@@ -726,23 +752,23 @@
   //.
   //. An array of [types][]:
   //.
-  //.   - [`AnyFunction`][]
-  //.   - [`Arguments`][]
-  //.   - [`Array`][]
-  //.   - [`Boolean`][]
-  //.   - [`Date`][]
-  //.   - [`Error`][]
-  //.   - [`Null`][]
-  //.   - [`Number`][]
-  //.   - [`Object`][]
-  //.   - [`RegExp`][]
-  //.   - [`StrMap`][]
-  //.   - [`String`][]
-  //.   - [`Undefined`][]
-  var env = applyParameterizedTypes([
+  //.   - <code><a href="#AnyFunction">AnyFunction</a></code>
+  //.   - <code><a href="#Arguments">Arguments</a></code>
+  //.   - <code><a href="#Array">Array</a>(<a href="#Unknown">Unknown</a>)</code>
+  //.   - <code><a href="#Boolean">Boolean</a></code>
+  //.   - <code><a href="#Date">Date</a></code>
+  //.   - <code><a href="#Error">Error</a></code>
+  //.   - <code><a href="#Null">Null</a></code>
+  //.   - <code><a href="#Number">Number</a></code>
+  //.   - <code><a href="#Object">Object</a></code>
+  //.   - <code><a href="#RegExp">RegExp</a></code>
+  //.   - <code><a href="#StrMap">StrMap</a>(<a href="#Unknown">Unknown</a>)</code>
+  //.   - <code><a href="#String">String</a></code>
+  //.   - <code><a href="#Undefined">Undefined</a></code>
+  var env = [
     AnyFunction,
     Arguments,
-    Array_,
+    Array_(Unknown),
     Boolean_,
     Date_,
     Error_,
@@ -750,10 +776,10 @@
     Number_,
     Object_,
     RegExp_,
-    StrMap,
+    StrMap(Unknown),
     String_,
     Undefined
-  ]);
+  ];
 
   //  Type :: Type
   var Type = NullaryType(
@@ -1201,8 +1227,7 @@
   //. Using types as predicates is useful in other contexts too. One could,
   //. for example, define a [record type][] for each endpoint of a REST API
   //. and validate the bodies of incoming POST requests against these types.
-  function test(_env, t, x) {
-    var env = applyParameterizedTypes(_env);
+  function test(env, t, x) {
     var typeInfo = {name: 'name', constraints: {}, types: [t]};
     return satisfactoryTypes(env, typeInfo, {}, t, 0, [], [x]).isRight;
   }
@@ -2345,8 +2370,7 @@
         throw new RangeError(q(def.name) + ' cannot define a function ' +
                              'with arity greater than nine');
       }
-      return curry({checkTypes: opts.checkTypes,
-                    env: applyParameterizedTypes(opts.env)},
+      return curry(opts,
                    {name: name, constraints: constraints, types: expTypes},
                    {},
                    values,
@@ -2442,33 +2466,25 @@
 }));
 
 //. [FL:Semigroup]:         https://github.com/fantasyland/fantasy-land#semigroup
-//. [`AnyFunction`]:        #AnyFunction
-//. [`Arguments`]:          #Arguments
 //. [`Array`]:              #Array
 //. [`BinaryType`]:         #BinaryType
-//. [`Boolean`]:            #Boolean
 //. [`Date`]:               #Date
-//. [`Error`]:              #Error
 //. [`FiniteNumber`]:       #FiniteNumber
 //. [`GlobalRegExp`]:       #GlobalRegExp
 //. [`Integer`]:            #Integer
 //. [`NonGlobalRegExp`]:    #NonGlobalRegExp
-//. [`Null`]:               #Null
 //. [`Number`]:             #Number
-//. [`Object`]:             #Object
 //. [`Object.create`]:      https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/create
 //. [`Pair`]:               #Pair
 //. [`RegExp`]:             #RegExp
 //. [`RegexFlags`]:         #RegexFlags
-//. [`StrMap`]:             #StrMap
-//. [`String`]:             #String
 //. [`SyntaxError`]:        https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/SyntaxError
 //. [`TypeClass`]:          https://github.com/sanctuary-js/sanctuary-type-classes#TypeClass
 //. [`TypeError`]:          https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/TypeError
 //. [`TypeVariable`]:       #TypeVariable
 //. [`UnaryType`]:          #UnaryType
 //. [`UnaryTypeVariable`]:  #UnaryTypeVariable
-//. [`Undefined`]:          #Undefined
+//. [`Unknown`]:            #Unknown
 //. [`ValidNumber`]:        #ValidNumber
 //. [`env`]:                #env
 //. [arguments]:            https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Functions/arguments

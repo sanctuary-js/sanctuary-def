@@ -750,7 +750,7 @@ describe('def', function() {
   });
 
   it('reports type error correctly for parameterized types', function() {
-    var env = $.env.concat([Either, Maybe]);
+    var env = $.env.concat([Either($.Unknown, $.Unknown), Maybe($.Unknown)]);
     var def = $.create({checkTypes: true, env: env});
 
     //  a00 :: a -> a -> a
@@ -1889,7 +1889,7 @@ describe('def', function() {
   });
 
   it('supports polymorphism via type variables', function() {
-    var env = $.env.concat([Either, Maybe, $Pair]);
+    var env = $.env.concat([Either($.Unknown, $.Unknown), Maybe($.Unknown), $Pair($.Unknown, $.Unknown)]);
     var def = $.create({checkTypes: true, env: env});
 
     //  aa :: a -> a -> (a, a)
@@ -2110,7 +2110,7 @@ describe('def', function() {
   });
 
   it('supports arbitrary nesting of types', function() {
-    var env = $.env.concat([Either, $.Integer]);
+    var env = $.env.concat([Either($.Unknown, $.Unknown), $.Integer]);
     var def = $.create({checkTypes: true, env: env});
 
     //  unnest :: Array (Array a) -> Array a
@@ -2218,7 +2218,7 @@ describe('def', function() {
   });
 
   it('does not allow heterogeneous arrays', function() {
-    var env = $.env.concat([Either]);
+    var env = $.env.concat([Either($.Unknown, $.Unknown)]);
     var def = $.create({checkTypes: true, env: env});
 
     //  concat :: Array a -> Array a -> Array a
@@ -2326,7 +2326,7 @@ describe('def', function() {
       function(pair) { return [pair[1]]; }
     );
 
-    var env = $.env.concat([Either, Pair]);
+    var env = $.env.concat([Either($.Unknown, $.Unknown), Pair($.Unknown, $.Unknown)]);
     var def = $.create({checkTypes: true, env: env});
 
     //  id :: a -> a
@@ -2530,7 +2530,7 @@ describe('def', function() {
   });
 
   it('supports type-class constraints', function() {
-    var env = $.env.concat([Integer, Maybe, Either]);
+    var env = $.env.concat([Integer, Maybe($.Unknown), Either($.Unknown, $.Unknown)]);
     var def = $.create({checkTypes: true, env: env});
 
     //  Alternative :: TypeClass
@@ -2735,7 +2735,7 @@ describe('def', function() {
   });
 
   it('supports unary type variables', function() {
-    var env = $.env.concat([Either, Maybe]);
+    var env = $.env.concat([Either($.Unknown, $.Unknown), Maybe($.Unknown)]);
     var def = $.create({checkTypes: true, env: env});
 
     //  f :: Type -> Type
@@ -2811,7 +2811,7 @@ describe('def', function() {
   });
 
   it('supports binary type variables', function() {
-    var env = $.env.concat([$Pair]);
+    var env = $.env.concat([$Pair($.Unknown, $.Unknown)]);
     var def = $.create({checkTypes: true, env: env});
 
     //  f :: (Type, Type) -> Type
@@ -2839,7 +2839,7 @@ describe('def', function() {
       function(x) { count += 1; return false; }
     );
 
-    var env = [$.Array, Maybe, $.Number, Void];
+    var env = [$.Array($.Unknown), Maybe($.Unknown), $.Number, Void];
     var def = $.create({checkTypes: true, env: env});
 
     //  head :: Array a -> Maybe a

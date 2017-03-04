@@ -30,7 +30,7 @@ lint:
 	  --global module \
 	  --global require \
 	  --global self \
-	  --rule 'max-len: [error, {code: 79, ignorePattern: "^ *//(#|[.] //) ", ignoreUrls: true}]' \
+	  --rule 'max-len: [error, {code: 79, ignorePattern: "^ *//(# |[.] // |[.]   - <code>)", ignoreUrls: true}]' \
 	  -- index.js
 	$(ESLINT) \
 	  --env node \
