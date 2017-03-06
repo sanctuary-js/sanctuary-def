@@ -788,6 +788,15 @@
     typeEq('sanctuary-def/Type')
   );
 
+  //  VariadicType :: Type | Type -> Type | Type -> Type -> Type | ...
+  var VariadicType = NullaryType(
+    'sanctuary-def/VariadicType',
+    '',
+    function(x) {
+      return test([], Type, x) || test([], AnyFunction, x);
+    }
+  );
+
   //  TypeClass :: Type
   var TypeClass = NullaryType(
     'sanctuary-type-classes/TypeClass',
@@ -2452,7 +2461,7 @@
     ValidNumber: ValidNumber,
     env: env,
     create: create,
-    test: def('test', {}, [Array_(Type), Type, Any, Boolean_], test),
+    test: def('test', {}, [Array_(VariadicType), Type, Any, Boolean_], test),
     NullaryType: CheckedNullaryType,
     UnaryType: CheckedUnaryType,
     BinaryType: CheckedBinaryType,
