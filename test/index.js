@@ -301,7 +301,9 @@ describe('def', function() {
            '\n' +
            '1)  1 :: Number\n' +
            '\n' +
-           'The value at position 1 is not a member of ‘Type’.\n');
+           'The value at position 1 is not a member of ‘Type’.\n' +
+           '\n' +
+           'See https://github.com/sanctuary-js/sanctuary-def/tree/v' + version + '#Type for information about the Type type.\n');
 
     throws(function() { def('', {}, [], null); },
            TypeError,
@@ -1228,7 +1230,9 @@ describe('def', function() {
            '\n' +
            '1)  /XXX/ :: RegExp\n' +
            '\n' +
-           'The value at position 1 is not a member of ‘Type’.\n');
+           'The value at position 1 is not a member of ‘Type’.\n' +
+           '\n' +
+           'See https://github.com/sanctuary-js/sanctuary-def/tree/v' + version + '#Type for information about the Type type.\n');
 
     //  Foo :: Type
     var Foo = $.RecordType({x: a, y: a});
@@ -1268,7 +1272,9 @@ describe('def', function() {
            '\n' +
            '1)  null :: Null\n' +
            '\n' +
-           'The value at position 1 is not a member of ‘Type’.\n');
+           'The value at position 1 is not a member of ‘Type’.\n' +
+           '\n' +
+           'See https://github.com/sanctuary-js/sanctuary-def/tree/v' + version + '#Type for information about the Type type.\n');
 
     //  toUpper :: Nullable String -> Nullable String
     var toUpper =
@@ -2935,7 +2941,9 @@ describe('UnaryType', function() {
            '\n' +
            '1)  {"x": Number, "y": Number} :: Object, StrMap ???\n' +
            '\n' +
-           'The value at position 1 is not a member of ‘Type’.\n');
+           'The value at position 1 is not a member of ‘Type’.\n' +
+           '\n' +
+           'See https://github.com/sanctuary-js/sanctuary-def/tree/v' + version + '#Type for information about the Type type.\n');
   });
 
 });
@@ -2959,7 +2967,9 @@ describe('BinaryType', function() {
            '\n' +
            '1)  {"x": Number, "y": Number} :: Object, StrMap ???\n' +
            '\n' +
-           'The value at position 1 is not a member of ‘Type’.\n');
+           'The value at position 1 is not a member of ‘Type’.\n' +
+           '\n' +
+           'See https://github.com/sanctuary-js/sanctuary-def/tree/v' + version + '#Type for information about the Type type.\n');
   });
 
 });
@@ -3000,7 +3010,9 @@ describe('UnaryTypeVariable', function() {
            '\n' +
            '1)  function Number() { [native code] } :: Function\n' +
            '\n' +
-           'The value at position 1 is not a member of ‘Type’.\n');
+           'The value at position 1 is not a member of ‘Type’.\n' +
+           '\n' +
+           'See https://github.com/sanctuary-js/sanctuary-def/tree/v' + version + '#Type for information about the Type type.\n');
   });
 
 });
@@ -3032,7 +3044,9 @@ describe('BinaryTypeVariable', function() {
            '\n' +
            '1)  function Number() { [native code] } :: Function\n' +
            '\n' +
-           'The value at position 1 is not a member of ‘Type’.\n');
+           'The value at position 1 is not a member of ‘Type’.\n' +
+           '\n' +
+           'See https://github.com/sanctuary-js/sanctuary-def/tree/v' + version + '#Type for information about the Type type.\n');
   });
 
 });

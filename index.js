@@ -709,6 +709,17 @@
   //. Type comprising every primitive String value.
   var String_ = NullaryTypeWithUrl('String', typeofEq('string'));
 
+  //# Type :: Type
+  //.
+  //. Type comprising every `Type` value.
+  var Type = NullaryTypeWithUrl('Type', typeEq('sanctuary-def/Type'));
+
+  //# TypeClass :: Type
+  //.
+  //. Type comprising every [`TypeClass`][] value.
+  var TypeClass =
+  NullaryTypeWithUrl('TypeClass', typeEq('sanctuary-type-classes/TypeClass'));
+
   //# Undefined :: Type
   //.
   //. Type whose sole member is `undefined`.
@@ -780,20 +791,6 @@
     String_,
     Undefined
   ];
-
-  //  Type :: Type
-  var Type = NullaryType(
-    'sanctuary-def/Type',
-    '',
-    typeEq('sanctuary-def/Type')
-  );
-
-  //  TypeClass :: Type
-  var TypeClass = NullaryType(
-    'sanctuary-type-classes/TypeClass',
-    '',
-    typeEq('sanctuary-type-classes/TypeClass')
-  );
 
   //  Unchecked :: String -> Type
   function Unchecked(s) { return NullaryType(s, '', K(true)); }
