@@ -1281,7 +1281,10 @@ describe('def', function() {
     def('toUpper',
         {},
         [$.Nullable($.String), $.Nullable($.String)],
-        function(ns) { return ns === null ? null : ns.toUpperCase(); });
+        function(ns) {
+          // eslint-disable-next-line eqeqeq
+          return ns === null ? null : ns.toUpperCase();
+        });
 
     eq(toUpper(null), null);
     eq(toUpper('abc'), 'ABC');
@@ -1305,7 +1308,10 @@ describe('def', function() {
     def('defaultTo',
         {},
         [a, $.Nullable(a), a],
-        function(x, nullable) { return nullable === null ? x : nullable; });
+        function(x, nullable) {
+          // eslint-disable-next-line eqeqeq
+          return nullable === null ? x : nullable;
+        });
 
     eq(defaultTo(0, null), 0);
     eq(defaultTo(0, 42), 42);
