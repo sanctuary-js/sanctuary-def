@@ -398,6 +398,7 @@
   //  typeofEq :: String -> a -> Boolean
   function typeofEq(typeof_) {
     return function(x) {
+      // eslint-disable-next-line valid-typeof
       return typeof x === typeof_;
     };
   }
@@ -613,7 +614,10 @@
   var Nullable = UnaryTypeWithUrl(
     'sanctuary-def/Nullable',
     K(true),
-    function(nullable) { return nullable === null ? [] : [nullable]; }
+    function(nullable) {
+      // eslint-disable-next-line eqeqeq
+      return nullable === null ? [] : [nullable];
+    }
   );
 
   //# Number :: Type
