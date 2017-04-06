@@ -1,4 +1,4 @@
-ESLINT = node_modules/.bin/eslint --config node_modules/sanctuary-style/eslint-es3.json --env es3
+ESLINT = node_modules/.bin/eslint --config node_modules/sanctuary-style/eslint-es3.json
 ISTANBUL = node_modules/.bin/istanbul
 NPM = npm
 REMARK = node_modules/.bin/remark --frail --no-stdout
@@ -27,6 +27,7 @@ README.md: index.js
 .PHONY: lint
 lint:
 	$(ESLINT) \
+	  --env es3 \
 	  --global define \
 	  --global module \
 	  --global require \
@@ -34,6 +35,7 @@ lint:
 	  --rule 'max-len: [error, {code: 79, ignorePattern: "^ *//(# |[.] // |[.]   - <code>)", ignoreUrls: true}]' \
 	  -- index.js
 	$(ESLINT) \
+	  --env es6 \
 	  --env node \
 	  --env mocha \
 	  --rule 'dot-notation: [error, {allowKeywords: true}]' \

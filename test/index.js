@@ -1369,6 +1369,7 @@ describe('def', function() {
     eq(isAnyFunction(null), false);
     eq(isAnyFunction(Math.abs), true);
     eq(isAnyFunction(Identity), true);
+    eq(isAnyFunction(function*(x) { return x; }), true);
   });
 
   it('provides the "Arguments" type', function() {
