@@ -447,7 +447,7 @@
   //# AnyFunction :: Type
   //.
   //. Type comprising every Function value.
-  var AnyFunction = NullaryTypeWithUrl('Function', typeEq('Function'));
+  var AnyFunction = NullaryTypeWithUrl('Function', typeofEq('function'));
 
   //# Arguments :: Type
   //.
