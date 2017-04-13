@@ -713,6 +713,11 @@
   //. Type comprising every primitive String value.
   var String_ = NullaryTypeWithUrl('String', typeofEq('string'));
 
+  //# Symbol :: Type
+  //.
+  //. Type comprising every Symbol value.
+  var Symbol_ = NullaryTypeWithUrl('Symbol', typeofEq('symbol'));
+
   //# Type :: Type
   //.
   //. Type comprising every `Type` value.
@@ -779,6 +784,7 @@
   //.   - <code><a href="#RegExp">RegExp</a></code>
   //.   - <code><a href="#StrMap">StrMap</a>(<a href="#Unknown">Unknown</a>)</code>
   //.   - <code><a href="#String">String</a></code>
+  //.   - <code><a href="#Symbol">Symbol</a></code>
   //.   - <code><a href="#Undefined">Undefined</a></code>
   var env = [
     AnyFunction,
@@ -793,6 +799,7 @@
     RegExp_,
     StrMap(Unknown),
     String_,
+    Symbol_,
     Undefined
   ];
 
@@ -2447,6 +2454,7 @@
     RegexFlags: RegexFlags,
     StrMap: fromUncheckedUnaryType(StrMap),
     String: String_,
+    Symbol: Symbol_,
     Undefined: Undefined,
     Unknown: Unknown,
     ValidDate: ValidDate,
