@@ -85,9 +85,9 @@ function _Maybe(tag, value) {
 
 _Maybe['@@type'] = 'my-package/Maybe';
 
-_Maybe['fantasy-land/empty'] = function() { return Nothing; };
-
 _Maybe['fantasy-land/of'] = Just;
+
+_Maybe['fantasy-land/zero'] = function() { return Nothing; };
 
 _Maybe.prototype['fantasy-land/equals'] = function(other) {
   return this.isNothing ? other.isNothing
@@ -106,12 +106,12 @@ _Maybe.prototype['fantasy-land/chain'] = function(f) {
   return this.isNothing ? this : f(this.value);
 };
 
-_Maybe.prototype['fantasy-land/reduce'] = function(f, x) {
-  return this.isNothing ? x : f(x, this.value);
+_Maybe.prototype['fantasy-land/alt'] = function(other) {
+  return this.isNothing ? other : this;
 };
 
-_Maybe.prototype.or = function(other) {
-  return this.isNothing ? other : this;
+_Maybe.prototype['fantasy-land/reduce'] = function(f, x) {
+  return this.isNothing ? x : f(x, this.value);
 };
 
 _Maybe.prototype.inspect =
@@ -2546,45 +2546,37 @@ describe('def', function() {
     var env = $.env.concat([Integer, Maybe($.Unknown), Either($.Unknown, $.Unknown)]);
     var def = $.create({checkTypes: true, env: env});
 
-    //  Alternative :: TypeClass
-    var Alternative =
-    Z.TypeClass('my-package/Alternative',
-                [Z.Monoid],
-                function(x) { return x != null && typeof x.or === 'function'; });
+    //  alt :: Alternative a => a -> a -> a
+    var alt = def('alt', {a: [Z.Alternative]}, [a, a, a], Z.alt);
 
-    //  or :: Alternative a => a -> a -> a
-    var or = def('or', {a: [Alternative]}, [a, a, a], function(x, y) {
-      return x.or(y);
-    });
+    eq(alt(Nothing, Nothing), Nothing);
+    eq(alt(Nothing, Just(1)), Just(1));
+    eq(alt(Just(2), Nothing), Just(2));
+    eq(alt(Just(3), Just(4)), Just(3));
 
-    eq(or(Nothing, Nothing), Nothing);
-    eq(or(Nothing, Just(1)), Just(1));
-    eq(or(Just(2), Nothing), Just(2));
-    eq(or(Just(3), Just(4)), Just(3));
-
-    throws(function() { or(Left(1)); },
+    throws(function() { alt(Left(1)); },
            TypeError,
            'Type-class constraint violation\n' +
            '\n' +
-           'or :: Alternative a => a -> a -> a\n' +
-           '      ^^^^^^^^^^^^^    ^\n' +
-           '                       1\n' +
+           'alt :: Alternative a => a -> a -> a\n' +
+           '       ^^^^^^^^^^^^^    ^\n' +
+           '                        1\n' +
            '\n' +
            '1)  Left(1) :: Either Number ???, Either Integer ???\n' +
            '\n' +
-           '‘or’ requires ‘a’ to satisfy the Alternative type-class constraint; the value at position 1 does not.\n');
+           '‘alt’ requires ‘a’ to satisfy the Alternative type-class constraint; the value at position 1 does not.\n');
 
-    throws(function() { or($.__, Right(1)); },
+    throws(function() { alt($.__, Right(1)); },
            TypeError,
            'Type-class constraint violation\n' +
            '\n' +
-           'or :: Alternative a => a -> a -> a\n' +
-           '      ^^^^^^^^^^^^^         ^\n' +
-           '                            1\n' +
+           'alt :: Alternative a => a -> a -> a\n' +
+           '       ^^^^^^^^^^^^^         ^\n' +
+           '                             1\n' +
            '\n' +
            '1)  Right(1) :: Either ??? Number, Either ??? Integer\n' +
            '\n' +
-           '‘or’ requires ‘a’ to satisfy the Alternative type-class constraint; the value at position 1 does not.\n');
+           '‘alt’ requires ‘a’ to satisfy the Alternative type-class constraint; the value at position 1 does not.\n');
 
     //  concat :: Semigroup a => a -> a -> a
     var concat = def('concat', {a: [Z.Semigroup]}, [a, a, a], Z.concat);
@@ -2644,10 +2636,10 @@ describe('def', function() {
            '\n' +
            'Since there is no type of which all the above values are members, the type-variable constraint has been violated.\n');
 
-    //  filter :: (Monad m, Monoid (m a)) => (a -> Boolean) -> m a -> m a
+    //  filter :: (Alternative m, Monad m) => (a -> Boolean) -> m a -> m a
     var filter =
     def('filter',
-        {m: [Z.Monad, Z.Monoid]},
+        {m: [Z.Alternative, Z.Monad]},
         [$.Function([a, $.Boolean]), m(a), m(a)],
         Z.filterM);
 
@@ -2658,29 +2650,17 @@ describe('def', function() {
     eq(filter(even, Just(9)), Nothing);
     eq(filter(even, Just(4)), Just(4));
 
-    throws(function() { filter(even, 42); },
-           TypeError,
-           'Type-class constraint violation\n' +
-           '\n' +
-           'filter :: (Monad m, Monoid m) => (a -> Boolean) -> m a -> m a\n' +
-           '           ^^^^^^^                                 ^^^\n' +
-           '                                                    1\n' +
-           '\n' +
-           '1)  42 :: Number, Integer\n' +
-           '\n' +
-           '‘filter’ requires ‘m’ to satisfy the Monad type-class constraint; the value at position 1 does not.\n');
-
     throws(function() { filter(even, Right(42)); },
            TypeError,
            'Type-class constraint violation\n' +
            '\n' +
-           'filter :: (Monad m, Monoid m) => (a -> Boolean) -> m a -> m a\n' +
-           '                    ^^^^^^^^                       ^^^\n' +
-           '                                                    1\n' +
+           'filter :: (Alternative m, Monad m) => (a -> Boolean) -> m a -> m a\n' +
+           '           ^^^^^^^^^^^^^                                ^^^\n' +
+           '                                                         1\n' +
            '\n' +
            '1)  Right(42) :: Either ??? Number, Either ??? Integer\n' +
            '\n' +
-           '‘filter’ requires ‘m’ to satisfy the Monoid type-class constraint; the value at position 1 does not.\n');
+           '‘filter’ requires ‘m’ to satisfy the Alternative type-class constraint; the value at position 1 does not.\n');
 
     //  concatMaybes :: Semigroup a => Maybe a -> Maybe a -> Maybe a
     var concatMaybes =
@@ -2728,13 +2708,13 @@ describe('def', function() {
     //  sillyConst :: (Alternative a, Semigroup b) => a -> b -> a
     var sillyConst =
     def('sillyConst',
-        {a: [Alternative], b: [Z.Semigroup]},
+        {a: [Z.Alternative], b: [Z.Semigroup]},
         [a, b, a],
         function(x, y) { return x; });
 
     eq(sillyConst(Just(42), [1, 2, 3]), Just(42));
 
-    throws(function() { sillyConst([1, 2, 3]); },
+    throws(function() { sillyConst(true); },
            TypeError,
            'Type-class constraint violation\n' +
            '\n' +
@@ -2742,7 +2722,7 @@ describe('def', function() {
            '               ^^^^^^^^^^^^^                  ^\n' +
            '                                              1\n' +
            '\n' +
-           '1)  [1, 2, 3] :: Array Number, Array Integer\n' +
+           '1)  true :: Boolean\n' +
            '\n' +
            '‘sillyConst’ requires ‘a’ to satisfy the Alternative type-class constraint; the value at position 1 does not.\n');
   });
