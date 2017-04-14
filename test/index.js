@@ -1432,6 +1432,11 @@ describe('def', function() {
     eq($.String.url, 'https://github.com/sanctuary-js/sanctuary-def/tree/v' + version + '#String');
   });
 
+  it('provides the "Symbol" type', function() {
+    eq($.Symbol.name, 'Symbol');
+    eq($.Symbol.url, 'https://github.com/sanctuary-js/sanctuary-def/tree/v' + version + '#Symbol');
+  });
+
   it('provides the "Undefined" type', function() {
     eq($.Undefined.name, 'Undefined');
     eq($.Undefined.url, 'https://github.com/sanctuary-js/sanctuary-def/tree/v' + version + '#Undefined');
