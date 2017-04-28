@@ -376,6 +376,19 @@ describe('def', function() {
     eq($7.toString(), '$7 :: a -> a -> a -> a -> a -> a -> a -> Array a');
     eq($8.toString(), '$8 :: a -> a -> a -> a -> a -> a -> a -> a -> Array a');
     eq($9.toString(), '$9 :: a -> a -> a -> a -> a -> a -> a -> a -> a -> Array a');
+
+    var __ = $.__;
+
+    eq($3(10).toString(), '$3(10) :: a -> a -> Array a');
+    eq($3(10, __).toString(), '$3(10) :: a -> a -> Array a');
+    eq($3(__, 20).toString(), '$3(__, 20) :: a -> a -> Array a');
+    eq($3(10, 20).toString(), '$3(10, 20) :: a -> Array a');
+    eq($3(10, __, __).toString(), '$3(10) :: a -> a -> Array a');
+    eq($3(__, 20, __).toString(), '$3(__, 20) :: a -> a -> Array a');
+    eq($3(__, __, 30).toString(), '$3(__, __, 30) :: a -> a -> Array a');
+    eq($3(10, 20, __).toString(), '$3(10, 20) :: a -> Array a');
+    eq($3(10, __, 30).toString(), '$3(10, __, 30) :: a -> Array a');
+    eq($3(__, 20, 30).toString(), '$3(__, 20, 30) :: a -> Array a');
   });
 
   it('returns a curried function', function() {
