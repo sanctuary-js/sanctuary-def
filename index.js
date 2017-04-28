@@ -237,9 +237,6 @@
   //  K :: a -> b -> a
   function K(x) { return function(y) { return x; }; }
 
-  //  always :: a -> (-> a)
-  function always(x) { return function() { return x; }; }
-
   //  always2 :: a -> (b, c) -> a
   function always2(x) { return function(y, z) { return x; }; }
 
@@ -326,6 +323,9 @@
       };
     };
   }
+
+  //  parenthesize :: String -> String
+  var parenthesize = wrap('(')(')');
 
   //  q :: String -> String
   var q = wrap('\u2018')('\u2019');
@@ -2076,9 +2076,7 @@
     var arity = reprs.length - 1;
     return typeInfo.name + ' :: ' +
              constraintsRepr(typeInfo.constraints, id, K(K(id))) +
-             when(arity === 0,
-                  wrap('(')(')'),
-                  init(reprs).join(' -> ')) +
+             when(arity === 0, parenthesize, init(reprs).join(' -> ')) +
              ' -> ' + last(reprs);
   }
 
@@ -2313,6 +2311,7 @@
     impl          // :: Function
   ) {
     var n = typeInfo.types.length - 1;
+
     var curried = arity(_indexes.length, function() {
       if (opts.checkTypes) {
         var delta = _indexes.length - arguments.length;
@@ -2367,7 +2366,30 @@
         return curry(opts, typeInfo, typeVarMap, values, indexes, impl);
       }
     });
-    curried.inspect = curried.toString = always(typeSignature(typeInfo));
+
+    curried.inspect = curried.toString = function() {
+      var vReprs = [];
+      var tReprs = [];
+      for (var idx = 0, placeholders = 0; idx < n; idx += 1) {
+        if (_indexes.indexOf(idx) >= 0) {
+          placeholders += 1;
+          tReprs.push(showType(typeInfo.types[idx]));
+        } else {
+          while (placeholders > 0) {
+            vReprs.push('__');
+            placeholders -= 1;
+          }
+          vReprs.push(Z.toString(_values[idx]));
+        }
+      }
+      return typeInfo.name +
+             when(vReprs.length > 0, parenthesize, vReprs.join(', ')) +
+             ' :: ' +
+             constraintsRepr(typeInfo.constraints, id, K(K(id))) +
+             when(n === 0, parenthesize, tReprs.join(' -> ')) +
+             ' -> ' + showType(typeInfo.types[n]);
+    };
+
     return curried;
   }
 
