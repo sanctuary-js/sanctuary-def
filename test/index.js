@@ -1450,6 +1450,16 @@ describe('def', function() {
     eq($.Symbol.url, 'https://github.com/sanctuary-js/sanctuary-def/tree/v' + version + '#Symbol');
   });
 
+  it('provides the "Type" type', function() {
+    eq($.Type.name, 'Type');
+    eq($.Type.url, 'https://github.com/sanctuary-js/sanctuary-def/tree/v' + version + '#Type');
+  });
+
+  it('provides the "TypeClass" type', function() {
+    eq($.TypeClass.name, 'TypeClass');
+    eq($.TypeClass.url, 'https://github.com/sanctuary-js/sanctuary-def/tree/v' + version + '#TypeClass');
+  });
+
   it('provides the "Undefined" type', function() {
     eq($.Undefined.name, 'Undefined');
     eq($.Undefined.url, 'https://github.com/sanctuary-js/sanctuary-def/tree/v' + version + '#Undefined');
