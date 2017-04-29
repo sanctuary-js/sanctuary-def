@@ -2477,6 +2477,8 @@
     StrMap: fromUncheckedUnaryType(StrMap),
     String: String_,
     Symbol: Symbol_,
+    Type: Type,
+    TypeClass: TypeClass,
     Undefined: Undefined,
     Unknown: Unknown,
     ValidDate: ValidDate,
