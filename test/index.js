@@ -253,7 +253,7 @@ describe('def', function() {
            TypeError,
            'Invalid value\n' +
            '\n' +
-           'def :: String -> StrMap (Array TypeClass) -> Array Type -> Function -> Function\n' +
+           'def :: String -> StrMap (Array TypeClass) -> NonEmpty (Array Type) -> Function -> Function\n' +
            '       ^^^^^^\n' +
            '         1\n' +
            '\n' +
@@ -267,7 +267,7 @@ describe('def', function() {
            TypeError,
            'Invalid value\n' +
            '\n' +
-           'def :: String -> StrMap (Array TypeClass) -> Array Type -> Function -> Function\n' +
+           'def :: String -> StrMap (Array TypeClass) -> NonEmpty (Array Type) -> Function -> Function\n' +
            '                 ^^^^^^^^^^^^^^^^^^^^^^^^\n' +
            '                            1\n' +
            '\n' +
@@ -277,27 +277,27 @@ describe('def', function() {
            '\n' +
            'See https://github.com/sanctuary-js/sanctuary-def/tree/v' + version + '#StrMap for information about the sanctuary-def/StrMap type.\n');
 
-    throws(function() { def('', {}, null, null); },
+    throws(function() { def('', {}, [], null); },
            TypeError,
            'Invalid value\n' +
            '\n' +
-           'def :: String -> StrMap (Array TypeClass) -> Array Type -> Function -> Function\n' +
-           '                                             ^^^^^^^^^^\n' +
-           '                                                 1\n' +
+           'def :: String -> StrMap (Array TypeClass) -> NonEmpty (Array Type) -> Function -> Function\n' +
+           '                                             ^^^^^^^^^^^^^^^^^^^^^\n' +
+           '                                                       1\n' +
            '\n' +
-           '1)  null :: Null\n' +
+           '1)  [] :: Array ???\n' +
            '\n' +
-           'The value at position 1 is not a member of ‘Array Type’.\n' +
+           'The value at position 1 is not a member of ‘NonEmpty (Array Type)’.\n' +
            '\n' +
-           'See https://github.com/sanctuary-js/sanctuary-def/tree/v' + version + '#Array for information about the Array type.\n');
+           'See https://github.com/sanctuary-js/sanctuary-def/tree/v' + version + '#NonEmpty for information about the sanctuary-def/NonEmpty type.\n');
 
     throws(function() { def('', {}, [1, 2, 3], null); },
            TypeError,
            'Invalid value\n' +
            '\n' +
-           'def :: String -> StrMap (Array TypeClass) -> Array Type -> Function -> Function\n' +
-           '                                                   ^^^^\n' +
-           '                                                    1\n' +
+           'def :: String -> StrMap (Array TypeClass) -> NonEmpty (Array Type) -> Function -> Function\n' +
+           '                                                             ^^^^\n' +
+           '                                                              1\n' +
            '\n' +
            '1)  1 :: Number\n' +
            '\n' +
@@ -305,13 +305,13 @@ describe('def', function() {
            '\n' +
            'See https://github.com/sanctuary-js/sanctuary-def/tree/v' + version + '#Type for information about the Type type.\n');
 
-    throws(function() { def('', {}, [], null); },
+    throws(function() { def('', {}, [$.Null], null); },
            TypeError,
            'Invalid value\n' +
            '\n' +
-           'def :: String -> StrMap (Array TypeClass) -> Array Type -> Function -> Function\n' +
-           '                                                           ^^^^^^^^\n' +
-           '                                                              1\n' +
+           'def :: String -> StrMap (Array TypeClass) -> NonEmpty (Array Type) -> Function -> Function\n' +
+           '                                                                      ^^^^^^^^\n' +
+           '                                                                         1\n' +
            '\n' +
            '1)  null :: Null\n' +
            '\n' +
@@ -1440,6 +1440,18 @@ describe('def', function() {
   it('provides the "Function" type constructor', function() {
     eq($.Function([a, a]).name, '');
     eq($.Function([a, a]).url, '');
+  });
+
+  it('provides the "NonEmpty" type constructor', function() {
+    eq($.NonEmpty($.String).name, 'sanctuary-def/NonEmpty');
+    eq($.NonEmpty($.String).url, 'https://github.com/sanctuary-js/sanctuary-def/tree/v' + version + '#NonEmpty');
+
+    function isNonEmptyIntegerArray(x) {
+      return $.test($.env, $.NonEmpty($.Array($.Integer)), x);
+    }
+    eq(isNonEmptyIntegerArray([]), false);
+    eq(isNonEmptyIntegerArray([0]), true);
+    eq(isNonEmptyIntegerArray([0.5]), false);
   });
 
   it('provides the "Null" type', function() {

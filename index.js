@@ -569,6 +569,23 @@
     function(x) { return Number_._test(x) && x < 0; }
   );
 
+  //# NonEmpty :: Type -> Type
+  //.
+  //. Constructor for non-empty types. `$.NonEmpty($.String)`, for example, is
+  //. the type comprising every [`String`][] value except `''`.
+  //.
+  //. The given type must satisfy the [Monoid][] and [Setoid][] specifications.
+  var NonEmpty = UnaryType(
+    'sanctuary-def/NonEmpty',
+    functionUrl('NonEmpty'),
+    function(x) {
+      return Z.Monoid.test(x) &&
+             Z.Setoid.test(x) &&
+             !Z.equals(x, Z.empty(x.constructor));
+    },
+    function(monoid) { return [monoid]; }
+  );
+
   //# NonGlobalRegExp :: Type
   //.
   //. Type comprising every [`RegExp`][] value whose `global` flag is `false`.
@@ -2406,7 +2423,7 @@
                {},
                [String_,
                 StrMap(Array_(TypeClass)),
-                Array_(Type),
+                NonEmpty(Array_(Type)),
                 AnyFunction,
                 AnyFunction],
                def);
@@ -2450,6 +2467,7 @@
     NegativeFiniteNumber: NegativeFiniteNumber,
     NegativeInteger: NegativeInteger,
     NegativeNumber: NegativeNumber,
+    NonEmpty: NonEmpty,
     NonGlobalRegExp: NonGlobalRegExp,
     NonZeroFiniteNumber: NonZeroFiniteNumber,
     NonZeroInteger: NonZeroInteger,
@@ -2489,6 +2507,8 @@
 }));
 
 //. [FL:Semigroup]:         https://github.com/fantasyland/fantasy-land#semigroup
+//. [Monoid]:               https://github.com/fantasyland/fantasy-land#monoid
+//. [Setoid]:               https://github.com/fantasyland/fantasy-land#setoid
 //. [`Array`]:              #Array
 //. [`BinaryType`]:         #BinaryType
 //. [`Date`]:               #Date
@@ -2501,6 +2521,7 @@
 //. [`Pair`]:               #Pair
 //. [`RegExp`]:             #RegExp
 //. [`RegexFlags`]:         #RegexFlags
+//. [`String`]:             #String
 //. [`SyntaxError`]:        https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/SyntaxError
 //. [`TypeClass`]:          https://github.com/sanctuary-js/sanctuary-type-classes#TypeClass
 //. [`TypeError`]:          https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/TypeError
