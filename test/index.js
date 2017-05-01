@@ -235,7 +235,7 @@ describe('create', function() {
            TypeError,
            'Invalid value\n' +
            '\n' +
-           'create :: { checkTypes :: Boolean, env :: Array Any } -> ((String, StrMap (Array TypeClass), Array Type, Function) -> Function)\n' +
+           'create :: { checkTypes :: Boolean, env :: Array Any } -> Function\n' +
            '          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n' +
            '                               1\n' +
            '\n' +
@@ -990,6 +990,33 @@ describe('def', function() {
            'The value at position 1 is not a member of ‘Number’.\n' +
            '\n' +
            'See https://github.com/sanctuary-js/sanctuary-def/tree/v' + version + '#Number for information about the Number type.\n');
+  });
+
+  it('performs type checking when a "returned" function is applied', function() {
+    //  lt :: Ord a => a -> (a -> Boolean)
+    var lt =
+    def('lt',
+        {a: [Z.Ord]},
+        [a, $.Function([a, $.Boolean])],
+        function(y) { return function(x) { return x < y; }; });
+
+    eq(lt(1)(0), true);
+    eq(lt(1)(1), false);
+    eq(lt(1)(2), false);
+
+    throws(function() { lt(123)('abc'); },
+           TypeError,
+           'Type-variable constraint violation\n' +
+           '\n' +
+           'lt :: Ord a => a -> (a -> Boolean)\n' +
+           '               ^     ^\n' +
+           '               1     2\n' +
+           '\n' +
+           '1)  123 :: Number\n' +
+           '\n' +
+           '2)  "abc" :: String\n' +
+           '\n' +
+           'Since there is no type of which all the above values are members, the type-variable constraint has been violated.\n');
   });
 
   it('does not rely on constructor identity', function() {
@@ -2942,7 +2969,7 @@ describe('UnaryType', function() {
   it('is a quaternary function', function() {
     eq(typeof $.UnaryType, 'function');
     eq($.UnaryType.length, 4);
-    eq($.UnaryType.toString(), 'UnaryType :: String -> String -> (Any -> Boolean) -> (t a -> Array a) -> (Type -> Type)');
+    eq($.UnaryType.toString(), 'UnaryType :: String -> String -> (Any -> Boolean) -> (t a -> Array a) -> Function');
   });
 
   it('returns a type constructor which type checks its arguments', function() {
@@ -2968,7 +2995,7 @@ describe('BinaryType', function() {
   it('is a quinary function', function() {
     eq(typeof $.BinaryType, 'function');
     eq($.BinaryType.length, 5);
-    eq($.BinaryType.toString(), 'BinaryType :: String -> String -> (Any -> Boolean) -> (t a b -> Array a) -> (t a b -> Array b) -> ((Type, Type) -> Type)');
+    eq($.BinaryType.toString(), 'BinaryType :: String -> String -> (Any -> Boolean) -> (t a b -> Array a) -> (t a b -> Array b) -> Function');
   });
 
   it('returns a type constructor which type checks its arguments', function() {
@@ -3004,7 +3031,7 @@ describe('UnaryTypeVariable', function() {
   it('is a unary function', function() {
     eq(typeof $.UnaryTypeVariable, 'function');
     eq($.UnaryTypeVariable.length, 1);
-    eq($.UnaryTypeVariable.toString(), 'UnaryTypeVariable :: String -> (Type -> Type)');
+    eq($.UnaryTypeVariable.toString(), 'UnaryTypeVariable :: String -> Function');
   });
 
   it('returns a function which type checks its arguments', function() {
@@ -3037,7 +3064,7 @@ describe('BinaryTypeVariable', function() {
   it('is a unary function', function() {
     eq(typeof $.BinaryTypeVariable, 'function');
     eq($.BinaryTypeVariable.length, 1);
-    eq($.BinaryTypeVariable.toString(), 'BinaryTypeVariable :: String -> ((Type, Type) -> Type)');
+    eq($.BinaryTypeVariable.toString(), 'BinaryTypeVariable :: String -> Function');
   });
 
   it('returns a function which type checks its arguments', function() {
