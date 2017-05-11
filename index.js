@@ -703,8 +703,7 @@
     'sanctuary-def/StrMap',
     Object_._test,
     function(strMap) {
-      return Z.map(function(k) { return strMap[k]; },
-                   Object.keys(strMap).sort());
+      return Z.reduce(function(xs, x) { return xs.concat([x]); }, [], strMap);
     }
   );
 
