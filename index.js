@@ -1414,7 +1414,7 @@
        String_,
        Function_([Any, Boolean_]),
        Function_([Unchecked('t a'), Array_(Unchecked('a'))]),
-       Function_([Type, Type])],
+       AnyFunction],
       function(name, url, test, _1) {
         return def(stripNamespace(name),
                    {},
@@ -1538,7 +1538,7 @@
        Function_([Any, Boolean_]),
        Function_([Unchecked('t a b'), Array_(Unchecked('a'))]),
        Function_([Unchecked('t a b'), Array_(Unchecked('b'))]),
-       Function_([Type, Type, Type])],
+       AnyFunction],
       function(name, url, test, _1, _2) {
         return def(stripNamespace(name),
                    {},
@@ -1788,7 +1788,7 @@
   var CheckedUnaryTypeVariable =
   def('UnaryTypeVariable',
       {},
-      [String_, Function_([Type, Type])],
+      [String_, AnyFunction],
       function(name) {
         return def(name, {}, [Type, Type], UnaryTypeVariable(name));
       });
@@ -1823,7 +1823,7 @@
   var CheckedBinaryTypeVariable =
   def('BinaryTypeVariable',
       {},
-      [String_, Function_([Type, Type, Type])],
+      [String_, AnyFunction],
       function(name) {
         return def(name, {}, [Type, Type, Type], BinaryTypeVariable(name));
       });
@@ -1958,21 +1958,15 @@
     index,              // :: Integer
     f                   // :: Function
   ) {
-    return function() {
+    var expType = typeInfo.types[index];
+    var numArgsExpected = expType.keys.length - 1;
+    return arity(numArgsExpected, function() {
       var args = slice.call(arguments);
-      var expType = typeInfo.types[index];
-      var numArgsExpected = expType.keys.length - 1;
       if (args.length !== numArgsExpected) {
         throw invalidArgumentsLength(typeInfo, index, numArgsExpected, args);
       }
       function checkValue$(propPath, t, x) {
-        checkValue(env,
-                   typeInfo,
-                   $typeVarMapBox,
-                   index,
-                   propPath,
-                   t,
-                   x);
+        checkValue(env, typeInfo, $typeVarMapBox, index, propPath, t, x);
       }
       init(expType.keys).forEach(function(k, idx) {
         checkValue$([k], expType.types[k].type, args[idx]);
@@ -1982,7 +1976,15 @@
       var k = last(expType.keys);
       checkValue$([k], expType.types[k].type, output);
       return output;
-    };
+    });
+  }
+
+  //  wrapFunctionCond ::
+  //    Array Type -> TypeInfo -> Box TypeVarMap -> Integer -> a -> a
+  function wrapFunctionCond(env, typeInfo, $typeVarMapBox, index, value) {
+    return typeInfo.types[index].type === FUNCTION ?
+      wrapFunction(env, typeInfo, $typeVarMapBox, index, value) :
+      value;
   }
 
   //  wrapFunctions :: ... -> Array Any
@@ -1993,13 +1995,7 @@
     values              // :: Array Any
   ) {
     return values.map(function(value, idx) {
-      return typeInfo.types[idx].type === FUNCTION ?
-        wrapFunction(env,
-                     typeInfo,
-                     $typeVarMapBox,
-                     idx,
-                     value) :
-        value;
+      return wrapFunctionCond(env, typeInfo, $typeVarMapBox, idx, value);
     });
   }
 
@@ -2357,7 +2353,7 @@
                                         n,
                                         [],
                                         [returnValue]));
-          return returnValue;
+          return wrapFunctionCond(env, typeInfo, [typeVarMap], n, returnValue);
         } else {
           return impl.apply(this, values);
         }
@@ -2419,12 +2415,7 @@
   var create =
   def('create',
       {},
-      [RecordType({checkTypes: Boolean_, env: Array_(Any)}),
-       Function_([String_,
-                  StrMap(Array_(TypeClass)),
-                  Array_(Type),
-                  AnyFunction,
-                  AnyFunction])],
+      [RecordType({checkTypes: Boolean_, env: Array_(Any)}), AnyFunction],
       _create);
 
   //  fromUncheckedUnaryType :: (Type -> Type) -> (Type -> Type)
