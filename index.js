@@ -300,6 +300,13 @@
     return s.slice('('.length, -')'.length);
   }
 
+  //  toMarkdownList :: (String, String, a -> String, Array a) -> String
+  function toMarkdownList(empty, s, f, xs) {
+    return isEmpty(xs) ?
+      empty :
+      Z.reduce(function(s, x) { return s + '  - ' + f(x) + '\n'; }, s, xs);
+  }
+
   //  trimTrailingSpaces :: String -> String
   function trimTrailingSpaces(s) {
     return s.replace(/[ ]+$/gm, '');
@@ -2248,22 +2255,39 @@
       );
     });
 
+    var underlinedTypeVars =
+    underlineTypeVars(typeInfo,
+                      Z.reduce(function($valuesByPath, k) {
+                        $valuesByPath[k] = valuesByPath[k];
+                        return $valuesByPath;
+                      }, {}, keys));
+
     return new TypeError(trimTrailingSpaces(
-      'Type-variable constraint violation\n\n' +
-      underlineTypeVars(typeInfo,
-                        Z.reduce(function($valuesByPath, k) {
-                          $valuesByPath[k] = valuesByPath[k];
-                          return $valuesByPath;
-                        }, {}, keys)) +
-      Z.reduce(function(st, k) {
-        var values = valuesByPath[k];
-        return isEmpty(values) ? st : {
-          idx: st.idx + 1,
-          s: st.s + '\n' + showValuesAndTypes(env, values, st.idx + 1) + '\n'
-        };
-      }, {idx: 0, s: ''}, keys).s + '\n' +
-      'Since there is no type of which all the above values are ' +
-      'members, the type-variable constraint has been violated.\n'
+      values.length === 1 && isEmpty(determineActualTypesLoose(env, values)) ?
+        'Unrecognized value\n\n' +
+        underlinedTypeVars + '\n' +
+        '1)  ' + Z.toString(values[0]) + ' :: (no types)\n\n' +
+        toMarkdownList(
+          'The environment is empty! ' +
+          'Polymorphic functions require a non-empty environment.\n',
+          'The value at position 1 is not a member of any type in ' +
+          'the environment.\n\n' +
+          'The environment contains the following types:\n\n',
+          showType,
+          env
+        ) :
+      // else
+        'Type-variable constraint violation\n\n' +
+        underlinedTypeVars + '\n' +
+        Z.reduce(function(st, k) {
+          var values = valuesByPath[k];
+          return isEmpty(values) ? st : {
+            idx: st.idx + 1,
+            s: st.s + showValuesAndTypes(env, values, st.idx + 1) + '\n\n'
+          };
+        }, {idx: 0, s: ''}, keys).s +
+        'Since there is no type of which all the above values are ' +
+        'members, the type-variable constraint has been violated.\n'
     ));
   }
 
@@ -2327,11 +2351,7 @@
       ) + '\n' +
       'Expected ' + numArgs(numArgsExpected) +
       ' but received ' + numArgs(args.length) +
-      (args.length === 0 ?
-         '.\n' :
-         Z.reduce(function(s, x) { return s + '  - ' + Z.toString(x) + '\n'; },
-                  ':\n\n',
-                  args))
+      toMarkdownList('.\n', ':\n\n', Z.toString, args)
     ));
   }
 

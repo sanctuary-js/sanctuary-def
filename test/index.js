@@ -974,6 +974,53 @@ describe('def', function() {
            'Since there is no type of which all the above values are members, the type-variable constraint has been violated.\n');
   });
 
+  it('throws custom error for unrecognized value (empty env)', function() {
+    var env = [];
+    var def = $.create({checkTypes: true, env: env});
+
+    //  id :: a -> a
+    var id = def('id', {}, [a, a], identity);
+
+    throws(function() { id(/xxx/); },
+           TypeError,
+           'Unrecognized value\n' +
+           '\n' +
+           'id :: a -> a\n' +
+           '      ^\n' +
+           '      1\n' +
+           '\n' +
+           '1)  /xxx/ :: (no types)\n' +
+           '\n' +
+           'The environment is empty! Polymorphic functions require a non-empty environment.\n');
+  });
+
+  it('throws custom error for unrecognized value (non-empty env)', function() {
+    var env = [$.Array($.Unknown), $.Boolean, $.Number, $.String];
+    var def = $.create({checkTypes: true, env: env});
+
+    //  id :: a -> a
+    var id = def('id', {}, [a, a], identity);
+
+    throws(function() { id(/xxx/); },
+           TypeError,
+           'Unrecognized value\n' +
+           '\n' +
+           'id :: a -> a\n' +
+           '      ^\n' +
+           '      1\n' +
+           '\n' +
+           '1)  /xxx/ :: (no types)\n' +
+           '\n' +
+           'The value at position 1 is not a member of any type in the environment.\n' +
+           '\n' +
+           'The environment contains the following types:\n' +
+           '\n' +
+           '  - Array ???\n' +
+           '  - Boolean\n' +
+           '  - Number\n' +
+           '  - String\n');
+  });
+
   it('returns a function which type checks its return value', function() {
     //  add :: Number -> Number -> Number
     var add = def('add', {}, [$.Number, $.Number, $.Number], always('XXX'));
