@@ -2868,6 +2868,39 @@ describe('def', function() {
            'The value at position 1 is not a member of ‘FiniteNumber’.\n' +
            '\n' +
            'See https://github.com/sanctuary-js/sanctuary-def/tree/v' + version + '#FiniteNumber for information about the sanctuary-def/FiniteNumber type.\n');
+
+    //  sort :: (Ord a, Applicative f, Foldable f, Monoid (f a)) => f a -> f a
+    var sort =
+    def('sort',
+        {a: [Z.Ord], f: [Z.Applicative, Z.Foldable, Z.Monoid]},
+        [f(a), f(a)],
+        function(m) {
+          var M = m.constructor;
+          return Z.reduce(
+            function(m, x) { return Z.concat(m, Z.of(M, x)); },
+            Z.empty(M),
+            Z.reduce(function(xs, x) {
+              var idx = 0;
+              while (idx < xs.length && Z.lte(xs[idx], x)) idx += 1;
+              xs.splice(idx, 0, x);
+              return xs;
+            }, [], m)
+          );
+        });
+
+    eq(sort(['foo', 'bar', 'baz']), ['bar', 'baz', 'foo']);
+
+    throws(function() { sort([Math.sin, Math.cos]); },
+           TypeError,
+           'Type-class constraint violation\n' +
+           '\n' +
+           'sort :: (Ord a, Applicative f, Foldable f, Monoid f) => f a -> f a\n' +
+           '         ^^^^^                                            ^\n' +
+           '                                                          1\n' +
+           '\n' +
+           '1)  function sin() { [native code] } :: Function\n' +
+           '\n' +
+           '‘sort’ requires ‘a’ to satisfy the Ord type-class constraint; the value at position 1 does not.\n');
   });
 
   it('supports binary type variables', function() {

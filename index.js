@@ -1142,22 +1142,38 @@
             return isEmpty(expType.keys) || isEmpty(t.keys) ?
               e :
               Z.chain(function(r) {
-                var $1 = expType.types[expType.keys[0]].type;
-                var k = last(t.keys);
-                var innerValues = Z.chain(t.types[k].extractor, values);
-                return Z.reduce(function(e, x) {
-                  return Z.chain(function(r) {
-                    return $1.type === VARIABLE || test(env, $1, x) ?
-                      Right(r) :
-                      Left(function() {
-                        return invalidValue(env,
-                                            typeInfo,
-                                            index,
-                                            Z.concat(propPath, [k]),
-                                            x);
-                      });
-                  }, e);
-                }, Right(r), innerValues);
+                //  The `a` in `Functor f => f a` corresponds to the `a`
+                //  in `Maybe a` but to the `b` in `Either a b`. A type
+                //  variable's $1 will correspond to either $1 or $2 of
+                //  the actual type depending on the actual type's arity.
+                var offset = t.keys.length - expType.keys.length;
+                return expType.keys.reduce(function(r, k, idx) {
+                  var extractor = t.types[t.keys[offset + idx]].extractor;
+                  var innerValues = Z.chain(extractor, values);
+                  return Z.chain(
+                    function(r) {
+                      return recur(env,
+                                   typeInfo,
+                                   r.typeVarMap,
+                                   expType.types[k].type,
+                                   index,
+                                   Z.concat(propPath, [k]),
+                                   innerValues);
+                    },
+                    Z.reduce(function(e, x) {
+                      var t = expType.types[k].type;
+                      return Z.chain(function(r) {
+                        return test(env, t, x) ? Right(r) : Left(function() {
+                          return invalidValue(env,
+                                              typeInfo,
+                                              index,
+                                              Z.concat(propPath, [k]),
+                                              x);
+                        });
+                      }, e);
+                    }, Right(r), innerValues)
+                  );
+                }, Right(r));
               }, e);
           }, Right({typeVarMap: typeVarMap$, types: okTypes}), okTypes);
 
