@@ -4,6 +4,7 @@ var assert = require('assert');
 var vm = require('vm');
 
 var Z = require('sanctuary-type-classes');
+var Z$version = require('sanctuary-type-classes/package.json').version;
 var type = require('sanctuary-type-identifiers');
 
 var $ = require('..');
@@ -2631,7 +2632,9 @@ describe('def', function() {
            '\n' +
            '1)  Left(1) :: Either Number ???, Either Integer ???\n' +
            '\n' +
-           '‘alt’ requires ‘a’ to satisfy the Alternative type-class constraint; the value at position 1 does not.\n');
+           '‘alt’ requires ‘a’ to satisfy the Alternative type-class constraint; the value at position 1 does not.\n' +
+           '\n' +
+           'See https://github.com/sanctuary-js/sanctuary-type-classes/tree/v' + Z$version + '#Alternative for information about the sanctuary-type-classes/Alternative type class.\n');
 
     throws(function() { alt($.__, Right(1)); },
            TypeError,
@@ -2643,7 +2646,9 @@ describe('def', function() {
            '\n' +
            '1)  Right(1) :: Either ??? Number, Either ??? Integer\n' +
            '\n' +
-           '‘alt’ requires ‘a’ to satisfy the Alternative type-class constraint; the value at position 1 does not.\n');
+           '‘alt’ requires ‘a’ to satisfy the Alternative type-class constraint; the value at position 1 does not.\n' +
+           '\n' +
+           'See https://github.com/sanctuary-js/sanctuary-type-classes/tree/v' + Z$version + '#Alternative for information about the sanctuary-type-classes/Alternative type class.\n');
 
     //  concat :: Semigroup a => a -> a -> a
     var concat = def('concat', {a: [Z.Semigroup]}, [a, a, a], Z.concat);
@@ -2661,7 +2666,9 @@ describe('def', function() {
            '\n' +
            '1)  /x/ :: RegExp\n' +
            '\n' +
-           '‘concat’ requires ‘a’ to satisfy the Semigroup type-class constraint; the value at position 1 does not.\n');
+           '‘concat’ requires ‘a’ to satisfy the Semigroup type-class constraint; the value at position 1 does not.\n' +
+           '\n' +
+           'See https://github.com/sanctuary-js/sanctuary-type-classes/tree/v' + Z$version + '#Semigroup for information about the sanctuary-type-classes/Semigroup type class.\n');
 
     throws(function() { concat($.__, /x/); },
            TypeError,
@@ -2673,7 +2680,9 @@ describe('def', function() {
            '\n' +
            '1)  /x/ :: RegExp\n' +
            '\n' +
-           '‘concat’ requires ‘a’ to satisfy the Semigroup type-class constraint; the value at position 1 does not.\n');
+           '‘concat’ requires ‘a’ to satisfy the Semigroup type-class constraint; the value at position 1 does not.\n' +
+           '\n' +
+           'See https://github.com/sanctuary-js/sanctuary-type-classes/tree/v' + Z$version + '#Semigroup for information about the sanctuary-type-classes/Semigroup type class.\n');
 
     throws(function() { concat([], ''); },
            TypeError,
@@ -2727,7 +2736,9 @@ describe('def', function() {
            '\n' +
            '1)  Right(42) :: Either ??? Number, Either ??? Integer\n' +
            '\n' +
-           '‘filter’ requires ‘m’ to satisfy the Alternative type-class constraint; the value at position 1 does not.\n');
+           '‘filter’ requires ‘m’ to satisfy the Alternative type-class constraint; the value at position 1 does not.\n' +
+           '\n' +
+           'See https://github.com/sanctuary-js/sanctuary-type-classes/tree/v' + Z$version + '#Alternative for information about the sanctuary-type-classes/Alternative type class.\n');
 
     //  concatMaybes :: Semigroup a => Maybe a -> Maybe a -> Maybe a
     var concatMaybes =
@@ -2746,7 +2757,9 @@ describe('def', function() {
            '\n' +
            '1)  /xxx/ :: RegExp\n' +
            '\n' +
-           '‘concatMaybes’ requires ‘a’ to satisfy the Semigroup type-class constraint; the value at position 1 does not.\n');
+           '‘concatMaybes’ requires ‘a’ to satisfy the Semigroup type-class constraint; the value at position 1 does not.\n' +
+           '\n' +
+           'See https://github.com/sanctuary-js/sanctuary-type-classes/tree/v' + Z$version + '#Semigroup for information about the sanctuary-type-classes/Semigroup type class.\n');
 
     throws(function() { concatMaybes(Just('abc'), Just(/xxx/)); },
            TypeError,
@@ -2758,7 +2771,9 @@ describe('def', function() {
            '\n' +
            '1)  /xxx/ :: RegExp\n' +
            '\n' +
-           '‘concatMaybes’ requires ‘a’ to satisfy the Semigroup type-class constraint; the value at position 1 does not.\n');
+           '‘concatMaybes’ requires ‘a’ to satisfy the Semigroup type-class constraint; the value at position 1 does not.\n' +
+           '\n' +
+           'See https://github.com/sanctuary-js/sanctuary-type-classes/tree/v' + Z$version + '#Semigroup for information about the sanctuary-type-classes/Semigroup type class.\n');
 
     throws(function() { concatMaybes(Just('abc'), Just('def')); },
            TypeError,
@@ -2770,7 +2785,9 @@ describe('def', function() {
            '\n' +
            '1)  /xxx/ :: RegExp\n' +
            '\n' +
-           '‘concatMaybes’ requires ‘a’ to satisfy the Semigroup type-class constraint; the value at position 1 does not.\n');
+           '‘concatMaybes’ requires ‘a’ to satisfy the Semigroup type-class constraint; the value at position 1 does not.\n' +
+           '\n' +
+           'See https://github.com/sanctuary-js/sanctuary-type-classes/tree/v' + Z$version + '#Semigroup for information about the sanctuary-type-classes/Semigroup type class.\n');
 
     //  sillyConst :: (Alternative a, Semigroup b) => a -> b -> a
     var sillyConst =
@@ -2791,7 +2808,9 @@ describe('def', function() {
            '\n' +
            '1)  true :: Boolean\n' +
            '\n' +
-           '‘sillyConst’ requires ‘a’ to satisfy the Alternative type-class constraint; the value at position 1 does not.\n');
+           '‘sillyConst’ requires ‘a’ to satisfy the Alternative type-class constraint; the value at position 1 does not.\n' +
+           '\n' +
+           'See https://github.com/sanctuary-js/sanctuary-type-classes/tree/v' + Z$version + '#Alternative for information about the sanctuary-type-classes/Alternative type class.\n');
   });
 
   it('supports unary type variables', function() {
@@ -2853,7 +2872,9 @@ describe('def', function() {
            '\n' +
            '1)  42 :: Number\n' +
            '\n' +
-           '‘sum’ requires ‘f’ to satisfy the Foldable type-class constraint; the value at position 1 does not.\n');
+           '‘sum’ requires ‘f’ to satisfy the Foldable type-class constraint; the value at position 1 does not.\n' +
+           '\n' +
+           'See https://github.com/sanctuary-js/sanctuary-type-classes/tree/v' + Z$version + '#Foldable for information about the sanctuary-type-classes/Foldable type class.\n');
 
     throws(function() { sum(Just(Infinity)); },
            TypeError,
@@ -2900,7 +2921,9 @@ describe('def', function() {
            '\n' +
            '1)  function sin() { [native code] } :: Function\n' +
            '\n' +
-           '‘sort’ requires ‘a’ to satisfy the Ord type-class constraint; the value at position 1 does not.\n');
+           '‘sort’ requires ‘a’ to satisfy the Ord type-class constraint; the value at position 1 does not.\n' +
+           '\n' +
+           'See https://github.com/sanctuary-js/sanctuary-type-classes/tree/v' + Z$version + '#Ord for information about the sanctuary-type-classes/Ord type class.\n');
   });
 
   it('supports binary type variables', function() {
