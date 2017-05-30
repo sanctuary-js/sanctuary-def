@@ -1919,6 +1919,7 @@
   //. //    Semigroup :: TypeClass
   //. const Semigroup = Z.TypeClass(
   //.   'my-package/Semigroup',
+  //.   'http://example.com/my-package#Semigroup',
   //.   [],
   //.   x => x != null && typeof x.concat === 'function'
   //. );
@@ -1940,6 +1941,8 @@
   //. //   1)  {} :: Object, StrMap ???
   //. //
   //. //   ‘concat’ requires ‘a’ to satisfy the Semigroup type-class constraint; the value at position 1 does not.
+  //. //
+  //. //   See http://example.com/my-package#Semigroup for information about the my-package/Semigroup type class.
   //.
   //. concat(null, null);
   //. // ! TypeError: Type-class constraint violation
@@ -1951,6 +1954,8 @@
   //. //   1)  null :: Null
   //. //
   //. //   ‘concat’ requires ‘a’ to satisfy the Semigroup type-class constraint; the value at position 1 does not.
+  //. //
+  //. //   See http://example.com/my-package#Semigroup for information about the my-package/Semigroup type class.
   //. ```
   //.
   //. Multiple constraints may be placed on a type variable by including
@@ -2179,6 +2184,13 @@
     };
   }
 
+  //  see :: (String, { name :: String, url :: String }) -> String
+  function see(label, record) {
+    return record.url &&
+           '\nSee ' + record.url +
+           ' for information about the ' + record.name + ' ' + label + '.\n';
+  }
+
   //  typeClassConstraintViolation :: ... -> Error
   function typeClassConstraintViolation(
     env,            // :: Array Type
@@ -2205,7 +2217,8 @@
       showValuesAndTypes(env, [value], 1) + '\n\n' +
       q(typeInfo.name) + ' requires ' + q(expType.name) + ' to satisfy the ' +
       stripNamespace(typeClass.name) + ' type-class constraint; ' +
-      'the value at position 1 does not.\n'
+      'the value at position 1 does not.\n' +
+      see('type class', typeClass)
     ));
   }
 
@@ -2272,8 +2285,7 @@
       showValuesAndTypes(env, [value], 1) + '\n\n' +
       'The value at position 1 is not a member of ' + showTypeQuoted(t) + '.' +
       '\n' +
-      (t.url &&
-       '\nSee ' + t.url + ' for information about the ' + t.name + ' type.\n')
+      see('type', t)
     ));
   }
 
