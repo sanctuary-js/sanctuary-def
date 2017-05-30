@@ -12,7 +12,7 @@
   },
   "dependencies": {
     "sanctuary-type-classes": "6.0.x",
-    "sanctuary-type-identifiers": "1.0.x"
+    "sanctuary-type-identifiers": "2.0.x"
   },
   "devDependencies": {
     "eslint": "3.19.x",
