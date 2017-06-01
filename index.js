@@ -2191,9 +2191,10 @@
     };
   }
 
-  //  see :: (String, { name :: String, url :: String }) -> String
+  //  see :: (String, { name :: String, url :: String? }) -> String
   function see(label, record) {
-    return record.url &&
+    return record.url == null || record.url === '' ?
+           '' :
            '\nSee ' + record.url +
            ' for information about the ' + record.name + ' ' + label + '.\n';
   }
