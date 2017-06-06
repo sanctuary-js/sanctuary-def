@@ -446,6 +446,14 @@
   //. type `Type` as a function of type `Any -> Boolean` which tests values
   //. for membership in the set (though this is an oversimplification).
 
+  //# Accessible :: Type
+  //.
+  //. Type comprising every JavaScript value except `null` and `undefined`.
+  var Accessible = NullaryTypeWithUrl(
+    'sanctuary-def/Accessible',
+    function(x) { return x != null; }
+  );
+
   //# Any :: Type
   //.
   //. Type comprising every JavaScript value.
@@ -2502,6 +2510,7 @@
 
   return {
     __: __,
+    Accessible: Accessible,
     Any: Any,
     AnyFunction: AnyFunction,
     Arguments: Arguments,
