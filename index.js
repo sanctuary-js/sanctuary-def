@@ -312,6 +312,13 @@
     return s.replace(/[ ]+$/gm, '');
   }
 
+  //  unique :: Showable a => Array a -> Array a
+  function unique(xs) {
+    var strMap = {};
+    xs.forEach(function(x) { strMap[Z.toString(x)] = x; });
+    return Object.keys(strMap).map(function(k) { return strMap[k]; });
+  }
+
   //  unless :: (Boolean, (a -> a), a) -> a
   function unless(bool, f, x) {
     return bool ? x : f(x);
@@ -939,7 +946,7 @@
 
     return isEmpty(values) ?
       [Unknown] :
-      or(Z.reduce(refine, env, values), loose ? [Inconsistent] : []);
+      or(unique(Z.reduce(refine, env, values)), loose ? [Inconsistent] : []);
   }
 
   //  rejectInconsistent :: Array Type -> Array Type
