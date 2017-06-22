@@ -280,6 +280,13 @@
     return result;
   }
 
+  //  singleton :: (String, a) -> StrMap a
+  function singleton(k, v) {
+    var result = {};
+    result[k] = v;
+    return result;
+  }
+
   //  strRepeat :: (String, Integer) -> String
   function strRepeat(s, times) {
     return Array(times + 1).join(s);
@@ -903,7 +910,6 @@
 
   //  _determineActualTypes :: ... -> Array Type
   function _determineActualTypes(
-    loose,          // :: Boolean
     env,            // :: Array Type
     seen,           // :: Array Object
     values          // :: Array Any
@@ -927,15 +933,15 @@
             [] :
           t.type === UNARY ?
             Z.map(fromUnaryType(t),
-                  recur(loose, env, seen$, t.types.$1.extractor(value))) :
+                  recur(env, seen$, t.types.$1.extractor(value))) :
           t.type === BINARY ?
             xprod(
               t,
               t.types.$1.type.type === UNKNOWN ?
-                recur(loose, env, seen$, t.types.$1.extractor(value)) :
+                recur(env, seen$, t.types.$1.extractor(value)) :
                 [t.types.$1.type],
               t.types.$2.type.type === UNKNOWN ?
-                recur(loose, env, seen$, t.types.$2.extractor(value)) :
+                recur(env, seen$, t.types.$2.extractor(value)) :
                 [t.types.$2.type]
             ) :
           // else
@@ -946,26 +952,27 @@
 
     return isEmpty(values) ?
       [Unknown] :
-      or(unique(Z.reduce(refine, env, values)), loose ? [Inconsistent] : []);
+      or(unique(Z.reduce(refine, env, values)), [Inconsistent]);
   }
 
-  //  rejectInconsistent :: Array Type -> Array Type
-  function rejectInconsistent(types) {
-    return types.filter(function(t) {
-      return t.type !== INCONSISTENT && t.type !== UNKNOWN;
-    });
+  //  isConsistent :: Type -> Boolean
+  function isConsistent(t) {
+    return t.type === UNARY   ? isConsistent(t.types.$1.type) :
+           t.type === BINARY  ? isConsistent(t.types.$1.type) &&
+                                isConsistent(t.types.$2.type) :
+           /* else */           t.type !== INCONSISTENT;
   }
 
   //  determineActualTypesStrict :: (Array Type, Array Any) -> Array Type
   function determineActualTypesStrict(env, values) {
-    var types$ = _determineActualTypes(false, env, [], values);
-    return rejectInconsistent(types$);
+    return _determineActualTypes(env, [], values)
+           .filter(isConsistent);
   }
 
   //  determineActualTypesLoose :: (Array Type, Array Any) -> Array Type
   function determineActualTypesLoose(env, values) {
-    var types$ = _determineActualTypes(true, env, [], values);
-    return rejectInconsistent(types$);
+    return _determineActualTypes(env, [], values)
+           .filter(function(t) { return t.type !== INCONSISTENT; });
   }
 
   //  TypeInfo = { name :: String
@@ -1004,6 +1011,8 @@
       $typeVarMap[typeVar.name].valuesByPath[key] = [];
     }
 
+    var isNullaryTypeVar = isEmpty(typeVar.keys);
+
     values.forEach(function(value) {
       $typeVarMap[typeVar.name].valuesByPath[key].push(value);
       $typeVarMap[typeVar.name].types = Z.chain(
@@ -1013,34 +1022,25 @@
           return (
             invalid ?
               [] :
-            typeVar.keys.length > 0 ?
-              [t].filter(function(t) {
-                return (
-                  t.type !== RECORD &&
-                  t.keys.length >= typeVar.keys.length &&
-                  t.keys.slice(-typeVar.keys.length).every(function(k) {
-                    var xs = t.types[k].extractor(value);
-                    return isEmpty(xs) ||
-                           !isEmpty(determineActualTypesStrict(env, xs));
-                  })
-                );
-              }) :
             t.type === UNARY ?
+              isNullaryTypeVar &&
               t.types.$1.type.type === UNKNOWN &&
               !isEmpty(xs = t.types.$1.extractor(value)) ?
                 Z.map(fromUnaryType(t),
                       determineActualTypesStrict(env, xs)) :
                 [t] :
             t.type === BINARY ?
-              xprod(t,
-                    t.types.$1.type.type === UNKNOWN &&
-                    !isEmpty(xs = t.types.$1.extractor(value)) ?
-                      determineActualTypesStrict(env, xs) :
-                      [t.types.$1.type],
-                    t.types.$2.type.type === UNKNOWN &&
-                    !isEmpty(xs = t.types.$2.extractor(value)) ?
-                      determineActualTypesStrict(env, xs) :
-                      [t.types.$2.type]) :
+              isNullaryTypeVar ?
+                xprod(t,
+                      t.types.$1.type.type === UNKNOWN &&
+                      !isEmpty(xs = t.types.$1.extractor(value)) ?
+                        determineActualTypesStrict(env, xs) :
+                        [t.types.$1.type],
+                      t.types.$2.type.type === UNKNOWN &&
+                      !isEmpty(xs = t.types.$2.extractor(value)) ?
+                        determineActualTypesStrict(env, xs) :
+                        [t.types.$2.type]) :
+                [t] :
             // else
               [t]
           );
@@ -1066,7 +1066,7 @@
             return function(propPath) {
               var indexedPropPath = Z.concat([index], propPath);
               return function(s) {
-                if (t.type === VARIABLE) {
+                if (t.type === VARIABLE && isEmpty(t.keys)) {
                   var key = JSON.stringify(indexedPropPath);
                   var exists = hasOwnProperty.call(valuesByPath, key);
                   return (exists && !isEmpty(valuesByPath[key]) ? f : _)(s);
@@ -1161,7 +1161,7 @@
                 //  variable's $1 will correspond to either $1 or $2 of
                 //  the actual type depending on the actual type's arity.
                 var offset = t.keys.length - expType.keys.length;
-                return expType.keys.reduce(function(r, k, idx) {
+                return expType.keys.reduce(function(e, k, idx) {
                   var extractor = t.types[t.keys[offset + idx]].extractor;
                   var innerValues = Z.chain(extractor, values);
                   return Z.chain(
@@ -1178,14 +1178,21 @@
                       var t = expType.types[k].type;
                       return Z.chain(function(r) {
                         return test(env, t, x) ? Right(r) : Left(function() {
-                          return invalidValue(env,
-                                              typeInfo,
-                                              index,
-                                              Z.concat(propPath, [k]),
-                                              x);
+                          var propPath$ = Z.concat(propPath, [k]);
+                          return t.type === VARIABLE ?
+                            typeVarConstraintViolation(
+                              env,
+                              typeInfo,
+                              index,
+                              propPath$,
+                              singleton(JSON.stringify(Z.concat([index],
+                                                                propPath$)),
+                                        [x])
+                            ) :
+                            invalidValue(env, typeInfo, index, propPath$, x);
                         });
                       }, e);
-                    }, Right(r), innerValues)
+                    }, e, innerValues)
                   );
                 }, Right(r));
               }, e);
