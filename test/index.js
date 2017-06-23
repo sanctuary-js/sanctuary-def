@@ -2016,6 +2016,32 @@ describe('def', function() {
     });
   });
 
+  it('lists the types of each value without duplicates', function() {
+    var env = [$.Array($.Unknown), $.Number, $.Integer];
+    var def = $.create({checkTypes: true, env: env});
+
+    //  add :: Number -> Number -> Number
+    var add =
+    def('add',
+        {},
+        [$.Number, $.Number, $.Number],
+        function(x, y) { return x + y; });
+
+    throws(function() { add([[1], [2]]); },
+           TypeError,
+           'Invalid value\n' +
+           '\n' +
+           'add :: Number -> Number -> Number\n' +
+           '       ^^^^^^\n' +
+           '         1\n' +
+           '\n' +
+           '1)  [[1], [2]] :: Array (Array Number), Array (Array Integer)\n' +
+           '\n' +
+           'The value at position 1 is not a member of ‘Number’.\n' +
+           '\n' +
+           'See https://github.com/sanctuary-js/sanctuary-def/tree/v' + version + '#Number for information about the Number type.\n');
+  });
+
   it('supports polymorphism via type variables', function() {
     var env = $.env.concat([Either($.Unknown, $.Unknown), Maybe($.Unknown), $Pair($.Unknown, $.Unknown)]);
     var def = $.create({checkTypes: true, env: env});
