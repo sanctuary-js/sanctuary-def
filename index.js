@@ -1882,6 +1882,26 @@
         return def(name, {}, [Type, Type, Type], BinaryTypeVariable(name));
       });
 
+  //# Thunk :: Type -> Type
+  //.
+  //. `$.Thunk(T)` is shorthand for `$.Function([T])`, the type comprising
+  //. every nullary function (thunk) which returns a value of type `T`.
+  var Thunk =
+  def('Thunk',
+      {},
+      [Type, Type],
+      function(t) { return Function_([t]); });
+
+  //# Predicate :: Type -> Type
+  //.
+  //. `$.Predicate(T)` is shorthand for `$.Function([T, $.Boolean])`, the type
+  //. comprising every predicate function which takes a value of type `T`.
+  var Predicate =
+  def('Predicate',
+      {},
+      [Type, Type],
+      function(t) { return Function_([t, Boolean_]); });
+
   //. ### Type classes
   //.
   //. `concatS`, defined earlier, is a function which concatenates two strings.
@@ -2564,7 +2584,9 @@
     RecordType: CheckedRecordType,
     TypeVariable: CheckedTypeVariable,
     UnaryTypeVariable: CheckedUnaryTypeVariable,
-    BinaryTypeVariable: CheckedBinaryTypeVariable
+    BinaryTypeVariable: CheckedBinaryTypeVariable,
+    Thunk: Thunk,
+    Predicate: Predicate
   };
 
 }));

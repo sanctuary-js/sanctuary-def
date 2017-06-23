@@ -3259,3 +3259,83 @@ describe('BinaryTypeVariable', function() {
   });
 
 });
+
+describe('Thunk', function() {
+
+  it('is a unary function', function() {
+    eq(typeof $.Thunk, 'function');
+    eq($.Thunk.length, 1);
+    eq($.Thunk.toString(), 'Thunk :: Type -> Type');
+  });
+
+  it('is short for `t => $.Function([t])`', function() {
+    var env = $.env;
+    var def = $.create({checkTypes: true, env: env});
+
+    //  why :: (() -> Integer) -> Integer
+    var why =
+    def('why',
+        {},
+        [$.Thunk($.Integer), $.Integer],
+        function(thunk) { return thunk(); });
+
+    eq(why(function() { return 42; }), 42);
+
+    throws(function() { why(function() { return 'Who knows?'; }); },
+           TypeError,
+           'Invalid value\n' +
+           '\n' +
+           'why :: (() -> Integer) -> Integer\n' +
+           '              ^^^^^^^\n' +
+           '                 1\n' +
+           '\n' +
+           '1)  "Who knows?" :: String\n' +
+           '\n' +
+           'The value at position 1 is not a member of ‘Integer’.\n' +
+           '\n' +
+           'See https://github.com/sanctuary-js/sanctuary-def/tree/v' + version + '#Integer for information about the sanctuary-def/Integer type.\n');
+  });
+
+});
+
+describe('Predicate', function() {
+
+  it('is a unary function', function() {
+    eq(typeof $.Predicate, 'function');
+    eq($.Predicate.length, 1);
+    eq($.Predicate.toString(), 'Predicate :: Type -> Type');
+  });
+
+  it('is short for `t => $.Function([t, $.Boolean])`', function() {
+    var env = $.env;
+    var def = $.create({checkTypes: true, env: env});
+
+    //  when :: (a -> Boolean) -> (a -> a) -> a -> a
+    var when =
+    def('when',
+        {},
+        [$.Predicate(a), $.Function([a, a]), a, a],
+        function(pred, f, x) { return pred(x) ? f(x) : x; });
+
+    //  abs :: Number -> Number
+    var abs = when(function(x) { return x < 0; }, function(x) { return -x; });
+
+    eq(abs(42), 42);
+    eq(abs(-1), 1);
+
+    throws(function() { when(identity, identity, 'foo'); },
+           TypeError,
+           'Invalid value\n' +
+           '\n' +
+           'when :: (a -> Boolean) -> (a -> a) -> a -> a\n' +
+           '              ^^^^^^^\n' +
+           '                 1\n' +
+           '\n' +
+           '1)  "foo" :: String\n' +
+           '\n' +
+           'The value at position 1 is not a member of ‘Boolean’.\n' +
+           '\n' +
+           'See https://github.com/sanctuary-js/sanctuary-def/tree/v' + version + '#Boolean for information about the Boolean type.\n');
+  });
+
+});
