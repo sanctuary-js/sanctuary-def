@@ -69,6 +69,7 @@ var MIN_SAFE_INTEGER = -MAX_SAFE_INTEGER;
 var Integer = $.NullaryType(
   'my-package/Integer',
   'http://example.com/my-package#Integer',
+  $.Any,
   function(x) {
     return $.Number._test(x) &&
            Math.floor(x) === Number(x) &&
@@ -3025,6 +3026,7 @@ describe('def', function() {
     var Void = $.NullaryType(
       'my-package/Void',
       'http://example.com/my-package#Void',
+      $.Any,
       function(x) { count += 1; return false; }
     );
 
@@ -3097,10 +3099,10 @@ describe('test', function() {
 
 describe('NullaryType', function() {
 
-  it('is a ternary function', function() {
+  it('is a quaternary function', function() {
     eq(typeof $.NullaryType, 'function');
-    eq($.NullaryType.length, 3);
-    eq($.NullaryType.toString(), 'NullaryType :: String -> String -> (Any -> Boolean) -> Type');
+    eq($.NullaryType.length, 4);
+    eq($.NullaryType.toString(), 'NullaryType :: String -> String -> Type -> (Any -> Boolean) -> Type');
   });
 
 });

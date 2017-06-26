@@ -353,6 +353,7 @@
     name,       // :: String
     url,        // :: String
     format,     // :: (String -> String, String -> String -> String) -> String
+    parent,     // :: Type
     test,       // :: Any -> Boolean
     keys,       // :: Array String
     types       // :: StrMap { extractor :: a -> Array b, type :: Type }
@@ -362,27 +363,35 @@
     this.keys = keys;
     this.name = name;
     this.type = type;
+    this.parent = parent;
     this.types = types;
     this.url = url;
   }
 
   _Type['@@type'] = 'sanctuary-def/Type';
 
+  _Type.prototype.test = function(x) {
+    return this.parent.test(x) && this._test(x);
+  };
+
   _Type.prototype.validate = function(x) {
-    if (!this._test(x)) return Left({value: x, propPath: []});
-    for (var idx = 0; idx < this.keys.length; idx += 1) {
-      var k = this.keys[idx];
-      var t = this.types[k];
-      for (var idx2 = 0, ys = t.extractor(x); idx2 < ys.length; idx2 += 1) {
-        var result = t.type.validate(ys[idx2]);
-        if (result.isLeft) {
-          var value = result.value.value;
-          var propPath = Z.concat([k], result.value.propPath);
-          return Left({value: value, propPath: propPath});
+    var self = this;
+    return Z.chain(function(x) {
+      if (!self._test(x)) return Left({value: x, propPath: []});
+      for (var idx = 0; idx < self.keys.length; idx += 1) {
+        var k = self.keys[idx];
+        var t = self.types[k];
+        for (var idx2 = 0, ys = t.extractor(x); idx2 < ys.length; idx2 += 1) {
+          var result = t.type.validate(ys[idx2]);
+          if (result.isLeft) {
+            var value = result.value.value;
+            var propPath = Z.concat([k], result.value.propPath);
+            return Left({value: value, propPath: propPath});
+          }
         }
       }
-    }
-    return Right(x);
+      return Right(x);
+    }, self.parent.validate(x));
   };
 
   _Type.prototype.toString = function() {
@@ -397,10 +406,6 @@
   var UNARY         = 'UNARY';
   var UNKNOWN       = 'UNKNOWN';
   var VARIABLE      = 'VARIABLE';
-
-  //  Inconsistent :: Type
-  var Inconsistent =
-  new _Type(INCONSISTENT, '', '', always2('???'), K(false), [], {});
 
   //  typeEq :: String -> a -> Boolean
   function typeEq(name) {
@@ -424,9 +429,9 @@
            '#' + stripNamespace(name);
   }
 
-  //  NullaryTypeWithUrl :: (String, Any -> Boolean) -> Type
-  function NullaryTypeWithUrl(name, test) {
-    return NullaryType(name, functionUrl(name), test);
+  //  NullaryTypeWithUrl :: (String, Type, Any -> Boolean) -> Type
+  function NullaryTypeWithUrl(name, parent, test) {
+    return NullaryType(name, functionUrl(name), parent, test);
   }
 
   //  EnumTypeWithUrl :: (String, Array Any) -> Type
@@ -456,17 +461,29 @@
   //# Any :: Type
   //.
   //. Type comprising every JavaScript value.
-  var Any = NullaryTypeWithUrl('sanctuary-def/Any', K(true));
+  var Any = NullaryTypeWithUrl('sanctuary-def/Any', null, null);
+  Any.parent = Any;
+  Any.test = K(true);
+  Any.validate = Right;
+
+  //# None :: Type
+  //.
+  //. Type with no members.
+  var None = NullaryTypeWithUrl('sanctuary-def/None', Any, K(false));
+
+  //  Inconsistent :: Type
+  var Inconsistent =
+  new _Type(INCONSISTENT, '', '', always2('???'), None, K(false), [], {});
 
   //# AnyFunction :: Type
   //.
   //. Type comprising every Function value.
-  var AnyFunction = NullaryTypeWithUrl('Function', typeofEq('function'));
+  var AnyFunction = NullaryTypeWithUrl('Function', Any, typeofEq('function'));
 
   //# Arguments :: Type
   //.
   //. Type comprising every [`arguments`][arguments] object.
-  var Arguments = NullaryTypeWithUrl('Arguments', typeEq('Arguments'));
+  var Arguments = NullaryTypeWithUrl('Arguments', Any, typeEq('Arguments'));
 
   //# Array :: Type -> Type
   //.
@@ -476,18 +493,32 @@
   //# Boolean :: Type
   //.
   //. Type comprising `true` and `false`.
-  var Boolean_ = NullaryTypeWithUrl('Boolean', typeofEq('boolean'));
+  var Boolean_ = NullaryTypeWithUrl('Boolean', Any, typeofEq('boolean'));
 
   //# Date :: Type
   //.
   //. Type comprising every Date value.
-  var Date_ = NullaryTypeWithUrl('Date', typeEq('Date'));
+  var Date_ = NullaryTypeWithUrl('Date', Any, typeEq('Date'));
 
   //# Error :: Type
   //.
   //. Type comprising every Error value, including values of more specific
   //. constructors such as [`SyntaxError`][] and [`TypeError`][].
-  var Error_ = NullaryTypeWithUrl('Error', typeEq('Error'));
+  var Error_ = NullaryTypeWithUrl('Error', Any, typeEq('Error'));
+
+  //# Number :: Type
+  //.
+  //. Type comprising every primitive Number value (including `NaN`).
+  var Number_ = NullaryTypeWithUrl('Number', Any, typeofEq('number'));
+
+  //# ValidNumber :: Type
+  //.
+  //. Type comprising every [`Number`][] value except `NaN`.
+  var ValidNumber = NullaryTypeWithUrl(
+    'sanctuary-def/ValidNumber',
+    Number_,
+    function(x) { return !isNaN(x); }
+  );
 
   //# FiniteNumber :: Type
   //.
@@ -495,7 +526,8 @@
   //. `-Infinity`.
   var FiniteNumber = NullaryTypeWithUrl(
     'sanctuary-def/FiniteNumber',
-    function(x) { return ValidNumber._test(x) && isFinite(x); }
+    ValidNumber,
+    isFinite
   );
 
   //# Function :: Array Type -> Type
@@ -522,8 +554,6 @@
                           last(xs));
     }
 
-    var test = AnyFunction._test;
-
     var $keys = [];
     var $types = {};
     types.forEach(function(t, idx) {
@@ -532,8 +562,20 @@
       $types[k] = {extractor: K([]), type: t};
     });
 
-    return new _Type(FUNCTION, '', '', format, test, $keys, $types);
+    return new _Type(FUNCTION,
+                     '',
+                     '',
+                     format,
+                     AnyFunction,
+                     K(true),
+                     $keys,
+                     $types);
   }
+
+  //# RegExp :: Type
+  //.
+  //. Type comprising every RegExp value.
+  var RegExp_ = NullaryTypeWithUrl('RegExp', Any, typeEq('RegExp'));
 
   //# GlobalRegExp :: Type
   //.
@@ -542,7 +584,8 @@
   //. See also [`NonGlobalRegExp`][].
   var GlobalRegExp = NullaryTypeWithUrl(
     'sanctuary-def/GlobalRegExp',
-    function(x) { return RegExp_._test(x) && x.global; }
+    RegExp_,
+    function(x) { return x.global; }
   );
 
   //# Integer :: Type
@@ -551,9 +594,9 @@
   //. [[`Number.MIN_SAFE_INTEGER`][min] .. [`Number.MAX_SAFE_INTEGER`][max]].
   var Integer = NullaryTypeWithUrl(
     'sanctuary-def/Integer',
+    ValidNumber,
     function(x) {
-      return ValidNumber._test(x) &&
-             Math.floor(x) === x &&
+      return Math.floor(x) === x &&
              x >= MIN_SAFE_INTEGER &&
              x <= MAX_SAFE_INTEGER;
     }
@@ -564,7 +607,8 @@
   //. Type comprising every [`FiniteNumber`][] value less than zero.
   var NegativeFiniteNumber = NullaryTypeWithUrl(
     'sanctuary-def/NegativeFiniteNumber',
-    function(x) { return FiniteNumber._test(x) && x < 0; }
+    FiniteNumber,
+    function(x) { return x < 0; }
   );
 
   //# NegativeInteger :: Type
@@ -572,7 +616,8 @@
   //. Type comprising every [`Integer`][] value less than zero.
   var NegativeInteger = NullaryTypeWithUrl(
     'sanctuary-def/NegativeInteger',
-    function(x) { return Integer._test(x) && x < 0; }
+    Integer,
+    function(x) { return x < 0; }
   );
 
   //# NegativeNumber :: Type
@@ -580,7 +625,8 @@
   //. Type comprising every [`Number`][] value less than zero.
   var NegativeNumber = NullaryTypeWithUrl(
     'sanctuary-def/NegativeNumber',
-    function(x) { return Number_._test(x) && x < 0; }
+    Number_,
+    function(x) { return x < 0; }
   );
 
   //# NonEmpty :: Type -> Type
@@ -607,7 +653,8 @@
   //. See also [`GlobalRegExp`][].
   var NonGlobalRegExp = NullaryTypeWithUrl(
     'sanctuary-def/NonGlobalRegExp',
-    function(x) { return RegExp_._test(x) && !x.global; }
+    RegExp_,
+    function(x) { return !x.global; }
   );
 
   //# NonZeroFiniteNumber :: Type
@@ -615,7 +662,8 @@
   //. Type comprising every [`FiniteNumber`][] value except `0` and `-0`.
   var NonZeroFiniteNumber = NullaryTypeWithUrl(
     'sanctuary-def/NonZeroFiniteNumber',
-    function(x) { return FiniteNumber._test(x) && x !== 0; }
+    FiniteNumber,
+    function(x) { return x !== 0; }
   );
 
   //# NonZeroInteger :: Type
@@ -623,7 +671,8 @@
   //. Type comprising every [`Integer`][] value except `0` and `-0`.
   var NonZeroInteger = NullaryTypeWithUrl(
     'sanctuary-def/NonZeroInteger',
-    function(x) { return Integer._test(x) && x !== 0; }
+    Integer,
+    function(x) { return x !== 0; }
   );
 
   //# NonZeroValidNumber :: Type
@@ -631,13 +680,14 @@
   //. Type comprising every [`ValidNumber`][] value except `0` and `-0`.
   var NonZeroValidNumber = NullaryTypeWithUrl(
     'sanctuary-def/NonZeroValidNumber',
-    function(x) { return ValidNumber._test(x) && x !== 0; }
+    ValidNumber,
+    function(x) { return x !== 0; }
   );
 
   //# Null :: Type
   //.
   //. Type whose sole member is `null`.
-  var Null = NullaryTypeWithUrl('Null', typeEq('Null'));
+  var Null = NullaryTypeWithUrl('Null', Any, typeEq('Null'));
 
   //# Nullable :: Type -> Type
   //.
@@ -651,11 +701,6 @@
     }
   );
 
-  //# Number :: Type
-  //.
-  //. Type comprising every primitive Number value (including `NaN`).
-  var Number_ = NullaryTypeWithUrl('Number', typeofEq('number'));
-
   //# Object :: Type
   //.
   //. Type comprising every "plain" Object value. Specifically, values
@@ -665,7 +710,7 @@
   //.   - [`Object.create`][]; or
   //.   - the `new` operator in conjunction with `Object` or a custom
   //.     constructor function.
-  var Object_ = NullaryTypeWithUrl('Object', typeEq('Object'));
+  var Object_ = NullaryTypeWithUrl('Object', Any, typeEq('Object'));
 
   //# Pair :: Type -> Type -> Type
   //.
@@ -683,7 +728,8 @@
   //. Type comprising every [`FiniteNumber`][] value greater than zero.
   var PositiveFiniteNumber = NullaryTypeWithUrl(
     'sanctuary-def/PositiveFiniteNumber',
-    function(x) { return FiniteNumber._test(x) && x > 0; }
+    FiniteNumber,
+    function(x) { return x > 0; }
   );
 
   //# PositiveInteger :: Type
@@ -691,7 +737,8 @@
   //. Type comprising every [`Integer`][] value greater than zero.
   var PositiveInteger = NullaryTypeWithUrl(
     'sanctuary-def/PositiveInteger',
-    function(x) { return Integer._test(x) && x > 0; }
+    Integer,
+    function(x) { return x > 0; }
   );
 
   //# PositiveNumber :: Type
@@ -699,13 +746,9 @@
   //. Type comprising every [`Number`][] value greater than zero.
   var PositiveNumber = NullaryTypeWithUrl(
     'sanctuary-def/PositiveNumber',
-    function(x) { return Number_._test(x) && x > 0; }
+    Number_,
+    function(x) { return x > 0; }
   );
-
-  //# RegExp :: Type
-  //.
-  //. Type comprising every RegExp value.
-  var RegExp_ = NullaryTypeWithUrl('RegExp', typeEq('RegExp'));
 
   //# RegexFlags :: Type
   //.
@@ -732,7 +775,7 @@
   //. `{foo: 1, bar: 2, baz: 'XXX'}` is not.
   var StrMap = UnaryTypeWithUrl(
     'sanctuary-def/StrMap',
-    Object_._test,
+    Object_.test.bind(Object_),
     function(strMap) {
       return Z.reduce(function(xs, x) { return xs.concat([x]); }, [], strMap);
     }
@@ -741,28 +784,31 @@
   //# String :: Type
   //.
   //. Type comprising every primitive String value.
-  var String_ = NullaryTypeWithUrl('String', typeofEq('string'));
+  var String_ = NullaryTypeWithUrl('String', Any, typeofEq('string'));
 
   //# Symbol :: Type
   //.
   //. Type comprising every Symbol value.
-  var Symbol_ = NullaryTypeWithUrl('Symbol', typeofEq('symbol'));
+  var Symbol_ = NullaryTypeWithUrl('Symbol', Any, typeofEq('symbol'));
 
   //# Type :: Type
   //.
   //. Type comprising every `Type` value.
-  var Type = NullaryTypeWithUrl('Type', typeEq('sanctuary-def/Type'));
+  var Type = NullaryTypeWithUrl('Type', Any, typeEq('sanctuary-def/Type'));
 
   //# TypeClass :: Type
   //.
   //. Type comprising every [`TypeClass`][] value.
-  var TypeClass =
-  NullaryTypeWithUrl('TypeClass', typeEq('sanctuary-type-classes/TypeClass'));
+  var TypeClass = NullaryTypeWithUrl(
+    'TypeClass',
+    Any,
+    typeEq('sanctuary-type-classes/TypeClass')
+  );
 
   //# Undefined :: Type
   //.
   //. Type whose sole member is `undefined`.
-  var Undefined = NullaryTypeWithUrl('Undefined', typeEq('Undefined'));
+  var Undefined = NullaryTypeWithUrl('Undefined', Any, typeEq('Undefined'));
 
   //# Unknown :: Type
   //.
@@ -780,22 +826,16 @@
   //.   - `List (List (List Number))`
   //.   - `List (List (List String))`
   //.   - `...`
-  var Unknown = new _Type(UNKNOWN, '', '', always2('???'), K(true), [], {});
+  var Unknown =
+  new _Type(UNKNOWN, '', '', always2('???'), Any, K(true), [], {});
 
   //# ValidDate :: Type
   //.
   //. Type comprising every [`Date`][] value except `new Date(NaN)`.
   var ValidDate = NullaryTypeWithUrl(
     'sanctuary-def/ValidDate',
-    function(x) { return Date_._test(x) && !isNaN(x.valueOf()); }
-  );
-
-  //# ValidNumber :: Type
-  //.
-  //. Type comprising every [`Number`][] value except `NaN`.
-  var ValidNumber = NullaryTypeWithUrl(
-    'sanctuary-def/ValidNumber',
-    function(x) { return Number_._test(x) && !isNaN(x); }
+    Date_,
+    function(x) { return !isNaN(x.valueOf()); }
   );
 
   //# env :: Array Type
@@ -834,7 +874,7 @@
   ];
 
   //  Unchecked :: String -> Type
-  function Unchecked(s) { return NullaryType(s, '', K(true)); }
+  function Unchecked(s) { return NullaryType(s, '', Any, K(true)); }
 
   var def = _create({checkTypes: true, env: env});
 
@@ -1267,20 +1307,9 @@
   //. The environment is only significant if the type contains
   //. [type variables][].
   //.
-  //. One may define a more restrictive type in terms of a more general one:
-  //.
-  //. ```javascript
-  //. //    NonNegativeInteger :: Type
-  //. const NonNegativeInteger = $.NullaryType(
-  //.   'my-package/NonNegativeInteger',
-  //.   'http://example.com/my-package#NonNegativeInteger',
-  //.   x => $.test([], $.Integer, x) && x >= 0
-  //. );
-  //. ```
-  //.
-  //. Using types as predicates is useful in other contexts too. One could,
-  //. for example, define a [record type][] for each endpoint of a REST API
-  //. and validate the bodies of incoming POST requests against these types.
+  //. Using types as predicates is powerful. One could, for example,
+  //. define a [record type][] for each endpoint of a REST API and
+  //. validate the bodies of incoming POST requests against these types.
   function test(env, t, x) {
     var typeInfo = {name: 'name', constraints: {}, types: [t]};
     return satisfactoryTypes(env, typeInfo, {}, t, 0, [], [x]).isRight;
@@ -1290,7 +1319,7 @@
   //.
   //. sanctuary-def provides several functions for defining types.
 
-  //# NullaryType :: String -> String -> (Any -> Boolean) -> Type
+  //# NullaryType :: String -> String -> Type -> (Any -> Boolean) -> Type
   //.
   //. Type constructor for types with no type variables (such as [`Number`][]).
   //.
@@ -1299,6 +1328,8 @@
   //.   - the name of `t` (exposed as `t.name`);
   //.
   //.   - the documentation URL of `t` (exposed as `t.url`); and
+  //.
+  //.   - the parent of `t` (exposed as `t.parent`);
   //.
   //.   - a predicate which accepts any JavaScript value and returns `true` if
   //.     (and only if) the value is a member of `t`.
@@ -1310,8 +1341,8 @@
   //. const Integer = $.NullaryType(
   //.   'my-package/Integer',
   //.   'http://example.com/my-package#Integer',
-  //.   x => typeof x === 'number' &&
-  //.        Math.floor(x) === x &&
+  //.   $.ValidNumber,
+  //.   x => Math.floor(x) === x &&
   //.        x >= Number.MIN_SAFE_INTEGER &&
   //.        x <= Number.MAX_SAFE_INTEGER
   //. );
@@ -1320,7 +1351,8 @@
   //. const NonZeroInteger = $.NullaryType(
   //.   'my-package/NonZeroInteger',
   //.   'http://example.com/my-package#NonZeroInteger',
-  //.   x => $.test([], Integer, x) && x !== 0
+  //.   Integer,
+  //.   x => x !== 0
   //. );
   //.
   //. //    rem :: Integer -> NonZeroInteger -> Integer
@@ -1352,17 +1384,17 @@
   //. //
   //. //   The value at position 1 is not a member of ‘NonZeroInteger’.
   //. ```
-  function NullaryType(name, url, test) {
+  function NullaryType(name, url, parent, test) {
     function format(outer, inner) {
       return outer(stripNamespace(name));
     }
-    return new _Type(NULLARY, name, url, format, test, [], {});
+    return new _Type(NULLARY, name, url, format, parent, test, [], {});
   }
 
   var CheckedNullaryType =
   def('NullaryType',
       {},
-      [String_, String_, Function_([Any, Boolean_]), Type],
+      [String_, String_, Type, Function_([Any, Boolean_]), Type],
       NullaryType);
 
   //# UnaryType :: String -> String -> (Any -> Boolean) -> (t a -> Array a) -> (Type -> Type)
@@ -1450,7 +1482,7 @@
                inner('$1')(String($1)) + outer(')');
       }
       var types = {$1: {extractor: _1, type: $1}};
-      return new _Type(UNARY, name, url, format, test, ['$1'], types);
+      return new _Type(UNARY, name, url, format, Any, test, ['$1'], types);
     };
   }
 
@@ -1471,7 +1503,7 @@
 
   //  fromUnaryType :: Type -> (Type -> Type)
   function fromUnaryType(t) {
-    return UnaryType(t.name, t.url, t._test, t.types.$1.extractor);
+    return UnaryType(t.name, t.url, t.test.bind(t), t.types.$1.extractor);
   }
 
   //# BinaryType :: String -> String -> (Any -> Boolean) -> (t a b -> Array a) -> (t a b -> Array b) -> (Type -> Type -> Type)
@@ -1533,14 +1565,16 @@
   //. const Rank = $.NullaryType(
   //.   'my-package/Rank',
   //.   'http://example.com/my-package#Rank',
-  //.   x => typeof x === 'string' && /^([A23456789JQK]|10)$/.test(x)
+  //.   $.String,
+  //.   x => /^([A23456789JQK]|10)$/.test(x)
   //. );
   //.
   //. //    Suit :: Type
   //. const Suit = $.NullaryType(
   //.   'my-package/Suit',
   //.   'http://example.com/my-package#Suit',
-  //.   x => typeof x === 'string' && /^[\u2660\u2663\u2665\u2666]$/.test(x)
+  //.   $.String,
+  //.   x => /^[\u2660\u2663\u2665\u2666]$/.test(x)
   //. );
   //.
   //. //    Card :: Type
@@ -1573,7 +1607,14 @@
       }
       var types = {$1: {extractor: _1, type: $1},
                    $2: {extractor: _2, type: $2}};
-      return new _Type(BINARY, name, url, format, test, ['$1', '$2'], types);
+      return new _Type(BINARY,
+                       name,
+                       url,
+                       format,
+                       Any,
+                       test,
+                       ['$1', '$2'],
+                       types);
     };
   }
 
@@ -1597,7 +1638,7 @@
   function xprod(t, $1s, $2s) {
     var specialize = BinaryType(t.name,
                                 t.url,
-                                t._test,
+                                t.test.bind(t),
                                 t.types.$1.extractor,
                                 t.types.$2.extractor);
     var $types = [];
@@ -1632,7 +1673,7 @@
   //. );
   //. ```
   function EnumType(name, url, members) {
-    return NullaryType(name, url, memberOf(members));
+    return NullaryType(name, url, Any, memberOf(members));
   }
 
   var CheckedEnumType =
@@ -1710,7 +1751,7 @@
       $types[k] = {extractor: function(x) { return [x[k]]; }, type: fields[k]};
     });
 
-    return new _Type(RECORD, '', '', format, test, keys, $types);
+    return new _Type(RECORD, '', '', format, Object_, test, keys, $types);
   }
 
   var CheckedRecordType =
@@ -1770,7 +1811,7 @@
   //. //   Since there is no type of which all the above values are members, the type-variable constraint has been violated.
   //. ```
   function TypeVariable(name) {
-    return new _Type(VARIABLE, name, '', always2(name), K(true), [], {});
+    return new _Type(VARIABLE, name, '', always2(name), Any, K(true), [], {});
   }
 
   var CheckedTypeVariable =
@@ -1828,7 +1869,14 @@
         return outer('(' + name + ' ') + inner('$1')(String($1)) + outer(')');
       }
       var types = {$1: {extractor: K([]), type: $1}};
-      return new _Type(VARIABLE, name, '', format, K(true), ['$1'], types);
+      return new _Type(VARIABLE,
+                       name,
+                       '',
+                       format,
+                       Any,
+                       K(true),
+                       ['$1'],
+                       types);
     };
   }
 
@@ -1863,7 +1911,7 @@
       var keys = ['$1', '$2'];
       var types = {$1: {extractor: K([]), type: $1},
                    $2: {extractor: K([]), type: $2}};
-      return new _Type(VARIABLE, name, '', format, K(true), keys, types);
+      return new _Type(VARIABLE, name, '', format, Any, K(true), keys, types);
     };
   }
 
@@ -2495,7 +2543,7 @@
   function fromUncheckedUnaryType(typeConstructor) {
     var t = typeConstructor(Unknown);
     var _1 = t.types.$1.extractor;
-    return CheckedUnaryType(t.name, t.url, t._test, _1);
+    return CheckedUnaryType(t.name, t.url, t.test.bind(t), _1);
   }
 
   //  fromUncheckedBinaryType :: ((Type, Type) -> Type) ->
@@ -2504,7 +2552,7 @@
     var t = typeConstructor(Unknown, Unknown);
     var _1 = t.types.$1.extractor;
     var _2 = t.types.$2.extractor;
-    return CheckedBinaryType(t.name, t.url, t._test, _1, _2);
+    return CheckedBinaryType(t.name, t.url, t.test.bind(t), _1, _2);
   }
 
   return {
@@ -2528,6 +2576,7 @@
     NonZeroFiniteNumber: NonZeroFiniteNumber,
     NonZeroInteger: NonZeroInteger,
     NonZeroValidNumber: NonZeroValidNumber,
+    None: None,
     Null: Null,
     Nullable: fromUncheckedUnaryType(Nullable),
     Number: Number_,
