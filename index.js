@@ -466,15 +466,6 @@
   Any.test = K(true);
   Any.validate = Right;
 
-  //# None :: Type
-  //.
-  //. Type with no members.
-  var None = NullaryTypeWithUrl('sanctuary-def/None', Any, K(false));
-
-  //  Inconsistent :: Type
-  var Inconsistent =
-  new _Type(INCONSISTENT, '', '', always2('???'), None, K(false), [], {});
-
   //# AnyFunction :: Type
   //.
   //. Type comprising every Function value.
@@ -500,15 +491,34 @@
   //. Type comprising every Date value.
   var Date_ = NullaryTypeWithUrl('Date', Any, typeEq('Date'));
 
+  //# ValidDate :: Type
+  //.
+  //. Type comprising every [`Date`][] value except `new Date(NaN)`.
+  var ValidDate = NullaryTypeWithUrl(
+    'sanctuary-def/ValidDate',
+    Date_,
+    function(x) { return !isNaN(x.valueOf()); }
+  );
+
   //# Error :: Type
   //.
   //. Type comprising every Error value, including values of more specific
   //. constructors such as [`SyntaxError`][] and [`TypeError`][].
   var Error_ = NullaryTypeWithUrl('Error', Any, typeEq('Error'));
 
+  //  Inconsistent :: Type
+  var Inconsistent =
+  new _Type(INCONSISTENT, '', '', always2('???'), Any, K(false), [], {});
+
+  //# Null :: Type
+  //.
+  //. Type whose sole member is `null`.
+  var Null = NullaryTypeWithUrl('Null', Any, typeEq('Null'));
+
   //# Number :: Type
   //.
-  //. Type comprising every primitive Number value (including `NaN`).
+  //. Type comprising every primitive Number value
+  //. (including `NaN` and `Infinity`).
   var Number_ = NullaryTypeWithUrl('Number', Any, typeofEq('number'));
 
   //# ValidNumber :: Type
@@ -530,62 +540,31 @@
     isFinite
   );
 
-  //# Function :: Array Type -> Type
+  //# NegativeFiniteNumber :: Type
   //.
-  //. Constructor for Function types.
-  //.
-  //. Examples:
-  //.
-  //.   - `$.Function([$.Date, $.String])` represents the `Date -> String`
-  //.     type; and
-  //.   - `$.Function([a, b, a])` represents the `(a, b) -> a` type.
-  function Function_(types) {
-    function format(outer, inner) {
-      var xs = types.map(function(t, idx) {
-        return unless(t.type === RECORD || isEmpty(t.keys),
-                      stripOutermostParens,
-                      inner('$' + String(idx + 1))(String(t)));
-      });
-      var parenthesize = wrap(outer('('))(outer(')'));
-      return parenthesize(unless(types.length === 2,
-                                 parenthesize,
-                                 init(xs).join(outer(', '))) +
-                          outer(' -> ') +
-                          last(xs));
-    }
+  //. Type comprising every [`FiniteNumber`][] less than zero.
+  var NegativeFiniteNumber = NullaryTypeWithUrl(
+    'sanctuary-def/NegativeFiniteNumber',
+    FiniteNumber,
+    function(x) { return x < 0; }
+  );
 
-    var $keys = [];
-    var $types = {};
-    types.forEach(function(t, idx) {
-      var k = '$' + String(idx + 1);
-      $keys.push(k);
-      $types[k] = {extractor: K([]), type: t};
-    });
-
-    return new _Type(FUNCTION,
-                     '',
-                     '',
-                     format,
-                     AnyFunction,
-                     K(true),
-                     $keys,
-                     $types);
-  }
-
-  //# RegExp :: Type
+  //# NonZeroFiniteNumber :: Type
   //.
-  //. Type comprising every RegExp value.
-  var RegExp_ = NullaryTypeWithUrl('RegExp', Any, typeEq('RegExp'));
+  //. Type comprising every [`FiniteNumber`][] value except `0` and `-0`.
+  var NonZeroFiniteNumber = NullaryTypeWithUrl(
+    'sanctuary-def/NonZeroFiniteNumber',
+    FiniteNumber,
+    function(x) { return x !== 0; }
+  );
 
-  //# GlobalRegExp :: Type
+  //# PositiveFiniteNumber :: Type
   //.
-  //. Type comprising every [`RegExp`][] value whose `global` flag is `true`.
-  //.
-  //. See also [`NonGlobalRegExp`][].
-  var GlobalRegExp = NullaryTypeWithUrl(
-    'sanctuary-def/GlobalRegExp',
-    RegExp_,
-    function(x) { return x.global; }
+  //. Type comprising every [`FiniteNumber`][] value greater than zero.
+  var PositiveFiniteNumber = NullaryTypeWithUrl(
+    'sanctuary-def/PositiveFiniteNumber',
+    FiniteNumber,
+    function(x) { return x > 0; }
   );
 
   //# Integer :: Type
@@ -602,15 +581,6 @@
     }
   );
 
-  //# NegativeFiniteNumber :: Type
-  //.
-  //. Type comprising every [`FiniteNumber`][] value less than zero.
-  var NegativeFiniteNumber = NullaryTypeWithUrl(
-    'sanctuary-def/NegativeFiniteNumber',
-    FiniteNumber,
-    function(x) { return x < 0; }
-  );
-
   //# NegativeInteger :: Type
   //.
   //. Type comprising every [`Integer`][] value less than zero.
@@ -618,52 +588,6 @@
     'sanctuary-def/NegativeInteger',
     Integer,
     function(x) { return x < 0; }
-  );
-
-  //# NegativeNumber :: Type
-  //.
-  //. Type comprising every [`Number`][] value less than zero.
-  var NegativeNumber = NullaryTypeWithUrl(
-    'sanctuary-def/NegativeNumber',
-    Number_,
-    function(x) { return x < 0; }
-  );
-
-  //# NonEmpty :: Type -> Type
-  //.
-  //. Constructor for non-empty types. `$.NonEmpty($.String)`, for example, is
-  //. the type comprising every [`String`][] value except `''`.
-  //.
-  //. The given type must satisfy the [Monoid][] and [Setoid][] specifications.
-  var NonEmpty = UnaryType(
-    'sanctuary-def/NonEmpty',
-    functionUrl('NonEmpty'),
-    function(x) {
-      return Z.Monoid.test(x) &&
-             Z.Setoid.test(x) &&
-             !Z.equals(x, Z.empty(x.constructor));
-    },
-    function(monoid) { return [monoid]; }
-  );
-
-  //# NonGlobalRegExp :: Type
-  //.
-  //. Type comprising every [`RegExp`][] value whose `global` flag is `false`.
-  //.
-  //. See also [`GlobalRegExp`][].
-  var NonGlobalRegExp = NullaryTypeWithUrl(
-    'sanctuary-def/NonGlobalRegExp',
-    RegExp_,
-    function(x) { return !x.global; }
-  );
-
-  //# NonZeroFiniteNumber :: Type
-  //.
-  //. Type comprising every [`FiniteNumber`][] value except `0` and `-0`.
-  var NonZeroFiniteNumber = NullaryTypeWithUrl(
-    'sanctuary-def/NonZeroFiniteNumber',
-    FiniteNumber,
-    function(x) { return x !== 0; }
   );
 
   //# NonZeroInteger :: Type
@@ -675,6 +599,24 @@
     function(x) { return x !== 0; }
   );
 
+  //# PositiveInteger :: Type
+  //.
+  //. Type comprising every [`Integer`][] value greater than zero.
+  var PositiveInteger = NullaryTypeWithUrl(
+    'sanctuary-def/PositiveInteger',
+    Integer,
+    function(x) { return x > 0; }
+  );
+
+  //# NegativeNumber :: Type
+  //.
+  //. Type comprising every [`ValidNumber`][] value less than zero.
+  var NegativeNumber = NullaryTypeWithUrl(
+    'sanctuary-def/NegativeNumber',
+    ValidNumber,
+    function(x) { return x < 0; }
+  );
+
   //# NonZeroValidNumber :: Type
   //.
   //. Type comprising every [`ValidNumber`][] value except `0` and `-0`.
@@ -684,21 +626,13 @@
     function(x) { return x !== 0; }
   );
 
-  //# Null :: Type
+  //# PositiveNumber :: Type
   //.
-  //. Type whose sole member is `null`.
-  var Null = NullaryTypeWithUrl('Null', Any, typeEq('Null'));
-
-  //# Nullable :: Type -> Type
-  //.
-  //. Constructor for types which include `null` as a member.
-  var Nullable = UnaryTypeWithUrl(
-    'sanctuary-def/Nullable',
-    K(true),
-    function(nullable) {
-      // eslint-disable-next-line eqeqeq
-      return nullable === null ? [] : [nullable];
-    }
+  //. Type comprising every [`ValidNumber`][] value greater than zero.
+  var PositiveNumber = NullaryTypeWithUrl(
+    'sanctuary-def/PositiveNumber',
+    ValidNumber,
+    function(x) { return x > 0; }
   );
 
   //# Object :: Type
@@ -711,44 +645,6 @@
   //.   - the `new` operator in conjunction with `Object` or a custom
   //.     constructor function.
   var Object_ = NullaryTypeWithUrl('Object', Any, typeEq('Object'));
-
-  //# Pair :: Type -> Type -> Type
-  //.
-  //. Constructor for tuple types of length 2. Arrays are said to represent
-  //. tuples. `['foo', 42]` is a member of `Pair String Number`.
-  var Pair = BinaryTypeWithUrl(
-    'sanctuary-def/Pair',
-    function(x) { return typeEq('Array')(x) && x.length === 2; },
-    function(pair) { return [pair[0]]; },
-    function(pair) { return [pair[1]]; }
-  );
-
-  //# PositiveFiniteNumber :: Type
-  //.
-  //. Type comprising every [`FiniteNumber`][] value greater than zero.
-  var PositiveFiniteNumber = NullaryTypeWithUrl(
-    'sanctuary-def/PositiveFiniteNumber',
-    FiniteNumber,
-    function(x) { return x > 0; }
-  );
-
-  //# PositiveInteger :: Type
-  //.
-  //. Type comprising every [`Integer`][] value greater than zero.
-  var PositiveInteger = NullaryTypeWithUrl(
-    'sanctuary-def/PositiveInteger',
-    Integer,
-    function(x) { return x > 0; }
-  );
-
-  //# PositiveNumber :: Type
-  //.
-  //. Type comprising every [`Number`][] value greater than zero.
-  var PositiveNumber = NullaryTypeWithUrl(
-    'sanctuary-def/PositiveNumber',
-    Number_,
-    function(x) { return x > 0; }
-  );
 
   //# RegexFlags :: Type
   //.
@@ -767,18 +663,31 @@
     ['', 'g', 'i', 'm', 'gi', 'gm', 'im', 'gim']
   );
 
-  //# StrMap :: Type -> Type
+  //# RegExp :: Type
   //.
-  //. Constructor for homogeneous Object types.
+  //. Type comprising every RegExp value.
+  var RegExp_ = NullaryTypeWithUrl('RegExp', Any, typeEq('RegExp'));
+
+  //# GlobalRegExp :: Type
   //.
-  //. `{foo: 1, bar: 2, baz: 3}`, for example, is a member of `StrMap Number`;
-  //. `{foo: 1, bar: 2, baz: 'XXX'}` is not.
-  var StrMap = UnaryTypeWithUrl(
-    'sanctuary-def/StrMap',
-    Object_.test.bind(Object_),
-    function(strMap) {
-      return Z.reduce(function(xs, x) { return xs.concat([x]); }, [], strMap);
-    }
+  //. Type comprising every [`RegExp`][] value whose `global` flag is `true`.
+  //.
+  //. See also [`NonGlobalRegExp`][].
+  var GlobalRegExp = NullaryTypeWithUrl(
+    'sanctuary-def/GlobalRegExp',
+    RegExp_,
+    function(x) { return x.global; }
+  );
+
+  //# NonGlobalRegExp :: Type
+  //.
+  //. Type comprising every [`RegExp`][] value whose `global` flag is `false`.
+  //.
+  //. See also [`GlobalRegExp`][].
+  var NonGlobalRegExp = NullaryTypeWithUrl(
+    'sanctuary-def/NonGlobalRegExp',
+    RegExp_,
+    function(x) { return !x.global; }
   );
 
   //# String :: Type
@@ -829,13 +738,100 @@
   var Unknown =
   new _Type(UNKNOWN, '', '', always2('???'), Any, K(true), [], {});
 
-  //# ValidDate :: Type
+  //# Function :: Array Type -> Type
   //.
-  //. Type comprising every [`Date`][] value except `new Date(NaN)`.
-  var ValidDate = NullaryTypeWithUrl(
-    'sanctuary-def/ValidDate',
-    Date_,
-    function(x) { return !isNaN(x.valueOf()); }
+  //. Constructor for Function types.
+  //.
+  //. Examples:
+  //.
+  //.   - `$.Function([$.Date, $.String])` represents the `Date -> String`
+  //.     type; and
+  //.   - `$.Function([a, b, a])` represents the `(a, b) -> a` type.
+  function Function_(types) {
+    function format(outer, inner) {
+      var xs = types.map(function(t, idx) {
+        return unless(t.type === RECORD || isEmpty(t.keys),
+                      stripOutermostParens,
+                      inner('$' + String(idx + 1))(String(t)));
+      });
+      var parenthesize = wrap(outer('('))(outer(')'));
+      return parenthesize(unless(types.length === 2,
+                                 parenthesize,
+                                 init(xs).join(outer(', '))) +
+                          outer(' -> ') +
+                          last(xs));
+    }
+
+    var $keys = [];
+    var $types = {};
+    types.forEach(function(t, idx) {
+      var k = '$' + String(idx + 1);
+      $keys.push(k);
+      $types[k] = {extractor: K([]), type: t};
+    });
+
+    return new _Type(FUNCTION,
+                     '',
+                     '',
+                     format,
+                     AnyFunction,
+                     K(true),
+                     $keys,
+                     $types);
+  }
+
+  //# NonEmpty :: Type -> Type
+  //.
+  //. Constructor for non-empty types. `$.NonEmpty($.String)`, for example, is
+  //. the type comprising every [`String`][] value except `''`.
+  //.
+  //. The given type must satisfy the [Monoid][] and [Setoid][] specifications.
+  var NonEmpty = UnaryType(
+    'sanctuary-def/NonEmpty',
+    functionUrl('NonEmpty'),
+    function(x) {
+      return Z.Monoid.test(x) &&
+             Z.Setoid.test(x) &&
+             !Z.equals(x, Z.empty(x.constructor));
+    },
+    function(monoid) { return [monoid]; }
+  );
+
+  //# Nullable :: Type -> Type
+  //.
+  //. Constructor for types which include `null` as a member.
+  var Nullable = UnaryTypeWithUrl(
+    'sanctuary-def/Nullable',
+    K(true),
+    function(nullable) {
+      // eslint-disable-next-line eqeqeq
+      return nullable === null ? [] : [nullable];
+    }
+  );
+
+  //# Pair :: Type -> Type -> Type
+  //.
+  //. Constructor for tuple types of length 2. Arrays are said to represent
+  //. tuples. `['foo', 42]` is a member of `Pair String Number`.
+  var Pair = BinaryTypeWithUrl(
+    'sanctuary-def/Pair',
+    function(x) { return typeEq('Array')(x) && x.length === 2; },
+    function(pair) { return [pair[0]]; },
+    function(pair) { return [pair[1]]; }
+  );
+
+  //# StrMap :: Type -> Type
+  //.
+  //. Constructor for homogeneous Object types.
+  //.
+  //. `{foo: 1, bar: 2, baz: 3}`, for example, is a member of `StrMap Number`;
+  //. `{foo: 1, bar: 2, baz: 'XXX'}` is not.
+  var StrMap = UnaryTypeWithUrl(
+    'sanctuary-def/StrMap',
+    Object_.test.bind(Object_),
+    function(strMap) {
+      return Z.reduce(function(xs, x) { return xs.concat([x]); }, [], strMap);
+    }
   );
 
   //# env :: Array Type
@@ -2576,7 +2572,6 @@
     NonZeroFiniteNumber: NonZeroFiniteNumber,
     NonZeroInteger: NonZeroInteger,
     NonZeroValidNumber: NonZeroValidNumber,
-    None: None,
     Null: Null,
     Nullable: fromUncheckedUnaryType(Nullable),
     Number: Number_,
