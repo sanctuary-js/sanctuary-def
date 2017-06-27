@@ -131,6 +131,7 @@ function Just(x) { return new _Maybe('Just', x); }
 var Maybe = $.UnaryType(
   'my-package/Maybe',
   'http://example.com/my-package#Maybe',
+  $.Any,
   function(x) { return type(x) === 'my-package/Maybe'; },
   function(maybe) { return maybe.isJust ? [maybe.value] : []; }
 );
@@ -3109,10 +3110,10 @@ describe('NullaryType', function() {
 
 describe('UnaryType', function() {
 
-  it('is a quaternary function', function() {
+  it('is a quinary function', function() {
     eq(typeof $.UnaryType, 'function');
-    eq($.UnaryType.length, 4);
-    eq($.UnaryType.toString(), 'UnaryType :: String -> String -> (Any -> Boolean) -> (t a -> Array a) -> Function');
+    eq($.UnaryType.length, 5);
+    eq($.UnaryType.toString(), 'UnaryType :: String -> String -> Type -> (Any -> Boolean) -> (t a -> Array a) -> Function');
   });
 
   it('returns a type constructor which type checks its arguments', function() {

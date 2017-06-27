@@ -441,8 +441,8 @@
 
   //  UnaryTypeWithUrl ::
   //    (String, Any -> Boolean, t a -> Array a) -> (Type -> Type)
-  function UnaryTypeWithUrl(name, test, _1) {
-    return UnaryType(name, functionUrl(name), test, _1);
+  function UnaryTypeWithUrl(name, parent, test, _1) {
+    return UnaryType(name, functionUrl(name), parent, test, _1);
   }
 
   //  BinaryTypeWithUrl ::
@@ -475,11 +475,6 @@
   //.
   //. Type comprising every [`arguments`][arguments] object.
   var Arguments = NullaryTypeWithUrl('Arguments', Any, typeEq('Arguments'));
-
-  //# Array :: Type -> Type
-  //.
-  //. Constructor for homogeneous Array types.
-  var Array_ = UnaryTypeWithUrl('Array', typeEq('Array'), id);
 
   //# Boolean :: Type
   //.
@@ -738,6 +733,11 @@
   var Unknown =
   new _Type(UNKNOWN, '', '', always2('???'), Any, K(true), [], {});
 
+  //# Array :: Type -> Type
+  //.
+  //. Constructor for homogeneous Array types.
+  var Array_ = UnaryTypeWithUrl('Array', Any, typeEq('Array'), id);
+
   //# Function :: Array Type -> Type
   //.
   //. Constructor for Function types.
@@ -789,6 +789,7 @@
   var NonEmpty = UnaryType(
     'sanctuary-def/NonEmpty',
     functionUrl('NonEmpty'),
+    Any,
     function(x) {
       return Z.Monoid.test(x) &&
              Z.Setoid.test(x) &&
@@ -802,6 +803,7 @@
   //. Constructor for types which include `null` as a member.
   var Nullable = UnaryTypeWithUrl(
     'sanctuary-def/Nullable',
+    Any,
     K(true),
     function(nullable) {
       // eslint-disable-next-line eqeqeq
@@ -828,7 +830,8 @@
   //. `{foo: 1, bar: 2, baz: 'XXX'}` is not.
   var StrMap = UnaryTypeWithUrl(
     'sanctuary-def/StrMap',
-    Object_.test.bind(Object_),
+    Object_,
+    K(true),
     function(strMap) {
       return Z.reduce(function(xs, x) { return xs.concat([x]); }, [], strMap);
     }
@@ -1393,7 +1396,7 @@
       [String_, String_, Type, Function_([Any, Boolean_]), Type],
       NullaryType);
 
-  //# UnaryType :: String -> String -> (Any -> Boolean) -> (t a -> Array a) -> (Type -> Type)
+  //# UnaryType :: String -> String -> Type -> (Any -> Boolean) -> ((t a -> Array a) -> (Type -> Type))
   //.
   //. Type constructor for types with one type variable (such as [`Array`][]).
   //.
@@ -1402,6 +1405,8 @@
   //.   - the name of `t` (exposed as `t.name`);
   //.
   //.   - the documentation URL of `t` (exposed as `t.url`);
+  //.
+  //.   - the parent of `t` (exposed as `t.parent`);
   //.
   //.   - a predicate which accepts any JavaScript value and returns `true`
   //.     if (and only if) the value is a member of `t x` for some type `x`;
@@ -1424,6 +1429,7 @@
   //. const Maybe = $.UnaryType(
   //.   maybeTypeIdent,
   //.   'http://example.com/my-package#Maybe',
+  //.   $.Any,
   //.   x => type(x) === maybeTypeIdent,
   //.   maybe => maybe.isJust ? [maybe.value] : []
   //. );
@@ -1471,14 +1477,14 @@
   //. //
   //. //   Since there is no type of which all the above values are members, the type-variable constraint has been violated.
   //. ```
-  function UnaryType(name, url, test, _1) {
+  function UnaryType(name, url, parent, test, _1) {
     return function($1) {
       function format(outer, inner) {
         return outer('(' + stripNamespace(name) + ' ') +
                inner('$1')(String($1)) + outer(')');
       }
       var types = {$1: {extractor: _1, type: $1}};
-      return new _Type(UNARY, name, url, format, Any, test, ['$1'], types);
+      return new _Type(UNARY, name, url, format, parent, test, ['$1'], types);
     };
   }
 
@@ -1487,19 +1493,20 @@
       {},
       [String_,
        String_,
+       Type,
        Function_([Any, Boolean_]),
        Function_([Unchecked('t a'), Array_(Unchecked('a'))]),
        AnyFunction],
-      function(name, url, test, _1) {
+      function(name, url, parent, test, _1) {
         return def(stripNamespace(name),
                    {},
                    [Type, Type],
-                   UnaryType(name, url, test, _1));
+                   UnaryType(name, url, parent, test, _1));
       });
 
   //  fromUnaryType :: Type -> (Type -> Type)
   function fromUnaryType(t) {
-    return UnaryType(t.name, t.url, t.test.bind(t), t.types.$1.extractor);
+    return UnaryType(t.name, t.url, t.parent, t._test, t.types.$1.extractor);
   }
 
   //# BinaryType :: String -> String -> (Any -> Boolean) -> (t a b -> Array a) -> (t a b -> Array b) -> (Type -> Type -> Type)
@@ -2539,7 +2546,7 @@
   function fromUncheckedUnaryType(typeConstructor) {
     var t = typeConstructor(Unknown);
     var _1 = t.types.$1.extractor;
-    return CheckedUnaryType(t.name, t.url, t.test.bind(t), _1);
+    return CheckedUnaryType(t.name, t.url, t.parent, t._test, _1);
   }
 
   //  fromUncheckedBinaryType :: ((Type, Type) -> Type) ->
