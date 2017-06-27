@@ -33,6 +33,7 @@ lint:
 	  --global require \
 	  --global self \
 	  --rule 'max-len: [error, {code: 79, ignorePattern: "^ *//(# |[.] // |[.]   - <code>)", ignoreUrls: true}]' \
+	  --rule 'no-plusplus: [off]' \
 	  -- index.js
 	$(ESLINT) \
 	  --env es6 \
