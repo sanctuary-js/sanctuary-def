@@ -2984,6 +2984,20 @@ describe('def', function() {
 
     eq(sort(['foo', 'bar', 'baz']), ['bar', 'baz', 'foo']);
 
+    throws(function() { sort(['foo', true, 42]); },
+           TypeError,
+           'Type-variable constraint violation\n' +
+           '\n' +
+           'sort :: (Ord a, Applicative f, Foldable f, Monoid f) => f a -> f a\n' +
+           '                                                          ^\n' +
+           '                                                          1\n' +
+           '\n' +
+           '1)  "foo" :: String\n' +
+           '    true :: Boolean\n' +
+           '    42 :: Number\n' +
+           '\n' +
+           'Since there is no type of which all the above values are members, the type-variable constraint has been violated.\n');
+
     throws(function() { sort([Math.sin, Math.cos]); },
            TypeError,
            'Type-class constraint violation\n' +
@@ -3015,6 +3029,18 @@ describe('def', function() {
 
     eq(bimap.toString(), 'bimap :: Bifunctor f => (a -> b) -> (c -> d) -> f a c -> f b d');
     eq(bimap(length, Math.sqrt, Pair('Sanctuary', 25)), Pair(9, 5));
+
+    throws(function() { bimap(length, Math.sqrt, Pair(['foo', true, 42], null)); },
+           TypeError,
+           'Type-variable constraint violation\n' +
+           '\n' +
+           'bimap :: Bifunctor f => (a -> b) -> (c -> d) -> f a c -> f b d\n' +
+           '                                                  ^\n' +
+           '                                                  1\n' +
+           '\n' +
+           '1)  ["foo", true, 42] :: Array ???\n' +
+           '\n' +
+           'Since there is no type of which all the above values are members, the type-variable constraint has been violated.\n');
   });
 
   it('only determines actual types when necessary', function() {
