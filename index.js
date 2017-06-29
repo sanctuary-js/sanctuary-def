@@ -435,16 +435,24 @@
     return EnumType(name, functionUrl(name), members);
   }
 
-  //  UnaryTypeWithUrl ::
-  //    (String, Any -> Boolean, t a -> Array a) -> (Type -> Type)
-  function UnaryTypeWithUrl(name, parent, test, _1) {
+  //  UnaryTypeWithUrl :: ... -> (Type -> Type)
+  function UnaryTypeWithUrl(
+    name,           // :: String
+    parent,         // :: Type
+    test,           // :: Any -> Boolean
+    _1              // :: t a -> Array a
+  ) {
     return UnaryType(name, functionUrl(name), parent, test, _1);
   }
 
-  //  BinaryTypeWithUrl ::
-  //    (String, Any -> Boolean, t a b -> Array a, t a b -> Array b) ->
-  //      ((Type, Type) -> Type)
-  function BinaryTypeWithUrl(name, parent, test, _1, _2) {
+  //  BinaryTypeWithUrl :: ... -> ((Type, Type) -> Type)
+  function BinaryTypeWithUrl(
+    name,           // :: String
+    parent,         // :: Type
+    test,           // :: Any -> Boolean
+    _1,             // :: t a b -> Array a
+    _2              // :: t a b -> Array b
+  ) {
     return BinaryType(name, functionUrl(name), parent, test, _1, _2);
   }
 
@@ -1303,9 +1311,9 @@
   //. The environment is only significant if the type contains
   //. [type variables][].
   //.
-  //. Using types as predicates is powerful. One could, for example,
-  //. define a [record type][] for each endpoint of a REST API and
-  //. validate the bodies of incoming POST requests against these types.
+  //. Using types as predicates is powerful. One could, for example, define a
+  //. [record type][] for each endpoint of a REST API and validate the bodies
+  //. of incoming POST requests against these types.
   function test(env, t, x) {
     var typeInfo = {name: 'name', constraints: {}, types: [t]};
     return satisfactoryTypes(env, typeInfo, {}, t, 0, [], [x]).isRight;
@@ -1325,7 +1333,7 @@
   //.
   //.   - the documentation URL of `t` (exposed as `t.url`); and
   //.
-  //.   - the parent of `t` (exposed as `t.parent`);
+  //.   - the parent type of `t` (exposed as `t.parent`);
   //.
   //.   - a predicate which accepts any JavaScript value and returns `true` if
   //.     (and only if) the value is a member of `t`.
@@ -1393,7 +1401,7 @@
       [String_, String_, Type, Function_([Any, Boolean_]), Type],
       NullaryType);
 
-  //# UnaryType :: String -> String -> Type -> (Any -> Boolean) -> ((t a -> Array a) -> (Type -> Type))
+  //# UnaryType :: String -> String -> Type -> (Any -> Boolean) -> (t a -> Array a) -> (Type -> Type)
   //.
   //. Type constructor for types with one type variable (such as [`Array`][]).
   //.
@@ -1403,7 +1411,7 @@
   //.
   //.   - the documentation URL of `t` (exposed as `t.url`);
   //.
-  //.   - the parent of `t` (exposed as `t.parent`);
+  //.   - the parent type of `t` (exposed as `t.parent`);
   //.
   //.   - a predicate which accepts any JavaScript value and returns `true`
   //.     if (and only if) the value is a member of `t x` for some type `x`;
@@ -1516,7 +1524,7 @@
   //.
   //.   - the documentation URL of `t` (exposed as `t.url`);
   //.
-  //.   - the parent of `t` (exposed as `t.parent`);
+  //.   - the parent type of `t` (exposed as `t.parent`);
   //.
   //.   - a predicate which accepts any JavaScript value and returns `true`
   //.     if (and only if) the value is a member of `t x y` for some types
@@ -1608,8 +1616,6 @@
                inner('$1')(String($1)) + outer(' ') +
                inner('$2')(String($2)) + outer(')');
       }
-      var types = {$1: {extractor: _1, type: $1},
-                   $2: {extractor: _2, type: $2}};
       return new _Type(BINARY,
                        name,
                        url,
@@ -1617,7 +1623,8 @@
                        parent,
                        test,
                        ['$1', '$2'],
-                       types);
+                       {$1: {extractor: _1, type: $1},
+                        $2: {extractor: _2, type: $2}});
     };
   }
 
@@ -1872,7 +1879,6 @@
       function format(outer, inner) {
         return outer('(' + name + ' ') + inner('$1')(String($1)) + outer(')');
       }
-      var types = {$1: {extractor: K([]), type: $1}};
       return new _Type(VARIABLE,
                        name,
                        '',
@@ -1880,7 +1886,7 @@
                        Any,
                        K(true),
                        ['$1'],
-                       types);
+                       {$1: {extractor: K([]), type: $1}});
     };
   }
 

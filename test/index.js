@@ -3139,7 +3139,7 @@ describe('UnaryType', function() {
 
 describe('BinaryType', function() {
 
-  it('is a sexternary function', function() {
+  it('is a senary function', function() {
     eq(typeof $.BinaryType, 'function');
     eq($.BinaryType.length, 6);
     eq($.BinaryType.toString(), 'BinaryType :: String -> String -> Type -> (Any -> Boolean) -> (t a b -> Array a) -> (t a b -> Array b) -> Function');
