@@ -1747,8 +1747,7 @@
     }
 
     function test(x) {
-      return x != null &&
-             keys.every(function(k) { return hasOwnProperty.call(x, k); });
+      return keys.every(function(k) { return hasOwnProperty.call(x, k); });
     }
 
     var $types = {};
