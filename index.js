@@ -370,10 +370,6 @@
 
   _Type['@@type'] = 'sanctuary-def/Type';
 
-  _Type.prototype.test = function(x) {
-    return this.parent.test(x) && this._test(x);
-  };
-
   _Type.prototype.validate = function(x) {
     var self = this;
     return Z.chain(function(x) {
@@ -448,8 +444,8 @@
   //  BinaryTypeWithUrl ::
   //    (String, Any -> Boolean, t a b -> Array a, t a b -> Array b) ->
   //      ((Type, Type) -> Type)
-  function BinaryTypeWithUrl(name, test, _1, _2) {
-    return BinaryType(name, functionUrl(name), test, _1, _2);
+  function BinaryTypeWithUrl(name, parent, test, _1, _2) {
+    return BinaryType(name, functionUrl(name), parent, test, _1, _2);
   }
 
   //. ### Types
@@ -817,7 +813,8 @@
   //. tuples. `['foo', 42]` is a member of `Pair String Number`.
   var Pair = BinaryTypeWithUrl(
     'sanctuary-def/Pair',
-    function(x) { return typeEq('Array')(x) && x.length === 2; },
+    Array_(Any),
+    function(x) { return x.length === 2; },
     function(pair) { return [pair[0]]; },
     function(pair) { return [pair[1]]; }
   );
@@ -1509,7 +1506,7 @@
     return UnaryType(t.name, t.url, t.parent, t._test, t.types.$1.extractor);
   }
 
-  //# BinaryType :: String -> String -> (Any -> Boolean) -> (t a b -> Array a) -> (t a b -> Array b) -> (Type -> Type -> Type)
+  //# BinaryType :: String -> String -> Type -> (Any -> Boolean) -> (t a b -> Array a) -> (t a b -> Array b) -> (Type -> Type -> Type)
   //.
   //. Type constructor for types with two type variables (such as [`Pair`][]).
   //.
@@ -1518,6 +1515,8 @@
   //.   - the name of `t` (exposed as `t.name`);
   //.
   //.   - the documentation URL of `t` (exposed as `t.url`);
+  //.
+  //.   - the parent of `t` (exposed as `t.parent`);
   //.
   //.   - a predicate which accepts any JavaScript value and returns `true`
   //.     if (and only if) the value is a member of `t x y` for some types
@@ -1547,6 +1546,7 @@
   //. const $Pair = $.BinaryType(
   //.   pairTypeIdent,
   //.   'http://example.com/my-package#Pair',
+  //.   Any,
   //.   x => type(x) === pairTypeIdent,
   //.   pair => [pair[0]],
   //.   pair => [pair[1]]
@@ -1601,7 +1601,7 @@
   //. //
   //. //   The value at position 1 is not a member of ‘Rank’.
   //. ```
-  function BinaryType(name, url, test, _1, _2) {
+  function BinaryType(name, url, parent, test, _1, _2) {
     return function($1, $2) {
       function format(outer, inner) {
         return outer('(' + stripNamespace(name) + ' ') +
@@ -1614,7 +1614,7 @@
                        name,
                        url,
                        format,
-                       Any,
+                       parent,
                        test,
                        ['$1', '$2'],
                        types);
@@ -1626,22 +1626,24 @@
       {},
       [String_,
        String_,
+       Type,
        Function_([Any, Boolean_]),
        Function_([Unchecked('t a b'), Array_(Unchecked('a'))]),
        Function_([Unchecked('t a b'), Array_(Unchecked('b'))]),
        AnyFunction],
-      function(name, url, test, _1, _2) {
+      function(name, url, parent, test, _1, _2) {
         return def(stripNamespace(name),
                    {},
                    [Type, Type, Type],
-                   BinaryType(name, url, test, _1, _2));
+                   BinaryType(name, url, parent, test, _1, _2));
       });
 
   //  xprod :: (Type, Array Type, Array Type) -> Array Type
   function xprod(t, $1s, $2s) {
     var specialize = BinaryType(t.name,
                                 t.url,
-                                t.test.bind(t),
+                                t.parent,
+                                t._test,
                                 t.types.$1.extractor,
                                 t.types.$2.extractor);
     var $types = [];
@@ -2555,7 +2557,7 @@
     var t = typeConstructor(Unknown, Unknown);
     var _1 = t.types.$1.extractor;
     var _2 = t.types.$2.extractor;
-    return CheckedBinaryType(t.name, t.url, t.test.bind(t), _1, _2);
+    return CheckedBinaryType(t.name, t.url, t.parent, t._test, _1, _2);
   }
 
   return {

@@ -182,6 +182,7 @@ function Right(x) { return new _Either('Right', x); }
 var Either = $.BinaryType(
   'my-package/Either',
   'http://example.com/my-package#Either',
+  $.Any,
   function(x) { return type(x) === 'my-package/Either'; },
   function(either) { return either.isLeft ? [either.value] : []; },
   function(either) { return either.isRight ? [either.value] : []; }
@@ -220,6 +221,7 @@ Pair.prototype.toString = function() {
 var $Pair = $.BinaryType(
   'my-package/Pair',
   'http://example.com/my-package#Pair',
+  $.Any,
   function(x) { return type(x) === 'my-package/Pair'; },
   function(pair) { return [pair[0]]; },
   function(pair) { return [pair[1]]; }
@@ -2477,7 +2479,8 @@ describe('def', function() {
     var Pair = $.BinaryType(
       'my-package/Pair',
       'http://example.com/my-package#Pair',
-      function(x) { return Object.prototype.toString.call(x) === '[object Array]' && x.length === 2; },
+      $.Array($.Any),
+      function(x) { return x.length === 2; },
       function(pair) { return [pair[0]]; },
       function(pair) { return [pair[1]]; }
     );
@@ -3136,10 +3139,10 @@ describe('UnaryType', function() {
 
 describe('BinaryType', function() {
 
-  it('is a quinary function', function() {
+  it('is a sexternary function', function() {
     eq(typeof $.BinaryType, 'function');
-    eq($.BinaryType.length, 5);
-    eq($.BinaryType.toString(), 'BinaryType :: String -> String -> (Any -> Boolean) -> (t a b -> Array a) -> (t a b -> Array b) -> Function');
+    eq($.BinaryType.length, 6);
+    eq($.BinaryType.toString(), 'BinaryType :: String -> String -> Type -> (Any -> Boolean) -> (t a b -> Array a) -> (t a b -> Array b) -> Function');
   });
 
   it('returns a type constructor which type checks its arguments', function() {
