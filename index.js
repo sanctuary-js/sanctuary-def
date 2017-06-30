@@ -1691,12 +1691,14 @@
   var CheckedEnumType =
   def('EnumType', {}, [String_, String_, Array_(Any), Type], EnumType);
 
-  //# RecordType :: StrMap Type -> Type
+  //# RecordType :: Type -> StrMap Type -> Type
   //.
   //. `RecordType` is used to construct record types. The type definition
   //. specifies the name and type of each required field.
   //.
   //. To define a record type one must provide:
+  //.
+  //.   - the parent type of `t` (exposed as `t.parent`);
   //.
   //.   - an object mapping field name to type.
   //.
@@ -1704,7 +1706,10 @@
   //.
   //. ```javascript
   //. //    Point :: Type
-  //. const Point = $.RecordType({x: $.FiniteNumber, y: $.FiniteNumber});
+  //. const Point = $.RecordType($.Any, {
+  //.   x: $.FiniteNumber,
+  //.   y: $.FiniteNumber
+  //. });
   //.
   //. //    dist :: Point -> Point -> FiniteNumber
   //. const dist =
@@ -1740,7 +1745,7 @@
   //. //
   //. //   The value at position 1 is not a member of ‘{ x :: FiniteNumber, y :: FiniteNumber }’.
   //. ```
-  function RecordType(fields) {
+  function RecordType(parent, fields) {
     var keys = Object.keys(fields).sort();
 
     function format(outer, inner) {
@@ -1754,7 +1759,9 @@
     }
 
     function test(x) {
-      return keys.every(function(k) { return hasOwnProperty.call(x, k); });
+      if (x == null) return false;
+      var o = Object(x);
+      return keys.every(function(k) { return k in o; });
     }
 
     var $types = {};
@@ -1762,11 +1769,11 @@
       $types[k] = {extractor: function(x) { return [x[k]]; }, type: fields[k]};
     });
 
-    return new _Type(RECORD, '', '', format, Object_, test, keys, $types);
+    return new _Type(RECORD, '', '', format, parent, test, keys, $types);
   }
 
   var CheckedRecordType =
-  def('RecordType', {}, [StrMap(Type), Type], RecordType);
+  def('RecordType', {}, [Type, StrMap(Type), Type], RecordType);
 
   //# TypeVariable :: String -> Type
   //.
@@ -2543,11 +2550,8 @@
                def);
   }
 
-  var create =
-  def('create',
-      {},
-      [RecordType({checkTypes: Boolean_, env: Array_(Any)}), AnyFunction],
-      _create);
+  var Options = RecordType(Object_, {checkTypes: Boolean_, env: Array_(Any)});
+  var create = def('create', {}, [Options, AnyFunction], _create);
 
   //  fromUncheckedUnaryType :: (Type -> Type) -> (Type -> Type)
   function fromUncheckedUnaryType(typeConstructor) {

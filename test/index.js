@@ -1204,14 +1204,14 @@ describe('def', function() {
 
   it('supports record types', function() {
     eq(typeof $.RecordType, 'function');
-    eq($.RecordType.length, 1);
-    eq($.RecordType.toString(), 'RecordType :: StrMap Type -> Type');
+    eq($.RecordType.length, 2);
+    eq($.RecordType.toString(), 'RecordType :: Type -> StrMap Type -> Type');
 
     //  Point :: Type
-    var Point = $.RecordType({x: $.Number, y: $.Number});
+    var Point = $.RecordType($.Any, {x: $.Number, y: $.Number});
 
     //  Line :: Type
-    var Line = $.RecordType({start: Point, end: Point});
+    var Line = $.RecordType($.Any, {start: Point, end: Point});
 
     //  dist :: Point -> Point -> Number
     var dist = def('dist', {}, [Point, Point, $.Number], function(p, q) {
@@ -1312,13 +1312,13 @@ describe('def', function() {
 
     eq(id([{x: 0, y: 0}, {x: 1, y: 1}]), [{x: 0, y: 0}, {x: 1, y: 1}]);
 
-    throws(function() { $.RecordType({x: /XXX/, y: /XXX/, z: $.Any}); },
+    throws(function() { $.RecordType($.Any, {x: /XXX/, y: /XXX/, z: $.Any}); },
            TypeError,
            'Invalid value\n' +
            '\n' +
-           'RecordType :: StrMap Type -> Type\n' +
-           '                     ^^^^\n' +
-           '                      1\n' +
+           'RecordType :: Type -> StrMap Type -> Type\n' +
+           '                             ^^^^\n' +
+           '                              1\n' +
            '\n' +
            '1)  /XXX/ :: RegExp\n' +
            '\n' +
@@ -1327,7 +1327,7 @@ describe('def', function() {
            'See https://github.com/sanctuary-js/sanctuary-def/tree/v' + version + '#Type for information about the Type type.\n');
 
     //  Foo :: Type
-    var Foo = $.RecordType({x: a, y: a});
+    var Foo = $.RecordType($.Any, {x: a, y: a});
 
     //  foo :: Foo -> Foo
     var foo = def('foo', {}, [Foo, Foo], identity);
