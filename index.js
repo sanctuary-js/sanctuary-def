@@ -1745,9 +1745,9 @@
   //.
   //. ##### Extending record types
   //.
-  //. By using the `parent` argument of the RecordType constructor, we can
+  //. By using the `parent` argument of the RecordType constructor, one can
   //. define record types which must contain all the same properties of
-  //. another. For example, we could define `Poinst3D` as a refinement of our
+  //. another. For example, one could define `Poinst3D` as a refinement of
   //. `Point` from the previous example:
   //.
   //. ```js
@@ -1770,10 +1770,10 @@
   //. // => 5
   //. ```
   //.
-  //. We can see that `b` is a member of `Point3D` as well as `Point`, allowing
-  //. us to call `dist` on it. By default record types allow additional
-  //. properties, allowing for this "extension". If you wish for a record type
-  //. to allow no additional properties, we can refine it as such:
+  //. The `b` value is a member of `Point3D` as well as `Point`, allowing one
+  //. to call `dist` on it. By default record types allow additional
+  //. properties, permitting record "extension". If one wishes for a record
+  //. type to allow for no additional properties, it can be refined as such:
   //.
   //. ```js
   //. //    strict :: Type -> Type
