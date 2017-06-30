@@ -1720,9 +1720,6 @@
   //. dist({x: 0, y: 0}, {x: 3, y: 4});
   //. // => 5
   //.
-  //. dist({x: 0, y: 0}, {x: 3, y: 4, color: 'red'});
-  //. // => 5
-  //.
   //. dist({x: 0, y: 0}, {x: NaN, y: NaN});
   //. // ! TypeError: Invalid value
   //. //
@@ -1744,6 +1741,57 @@
   //. //   1)  0 :: Number
   //. //
   //. //   The value at position 1 is not a member of ‘{ x :: FiniteNumber, y :: FiniteNumber }’.
+  //. ```
+  //.
+  //. ##### Extending record types
+  //.
+  //. By using the `parent` argument of the RecordType constructor, we can
+  //. define record types which must contain all the same properties of
+  //. another. For example, we could define `Poinst3D` as a refinement of our
+  //. `Point` from the previous example:
+  //.
+  //. ```js
+  //. //    Point3D :: Type
+  //. const Point3D = $.RecordType(Point, {z: $.FiniteNumber});
+  //.
+  //. //    a :: Point
+  //. const a = {x: 0, y: 0};
+  //.
+  //. //    b :: Point, Point3D
+  //. const b = {x: 3, y: 4, z: 5};
+  //.
+  //. Point.validate(a)   // => Right(a)
+  //. Point3D.validate(a) // => Left({propPath: ['z'], value: undefined})
+  //.
+  //. Point.validate(b)   // => Right(b)
+  //. Point3D.validate(b) // => Right(b)
+  //.
+  //. dist(a, b);
+  //. // => 5
+  //. ```
+  //.
+  //. We can see that `b` is a member of `Point3D` as well as `Point`, allowing
+  //. us to call `dist` on it. By default record types allow additional
+  //. properties, allowing for this "extension". If you wish for a record type
+  //. to allow no additional properties, we can refine it as such:
+  //.
+  //. ```js
+  //. //    strict :: Type -> Type
+  //. const strict = t => $.NullaryType(
+  //.   'Strict' + t.name,
+  //.   '',
+  //.   t,
+  //.   x => Object.keys(x).length === t.keys.length
+  //. );
+  //.
+  //. //    StrictPoint3D :: Type
+  //. const StrictPoint3D = strict(Point3D)
+  //.
+  //. //    a :: Point, Point3D
+  //. const a = {x: 1, y: 2, z: 3, color: 'red'}
+  //.
+  //. Point3D.validate(a)       // => Right(a)
+  //. StrictPoint3D.validate(a) // => Left({propPath: [], value: a})
   //. ```
   function RecordType(parent, fields) {
     var keys = Object.keys(fields).sort();
