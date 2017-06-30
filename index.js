@@ -2598,7 +2598,7 @@
                def);
   }
 
-  var Options = RecordType(Object_, {checkTypes: Boolean_, env: Array_(Any)});
+  var Options = RecordType(Object_, {checkTypes: Boolean_, env: Array_(Type)});
   var create = def('create', {}, [Options, AnyFunction], _create);
 
   //  fromUncheckedUnaryType :: (Type -> Type) -> (Type -> Type)

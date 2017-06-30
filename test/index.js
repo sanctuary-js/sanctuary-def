@@ -240,13 +240,13 @@ describe('create', function() {
            TypeError,
            'Invalid value\n' +
            '\n' +
-           'create :: { checkTypes :: Boolean, env :: Array Any } -> Function\n' +
-           '          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n' +
+           'create :: { checkTypes :: Boolean, env :: Array Type } -> Function\n' +
+           '          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n' +
            '                               1\n' +
            '\n' +
            '1)  true :: Boolean\n' +
            '\n' +
-           'The value at position 1 is not a member of ‘{ checkTypes :: Boolean, env :: Array Any }’.\n');
+           'The value at position 1 is not a member of ‘{ checkTypes :: Boolean, env :: Array Type }’.\n');
   });
 
 });
