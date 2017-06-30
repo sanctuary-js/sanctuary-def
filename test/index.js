@@ -1210,6 +1210,9 @@ describe('def', function() {
     //  Point :: Type
     var Point = $.RecordType($.Any, {x: $.Number, y: $.Number});
 
+    //  Point3D :: Type
+    var Point3D = $.RecordType(Point, {z: $.Number});
+
     //  Line :: Type
     var Line = $.RecordType($.Any, {start: Point, end: Point});
 
@@ -1224,12 +1227,17 @@ describe('def', function() {
     });
 
     eq(dist({x: 0, y: 0}, {x: 0, y: 0}), 0);
-    eq(dist({x: 0, y: 0}, {x: 0, y: 0, color: 'red'}), 0);
+    eq(dist({x: 0, y: 0}, {x: 0, y: 0, z: 0}), 0);
     eq(dist({x: 1, y: 1}, {x: 4, y: 5}), 5);
-    eq(dist({x: 1, y: 1}, {x: 4, y: 5, color: 'red'}), 5);
+    eq(dist({x: 1, y: 1}, {x: 4, y: 5, z: 6}), 5);
 
     eq(length({start: {x: 1, y: 1}, end: {x: 4, y: 5}}), 5);
-    eq(length({start: {x: 1, y: 1}, end: {x: 4, y: 5, color: 'red'}}), 5);
+    eq(length({start: {x: 1, y: 1}, end: {x: 4, y: 5, z: 6}}), 5);
+
+    eq($.test([], Point3D, {x: 0, y: 0}), false);
+    eq($.test([], Point3D, {x: 0, z: 0}), false);
+    eq($.test([], Point3D, {y: 0, z: 0}), false);
+    eq($.test([], Point3D, {x: 0, y: 0, z: 0}), true);
 
     throws(function() { dist(null); },
            TypeError,
