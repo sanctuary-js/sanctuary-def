@@ -1554,7 +1554,7 @@
   //. const $Pair = $.BinaryType(
   //.   pairTypeIdent,
   //.   'http://example.com/my-package#Pair',
-  //.   Any,
+  //.   $.Any,
   //.   x => type(x) === pairTypeIdent,
   //.   pair => [pair[0]],
   //.   pair => [pair[1]]
@@ -1708,7 +1708,7 @@
   //. //    Point :: Type
   //. const Point = $.RecordType($.Any, {
   //.   x: $.FiniteNumber,
-  //.   y: $.FiniteNumber
+  //.   y: $.FiniteNumber,
   //. });
   //.
   //. //    dist :: Point -> Point -> FiniteNumber
