@@ -829,10 +829,9 @@
 
   //# Strict :: Type -> Type
   //.
-  //. Constructor for strict record types. For example:
-  //. `$.Strict($.Record($.Any, {name: $.String}))`, is the type comprising
-  //. every object with a `name :: String` property, without any other
-  //. properties.
+  //. Constructor for strict record types.
+  //. `$.Strict($.Record($.Any, {name: $.String}))`, for example, is the type
+  //. comprising every object with exactly one field, `name`, of type `String`.
   function Strict(t) {
     function test(x) {
       return Object.keys(x).length === t.keys.length;
@@ -1788,9 +1787,9 @@
   //. ```
   //.
   //. The `p2` value is a member of `Point3D` as well as `Point`, making it a
-  //. valid argument to `dist`. By default, record types permit the presence
-  //. of additional fields. As a result, p2 is a member of Point as well as
-  //. Point3D.
+  //. valid argument to `dist`. By default, record types permit the presence of
+  //. additional fields. As a result, `p2` is a member of `Point` as well as
+  //. `Point3D`.
   //.
   //. One could use the [`Strict`][] constructor to define record types which
   //. do not permit additional fields:
