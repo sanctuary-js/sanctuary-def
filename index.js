@@ -834,7 +834,9 @@
   //. comprising every object with exactly one field, `name`, of type `String`.
   function Strict(t) {
     function test(x) {
-      return Object.keys(x).length === t.keys.length;
+      var len = 0, o = Object(x);
+      for (var k in o) len += 1; // eslint-disable-line no-unused-vars
+      return t.keys.length === len;
     }
 
     return NullaryType('sanctuary-def/Strict',
