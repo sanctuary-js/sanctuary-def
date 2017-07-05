@@ -1745,37 +1745,38 @@
   //.
   //. ##### Extending record types
   //.
-  //. By using the `parent` argument of the RecordType constructor, one can
+  //. By using the `parent` argument of the `RecordType` constructor, one can
   //. define record types which must contain all the same properties of
-  //. another. For example, one could define `Poinst3D` as a refinement of
+  //. another. For example, one could define `Point3D` as a refinement of
   //. `Point` from the previous example:
   //.
-  //. ```js
+  //. ```javascript
   //. //    Point3D :: Type
   //. const Point3D = $.RecordType(Point, {z: $.FiniteNumber});
   //.
-  //. //    a :: Point
-  //. const a = {x: 0, y: 0};
+  //. //    p1 :: Point
+  //. const p1 = {x: 0, y: 0};
   //.
-  //. //    b :: Point, Point3D
-  //. const b = {x: 3, y: 4, z: 5};
+  //. //    p2 :: Point, Point3D
+  //. const p2 = {x: 3, y: 4, z: 5};
   //.
-  //. Point.validate(a)   // => Right(a)
-  //. Point3D.validate(a) // => Left({propPath: ['z'], value: undefined})
+  //. Point.validate(p1);    // => Right({x: 0, y: 0})
+  //. Point3D.validate(p1);  // => Left({propPath: ['z'], value: undefined})
   //.
-  //. Point.validate(b)   // => Right(b)
-  //. Point3D.validate(b) // => Right(b)
+  //. Point.validate(p2);    // => Right({x: 3, y: 4, z: 5})
+  //. Point3D.validate(p2);  // => Right({x: 3, y: 4, z: 5})
   //.
-  //. dist(a, b);
+  //. dist(p1, p2);
   //. // => 5
   //. ```
   //.
-  //. The `b` value is a member of `Point3D` as well as `Point`, allowing one
-  //. to call `dist` on it. By default record types allow additional
-  //. properties, permitting record "extension". If one wishes for a record
-  //. type to allow for no additional properties, it can be refined as such:
+  //. The `p2` value is a member of `Point3D` as well as `Point`, making it a
+  //. valid argument to `dist`. By default record types allow additional
+  //. properties (which is what allowed `p2` to be a member of `Point`). If one
+  //. wishes for a record type to allow for no additional properties, it can be
+  //. refined as such:
   //.
-  //. ```js
+  //. ```javascript
   //. //    strict :: Type -> Type
   //. const strict = t => $.NullaryType(
   //.   'Strict' + t.name,
@@ -1785,13 +1786,16 @@
   //. );
   //.
   //. //    StrictPoint3D :: Type
-  //. const StrictPoint3D = strict(Point3D)
+  //. const StrictPoint3D = strict(Point3D);
   //.
-  //. //    a :: Point, Point3D
-  //. const a = {x: 1, y: 2, z: 3, color: 'red'}
+  //. //    p :: Point, Point3D
+  //. const p = {x: 1, y: 2, z: 3, color: 'red'};
   //.
-  //. Point3D.validate(a)       // => Right(a)
-  //. StrictPoint3D.validate(a) // => Left({propPath: [], value: a})
+  //. Point3D.validate(p);
+  //. // => Right({x: 1, y: 2, z: 3, color: 'red'})
+  //.
+  //. StrictPoint3D.validate(p);
+  //. // => Left({propPath: [], value: {x: 1, y: 2, z: 3, color: 'red'}})
   //. ```
   function RecordType(parent, fields) {
     var keys = Object.keys(fields).sort();
