@@ -827,6 +827,23 @@
     function(pair) { return [pair[1]]; }
   );
 
+  //# Strict :: Type -> Type
+  //.
+  //. Constructor for strict record types. For example:
+  //. `$.Strict($.Record($.Any, {name: $.String}))`, is the type comprising
+  //. every object with a `name :: String` property, without any other
+  //. properties.
+  function Strict(t) {
+    function test(x) {
+      return Object.keys(x).length === t.keys.length;
+    }
+
+    return NullaryType('sanctuary-def/Strict',
+                       functionUrl('Strict'),
+                       t,
+                       test);
+  }
+
   //# StrMap :: Type -> Type
   //.
   //. Constructor for homogeneous Object types.
@@ -1774,27 +1791,22 @@
   //. valid argument to `dist`. By default record types allow additional
   //. properties (which is what allowed `p2` to be a member of `Point`). If one
   //. wishes for a record type to allow for no additional properties, it can be
-  //. refined as such:
+  //. refined using the [`Strict`][] constructor:
   //.
   //. ```javascript
-  //. //    strict :: Type -> Type
-  //. const strict = t => $.NullaryType(
-  //.   'Strict' + t.name,
-  //.   '',
-  //.   t,
-  //.   x => Object.keys(x).length === t.keys.length
-  //. );
-  //.
   //. //    StrictPoint3D :: Type
-  //. const StrictPoint3D = strict(Point3D);
+  //. const StrictPoint3D = Strict(Point3D);
   //.
-  //. //    p :: Point, Point3D
-  //. const p = {x: 1, y: 2, z: 3, color: 'red'};
+  //. //    p3 :: Point, Point3D
+  //. const p3 = {x: 1, y: 2, z: 3, color: 'red'};
   //.
-  //. Point3D.validate(p);
+  //. Point3D.validate(p3);
   //. // => Right({x: 1, y: 2, z: 3, color: 'red'})
   //.
-  //. StrictPoint3D.validate(p);
+  //. StrictPoint3D.validate(p2);
+  //. // => Right({x: 3, y: 4, z: 5})
+  //.
+  //. StrictPoint3D.validate(p3);
   //. // => Left({propPath: [], value: {x: 1, y: 2, z: 3, color: 'red'}})
   //. ```
   function RecordType(parent, fields) {
@@ -2657,6 +2669,7 @@
     RegExp: RegExp_,
     RegexFlags: RegexFlags,
     StrMap: fromUncheckedUnaryType(StrMap),
+    Strict: Strict,
     String: String_,
     Symbol: Symbol_,
     Type: Type,
@@ -2695,6 +2708,7 @@
 //. [`Pair`]:               #Pair
 //. [`RegExp`]:             #RegExp
 //. [`RegexFlags`]:         #RegexFlags
+//. [`Strict`]:             #Strict
 //. [`String`]:             #String
 //. [`SyntaxError`]:        https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/SyntaxError
 //. [`TypeClass`]:          https://github.com/sanctuary-js/sanctuary-type-classes#TypeClass

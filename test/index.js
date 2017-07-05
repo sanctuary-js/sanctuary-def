@@ -1357,6 +1357,22 @@ describe('def', function() {
            'Since there is no type of which all the above values are members, the type-variable constraint has been violated.\n');
   });
 
+  it('supports "strict" record types', function() {
+
+    //  Point :: Type
+    var Point = $.RecordType($.Any, {x: $.Number, y: $.Number});
+
+    //  StrictPoint :: Type
+    var StrictPoint = $.Strict(Point);
+
+    //  p :: Point
+    var p = {x: 1, y: 2, z: 3};
+
+    eq($.test([], Point, p), true);
+    eq($.test([], StrictPoint, p), false);
+
+  });
+
   it('supports "nullable" types', function() {
     eq(typeof $.Nullable, 'function');
     eq($.Nullable.length, 1);
