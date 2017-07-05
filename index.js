@@ -1788,10 +1788,12 @@
   //. ```
   //.
   //. The `p2` value is a member of `Point3D` as well as `Point`, making it a
-  //. valid argument to `dist`. By default record types allow additional
-  //. properties (which is what allowed `p2` to be a member of `Point`). If one
-  //. wishes for a record type to allow for no additional properties, it can be
-  //. refined using the [`Strict`][] constructor:
+  //. valid argument to `dist`. By default, record types permit the presence
+  //. of additional fields. As a result, p2 is a member of Point as well as
+  //. Point3D.
+  //.
+  //. One could use the [`Strict`][] constructor to define record types which
+  //. do not permit additional fields:
   //.
   //. ```javascript
   //. //    StrictPoint3D :: Type
