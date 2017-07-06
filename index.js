@@ -787,7 +787,8 @@
   //.   - `List (List (List Number))`
   //.   - `List (List (List String))`
   //.   - `...`
-  var Unknown = new _Type(UNKNOWN, '', '', always2('???'), K(true), [], {});
+  var Unknown =
+  new _Type(UNKNOWN, '', '', always2('Unknown'), K(true), [], {});
 
   //# ValidDate :: Type
   //.
@@ -2122,11 +2123,29 @@
     };
   }
 
-  //  showType :: Type -> String
-  function showType(t) {
-    return unless(t.type === FUNCTION || t.type === RECORD || isEmpty(t.keys),
-                  stripOutermostParens,
-                  String(t));
+  //  typeVarNames :: Type -> Array String
+  function typeVarNames(t) {
+    return Z.concat(
+      t.type === VARIABLE ? [t.name] : [],
+      Z.chain(function(k) { return typeVarNames(t.types[k].type); }, t.keys)
+    );
+  }
+
+  //  showTypeWith :: TypeInfo -> Type -> String
+  function showTypeWith(typeInfo) {
+    var names = Z.chain(typeVarNames, typeInfo.types);
+    return function(t) {
+      var code = 'a'.charCodeAt(0);
+      return unless(
+        t.type === FUNCTION || t.type === RECORD || isEmpty(t.keys),
+        stripOutermostParens,
+        String(t).replace(/\bUnknown\b/g, function() {
+          do var name = String.fromCharCode(code++);
+          while (names.indexOf(name) >= 0);
+          return name;
+        })
+      );
+    };
   }
 
   //  showTypeQuoted :: Type -> String
@@ -2136,8 +2155,14 @@
                     String(t)));
   }
 
-  //  showValuesAndTypes :: (Array Type, Array Any, Integer) -> String
-  function showValuesAndTypes(env, values, pos) {
+  //  showValuesAndTypes :: ... -> String
+  function showValuesAndTypes(
+    env,            // :: Array Type
+    typeInfo,       // :: TypeInfo
+    values,         // :: Array Any
+    pos             // :: Integer
+  ) {
+    var showType = showTypeWith(typeInfo);
     return String(pos) + ')  ' + Z.map(function(x) {
       var types = determineActualTypesLoose(env, [x]);
       return Z.toString(x) + ' :: ' + Z.map(showType, types).join(', ');
@@ -2146,7 +2171,7 @@
 
   //  typeSignature :: TypeInfo -> String
   function typeSignature(typeInfo) {
-    var reprs = Z.map(showType, typeInfo.types);
+    var reprs = Z.map(showTypeWith(typeInfo), typeInfo.types);
     var arity = reprs.length - 1;
     return typeInfo.name + ' :: ' +
              constraintsRepr(typeInfo.constraints, id, K(K(id))) +
@@ -2256,7 +2281,7 @@
                 },
                 formatType6(Z.concat([index], propPath))) +
       '\n' +
-      showValuesAndTypes(env, [value], 1) + '\n\n' +
+      showValuesAndTypes(env, typeInfo, [value], 1) + '\n\n' +
       q(typeInfo.name) + ' requires ' + q(expType.name) + ' to satisfy the ' +
       stripNamespace(typeClass.name) + ' type-class constraint; ' +
       'the value at position 1 does not.\n' +
@@ -2308,7 +2333,7 @@
           'The value at position 1 is not a member of any type in ' +
           'the environment.\n\n' +
           'The environment contains the following types:\n\n',
-          showType,
+          showTypeWith(typeInfo),
           env
         ) :
       // else
@@ -2318,7 +2343,9 @@
           var values = valuesByPath[k];
           return isEmpty(values) ? st : {
             idx: st.idx + 1,
-            s: st.s + showValuesAndTypes(env, values, st.idx + 1) + '\n\n'
+            s: st.s +
+               showValuesAndTypes(env, typeInfo, values, st.idx + 1) +
+               '\n\n'
           };
         }, {idx: 0, s: ''}, keys).s +
         'Since there is no type of which all the above values are ' +
@@ -2341,7 +2368,7 @@
                 K(K(_)),
                 formatType6(Z.concat([index], propPath))) +
       '\n' +
-      showValuesAndTypes(env, [value], 1) + '\n\n' +
+      showValuesAndTypes(env, typeInfo, [value], 1) + '\n\n' +
       'The value at position 1 is not a member of ' + showTypeQuoted(t) + '.' +
       '\n' +
       see('type', t)
@@ -2462,6 +2489,7 @@
       }
     });
 
+    var showType = showTypeWith(typeInfo);
     curried.inspect = curried.toString = function() {
       var vReprs = [];
       var tReprs = [];

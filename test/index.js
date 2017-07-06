@@ -286,7 +286,7 @@ describe('def', function() {
            '                                             ^^^^^^^^^^^^^^^^^^^^^\n' +
            '                                                       1\n' +
            '\n' +
-           '1)  [] :: Array ???\n' +
+           '1)  [] :: Array a\n' +
            '\n' +
            'The value at position 1 is not a member of ‘NonEmpty (Array Type)’.\n' +
            '\n' +
@@ -1015,7 +1015,7 @@ describe('def', function() {
            '\n' +
            'The environment contains the following types:\n' +
            '\n' +
-           '  - Array ???\n' +
+           '  - Array b\n' +
            '  - Boolean\n' +
            '  - Number\n' +
            '  - String\n');
@@ -1247,7 +1247,7 @@ describe('def', function() {
            '        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n' +
            '                     1\n' +
            '\n' +
-           '1)  {} :: Object, StrMap ???\n' +
+           '1)  {} :: Object, StrMap a\n' +
            '\n' +
            'The value at position 1 is not a member of ‘{ x :: Number, y :: Number }’.\n');
 
@@ -2214,9 +2214,9 @@ describe('def', function() {
            '     ^    ^\n' +
            '     1    2\n' +
            '\n' +
-           '1)  Left("abc") :: Either String ???\n' +
+           '1)  Left("abc") :: Either String b\n' +
            '\n' +
-           '2)  Left(/XXX/) :: Either RegExp ???\n' +
+           '2)  Left(/XXX/) :: Either RegExp b\n' +
            '\n' +
            'Since there is no type of which all the above values are members, the type-variable constraint has been violated.\n');
 
@@ -2228,9 +2228,9 @@ describe('def', function() {
            '     ^    ^\n' +
            '     1    2\n' +
            '\n' +
-           '1)  Right(123) :: Either ??? Number\n' +
+           '1)  Right(123) :: Either b Number\n' +
            '\n' +
-           '2)  Right(/XXX/) :: Either ??? RegExp\n' +
+           '2)  Right(/XXX/) :: Either b RegExp\n' +
            '\n' +
            'Since there is no type of which all the above values are members, the type-variable constraint has been violated.\n');
 
@@ -2242,9 +2242,9 @@ describe('def', function() {
            '     ^         ^\n' +
            '     1         2\n' +
            '\n' +
-           '1)  Left("abc") :: Either String ???\n' +
+           '1)  Left("abc") :: Either String b\n' +
            '\n' +
-           '2)  Left(/XXX/) :: Either RegExp ???\n' +
+           '2)  Left(/XXX/) :: Either RegExp b\n' +
            '\n' +
            'Since there is no type of which all the above values are members, the type-variable constraint has been violated.\n');
 
@@ -2256,9 +2256,9 @@ describe('def', function() {
            '          ^    ^\n' +
            '          1    2\n' +
            '\n' +
-           '1)  Right(123) :: Either ??? Number\n' +
+           '1)  Right(123) :: Either b Number\n' +
            '\n' +
-           '2)  Right(/XXX/) :: Either ??? RegExp\n' +
+           '2)  Right(/XXX/) :: Either b RegExp\n' +
            '\n' +
            'Since there is no type of which all the above values are members, the type-variable constraint has been violated.\n');
   });
@@ -2703,7 +2703,7 @@ describe('def', function() {
            '       ^^^^^^^^^^^^^    ^\n' +
            '                        1\n' +
            '\n' +
-           '1)  Left(1) :: Either Number ???, Either Integer ???\n' +
+           '1)  Left(1) :: Either Number b, Either Integer b\n' +
            '\n' +
            '‘alt’ requires ‘a’ to satisfy the Alternative type-class constraint; the value at position 1 does not.\n' +
            '\n' +
@@ -2717,7 +2717,7 @@ describe('def', function() {
            '       ^^^^^^^^^^^^^         ^\n' +
            '                             1\n' +
            '\n' +
-           '1)  Right(1) :: Either ??? Number, Either ??? Integer\n' +
+           '1)  Right(1) :: Either b Number, Either b Integer\n' +
            '\n' +
            '‘alt’ requires ‘a’ to satisfy the Alternative type-class constraint; the value at position 1 does not.\n' +
            '\n' +
@@ -2765,7 +2765,7 @@ describe('def', function() {
            '                         ^    ^\n' +
            '                         1    2\n' +
            '\n' +
-           '1)  [] :: Array ???\n' +
+           '1)  [] :: Array b\n' +
            '\n' +
            '2)  "" :: String\n' +
            '\n' +
@@ -2781,7 +2781,7 @@ describe('def', function() {
            '\n' +
            '1)  "" :: String\n' +
            '\n' +
-           '2)  [] :: Array ???\n' +
+           '2)  [] :: Array b\n' +
            '\n' +
            'Since there is no type of which all the above values are members, the type-variable constraint has been violated.\n');
 
@@ -2807,7 +2807,7 @@ describe('def', function() {
            '           ^^^^^^^^^^^^^                                ^^^\n' +
            '                                                         1\n' +
            '\n' +
-           '1)  Right(42) :: Either ??? Number, Either ??? Integer\n' +
+           '1)  Right(42) :: Either b Number, Either b Integer\n' +
            '\n' +
            '‘filter’ requires ‘m’ to satisfy the Alternative type-class constraint; the value at position 1 does not.\n' +
            '\n' +
@@ -3068,6 +3068,32 @@ describe('def', function() {
     eq(count, 0);
     eq(head([1, 2, 3]), Just(1));
     eq(count, 1);
+  });
+
+  it('replaces Unknowns with free type variables', function() {
+    var env = [Either($.Unknown, $.Unknown), $.Number];
+    var def = $.create({checkTypes: true, env: env});
+
+    var f = $.UnaryTypeVariable('f');
+
+    //  map :: Functor f => (a -> b) -> f a -> f b
+    var map =
+    def('map',
+        {f: [Z.Functor]},
+        [$.Function([a, b]), f(a), f(b)],
+        Z.map);
+
+    throws(function() { map(Right(Right(Right(Right(0))))); },
+           TypeError,
+           'Invalid value\n' +
+           '\n' +
+           'map :: Functor f => (a -> b) -> f a -> f b\n' +
+           '                    ^^^^^^^^\n' +
+           '                       1\n' +
+           '\n' +
+           '1)  Right(Right(Right(Right(0)))) :: Either c (Either d (Either e (Either g Number)))\n' +
+           '\n' +
+           'The value at position 1 is not a member of ‘a -> b’.\n');
   });
 
 });
