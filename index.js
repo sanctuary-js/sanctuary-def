@@ -260,6 +260,13 @@
     };
   }
 
+  //  keys :: Any -> Array
+  function keys(x) {
+    var props = [], o = Object(x);
+    for (var prop in o) props.push(prop);
+    return props;
+  }
+
   //  last :: Array a -> a
   function last(xs) { return xs[xs.length - 1]; }
 
@@ -833,16 +840,12 @@
   //. `$.Strict($.Record($.Any, {name: $.String}))`, for example, is the type
   //. comprising every object with exactly one field, `name`, of type `String`.
   function Strict(t) {
-    function test(x) {
-      var len = 0, o = Object(x);
-      for (var k in o) len += 1; // eslint-disable-line no-unused-vars
-      return t.keys.length === len;
-    }
-
     return NullaryType('sanctuary-def/Strict',
                        functionUrl('Strict'),
                        t,
-                       test);
+                       function test(x) {
+                         return t.keys.length === keys(x).length;
+                       });
   }
 
   //# StrMap :: Type -> Type
@@ -1813,7 +1816,7 @@
   //. // => Left({propPath: [], value: {x: 1, y: 2, z: 3, color: 'red'}})
   //. ```
   function RecordType(parent, fields) {
-    var keys = Object.keys(fields).sort();
+    var props = keys(fields).sort();
 
     function format(outer, inner) {
       return wrap(outer('{'))(outer(' }'))(Z.map(function(k) {
@@ -1822,21 +1825,20 @@
                unless(t.type === RECORD || isEmpty(t.keys),
                       stripOutermostParens,
                       inner(k)(String(t)));
-      }, keys).join(outer(',')));
+      }, props).join(outer(',')));
     }
 
     function test(x) {
-      if (x == null) return false;
-      var o = Object(x);
-      return keys.every(function(k) { return k in o; });
+      var actualProps = keys(x);
+      return props.every(function(k) { return actualProps.indexOf(k) >= 0; });
     }
 
     var $types = {};
-    keys.forEach(function(k) {
+    props.forEach(function(k) {
       $types[k] = {extractor: function(x) { return [x[k]]; }, type: fields[k]};
     });
 
-    return new _Type(RECORD, '', '', format, parent, test, keys, $types);
+    return new _Type(RECORD, '', '', format, parent, test, props, $types);
   }
 
   var CheckedRecordType =

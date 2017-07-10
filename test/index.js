@@ -1230,6 +1230,7 @@ describe('def', function() {
     eq(dist({x: 0, y: 0}, {x: 0, y: 0, z: 0}), 0);
     eq(dist({x: 1, y: 1}, {x: 4, y: 5}), 5);
     eq(dist({x: 1, y: 1}, {x: 4, y: 5, z: 6}), 5);
+    eq(dist(Object.assign(Object.create({x: 1}), {y: 1}), {x: 4, y: 5}), 5);
 
     eq(length({start: {x: 1, y: 1}, end: {x: 4, y: 5}}), 5);
     eq(length({start: {x: 1, y: 1}, end: {x: 4, y: 5, z: 6}}), 5);
@@ -1365,11 +1366,16 @@ describe('def', function() {
     //  StrictPoint :: Type
     var StrictPoint = $.Strict(Point);
 
-    //  p :: Point
-    var p = {x: 1, y: 2, z: 3};
+    //  p1 :: Point
+    var p1 = {x: 1, y: 2, z: 3};
 
-    eq($.test([], Point, p), true);
-    eq($.test([], StrictPoint, p), false);
+    //  p2 :: Point, StrictPoint
+    var p2 = Object.assign(Object.create({x: 1}), {y: 2});
+
+    eq($.test([], Point, p1), true);
+    eq($.test([], StrictPoint, p1), false);
+    eq($.test([], Point, p2), true);
+    eq($.test([], StrictPoint, p2), true);
 
   });
 
