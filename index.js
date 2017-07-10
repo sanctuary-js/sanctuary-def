@@ -797,17 +797,16 @@
   //. the type comprising every [`String`][] value except `''`.
   //.
   //. The given type must satisfy the [Monoid][] and [Setoid][] specifications.
-  var NonEmpty = UnaryType(
-    'sanctuary-def/NonEmpty',
-    functionUrl('NonEmpty'),
-    Any,
-    function(x) {
+  function NonEmpty(parent) {
+    function test(x) {
       return Z.Monoid.test(x) &&
              Z.Setoid.test(x) &&
              !Z.equals(x, Z.empty(x.constructor));
-    },
-    function(monoid) { return [monoid]; }
-  );
+    }
+    function extract(monoid) { return [monoid]; }
+    var t = UnaryTypeWithUrl('sanctuary-def/NonEmpty', parent, test, extract);
+    return t(parent);
+  }
 
   //# Nullable :: Type -> Type
   //.
@@ -839,13 +838,11 @@
   //. Constructor for strict record types.
   //. `$.Strict($.Record($.Any, {name: $.String}))`, for example, is the type
   //. comprising every object with exactly one field, `name`, of type `String`.
-  function Strict(t) {
-    return NullaryType('sanctuary-def/Strict',
-                       functionUrl('Strict'),
-                       t,
-                       function test(x) {
-                         return t.keys.length === keys(x).length;
-                       });
+  function Strict(parent) {
+    function test(x) { return parent.keys.length === keys(x).length; }
+    function extract(record) { return [record]; }
+    var t = UnaryTypeWithUrl('sanctuary-def/Strict', parent, test, extract);
+    return t(parent);
   }
 
   //# StrMap :: Type -> Type
