@@ -1733,6 +1733,21 @@ describe('def', function() {
     eq(isNonZeroInteger(new Number(1)), false);
   });
 
+  it('provides the "NonNegativeInteger" type', function() {
+    eq($.NonNegativeInteger.name, 'sanctuary-def/NonNegativeInteger');
+    eq($.NonNegativeInteger.url, 'https://github.com/sanctuary-js/sanctuary-def/tree/v' + version + '#NonNegativeInteger');
+
+    function isNonNegativeInteger(x) {
+      return $.test($.env, $.NonNegativeInteger, x);
+    }
+    eq(isNonNegativeInteger(0), true);
+    eq(isNonNegativeInteger(-0), true);
+    eq(isNonNegativeInteger(1), true);
+    eq(isNonNegativeInteger(-1), false);
+    eq(isNonNegativeInteger(3.14), false);
+    eq(isNonNegativeInteger(new Number(1)), false);
+  });
+
   it('provides the "PositiveInteger" type', function() {
     eq($.PositiveInteger.name, 'sanctuary-def/PositiveInteger');
     eq($.PositiveInteger.url, 'https://github.com/sanctuary-js/sanctuary-def/tree/v' + version + '#PositiveInteger');
