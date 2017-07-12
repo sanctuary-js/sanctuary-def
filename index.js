@@ -617,6 +617,15 @@
     function(x) { return RegExp_._test(x) && !x.global; }
   );
 
+  //# NonNegativeInteger :: Type
+  //.
+  //. Type comprising every non-negative [`Integer`][] value (including `-0`).
+  //. Also known as the set of natural numbers under ISO 80000-2:2009.
+  var NonNegativeInteger = NullaryTypeWithUrl(
+    'sanctuary-def/NonNegativeInteger',
+    function(x) { return Integer._test(x) && x >= 0; }
+  );
+
   //# NonZeroFiniteNumber :: Type
   //.
   //. Type comprising every [`FiniteNumber`][] value except `0` and `-0`.
@@ -2580,6 +2589,7 @@
     NegativeNumber: NegativeNumber,
     NonEmpty: NonEmpty,
     NonGlobalRegExp: NonGlobalRegExp,
+    NonNegativeInteger: NonNegativeInteger,
     NonZeroFiniteNumber: NonZeroFiniteNumber,
     NonZeroInteger: NonZeroInteger,
     NonZeroValidNumber: NonZeroValidNumber,
