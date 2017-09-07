@@ -1076,13 +1076,12 @@
             return function(propPath) {
               var indexedPropPath = Z.concat([index], propPath);
               return function(s) {
-                if (t.type === VARIABLE && isEmpty(t.keys)) {
+                if (paths.some(isPrefix(indexedPropPath))) {
                   var key = JSON.stringify(indexedPropPath);
-                  var exists = hasOwnProperty.call(valuesByPath, key);
-                  return (exists && !isEmpty(valuesByPath[key]) ? f : _)(s);
-                } else {
-                  return unless(paths.some(isPrefix(indexedPropPath)), _, s);
+                  if (!hasOwnProperty.call(valuesByPath, key)) return s;
+                  if (!isEmpty(valuesByPath[key])) return f(s);
                 }
+                return _(s);
               };
             };
           };
