@@ -3029,7 +3029,7 @@ describe('def', function() {
   });
 
   it('supports binary type variables', function() {
-    var env = $.env.concat([$Pair($.Unknown, $.Unknown)]);
+    var env = $.env.concat([Either($.Unknown, $.Unknown), Maybe($.Unknown), $Pair($.Unknown, $.Unknown)]);
     var def = $.create({checkTypes: true, env: env});
 
     //  f :: (Type, Type) -> Type
@@ -3054,6 +3054,23 @@ describe('def', function() {
            '                                                  1\n' +
            '\n' +
            '1)  ["foo", true, 42] :: Array ???\n' +
+           '\n' +
+           'Since there is no type of which all the above values are members, the type-variable constraint has been violated.\n');
+
+    //  chain :: Chain m => (a -> m b) -> m a -> m b
+    var chain = def('chain', {m: [Z.Chain]}, [$.Function([a, m(b)]), m(a), m(b)], Z.chain);
+
+    throws(function() { chain(Left, Just('x')); },
+           TypeError,
+           'Type-variable constraint violation\n' +
+           '\n' +
+           'chain :: Chain m => (a -> m b) -> m a -> m b\n' +
+           '                          ^^^     ^^^\n' +
+           '                           1       2\n' +
+           '\n' +
+           '1)  Left("x") :: Either String c\n' +
+           '\n' +
+           '2)  Just("x") :: Maybe String\n' +
            '\n' +
            'Since there is no type of which all the above values are members, the type-variable constraint has been violated.\n');
   });
