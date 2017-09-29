@@ -21,7 +21,7 @@
     "types"
   ],
   "dependencies": {
-    "sanctuary-type-classes": "6.0.x",
+    "sanctuary-type-classes": "7.0.x",
     "sanctuary-type-identifiers": "2.0.x"
   },
   "ignore": [
