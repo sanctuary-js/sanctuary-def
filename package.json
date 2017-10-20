@@ -15,14 +15,14 @@
     "sanctuary-type-identifiers": "2.0.x"
   },
   "devDependencies": {
-    "eslint": "3.19.x",
+    "eslint": "4.9.x",
     "istanbul": "0.4.x",
     "mocha": "3.x.x",
     "remark-cli": "3.x.x",
     "remark-lint-no-undefined-references": "1.x.x",
     "remark-lint-no-unused-definitions": "1.x.x",
     "remember-bower": "0.1.x",
-    "sanctuary-style": "0.5.x",
+    "sanctuary-style": "1.0.x",
     "transcribe": "1.0.x",
     "xyz": "2.0.x"
   },
