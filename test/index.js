@@ -224,14 +224,14 @@ var $Pair = $.BinaryType(
 );
 
 
-describe('create', function() {
+suite('create', function() {
 
-  it('is a unary function', function() {
+  test('is a unary function', function() {
     eq(typeof $.create, 'function');
     eq($.create.length, 1);
   });
 
-  it('type checks its arguments', function() {
+  test('type checks its arguments', function() {
     throws(function() { $.create(true); },
            TypeError,
            'Invalid value\n' +
@@ -247,9 +247,9 @@ describe('create', function() {
 
 });
 
-describe('def', function() {
+suite('def', function() {
 
-  it('type checks its arguments when checkTypes is true', function() {
+  test('type checks its arguments when checkTypes is true', function() {
     throws(function() { def(null, null, null, null); },
            TypeError,
            'Invalid value\n' +
@@ -321,7 +321,7 @@ describe('def', function() {
            'See https://github.com/sanctuary-js/sanctuary-def/tree/v' + version + '#Function for information about the Function type.\n');
   });
 
-  it('does not type check its arguments when checkTypes is false', function() {
+  test('does not type check its arguments when checkTypes is false', function() {
     var def = $.create({checkTypes: false, env: $.env});
 
     //  add :: Number -> Number -> Number
@@ -339,7 +339,7 @@ describe('def', function() {
     eq(add({foo: 42}, 'XXX'), '[object Object]XXX');
   });
 
-  it('returns a function whose length matches that of given list', function() {
+  test('returns a function whose length matches that of given list', function() {
     eq($0.length, 0);
     eq($1.length, 1);
     eq($2.length, 2);
@@ -356,7 +356,7 @@ describe('def', function() {
            '‘def’ cannot define a function with arity greater than nine');
   });
 
-  it('returns a function with "inspect" and "toString" methods', function() {
+  test('returns a function with "inspect" and "toString" methods', function() {
     //  add :: Number -> Number -> Number
     var add =
     def('add',
@@ -392,7 +392,7 @@ describe('def', function() {
     eq($3(__, 20, 30).toString(), '$3(__, 20, 30) :: a -> Array a');
   });
 
-  it('returns a curried function', function() {
+  test('returns a curried function', function() {
     eq($2(1).length, 1);
     eq($3(1).length, 2);
     eq($4(1).length, 3);
@@ -449,7 +449,7 @@ describe('def', function() {
     eq($9(1, 2, 3, 4, 5, 6, 7, 8, 9), [1, 2, 3, 4, 5, 6, 7, 8, 9]);
   });
 
-  it('returns a function which accepts placeholders', function() {
+  test('returns a function which accepts placeholders', function() {
     //  triple :: Number -> Number -> Number -> Array Number
     var triple =
     def('triple', {}, [$.Number, $.Number, $.Number, $.Array($.Number)], list);
@@ -499,7 +499,7 @@ describe('def', function() {
            'See https://github.com/sanctuary-js/sanctuary-def/tree/v' + version + '#Number for information about the Number type.\n');
   });
 
-  it('returns a function which throws if given too many args', function() {
+  test('returns a function which throws if given too many args', function() {
     throws(function() { $0(1); },
            TypeError,
            'Function applied to too many arguments\n' +
@@ -581,7 +581,7 @@ describe('def', function() {
            '‘$9’ expected at most nine arguments but received 10 arguments.\n');
   });
 
-  it('returns a function which type checks its arguments', function() {
+  test('returns a function which type checks its arguments', function() {
     var N = $.Number;
     var $9 = def('$9', {}, [N, N, N, N, N, N, N, N, N, $.Array(N)], list);
 
@@ -714,7 +714,7 @@ describe('def', function() {
     eq($9(1, 2, 3, 4, 5, 6, 7, 8, 9), [1, 2, 3, 4, 5, 6, 7, 8, 9]);
   });
 
-  it('reports type error correctly for null/undefined', function() {
+  test('reports type error correctly for null/undefined', function() {
     //  sqrt :: Number -> Number
     var sqrt = def('sqrt', {}, [$.Number, $.Number], Math.sqrt);
 
@@ -749,7 +749,7 @@ describe('def', function() {
            'See https://github.com/sanctuary-js/sanctuary-def/tree/v' + version + '#Number for information about the Number type.\n');
   });
 
-  it('creates a proper curry closure', function() {
+  test('creates a proper curry closure', function() {
     //  a000 :: a -> a -> a -> Array a
     var a000 = def('a00', {}, [a, a, a, $.Array(a)], Array);
     var anum = a000(1);
@@ -765,7 +765,7 @@ describe('def', function() {
     eq(abstr('c'), ['a', 'b', 'c']);
   });
 
-  it('reports type error correctly for parameterized types', function() {
+  test('reports type error correctly for parameterized types', function() {
     var env = $.env.concat([Either($.Unknown, $.Unknown), Maybe($.Unknown)]);
     var def = $.create({checkTypes: true, env: env});
 
@@ -974,7 +974,7 @@ describe('def', function() {
            'Since there is no type of which all the above values are members, the type-variable constraint has been violated.\n');
   });
 
-  it('throws custom error for unrecognized value (empty env)', function() {
+  test('throws custom error for unrecognized value (empty env)', function() {
     var env = [];
     var def = $.create({checkTypes: true, env: env});
 
@@ -994,7 +994,7 @@ describe('def', function() {
            'The environment is empty! Polymorphic functions require a non-empty environment.\n');
   });
 
-  it('throws custom error for unrecognized value (non-empty env)', function() {
+  test('throws custom error for unrecognized value (non-empty env)', function() {
     var env = [$.Array($.Unknown), $.Boolean, $.Number, $.String];
     var def = $.create({checkTypes: true, env: env});
 
@@ -1021,7 +1021,7 @@ describe('def', function() {
            '  - String\n');
   });
 
-  it('returns a function which type checks its return value', function() {
+  test('returns a function which type checks its return value', function() {
     //  add :: Number -> Number -> Number
     var add = def('add', {}, [$.Number, $.Number, $.Number], always('XXX'));
 
@@ -1040,7 +1040,7 @@ describe('def', function() {
            'See https://github.com/sanctuary-js/sanctuary-def/tree/v' + version + '#Number for information about the Number type.\n');
   });
 
-  it('performs type checking when a "returned" function is applied', function() {
+  test('performs type checking when a "returned" function is applied', function() {
     //  lt :: Ord a => a -> (a -> Boolean)
     var lt =
     def('lt',
@@ -1067,7 +1067,7 @@ describe('def', function() {
            'Since there is no type of which all the above values are members, the type-variable constraint has been violated.\n');
   });
 
-  it('does not rely on constructor identity', function() {
+  test('does not rely on constructor identity', function() {
     //  inc :: Date -> Date
     var inc = def('inc', {}, [$.Date, $.Date], function(date) { return new Date(date.valueOf() + 1); });
 
@@ -1081,7 +1081,7 @@ describe('def', function() {
     eq(len(vm.runInNewContext('["foo", "bar", "baz"]')), 3);
   });
 
-  it('accommodates circular references', function() {
+  test('accommodates circular references', function() {
     //  id :: a -> a
     var id = def('id', {}, [a, a], identity);
 
@@ -1108,7 +1108,7 @@ describe('def', function() {
            'Since there is no type of which all the above values are members, the type-variable constraint has been violated.\n');
   });
 
-  it('supports custom types', function() {
+  test('supports custom types', function() {
     //  fromMaybe :: a -> Maybe a
     var fromMaybe =
     def('fromMaybe',
@@ -1131,7 +1131,7 @@ describe('def', function() {
            'Since there is no type of which all the above values are members, the type-variable constraint has been violated.\n');
   });
 
-  it('supports enumerated types', function() {
+  test('supports enumerated types', function() {
     eq(typeof $.EnumType, 'function');
     eq($.EnumType.length, 3);
     eq($.EnumType.toString(), 'EnumType :: String -> String -> Array Any -> Type');
@@ -1198,7 +1198,7 @@ describe('def', function() {
            'Since there is no type of which all the above values are members, the type-variable constraint has been violated.\n');
   });
 
-  it('supports record types', function() {
+  test('supports record types', function() {
     eq(typeof $.RecordType, 'function');
     eq($.RecordType.length, 1);
     eq($.RecordType.toString(), 'RecordType :: StrMap Type -> Type');
@@ -1345,7 +1345,7 @@ describe('def', function() {
            'Since there is no type of which all the above values are members, the type-variable constraint has been violated.\n');
   });
 
-  it('supports "nullable" types', function() {
+  test('supports "nullable" types', function() {
     eq(typeof $.Nullable, 'function');
     eq($.Nullable.length, 1);
     eq($.Nullable.toString(), 'Nullable :: Type -> Type');
@@ -1439,12 +1439,12 @@ describe('def', function() {
            'Since there is no type of which all the above values are members, the type-variable constraint has been violated.\n');
   });
 
-  it('provides the "Any" type', function() {
+  test('provides the "Any" type', function() {
     eq($.Any.name, 'sanctuary-def/Any');
     eq($.Any.url, 'https://github.com/sanctuary-js/sanctuary-def/tree/v' + version + '#Any');
   });
 
-  it('provides the "AnyFunction" type', function() {
+  test('provides the "AnyFunction" type', function() {
     eq($.AnyFunction.name, 'Function');
     eq($.AnyFunction.url, 'https://github.com/sanctuary-js/sanctuary-def/tree/v' + version + '#Function');
 
@@ -1460,37 +1460,37 @@ describe('def', function() {
     eq(isAnyFunction(function*(x) { return x; }), true);
   });
 
-  it('provides the "Arguments" type', function() {
+  test('provides the "Arguments" type', function() {
     eq($.Arguments.name, 'Arguments');
     eq($.Arguments.url, 'https://github.com/sanctuary-js/sanctuary-def/tree/v' + version + '#Arguments');
   });
 
-  it('provides the "Array" type constructor', function() {
+  test('provides the "Array" type constructor', function() {
     eq($.Array(a).name, 'Array');
     eq($.Array(a).url, 'https://github.com/sanctuary-js/sanctuary-def/tree/v' + version + '#Array');
   });
 
-  it('provides the "Boolean" type', function() {
+  test('provides the "Boolean" type', function() {
     eq($.Boolean.name, 'Boolean');
     eq($.Boolean.url, 'https://github.com/sanctuary-js/sanctuary-def/tree/v' + version + '#Boolean');
   });
 
-  it('provides the "Date" type', function() {
+  test('provides the "Date" type', function() {
     eq($.Date.name, 'Date');
     eq($.Date.url, 'https://github.com/sanctuary-js/sanctuary-def/tree/v' + version + '#Date');
   });
 
-  it('provides the "Error" type', function() {
+  test('provides the "Error" type', function() {
     eq($.Error.name, 'Error');
     eq($.Error.url, 'https://github.com/sanctuary-js/sanctuary-def/tree/v' + version + '#Error');
   });
 
-  it('provides the "Function" type constructor', function() {
+  test('provides the "Function" type constructor', function() {
     eq($.Function([a, a]).name, '');
     eq($.Function([a, a]).url, '');
   });
 
-  it('provides the "NonEmpty" type constructor', function() {
+  test('provides the "NonEmpty" type constructor', function() {
     eq($.NonEmpty($.String).name, 'sanctuary-def/NonEmpty');
     eq($.NonEmpty($.String).url, 'https://github.com/sanctuary-js/sanctuary-def/tree/v' + version + '#NonEmpty');
 
@@ -1502,62 +1502,62 @@ describe('def', function() {
     eq(isNonEmptyIntegerArray([0.5]), false);
   });
 
-  it('provides the "Null" type', function() {
+  test('provides the "Null" type', function() {
     eq($.Null.name, 'Null');
     eq($.Null.url, 'https://github.com/sanctuary-js/sanctuary-def/tree/v' + version + '#Null');
   });
 
-  it('provides the "Nullable" type constructor', function() {
+  test('provides the "Nullable" type constructor', function() {
     eq($.Nullable(a).name, 'sanctuary-def/Nullable');
     eq($.Nullable(a).url, 'https://github.com/sanctuary-js/sanctuary-def/tree/v' + version + '#Nullable');
   });
 
-  it('provides the "Number" type', function() {
+  test('provides the "Number" type', function() {
     eq($.Number.name, 'Number');
     eq($.Number.url, 'https://github.com/sanctuary-js/sanctuary-def/tree/v' + version + '#Number');
   });
 
-  it('provides the "Object" type', function() {
+  test('provides the "Object" type', function() {
     eq($.Object.name, 'Object');
     eq($.Object.url, 'https://github.com/sanctuary-js/sanctuary-def/tree/v' + version + '#Object');
   });
 
-  it('provides the "RegExp" type', function() {
+  test('provides the "RegExp" type', function() {
     eq($.RegExp.name, 'RegExp');
     eq($.RegExp.url, 'https://github.com/sanctuary-js/sanctuary-def/tree/v' + version + '#RegExp');
   });
 
-  it('provides the "String" type', function() {
+  test('provides the "String" type', function() {
     eq($.String.name, 'String');
     eq($.String.url, 'https://github.com/sanctuary-js/sanctuary-def/tree/v' + version + '#String');
   });
 
-  it('provides the "Symbol" type', function() {
+  test('provides the "Symbol" type', function() {
     eq($.Symbol.name, 'Symbol');
     eq($.Symbol.url, 'https://github.com/sanctuary-js/sanctuary-def/tree/v' + version + '#Symbol');
   });
 
-  it('provides the "Type" type', function() {
+  test('provides the "Type" type', function() {
     eq($.Type.name, 'Type');
     eq($.Type.url, 'https://github.com/sanctuary-js/sanctuary-def/tree/v' + version + '#Type');
   });
 
-  it('provides the "TypeClass" type', function() {
+  test('provides the "TypeClass" type', function() {
     eq($.TypeClass.name, 'TypeClass');
     eq($.TypeClass.url, 'https://github.com/sanctuary-js/sanctuary-def/tree/v' + version + '#TypeClass');
   });
 
-  it('provides the "Undefined" type', function() {
+  test('provides the "Undefined" type', function() {
     eq($.Undefined.name, 'Undefined');
     eq($.Undefined.url, 'https://github.com/sanctuary-js/sanctuary-def/tree/v' + version + '#Undefined');
   });
 
-  it('provides the "Unknown" type', function() {
+  test('provides the "Unknown" type', function() {
     eq($.Unknown.name, '');
     eq($.Unknown.url, '');
   });
 
-  it('provides the "ValidDate" type', function() {
+  test('provides the "ValidDate" type', function() {
     eq($.ValidDate.name, 'sanctuary-def/ValidDate');
     eq($.ValidDate.url, 'https://github.com/sanctuary-js/sanctuary-def/tree/v' + version + '#ValidDate');
 
@@ -1584,7 +1584,7 @@ describe('def', function() {
     eq(sinceEpoch(new Date(123456)), 123.456);
   });
 
-  it('provides the "PositiveNumber" type', function() {
+  test('provides the "PositiveNumber" type', function() {
     eq($.PositiveNumber.name, 'sanctuary-def/PositiveNumber');
     eq($.PositiveNumber.url, 'https://github.com/sanctuary-js/sanctuary-def/tree/v' + version + '#PositiveNumber');
 
@@ -1601,7 +1601,7 @@ describe('def', function() {
     eq(isPositiveNumber(new Number(Infinity)), false);
   });
 
-  it('provides the "NegativeNumber" type', function() {
+  test('provides the "NegativeNumber" type', function() {
     eq($.NegativeNumber.name, 'sanctuary-def/NegativeNumber');
     eq($.NegativeNumber.url, 'https://github.com/sanctuary-js/sanctuary-def/tree/v' + version + '#NegativeNumber');
 
@@ -1618,7 +1618,7 @@ describe('def', function() {
     eq(isNegativeNumber(new Number(-Infinity)), false);
   });
 
-  it('provides the "ValidNumber" type', function() {
+  test('provides the "ValidNumber" type', function() {
     eq($.ValidNumber.name, 'sanctuary-def/ValidNumber');
     eq($.ValidNumber.url, 'https://github.com/sanctuary-js/sanctuary-def/tree/v' + version + '#ValidNumber');
 
@@ -1630,7 +1630,7 @@ describe('def', function() {
     eq(isValidNumber(new Number(1)), false);
   });
 
-  it('provides the "NonZeroValidNumber" type', function() {
+  test('provides the "NonZeroValidNumber" type', function() {
     eq($.NonZeroValidNumber.name, 'sanctuary-def/NonZeroValidNumber');
     eq($.NonZeroValidNumber.url, 'https://github.com/sanctuary-js/sanctuary-def/tree/v' + version + '#NonZeroValidNumber');
 
@@ -1643,7 +1643,7 @@ describe('def', function() {
     eq(isNonZeroValidNumber(new Number(1)), false);
   });
 
-  it('provides the "FiniteNumber" type', function() {
+  test('provides the "FiniteNumber" type', function() {
     eq($.FiniteNumber.name, 'sanctuary-def/FiniteNumber');
     eq($.FiniteNumber.url, 'https://github.com/sanctuary-js/sanctuary-def/tree/v' + version + '#FiniteNumber');
 
@@ -1656,7 +1656,7 @@ describe('def', function() {
     eq(isFiniteNumber(new Number(1)), false);
   });
 
-  it('provides the "PositiveFiniteNumber" type', function() {
+  test('provides the "PositiveFiniteNumber" type', function() {
     eq($.PositiveFiniteNumber.name, 'sanctuary-def/PositiveFiniteNumber');
     eq($.PositiveFiniteNumber.url, 'https://github.com/sanctuary-js/sanctuary-def/tree/v' + version + '#PositiveFiniteNumber');
 
@@ -1673,7 +1673,7 @@ describe('def', function() {
     eq(isPositiveFiniteNumber(new Number(0.5)), false);
   });
 
-  it('provides the "NegativeFiniteNumber" type', function() {
+  test('provides the "NegativeFiniteNumber" type', function() {
     eq($.NegativeFiniteNumber.name, 'sanctuary-def/NegativeFiniteNumber');
     eq($.NegativeFiniteNumber.url, 'https://github.com/sanctuary-js/sanctuary-def/tree/v' + version + '#NegativeFiniteNumber');
 
@@ -1690,7 +1690,7 @@ describe('def', function() {
     eq(isNegativeFiniteNumber(new Number(-0.5)), false);
   });
 
-  it('provides the "NonZeroFiniteNumber" type', function() {
+  test('provides the "NonZeroFiniteNumber" type', function() {
     eq($.NonZeroFiniteNumber.name, 'sanctuary-def/NonZeroFiniteNumber');
     eq($.NonZeroFiniteNumber.url, 'https://github.com/sanctuary-js/sanctuary-def/tree/v' + version + '#NonZeroFiniteNumber');
 
@@ -1705,7 +1705,7 @@ describe('def', function() {
     eq(isNonZeroFiniteNumber(new Number(1)), false);
   });
 
-  it('provides the "Integer" type', function() {
+  test('provides the "Integer" type', function() {
     eq($.Integer.name, 'sanctuary-def/Integer');
     eq($.Integer.url, 'https://github.com/sanctuary-js/sanctuary-def/tree/v' + version + '#Integer');
 
@@ -1719,7 +1719,7 @@ describe('def', function() {
     eq(isInteger(new Number(1)), false);
   });
 
-  it('provides the "NonZeroInteger" type', function() {
+  test('provides the "NonZeroInteger" type', function() {
     eq($.NonZeroInteger.name, 'sanctuary-def/NonZeroInteger');
     eq($.NonZeroInteger.url, 'https://github.com/sanctuary-js/sanctuary-def/tree/v' + version + '#NonZeroInteger');
 
@@ -1733,7 +1733,7 @@ describe('def', function() {
     eq(isNonZeroInteger(new Number(1)), false);
   });
 
-  it('provides the "NonNegativeInteger" type', function() {
+  test('provides the "NonNegativeInteger" type', function() {
     eq($.NonNegativeInteger.name, 'sanctuary-def/NonNegativeInteger');
     eq($.NonNegativeInteger.url, 'https://github.com/sanctuary-js/sanctuary-def/tree/v' + version + '#NonNegativeInteger');
 
@@ -1748,7 +1748,7 @@ describe('def', function() {
     eq(isNonNegativeInteger(new Number(1)), false);
   });
 
-  it('provides the "PositiveInteger" type', function() {
+  test('provides the "PositiveInteger" type', function() {
     eq($.PositiveInteger.name, 'sanctuary-def/PositiveInteger');
     eq($.PositiveInteger.url, 'https://github.com/sanctuary-js/sanctuary-def/tree/v' + version + '#PositiveInteger');
 
@@ -1761,7 +1761,7 @@ describe('def', function() {
     eq(isPositiveInteger(new Number(1)), false);
   });
 
-  it('provides the "NegativeInteger" type', function() {
+  test('provides the "NegativeInteger" type', function() {
     eq($.NegativeInteger.name, 'sanctuary-def/NegativeInteger');
     eq($.NegativeInteger.url, 'https://github.com/sanctuary-js/sanctuary-def/tree/v' + version + '#NegativeInteger');
 
@@ -1774,7 +1774,7 @@ describe('def', function() {
     eq(isNegativeInteger(new Number(-1)), false);
   });
 
-  it('provides the "GlobalRegExp" type', function() {
+  test('provides the "GlobalRegExp" type', function() {
     eq($.GlobalRegExp.name, 'sanctuary-def/GlobalRegExp');
     eq($.GlobalRegExp.url, 'https://github.com/sanctuary-js/sanctuary-def/tree/v' + version + '#GlobalRegExp');
 
@@ -1793,7 +1793,7 @@ describe('def', function() {
     eq(isGlobalRegExp(/x/gim), true);
   });
 
-  it('provides the "NonGlobalRegExp" type', function() {
+  test('provides the "NonGlobalRegExp" type', function() {
     eq($.NonGlobalRegExp.name, 'sanctuary-def/NonGlobalRegExp');
     eq($.NonGlobalRegExp.url, 'https://github.com/sanctuary-js/sanctuary-def/tree/v' + version + '#NonGlobalRegExp');
 
@@ -1812,7 +1812,7 @@ describe('def', function() {
     eq(isNonGlobalRegExp(/x/im), true);
   });
 
-  it('provides the "RegexFlags" type', function() {
+  test('provides the "RegexFlags" type', function() {
     eq($.RegexFlags.name, 'sanctuary-def/RegexFlags');
     eq($.RegexFlags.url, 'https://github.com/sanctuary-js/sanctuary-def/tree/v' + version + '#RegexFlags');
 
@@ -1835,7 +1835,7 @@ describe('def', function() {
     eq(isRegexFlags('y'), false);
   });
 
-  it('provides the "StrMap" type constructor', function() {
+  test('provides the "StrMap" type constructor', function() {
     eq(typeof $.StrMap, 'function');
     eq($.StrMap.length, 1);
     eq($.StrMap.toString(), 'StrMap :: Type -> Type');
@@ -1950,7 +1950,7 @@ describe('def', function() {
            'Since there is no type of which all the above values are members, the type-variable constraint has been violated.\n');
   });
 
-  it('provides the "Pair" type constructor', function() {
+  test('provides the "Pair" type constructor', function() {
     eq(typeof $.Pair, 'function');
     eq($.Pair.length, 2);
     eq($.Pair.toString(), 'Pair :: Type -> Type -> Type');
@@ -1983,7 +1983,7 @@ describe('def', function() {
            'See https://github.com/sanctuary-js/sanctuary-def/tree/v' + version + '#Pair for information about the sanctuary-def/Pair type.\n');
   });
 
-  it('uses Z.toString-like string representations', function() {
+  test('uses Z.toString-like string representations', function() {
     //  f :: Null -> Null
     var f = def('f', {}, [$.Null, $.Null], identity);
 
@@ -2031,7 +2031,7 @@ describe('def', function() {
     });
   });
 
-  it('lists the types of each value without duplicates', function() {
+  test('lists the types of each value without duplicates', function() {
     var env = [$.Array($.Unknown), $.Number, $.Integer];
     var def = $.create({checkTypes: true, env: env});
 
@@ -2057,7 +2057,7 @@ describe('def', function() {
            'See https://github.com/sanctuary-js/sanctuary-def/tree/v' + version + '#Number for information about the Number type.\n');
   });
 
-  it('supports polymorphism via type variables', function() {
+  test('supports polymorphism via type variables', function() {
     var env = $.env.concat([Either($.Unknown, $.Unknown), Maybe($.Unknown), $Pair($.Unknown, $.Unknown)]);
     var def = $.create({checkTypes: true, env: env});
 
@@ -2278,7 +2278,7 @@ describe('def', function() {
            'Since there is no type of which all the above values are members, the type-variable constraint has been violated.\n');
   });
 
-  it('supports arbitrary nesting of types', function() {
+  test('supports arbitrary nesting of types', function() {
     var env = $.env.concat([Either($.Unknown, $.Unknown), $.Integer]);
     var def = $.create({checkTypes: true, env: env});
 
@@ -2386,7 +2386,7 @@ describe('def', function() {
            'See https://github.com/sanctuary-js/sanctuary-def/tree/v' + version + '#String for information about the String type.\n');
   });
 
-  it('does not allow heterogeneous arrays', function() {
+  test('does not allow heterogeneous arrays', function() {
     var env = $.env.concat([Either($.Unknown, $.Unknown)]);
     var def = $.create({checkTypes: true, env: env});
 
@@ -2485,7 +2485,7 @@ describe('def', function() {
            'Since there is no type of which all the above values are members, the type-variable constraint has been violated.\n');
   });
 
-  it('permits the use of arrays as tuples', function() {
+  test('permits the use of arrays as tuples', function() {
     //  Pair :: Type
     var Pair = $.BinaryType(
       'my-package/Pair',
@@ -2519,7 +2519,7 @@ describe('def', function() {
            'Since there is no type of which all the above values are members, the type-variable constraint has been violated.\n');
   });
 
-  it('supports higher-order functions', function() {
+  test('supports higher-order functions', function() {
     //  f :: (String -> Number) -> Array String -> Array Number
     var f =
     def('f',
@@ -2698,7 +2698,7 @@ describe('def', function() {
            'Expected one argument but received zero arguments.\n');
   });
 
-  it('supports type-class constraints', function() {
+  test('supports type-class constraints', function() {
     var env = $.env.concat([Integer, Maybe($.Unknown), Either($.Unknown, $.Unknown)]);
     var def = $.create({checkTypes: true, env: env});
 
@@ -2901,7 +2901,7 @@ describe('def', function() {
            'See https://github.com/sanctuary-js/sanctuary-type-classes/tree/v' + Z$version + '#Alternative for information about the sanctuary-type-classes/Alternative type class.\n');
   });
 
-  it('supports unary type variables', function() {
+  test('supports unary type variables', function() {
     var env = $.env.concat([Either($.Unknown, $.Unknown), Maybe($.Unknown)]);
     var def = $.create({checkTypes: true, env: env});
 
@@ -3028,7 +3028,7 @@ describe('def', function() {
            'See https://github.com/sanctuary-js/sanctuary-type-classes/tree/v' + Z$version + '#Ord for information about the sanctuary-type-classes/Ord type class.\n');
   });
 
-  it('supports binary type variables', function() {
+  test('supports binary type variables', function() {
     var env = $.env.concat([Either($.Unknown, $.Unknown), Maybe($.Unknown), $Pair($.Unknown, $.Unknown)]);
     var def = $.create({checkTypes: true, env: env});
 
@@ -3075,7 +3075,7 @@ describe('def', function() {
            'Since there is no type of which all the above values are members, the type-variable constraint has been violated.\n');
   });
 
-  it('only determines actual types when necessary', function() {
+  test('only determines actual types when necessary', function() {
     //  count :: Integer
     var count = 0;
 
@@ -3102,7 +3102,7 @@ describe('def', function() {
     eq(count, 1);
   });
 
-  it('replaces Unknowns with free type variables', function() {
+  test('replaces Unknowns with free type variables', function() {
     var env = [Either($.Unknown, $.Unknown), $.Number];
     var def = $.create({checkTypes: true, env: env});
 
@@ -3130,21 +3130,21 @@ describe('def', function() {
 
 });
 
-describe('test', function() {
+suite('test', function() {
 
-  it('is a ternary function', function() {
+  test('is a ternary function', function() {
     eq(typeof $.test, 'function');
     eq($.test.length, 3);
     eq($.test.toString(), 'test :: Array Type -> Type -> Any -> Boolean');
   });
 
-  it('supports nullary types', function() {
+  test('supports nullary types', function() {
     eq($.test($.env, $.Number, null), false);
     eq($.test($.env, $.Number, '42'), false);
     eq($.test($.env, $.Number, 42), true);
   });
 
-  it('supports unary types', function() {
+  test('supports unary types', function() {
     eq($.test($.env, $.Array($.Number), null), false);
     eq($.test($.env, $.Array($.Number), '42'), false);
     eq($.test($.env, $.Array($.Number), [1, 2, '3']), false);
@@ -3153,7 +3153,7 @@ describe('test', function() {
     eq($.test($.env, $.Array($.Number), [1, 2, 3]), true);
   });
 
-  it('supports binary types', function() {
+  test('supports binary types', function() {
     eq($.test($.env, $Pair($.Number, $.String), Pair(42, 42)), false);
     eq($.test($.env, $Pair($.Number)($.String), Pair(42, 42)), false);
     eq($.test($.env, $Pair($.Number, $.String), Pair('', '')), false);
@@ -3164,7 +3164,7 @@ describe('test', function() {
     eq($.test($.env, $Pair($.Number)($.String), Pair(42, '')), true);
   });
 
-  it('supports type variables', function() {
+  test('supports type variables', function() {
     eq($.test($.env, $.Array(a), null), false);
     eq($.test($.env, $.Array(a), '42'), false);
     eq($.test($.env, $.Array(a), [1, 2, '3']), false);
@@ -3179,9 +3179,9 @@ describe('test', function() {
 
 });
 
-describe('NullaryType', function() {
+suite('NullaryType', function() {
 
-  it('is a ternary function', function() {
+  test('is a ternary function', function() {
     eq(typeof $.NullaryType, 'function');
     eq($.NullaryType.length, 3);
     eq($.NullaryType.toString(), 'NullaryType :: String -> String -> (Any -> Boolean) -> Type');
@@ -3189,15 +3189,15 @@ describe('NullaryType', function() {
 
 });
 
-describe('UnaryType', function() {
+suite('UnaryType', function() {
 
-  it('is a quaternary function', function() {
+  test('is a quaternary function', function() {
     eq(typeof $.UnaryType, 'function');
     eq($.UnaryType.length, 4);
     eq($.UnaryType.toString(), 'UnaryType :: String -> String -> (Any -> Boolean) -> (t a -> Array a) -> Function');
   });
 
-  it('returns a type constructor which type checks its arguments', function() {
+  test('returns a type constructor which type checks its arguments', function() {
     throws(function() { Maybe({x: $.Number, y: $.Number}); },
            TypeError,
            'Invalid value\n' +
@@ -3215,15 +3215,15 @@ describe('UnaryType', function() {
 
 });
 
-describe('BinaryType', function() {
+suite('BinaryType', function() {
 
-  it('is a quinary function', function() {
+  test('is a quinary function', function() {
     eq(typeof $.BinaryType, 'function');
     eq($.BinaryType.length, 5);
     eq($.BinaryType.toString(), 'BinaryType :: String -> String -> (Any -> Boolean) -> (t a b -> Array a) -> (t a b -> Array b) -> Function');
   });
 
-  it('returns a type constructor which type checks its arguments', function() {
+  test('returns a type constructor which type checks its arguments', function() {
     throws(function() { Either($.Number, {x: $.Number, y: $.Number}); },
            TypeError,
            'Invalid value\n' +
@@ -3241,9 +3241,9 @@ describe('BinaryType', function() {
 
 });
 
-describe('TypeVariable', function() {
+suite('TypeVariable', function() {
 
-  it('is a unary function', function() {
+  test('is a unary function', function() {
     eq(typeof $.TypeVariable, 'function');
     eq($.TypeVariable.length, 1);
     eq($.TypeVariable.toString(), 'TypeVariable :: String -> Type');
@@ -3251,15 +3251,15 @@ describe('TypeVariable', function() {
 
 });
 
-describe('UnaryTypeVariable', function() {
+suite('UnaryTypeVariable', function() {
 
-  it('is a unary function', function() {
+  test('is a unary function', function() {
     eq(typeof $.UnaryTypeVariable, 'function');
     eq($.UnaryTypeVariable.length, 1);
     eq($.UnaryTypeVariable.toString(), 'UnaryTypeVariable :: String -> Function');
   });
 
-  it('returns a function which type checks its arguments', function() {
+  test('returns a function which type checks its arguments', function() {
     var f = $.UnaryTypeVariable('f');
 
     eq(typeof f, 'function');
@@ -3284,15 +3284,15 @@ describe('UnaryTypeVariable', function() {
 
 });
 
-describe('BinaryTypeVariable', function() {
+suite('BinaryTypeVariable', function() {
 
-  it('is a unary function', function() {
+  test('is a unary function', function() {
     eq(typeof $.BinaryTypeVariable, 'function');
     eq($.BinaryTypeVariable.length, 1);
     eq($.BinaryTypeVariable.toString(), 'BinaryTypeVariable :: String -> Function');
   });
 
-  it('returns a function which type checks its arguments', function() {
+  test('returns a function which type checks its arguments', function() {
     var p = $.BinaryTypeVariable('p');
 
     eq(typeof p, 'function');
@@ -3318,15 +3318,15 @@ describe('BinaryTypeVariable', function() {
 
 });
 
-describe('Thunk', function() {
+suite('Thunk', function() {
 
-  it('is a unary function', function() {
+  test('is a unary function', function() {
     eq(typeof $.Thunk, 'function');
     eq($.Thunk.length, 1);
     eq($.Thunk.toString(), 'Thunk :: Type -> Type');
   });
 
-  it('is short for `t => $.Function([t])`', function() {
+  test('is short for `t => $.Function([t])`', function() {
     var env = $.env;
     var def = $.create({checkTypes: true, env: env});
 
@@ -3356,15 +3356,15 @@ describe('Thunk', function() {
 
 });
 
-describe('Predicate', function() {
+suite('Predicate', function() {
 
-  it('is a unary function', function() {
+  test('is a unary function', function() {
     eq(typeof $.Predicate, 'function');
     eq($.Predicate.length, 1);
     eq($.Predicate.toString(), 'Predicate :: Type -> Type');
   });
 
-  it('is short for `t => $.Function([t, $.Boolean])`', function() {
+  test('is short for `t => $.Function([t, $.Boolean])`', function() {
     var env = $.env;
     var def = $.create({checkTypes: true, env: env});
 

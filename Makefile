@@ -1,4 +1,4 @@
-ESLINT = node_modules/.bin/eslint --config node_modules/sanctuary-style/eslint-es3.json
+ESLINT = node_modules/.bin/eslint --report-unused-disable-directives
 ISTANBUL = node_modules/.bin/istanbul
 NPM = npm
 REMARK = node_modules/.bin/remark --frail --no-stdout
@@ -26,22 +26,7 @@ README.md: index.js
 
 .PHONY: lint
 lint:
-	$(ESLINT) \
-	  --env es3 \
-	  --global define \
-	  --global module \
-	  --global require \
-	  --global self \
-	  --rule 'max-len: [error, {code: 79, ignorePattern: "^ *//(# |[.] // |[.]   - <code>)", ignoreUrls: true}]' \
-	  --rule 'no-plusplus: [off]' \
-	  -- index.js
-	$(ESLINT) \
-	  --env es6 \
-	  --env node \
-	  --env mocha \
-	  --rule 'dot-notation: [error, {allowKeywords: true}]' \
-	  --rule 'max-len: [off]' \
-	  -- test
+	$(ESLINT) -- index.js test
 	$(REMEMBER_BOWER) $(shell pwd)
 	rm -f README.md
 	VERSION=0.0.0 make README.md

@@ -819,20 +819,20 @@
   //.
   //. An array of [types][]:
   //.
-  //.   - <code><a href="#AnyFunction">AnyFunction</a></code>
-  //.   - <code><a href="#Arguments">Arguments</a></code>
-  //.   - <code><a href="#Array">Array</a>(<a href="#Unknown">Unknown</a>)</code>
-  //.   - <code><a href="#Boolean">Boolean</a></code>
-  //.   - <code><a href="#Date">Date</a></code>
-  //.   - <code><a href="#Error">Error</a></code>
-  //.   - <code><a href="#Null">Null</a></code>
-  //.   - <code><a href="#Number">Number</a></code>
-  //.   - <code><a href="#Object">Object</a></code>
-  //.   - <code><a href="#RegExp">RegExp</a></code>
-  //.   - <code><a href="#StrMap">StrMap</a>(<a href="#Unknown">Unknown</a>)</code>
-  //.   - <code><a href="#String">String</a></code>
-  //.   - <code><a href="#Symbol">Symbol</a></code>
-  //.   - <code><a href="#Undefined">Undefined</a></code>
+  //.   - <code>[AnyFunction](#AnyFunction)</code>
+  //.   - <code>[Arguments](#Arguments)</code>
+  //.   - <code>[Array](#Array)([Unknown](#Unknown))</code>
+  //.   - <code>[Boolean](#Boolean)</code>
+  //.   - <code>[Date](#Date)</code>
+  //.   - <code>[Error](#Error)</code>
+  //.   - <code>[Null](#Null)</code>
+  //.   - <code>[Number](#Number)</code>
+  //.   - <code>[Object](#Object)</code>
+  //.   - <code>[RegExp](#RegExp)</code>
+  //.   - <code>[StrMap](#StrMap)([Unknown](#Unknown))</code>
+  //.   - <code>[String](#String)</code>
+  //.   - <code>[Symbol](#Symbol)</code>
+  //.   - <code>[Undefined](#Undefined)</code>
   var env = [
     AnyFunction,
     Arguments,
@@ -2148,6 +2148,7 @@
         t.type === FUNCTION || t.type === RECORD || isEmpty(t.keys),
         stripOutermostParens,
         String(t).replace(/\bUnknown\b/g, function() {
+          // eslint-disable-next-line no-plusplus
           do var name = String.fromCharCode(code++);
           while (names.indexOf(name) >= 0);
           return name;
@@ -2209,8 +2210,8 @@
   function underline(
     typeInfo,               // :: TypeInfo
     underlineConstraint,    // :: String -> TypeClass -> String -> String
-    formatType5             // :: Integer -> (String -> String) -> Type ->
-                            //      PropPath -> String -> String
+    formatType5
+    // :: Integer -> (String -> String) -> Type -> PropPath -> String -> String
   ) {
     var st = typeInfo.types.reduce(function(st, t, index) {
       var formatType4 = formatType5(index);
