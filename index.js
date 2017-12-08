@@ -319,13 +319,6 @@
     return s.replace(/[ ]+$/gm, '');
   }
 
-  //  unique :: Showable a => Array a -> Array a
-  function unique(xs) {
-    var strMap = {};
-    xs.forEach(function(x) { strMap[Z.toString(x)] = x; });
-    return Object.keys(strMap).map(function(k) { return strMap[k]; });
-  }
-
   //  unless :: (Boolean, (a -> a), a) -> a
   function unless(bool, f, x) {
     return bool ? x : f(x);
@@ -918,14 +911,24 @@
     }
   }
 
+  //  expandUnknown :: ... -> Array Type
+  function expandUnknown(
+    env,            // :: Array Type
+    seen,           // :: Array Object
+    value,          // :: Any
+    r               // :: { extractor :: a -> Array b, type :: Type }
+  ) {
+    return r.type.type === UNKNOWN ?
+      _determineActualTypes(env, seen, r.extractor(value)) :
+      [r.type];
+  }
+
   //  _determineActualTypes :: ... -> Array Type
   function _determineActualTypes(
     env,            // :: Array Type
     seen,           // :: Array Object
     values          // :: Array Any
   ) {
-    var recur = _determineActualTypes;
-
     function refine(types, value) {
       var seen$;
       if (typeof value === 'object' && value != null ||
@@ -943,17 +946,11 @@
             [] :
           t.type === UNARY ?
             Z.map(fromUnaryType(t),
-                  recur(env, seen$, t.types.$1.extractor(value))) :
+                  expandUnknown(env, seen$, value, t.types.$1)) :
           t.type === BINARY ?
-            xprod(
-              t,
-              t.types.$1.type.type === UNKNOWN ?
-                recur(env, seen$, t.types.$1.extractor(value)) :
-                [t.types.$1.type],
-              t.types.$2.type.type === UNKNOWN ?
-                recur(env, seen$, t.types.$2.extractor(value)) :
-                [t.types.$2.type]
-            ) :
+            xprod(t,
+                  expandUnknown(env, seen$, value, t.types.$1),
+                  expandUnknown(env, seen$, value, t.types.$2)) :
           // else
             [t]
         );
@@ -962,7 +959,7 @@
 
     return isEmpty(values) ?
       [Unknown] :
-      or(unique(Z.reduce(refine, env, values)), [Inconsistent]);
+      or(Z.reduce(refine, env, values), [Inconsistent]);
   }
 
   //  isConsistent :: Type -> Boolean
