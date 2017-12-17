@@ -1,10 +1,8 @@
 {
   "root": true,
-  "extends": ["../node_modules/sanctuary-style/eslint-es6.json"],
-  "env": {"node": true},
+  "extends": ["../eslint/es6.js"],
   "globals": {"suite": false, "test": false},
   "rules": {
-    "max-len": ["off"],
-    "object-shorthand": ["error", "always"]
+    "max-len": ["off"]
   }
 }
