@@ -1652,6 +1652,67 @@ Since there is no type of which all the above values are members, the type-varia
     eq($.Array(a).url, `https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Array`);
   });
 
+  test('provides the "Array0" type', () => {
+    eq($.Array0.name, 'sanctuary-def/Array0');
+    eq($.Array0.url, `https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Array0`);
+
+    const isEmptyArray = $.test($.env, $.Array0);
+    eq(isEmptyArray(null), false);
+    eq(isEmptyArray([]), true);
+    eq(isEmptyArray([0]), false);
+  });
+
+  test('provides the "Array1" type constructor', () => {
+    eq(typeof $.Array1, 'function');
+    eq($.Array1.length, 1);
+    eq($.Array1.toString(), 'Array1 :: Type -> Type');
+    eq($.Array1(a).name, 'sanctuary-def/Array1');
+    eq($.Array1(a).url, `https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Array1`);
+    eq($.Array1(a).toString(), '(Array1 a)');
+
+    const isSingletonStringArray = $.test($.env, $.Array1($.String));
+    eq(isSingletonStringArray(null), false);
+    eq(isSingletonStringArray([]), false);
+    eq(isSingletonStringArray([0]), false);
+    eq(isSingletonStringArray(['x']), true);
+    eq(isSingletonStringArray(['x', 'y']), false);
+  });
+
+  test('provides the "Array2" type constructor', () => {
+    eq(typeof $.Array2, 'function');
+    eq($.Array2.length, 2);
+    eq($.Array2.toString(), 'Array2 :: Type -> Type -> Type');
+    eq($.Array2(a, b).name, 'sanctuary-def/Array2');
+    eq($.Array2(a, b).url, `https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Array2`);
+    eq($.Array2(a, b).toString(), '(Array2 a b)');
+    eq($.Array2(a)(b).toString(), '(Array2 a b)');
+
+    //    fst :: Array2 a b -> a
+    const fst = def('fst', {}, [$.Array2(a, b), a], array2 => array2[0]);
+
+    //    snd :: Array2 a b -> b
+    const snd = def('snd', {}, [$.Array2(a, b), b], array2 => array2[1]);
+
+    eq(fst(['foo', 42]), 'foo');
+    eq(snd(['foo', 42]), 42);
+
+    throws(
+      () => fst(['foo']),
+      TypeError,
+      `Invalid value
+
+fst :: Array2 a b -> a
+       ^^^^^^^^^^
+           1
+
+1)  ["foo"] :: Array String
+
+The value at position 1 is not a member of ‘Array2 a b’.
+
+See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Array2 for information about the sanctuary-def/Array2 type.
+`);
+  });
+
   test('provides the "Boolean" type', () => {
     eq($.Boolean.name, 'Boolean');
     eq($.Boolean.url, `https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Boolean`);
@@ -2110,49 +2171,6 @@ testBinaryType :: Either a (StrMap b) -> Either a (StrMap b)
 1)  ["foo", false] :: Array ???
 
 Since there is no type of which all the above values are members, the type-variable constraint has been violated.
-`);
-  });
-
-  test('provides the "Pair" type constructor', () => {
-    eq(typeof $.Pair, 'function');
-    eq($.Pair.length, 2);
-    eq($.Pair.toString(), 'Pair :: Type -> Type -> Type');
-    eq($.Pair(a, b).name, 'sanctuary-def/Pair');
-    eq($.Pair(a, b).url, `https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Pair`);
-    eq($.Pair(a, b).toString(), '(Pair a b)');
-    eq($.Pair(a)(b).toString(), '(Pair a b)');
-
-    //    fst :: Pair a b -> a
-    const fst =
-    def('fst',
-        {},
-        [$.Pair(a, b), a],
-        pair => pair[0]);
-
-    //    snd :: Pair a b -> b
-    const snd =
-    def('snd',
-        {},
-        [$.Pair(a, b), b],
-        pair => pair[1]);
-
-    eq(fst(['foo', 42]), 'foo');
-    eq(snd(['foo', 42]), 42);
-
-    throws(
-      () => fst(['foo']),
-      TypeError,
-      `Invalid value
-
-fst :: Pair a b -> a
-       ^^^^^^^^
-          1
-
-1)  ["foo"] :: Array String
-
-The value at position 1 is not a member of ‘Pair a b’.
-
-See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Pair for information about the sanctuary-def/Pair type.
 `);
   });
 
@@ -2874,11 +2892,11 @@ reduce_ :: ((a, b) -> a) -> a -> Array b -> a
 The value at position 1 is not a member of ‘(a, b) -> a’.
 `);
 
-    //    unfoldr :: (b -> Maybe (Pair a b)) -> b -> Array a
+    //    unfoldr :: (b -> Maybe (Array2 a b)) -> b -> Array a
     const unfoldr =
     def('unfoldr',
         {},
-        [$.Function([b, Maybe($.Pair(a, b))]), b, $.Array(a)],
+        [$.Function([b, Maybe($.Array2(a, b))]), b, $.Array(a)],
         (f, x) => {
           const result = [];
           for (let m = f(x); m.isJust; m = f(m.value[1])) {
@@ -2887,7 +2905,7 @@ The value at position 1 is not a member of ‘(a, b) -> a’.
           return result;
         });
 
-    //    h :: Integer -> Maybe (Pair Integer Integer)
+    //    h :: Integer -> Maybe (Array2 Integer Integer)
     const h = n => n >= 5 ? Nothing : Just([n, n + 1]);
 
     eq(unfoldr(h, 5), []);
@@ -2899,13 +2917,13 @@ The value at position 1 is not a member of ‘(a, b) -> a’.
       TypeError,
       `Invalid value
 
-unfoldr :: (b -> Maybe (Pair a b)) -> b -> Array a
-           ^^^^^^^^^^^^^^^^^^^^^^^
-                      1
+unfoldr :: (b -> Maybe (Array2 a b)) -> b -> Array a
+           ^^^^^^^^^^^^^^^^^^^^^^^^^
+                       1
 
 1)  null :: Null
 
-The value at position 1 is not a member of ‘b -> Maybe (Pair a b)’.
+The value at position 1 is not a member of ‘b -> Maybe (Array2 a b)’.
 `);
 
     //    T :: a -> (a -> b) -> b

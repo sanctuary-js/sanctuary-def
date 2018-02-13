@@ -473,6 +473,34 @@
   //. Constructor for homogeneous Array types.
   var Array_ = UnaryTypeWithUrl('Array', typeEq('Array'), id);
 
+  //# Array0 :: Type
+  //.
+  //. Type whose sole member is `[]`.
+  var Array0 = NullaryTypeWithUrl(
+    'sanctuary-def/Array0',
+    function(x) { return typeEq('Array')(x) && x.length === 0; }
+  );
+
+  //# Array1 :: Type -> Type
+  //.
+  //. Constructor for singleton Array types.
+  var Array1 = UnaryTypeWithUrl(
+    'sanctuary-def/Array1',
+    function(x) { return typeEq('Array')(x) && x.length === 1; },
+    id
+  );
+
+  //# Array2 :: Type -> Type -> Type
+  //.
+  //. Constructor for heterogeneous Array types of length 2. `['foo', true]` is
+  //. a member of `Array2 String Boolean`.
+  var Array2 = BinaryTypeWithUrl(
+    'sanctuary-def/Array2',
+    function(x) { return typeEq('Array')(x) && x.length === 2; },
+    function(array2) { return [array2[0]]; },
+    function(array2) { return [array2[1]]; }
+  );
+
   //# Boolean :: Type
   //.
   //. Type comprising `true` and `false`.
@@ -675,17 +703,6 @@
   //.   - the `new` operator in conjunction with `Object` or a custom
   //.     constructor function.
   var Object_ = NullaryTypeWithUrl('Object', typeEq('Object'));
-
-  //# Pair :: Type -> Type -> Type
-  //.
-  //. Constructor for tuple types of length 2. Arrays are said to represent
-  //. tuples. `['foo', 42]` is a member of `Pair String Number`.
-  var Pair = BinaryTypeWithUrl(
-    'sanctuary-def/Pair',
-    function(x) { return typeEq('Array')(x) && x.length === 2; },
-    function(pair) { return [pair[0]]; },
-    function(pair) { return [pair[1]]; }
-  );
 
   //# PositiveFiniteNumber :: Type
   //.
@@ -1489,7 +1506,8 @@
 
   //# BinaryType :: String -> String -> (Any -> Boolean) -> (t a b -> Array a) -> (t a b -> Array b) -> (Type -> Type -> Type)
   //.
-  //. Type constructor for types with two type variables (such as [`Pair`][]).
+  //. Type constructor for types with two type variables (such as
+  //. [`Array2`][]).
   //.
   //. To define a binary type `t a b` one must provide:
   //.
@@ -2574,6 +2592,9 @@
     AnyFunction: AnyFunction,
     Arguments: Arguments,
     Array: fromUncheckedUnaryType(Array_),
+    Array0: Array0,
+    Array1: fromUncheckedUnaryType(Array1),
+    Array2: fromUncheckedBinaryType(Array2),
     Boolean: Boolean_,
     Date: Date_,
     Error: Error_,
@@ -2594,7 +2615,6 @@
     Nullable: fromUncheckedUnaryType(Nullable),
     Number: Number_,
     Object: Object_,
-    Pair: fromUncheckedBinaryType(Pair),
     PositiveFiniteNumber: PositiveFiniteNumber,
     PositiveInteger: PositiveInteger,
     PositiveNumber: PositiveNumber,
@@ -2630,6 +2650,7 @@
 //. [Monoid]:               https://github.com/fantasyland/fantasy-land#monoid
 //. [Setoid]:               https://github.com/fantasyland/fantasy-land#setoid
 //. [`Array`]:              #Array
+//. [`Array2`]:             #Array2
 //. [`BinaryType`]:         #BinaryType
 //. [`Date`]:               #Date
 //. [`FiniteNumber`]:       #FiniteNumber
@@ -2638,7 +2659,6 @@
 //. [`NonGlobalRegExp`]:    #NonGlobalRegExp
 //. [`Number`]:             #Number
 //. [`Object.create`]:      https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/create
-//. [`Pair`]:               #Pair
 //. [`RegExp`]:             #RegExp
 //. [`RegexFlags`]:         #RegexFlags
 //. [`String`]:             #String
