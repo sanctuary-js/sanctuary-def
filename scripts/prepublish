@@ -1,7 +1,0 @@
-#!/usr/bin/env bash
-set -e
-
-rm -f README.md
-make
-sed -i '' "s/ version = '.*';/ version = '$VERSION';/" index.js test/index.js
-git add LICENSE README.md index.js test/index.js

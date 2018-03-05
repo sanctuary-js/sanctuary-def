@@ -1087,9 +1087,9 @@
     );
   }
 
-  //  satisfactoryTypes ::
-  //    ... -> Either (() -> Error) { typeVarMap :: TypeVarMap
-  //                                , types :: Array Type }
+  //  satisfactoryTypes :: ... -> Either (() -> Error)
+  //                                     { typeVarMap :: TypeVarMap
+  //                                     , types :: Array Type }
   function satisfactoryTypes(
     env,            // :: Array Type
     typeInfo,       // :: TypeInfo
