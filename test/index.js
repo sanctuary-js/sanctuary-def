@@ -31,6 +31,7 @@ const a = $.TypeVariable ('a');
 const b = $.TypeVariable ('b');
 const c = $.TypeVariable ('c');
 const d = $.TypeVariable ('d');
+const f = $.UnaryTypeVariable ('f');
 const m = $.UnaryTypeVariable ('m');
 
 //    $0 :: () -> Array a
@@ -107,6 +108,10 @@ _Maybe.prototype['fantasy-land/equals'] = function(other) {
 };
 
 _Maybe.prototype['fantasy-land/concat'] = notImplemented;
+
+_Maybe.prototype['fantasy-land/filter'] = function(pred) {
+  return this.isJust && pred (this.value) ? this : Nothing;
+};
 
 _Maybe.prototype['fantasy-land/map'] = function(f) {
   return this.isNothing ? this : Just (f (this.value));
@@ -2646,12 +2651,12 @@ concat :: Semigroup a => a -> a -> a
 Since there is no type of which all the above values are members, the type-variable constraint has been violated.
 `));
 
-    //    filter :: (Alternative m, Monad m) => (a -> Boolean) -> m a -> m a
+    //    filter :: Filterable f => (a -> Boolean) -> f a -> f a
     const filter =
     def ('filter')
-        ({m: [Z.Alternative, Z.Monad]})
-        ([$.Function ([a, $.Boolean]), m (a), m (a)])
-        (curry2 (Z.filterM));
+        ({f: [Z.Filterable]})
+        ([$.Function ([a, $.Boolean]), f (a), f (a)])
+        (curry2 (Z.filter));
 
     //    even :: Integer -> Boolean
     const even = x => x % 2 === 0;
@@ -2663,15 +2668,15 @@ Since there is no type of which all the above values are members, the type-varia
     throws (() => filter (even) (Right (42)))
            (new TypeError (`Type-class constraint violation
 
-filter :: (Alternative m, Monad m) => (a -> Boolean) -> m a -> m a
-           ^^^^^^^^^^^^^                                ^^^
-                                                         1
+filter :: Filterable f => (a -> Boolean) -> f a -> f a
+          ^^^^^^^^^^^^                      ^^^
+                                             1
 
 1)  Right (42) :: Either b Number, Either b Integer
 
-‘filter’ requires ‘m’ to satisfy the Alternative type-class constraint; the value at position 1 does not.
+‘filter’ requires ‘f’ to satisfy the Filterable type-class constraint; the value at position 1 does not.
 
-See https://github.com/sanctuary-js/sanctuary-type-classes/tree/v${Z$version}#Alternative for information about the sanctuary-type-classes/Alternative type class.
+See https://github.com/sanctuary-js/sanctuary-type-classes/tree/v${Z$version}#Filterable for information about the sanctuary-type-classes/Filterable type class.
 `));
 
     //    concatMaybes :: Semigroup a => Maybe a -> Maybe a -> Maybe a
