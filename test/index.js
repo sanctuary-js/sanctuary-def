@@ -22,7 +22,7 @@ const curry3 = f => x => y => z => f (x, y, z);
 const notImplemented = () => { throw new Error ('Not implemented'); };
 
 //    version :: String
-const version = '0.14.0';  // updated programmatically
+const version = '0.15.0';  // updated programmatically
 
 
 const def = $.create ({checkTypes: true, env: $.env});
