@@ -1,6 +1,5 @@
 'use strict';
 
-const assert = require ('assert');
 const vm = require ('vm');
 
 const Z = require ('sanctuary-type-classes');
@@ -9,6 +8,9 @@ const type = require ('sanctuary-type-identifiers');
 
 const $ = require ('..');
 
+const eq = require ('./internal/eq');
+const throws = require ('./internal/throws');
+
 
 //    curry2 :: ((a, b) -> c) -> a -> b -> c
 const curry2 = f => x => y => f (x, y);
@@ -16,27 +18,8 @@ const curry2 = f => x => y => f (x, y);
 //    curry3 :: ((a, b, c) -> d) -> a -> b -> c -> d
 const curry3 = f => x => y => z => f (x, y, z);
 
-//    eq :: a -> b -> Undefined !
-function eq(actual) {
-  assert.strictEqual (arguments.length, eq.length);
-  return function eq$1(expected) {
-    assert.strictEqual (arguments.length, eq$1.length);
-    assert.strictEqual (Z.toString (actual), Z.toString (expected));
-    assert.strictEqual (Z.equals (actual, expected), true);
-  };
-}
-
 //    notImplemented :: () -> Undefined !
 const notImplemented = () => { throw new Error ('Not implemented'); };
-
-//    throws :: (() -> Undefined !) -> Error -> Undefined !
-function throws(thunk) {
-  assert.strictEqual (arguments.length, throws.length);
-  return function throws$1(expected) {
-    assert.strictEqual (arguments.length, throws$1.length);
-    assert.throws (thunk, actual => Z.equals (actual, expected));
-  };
-}
 
 //    version :: String
 const version = '0.14.0';  // updated programmatically

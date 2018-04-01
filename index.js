@@ -867,7 +867,15 @@
   //  Unchecked :: String -> Type
   function Unchecked(s) { return NullaryType(s)('')(K(true)); }
 
-  var def = _create({checkTypes: true, env: env});
+  //  production :: Boolean
+  var production =
+    typeof process !== 'undefined' &&
+    /* global process:false */
+    process != null &&
+    process.env != null &&
+    process.env.NODE_ENV === 'production';
+
+  var def = _create({checkTypes: !production, env: env});
 
   //  numbers :: Array String
   var numbers = [
