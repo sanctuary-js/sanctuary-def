@@ -361,6 +361,19 @@
 
   _Type['@@type'] = 'sanctuary-def/Type';
 
+  //  Type#fantasy-land/equals :: Type ~> Type -> Boolean
+  _Type.prototype['fantasy-land/equals'] = function(other) {
+    return (
+      Z.equals(this.type, other.type) &&
+      Z.equals(this.name, other.name) &&
+      Z.equals(this.url, other.url) &&
+      Z.equals(this.keys, other.keys) &&
+      this.keys.every(function(k) {
+        return Z.equals(this.types[k].type, other.types[k].type);
+      }, this)
+    );
+  };
+
   _Type.prototype.validate = function(x) {
     if (!this._test(x)) return Left({value: x, propPath: []});
     for (var idx = 0; idx < this.keys.length; idx += 1) {
