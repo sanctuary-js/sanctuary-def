@@ -7,6 +7,7 @@ const Z$version = (require ('sanctuary-type-classes/package.json')).version;
 const type = require ('sanctuary-type-identifiers');
 
 const $ = require ('..');
+const version = (require ('../package.json')).version;
 
 const eq = require ('./internal/eq');
 const throws = require ('./internal/throws');
@@ -20,9 +21,6 @@ const curry3 = f => x => y => z => f (x, y, z);
 
 //    notImplemented :: () -> Undefined !
 const notImplemented = () => { throw new Error ('Not implemented'); };
-
-//    version :: String
-const version = '0.15.0';  // updated programmatically
 
 
 const def = $.create ({checkTypes: true, env: $.env});
