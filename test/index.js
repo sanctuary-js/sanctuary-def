@@ -3242,3 +3242,26 @@ See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Boolean for i
   });
 
 });
+
+suite ('interoperability', () => {
+
+  test ('Z.equals can operate on ‘Type’ values', () => {
+    eq (Z.equals ($.Number, $.Number)) (true);
+    eq (Z.equals ($.Number, $.String)) (false);
+    eq (Z.equals ($.Array ($.Number), $.Array ($.Number))) (true);
+    eq (Z.equals ($.Array ($.Number), $.Array ($.String))) (false);
+    eq (Z.equals ($.RecordType ({x: $.Number}), $.RecordType ({x: $.Number}))) (true);
+    eq (Z.equals ($.RecordType ({x: $.Number}), $.RecordType ({y: $.Number}))) (false);
+    eq (Z.equals ($.RecordType ({x: $.Number}), $.RecordType ({x: $.String}))) (false);
+    eq (Z.equals ($.NullaryType ('X') ('') (x => true), $.NullaryType ('X') ('') (x => true))) (true);
+    eq (Z.equals ($.NullaryType ('X') ('') (x => true), $.NullaryType ('Y') ('') (x => true))) (false);
+    eq (Z.equals ($.NullaryType ('X') ('') (x => true), $.NullaryType ('X') ('') (x => false))) (true);
+    eq (Z.equals ($.Array ($.NullaryType ('X') ('http://x.com/') (x => true)),
+                  $.Array ($.NullaryType ('X') ('http://x.com/') (x => true))))
+       (true);
+    eq (Z.equals ($.Array ($.NullaryType ('X') ('http://x.com/') (x => true)),
+                  $.Array ($.NullaryType ('X') ('http://x.org/') (x => true))))
+       (false);
+  });
+
+});
