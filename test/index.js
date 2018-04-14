@@ -2391,6 +2391,9 @@ Since there is no type of which all the above values are members, the type-varia
   });
 
   test ('supports higher-order functions', () => {
+    const env = Z.concat ($.env, [Maybe ($.Unknown)]);
+    const def = $.create ({checkTypes: true, env});
+
     //    f :: (String -> Number) -> Array String -> Array Number
     const f =
     def ('f')
@@ -2547,6 +2550,36 @@ unfoldr :: (b -> Maybe (Array2 a b)) -> b -> Array a
 1)  null :: Null
 
 The value at position 1 is not a member of ‘b -> Maybe (Array2 a b)’.
+`));
+
+    throws (() => unfoldr (n => n >= 5 ? Nothing : Just (n)) (1))
+           (new TypeError (`Invalid value
+
+unfoldr :: (b -> Maybe (Array2 a b)) -> b -> Array a
+                       ^^^^^^^^^^^^
+                            1
+
+1)  1 :: Number
+
+The value at position 1 is not a member of ‘Array2 a b’.
+
+See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Array2 for information about the sanctuary-def/Array2 type.
+`));
+
+    throws (() => unfoldr (n => n >= 5 ? Nothing : Just ([null, 'XXX'])) (1))
+           (new TypeError (`Type-variable constraint violation
+
+unfoldr :: (b -> Maybe (Array2 a b)) -> b -> Array a
+            ^                    ^      ^
+            1                    2      3
+
+1)  1 :: Number
+
+2)  "XXX" :: String
+
+3)  1 :: Number
+
+Since there is no type of which all the above values are members, the type-variable constraint has been violated.
 `));
 
     //    T :: a -> (a -> b) -> b
@@ -2855,7 +2888,6 @@ sort :: (Ord a, Applicative f, Foldable f, Monoid f) => f a -> f a
 
 1)  "foo" :: String
     true :: Boolean
-    42 :: Number
 
 Since there is no type of which all the above values are members, the type-variable constraint has been violated.
 `));
