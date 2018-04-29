@@ -1,8 +1,0 @@
-{
-  "root": true,
-  "extends": ["../eslint/es6.js"],
-  "globals": {"suite": false, "test": false},
-  "rules": {
-    "max-len": ["off"]
-  }
-}

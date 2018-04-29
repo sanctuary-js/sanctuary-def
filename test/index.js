@@ -1895,7 +1895,6 @@ Since there is no type of which all the above values are members, the type-varia
     o2.ref = o1;
 
     const values = [
-      // eslint-disable-next-line prefer-rest-params
       [(function() { return arguments; } (1, 2, 3)), 'Arguments'],
       [new Boolean (false), ''],
       [new Date (0), 'Date'],
