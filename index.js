@@ -232,6 +232,9 @@
   //  K :: a -> b -> a
   function K(x) { return function(y) { return x; }; }
 
+  //  W :: (a -> a -> b) -> a -> b
+  function W(f) { return function(x) { return f(x)(x); }; }
+
   //  always0 :: a -> () -> a
   function always0(x) { return function() { return x; }; }
 
@@ -2171,14 +2174,19 @@
   ) {
     var st = typeInfo.types.reduce(function(st, t, index) {
       var formatType4 = formatType5(index);
-      var counter = st.counter;
-      function replace(s) { return label(show(counter += 1))(s); }
-      return {
-        carets: Z.concat(st.carets, [_underline(t, [], formatType4(r('^')))]),
-        numbers: Z.concat(st.numbers,
-                          [_underline(t, [], formatType4(replace))]),
-        counter: counter
-      };
+      st.numbers.push(_underline(t, [], formatType4(function(s) {
+        return label(show(st.counter += 1))(s);
+      })));
+      st.carets.push(_underline(t, [], W(function(type) {
+        var repr = show(type);
+        var parenthesized = repr.slice(0, 1) + repr.slice(-1) === '()';
+        return formatType4(function(s) {
+          return parenthesized && repr !== '()' && s.length === repr.length ?
+            _('(') + r('^')(s.slice(1, -1)) + _(')') :
+            r('^')(s);
+        });
+      })));
+      return st;
     }, {carets: [], numbers: [], counter: 0});
 
     return typeSignature(typeInfo) + '\n' +

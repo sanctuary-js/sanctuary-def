@@ -2198,7 +2198,7 @@ Since there is no type of which all the above values are members, the type-varia
            (new TypeError (`Invalid value
 
 unnest :: Array (Array a) -> Array a
-                ^^^^^^^^^
+                 ^^^^^^^
                     1
 
 1)  1 :: Number, Integer
@@ -2414,7 +2414,7 @@ Since there is no type of which all the above values are members, the type-varia
            (new TypeError (`Invalid value
 
 g :: (String -> Number) -> Array String -> Array Number
-     ^^^^^^^^^^^^^^^^^^
+      ^^^^^^^^^^^^^^^^
              1
 
 1)  /xxx/ :: RegExp
@@ -2512,7 +2512,7 @@ Since there is no type of which all the above values are members, the type-varia
            (new TypeError (`Invalid value
 
 reduce_ :: ((a, b) -> a) -> a -> Array b -> a
-           ^^^^^^^^^^^^^
+            ^^^^^^^^^^^
                  1
 
 1)  null :: Null
@@ -2544,7 +2544,7 @@ The value at position 1 is not a member of ‘(a, b) -> a’.
            (new TypeError (`Invalid value
 
 unfoldr :: (b -> Maybe (Array2 a b)) -> b -> Array a
-           ^^^^^^^^^^^^^^^^^^^^^^^^^
+            ^^^^^^^^^^^^^^^^^^^^^^^
                        1
 
 1)  null :: Null
@@ -2556,7 +2556,7 @@ The value at position 1 is not a member of ‘b -> Maybe (Array2 a b)’.
            (new TypeError (`Invalid value
 
 unfoldr :: (b -> Maybe (Array2 a b)) -> b -> Array a
-                       ^^^^^^^^^^^^
+                        ^^^^^^^^^^
                             1
 
 1)  1 :: Number
@@ -3001,7 +3001,7 @@ Since there is no type of which all the above values are members, the type-varia
            (new TypeError (`Invalid value
 
 map :: Functor f => (a -> b) -> f a -> f b
-                    ^^^^^^^^
+                     ^^^^^^
                        1
 
 1)  Right (Right (Right (Right (0)))) :: Either c (Either d (Either e (Either g Number)))
