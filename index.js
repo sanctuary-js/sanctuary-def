@@ -183,16 +183,21 @@
 
   /* istanbul ignore else */
   if (typeof module === 'object' && typeof module.exports === 'object') {
-    module.exports = f(require('sanctuary-type-classes'),
+    module.exports = f(require('sanctuary-show'),
+                       require('sanctuary-type-classes'),
                        require('sanctuary-type-identifiers'));
   } else if (typeof define === 'function' && define.amd != null) {
-    define(['sanctuary-type-classes', 'sanctuary-type-identifiers'], f);
+    define(['sanctuary-show',
+            'sanctuary-type-classes',
+            'sanctuary-type-identifiers'],
+           f);
   } else {
-    self.sanctuaryDef = f(self.sanctuaryTypeClasses,
+    self.sanctuaryDef = f(self.sanctuaryShow,
+                          self.sanctuaryTypeClasses,
                           self.sanctuaryTypeIdentifiers);
   }
 
-}(function(Z, type) {
+}(function(show, Z, type) {
 
   'use strict';
 
@@ -384,7 +389,7 @@
     return Right(x);
   };
 
-  _Type.prototype.toString = function() {
+  _Type.prototype['@@show'] = function() {
     return this.format(id, K(id));
   };
 
@@ -551,7 +556,7 @@
       var xs = types.map(function(t, idx) {
         return unless(t.type === RECORD || isEmpty(t.keys),
                       stripOutermostParens,
-                      inner('$' + String(idx + 1))(String(t)));
+                      inner('$' + show(idx + 1))(show(t)));
       });
       var parenthesize = wrap(outer('('))(outer(')'));
       return parenthesize(unless(types.length === 2,
@@ -566,7 +571,7 @@
     var $keys = [];
     var $types = {};
     types.forEach(function(t, idx) {
-      var k = '$' + String(idx + 1);
+      var k = '$' + show(idx + 1);
       $keys.push(k);
       $types[k] = {extractor: K([]), type: t};
     });
@@ -899,7 +904,7 @@
 
   //  numArgs :: Integer -> String
   function numArgs(n) {
-    return (n < numbers.length ? numbers[n] : String(n)) + ' ' +
+    return (n < numbers.length ? numbers[n] : show(n)) + ' ' +
            (n === 1 ? 'argument' : 'arguments');
   }
 
@@ -1367,6 +1372,7 @@
   //. For example:
   //.
   //. ```javascript
+  //. const show = require ('sanctuary-show');
   //. const type = require ('sanctuary-type-identifiers');
   //.
   //. //    maybeTypeIdent :: String
@@ -1384,19 +1390,19 @@
   //.
   //. //    Nothing :: Maybe a
   //. const Nothing = {
-  //.   constructor: MaybeTypeRep,
-  //.   isJust: false,
-  //.   isNothing: true,
-  //.   toString: () => 'Nothing',
+  //.   'constructor': MaybeTypeRep,
+  //.   'isJust': false,
+  //.   'isNothing': true,
+  //.   '@@show': () => 'Nothing',
   //. };
   //.
   //. //    Just :: a -> Maybe a
   //. const Just = x => ({
-  //.   constructor: MaybeTypeRep,
-  //.   isJust: true,
-  //.   isNothing: false,
-  //.   toString: () => `Just (${Z.toString (x)})`,
-  //.   value: x,
+  //.   'constructor': MaybeTypeRep,
+  //.   'isJust': true,
+  //.   'isNothing': false,
+  //.   '@@show': () => `Just (${show (x)})`,
+  //.   'value': x,
   //. });
   //.
   //. //    fromMaybe :: a -> Maybe a -> a
@@ -1432,7 +1438,7 @@
           return function($1) {
             function format(outer, inner) {
               return outer('(' + stripNamespace(name) + ' ') +
-                     inner('$1')(String($1)) +
+                     inner('$1')(show($1)) +
                      outer(')');
             }
             var types = {$1: {extractor: _1, type: $1}};
@@ -1517,11 +1523,10 @@
   //.     ({})
   //.     ([a, b, $Pair (a) (b)])
   //.     (fst => snd => ({
-  //.        constructor: PairTypeRep,
-  //.        fst,
-  //.        snd,
-  //.        toString: () =>
-  //.          `Pair (${Z.toString (fst)}) (${Z.toString (snd)})`,
+  //.        'constructor': PairTypeRep,
+  //.        'fst': fst,
+  //.        'snd': snd,
+  //.        '@@show': () => `Pair (${show (fst)}) (${show (snd)})`,
   //.      }));
   //.
   //. //    Rank :: Type
@@ -1571,9 +1576,9 @@
               return function($2) {
                 function format(outer, inner) {
                   return outer('(' + stripNamespace(name) + ' ') +
-                         inner('$1')(String($1)) +
+                         inner('$1')(show($1)) +
                          outer(' ') +
-                         inner('$2')(String($2)) +
+                         inner('$2')(show($2)) +
                          outer(')');
                 }
                 var keys = ['$1', '$2'];
@@ -1718,7 +1723,7 @@
         return outer(' ' + k + ' :: ') +
                unless(t.type === RECORD || isEmpty(t.keys),
                       stripOutermostParens,
-                      inner(k)(String(t)));
+                      inner(k)(show(t)));
       }, keys).join(outer(',')));
     }
 
@@ -1850,7 +1855,7 @@
   function UnaryTypeVariable(name) {
     return function($1) {
       function format(outer, inner) {
-        return outer('(' + name + ' ') + inner('$1')(String($1)) + outer(')');
+        return outer('(' + name + ' ') + inner('$1')(show($1)) + outer(')');
       }
       var types = {$1: {extractor: K([]), type: $1}};
       return new _Type(VARIABLE, name, '', format, K(true), ['$1'], types);
@@ -1884,9 +1889,9 @@
       return function($2) {
         function format(outer, inner) {
           return outer('(' + name + ' ') +
-                 inner('$1')(String($1)) +
+                 inner('$1')(show($1)) +
                  outer(' ') +
-                 inner('$2')(String($2)) +
+                 inner('$2')(show($2)) +
                  outer(')');
         }
         var keys = ['$1', '$2'];
@@ -2049,7 +2054,7 @@
       ) + '\n' +
       'Expected ' + numArgs(numArgsExpected) +
       ' but received ' + numArgs(args.length) +
-      toMarkdownList('.\n', ':\n\n', Z.toString, args)
+      toMarkdownList('.\n', ':\n\n', show, args)
     ));
   }
 
@@ -2098,7 +2103,7 @@
       return unless(
         t.type === FUNCTION || t.type === RECORD || isEmpty(t.keys),
         stripOutermostParens,
-        String(t).replace(/\bUnknown\b/g, function() {
+        show(t).replace(/\bUnknown\b/g, function() {
           // eslint-disable-next-line no-plusplus
           do var name = String.fromCharCode(code++);
           while (names.indexOf(name) >= 0);
@@ -2112,7 +2117,7 @@
   function showTypeQuoted(t) {
     return q(unless(t.type === RECORD || isEmpty(t.keys),
                     stripOutermostParens,
-                    String(t)));
+                    show(t)));
   }
 
   //  showValuesAndTypes :: ... -> String
@@ -2123,9 +2128,9 @@
     pos             // :: Integer
   ) {
     var showType = showTypeWith(typeInfo);
-    return String(pos) + ')  ' + Z.map(function(x) {
+    return show(pos) + ')  ' + Z.map(function(x) {
       var types = determineActualTypesLoose(env, [x]);
-      return Z.toString(x) + ' :: ' + Z.map(showType, types).join(', ');
+      return show(x) + ' :: ' + Z.map(showType, types).join(', ');
     }, values).join('\n    ');
   }
 
@@ -2167,7 +2172,7 @@
     var st = typeInfo.types.reduce(function(st, t, index) {
       var formatType4 = formatType5(index);
       var counter = st.counter;
-      function replace(s) { return label(String(counter += 1))(s); }
+      function replace(s) { return label(show(counter += 1))(s); }
       return {
         carets: Z.concat(st.carets, [_underline(t, [], formatType4(r('^')))]),
         numbers: Z.concat(st.numbers,
@@ -2286,7 +2291,7 @@
       values.length === 1 && isEmpty(determineActualTypesLoose(env, values)) ?
         'Unrecognized value\n\n' +
         underlinedTypeVars + '\n' +
-        '1)  ' + Z.toString(values[0]) + ' :: (no types)\n\n' +
+        '1)  ' + show(values[0]) + ' :: (no types)\n\n' +
         toMarkdownList(
           'The environment is empty! ' +
           'Polymorphic functions require a non-empty environment.\n',
@@ -2368,7 +2373,7 @@
       ) + '\n' +
       'Expected ' + numArgs(numArgsExpected) +
       ' but received ' + numArgs(args.length) +
-      toMarkdownList('.\n', ':\n\n', Z.toString, args)
+      toMarkdownList('.\n', ':\n\n', show, args)
     ));
   }
 

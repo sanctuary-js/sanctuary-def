@@ -2,6 +2,7 @@
 
 const vm = require ('vm');
 
+const show = require ('sanctuary-show');
 const Z = require ('sanctuary-type-classes');
 const Z$version = (require ('sanctuary-type-classes/package.json')).version;
 const type = require ('sanctuary-type-identifiers');
@@ -130,8 +131,8 @@ _Maybe.prototype['fantasy-land/reduce'] = function(f, x) {
 };
 
 _Maybe.prototype.inspect =
-_Maybe.prototype.toString = function() {
-  return this.isNothing ? 'Nothing' : `Just (${Z.toString (this.value)})`;
+_Maybe.prototype['@@show'] = function() {
+  return this.isNothing ? 'Nothing' : `Just (${show (this.value)})`;
 };
 
 //    Maybe :: Type -> Type
@@ -179,8 +180,8 @@ _Either.prototype['fantasy-land/reduce'] = function(f, x) {
 };
 
 _Either.prototype.inspect =
-_Either.prototype.toString = function() {
-  return `${this.isLeft ? 'Left' : 'Right'} (${Z.toString (this.value)})`;
+_Either.prototype['@@show'] = function() {
+  return `${this.isLeft ? 'Left' : 'Right'} (${show (this.value)})`;
 };
 
 //    Either :: Type -> Type -> Type
@@ -194,7 +195,7 @@ const Either = $.BinaryType
 
 //    Pair :: a -> b -> Pair a b
 const Pair = fst => snd => {
-  const repr = `Pair (${Z.toString (fst)}) (${Z.toString (snd)})`;
+  const repr = `Pair (${show (fst)}) (${show (snd)})`;
   return {
     'constructor': {'@@type': 'my-package/Pair'},
     'fst': fst,
@@ -203,7 +204,7 @@ const Pair = fst => snd => {
     'fantasy-land/map': f => Pair (fst) (f (snd)),
     'fantasy-land/bimap': (f, g) => Pair (f (fst)) (g (snd)),
     'inspect': () => repr,
-    'toString': () => repr,
+    '@@show': () => repr,
   };
 };
 
@@ -337,7 +338,7 @@ See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Function for 
     eq ($26.length) (1);
   });
 
-  test ('returns a function with "inspect" and "toString" methods', () => {
+  test ('returns a function with "inspect" and "@@show" methods', () => {
     //    add :: Number -> Number -> Number
     const add =
     def ('add')
@@ -346,13 +347,13 @@ See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Function for 
         (x => y => x + y);
 
     eq (add.inspect ()) ('add :: Number -> Number -> Number');
-    eq (add.toString ()) ('add :: Number -> Number -> Number');
+    eq (show (add)) ('add :: Number -> Number -> Number');
 
-    eq ($0.toString ()) ('$0 :: () -> Array a');
-    eq ($1.toString ()) ('$1 :: a -> Array a');
-    eq ($2.toString ()) ('$2 :: a -> a -> Array a');
-    eq ($3.toString ()) ('$3 :: a -> a -> a -> Array a');
-    eq ($26.toString ()) ('$26 :: a -> a -> a -> a -> a -> a -> a -> a -> a -> a -> a -> a -> a -> a -> a -> a -> a -> a -> a -> a -> a -> a -> a -> a -> a -> a -> Array a');
+    eq (show ($0)) ('$0 :: () -> Array a');
+    eq (show ($1)) ('$1 :: a -> Array a');
+    eq (show ($2)) ('$2 :: a -> a -> Array a');
+    eq (show ($3)) ('$3 :: a -> a -> a -> Array a');
+    eq (show ($26)) ('$26 :: a -> a -> a -> a -> a -> a -> a -> a -> a -> a -> a -> a -> a -> a -> a -> a -> a -> a -> a -> a -> a -> a -> a -> a -> a -> a -> Array a');
   });
 
   test ('returns a curried function', () => {
@@ -1009,7 +1010,7 @@ Since there is no type of which all the above values are members, the type-varia
   test ('supports enumerated types', () => {
     eq (typeof $.EnumType) ('function');
     eq ($.EnumType.length) (1);
-    eq (String ($.EnumType)) ('EnumType :: String -> String -> Array Any -> Type');
+    eq (show ($.EnumType)) ('EnumType :: String -> String -> Array Any -> Type');
 
     //    TimeUnit :: Type
     const TimeUnit = $.EnumType
@@ -1088,7 +1089,7 @@ Since there is no type of which all the above values are members, the type-varia
   test ('supports record types', () => {
     eq (typeof $.RecordType) ('function');
     eq ($.RecordType.length) (1);
-    eq (String ($.RecordType)) ('RecordType :: StrMap Type -> Type');
+    eq (show ($.RecordType)) ('RecordType :: StrMap Type -> Type');
 
     //    Point :: Type
     const Point = $.RecordType ({x: $.Number, y: $.Number});
@@ -1248,7 +1249,7 @@ Since there is no type of which all the above values are members, the type-varia
   test ('supports "nullable" types', () => {
     eq (typeof $.Nullable) ('function');
     eq ($.Nullable.length) (1);
-    eq (String ($.Nullable)) ('Nullable :: Type -> Type');
+    eq (show ($.Nullable)) ('Nullable :: Type -> Type');
 
     throws (() => $.Nullable (null))
            (new TypeError (`Invalid value
@@ -1379,8 +1380,8 @@ Since there is no type of which all the above values are members, the type-varia
   test ('provides the "Array1" type constructor', () => {
     eq (typeof $.Array1) ('function');
     eq ($.Array1.length) (1);
-    eq (String ($.Array1)) ('Array1 :: Type -> Type');
-    eq (String ($.Array1 (a))) ('(Array1 a)');
+    eq (show ($.Array1)) ('Array1 :: Type -> Type');
+    eq (show ($.Array1 (a))) ('(Array1 a)');
     eq (($.Array1 (a)).name) ('sanctuary-def/Array1');
     eq (($.Array1 (a)).url) (`https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Array1`);
 
@@ -1395,8 +1396,8 @@ Since there is no type of which all the above values are members, the type-varia
   test ('provides the "Array2" type constructor', () => {
     eq (typeof $.Array2) ('function');
     eq ($.Array2.length) (1);
-    eq (String ($.Array2)) ('Array2 :: Type -> Type -> Type');
-    eq (String ($.Array2 (a) (b))) ('(Array2 a b)');
+    eq (show ($.Array2)) ('Array2 :: Type -> Type -> Type');
+    eq (show ($.Array2 (a) (b))) ('(Array2 a b)');
     eq (($.Array2 (a) (b)).name) ('sanctuary-def/Array2');
     eq (($.Array2 (a) (b)).url) (`https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Array2`);
 
@@ -1527,7 +1528,7 @@ sinceEpoch :: ValidDate -> Number
               ^^^^^^^^^
                   1
 
-1)  new Date(NaN) :: Date
+1)  new Date (NaN) :: Date
 
 The value at position 1 is not a member of ‘ValidDate’.
 
@@ -1759,8 +1760,8 @@ See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#ValidDate for
   test ('provides the "StrMap" type constructor', () => {
     eq (typeof $.StrMap) ('function');
     eq ($.StrMap.length) (1);
-    eq (String ($.StrMap)) ('StrMap :: Type -> Type');
-    eq (String ($.StrMap (a))) ('(StrMap a)');
+    eq (show ($.StrMap)) ('StrMap :: Type -> Type');
+    eq (show ($.StrMap (a))) ('(StrMap a)');
     eq (($.StrMap (a)).name) ('sanctuary-def/StrMap');
     eq (($.StrMap (a)).url) (`https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#StrMap`);
 
@@ -1875,7 +1876,7 @@ Since there is no type of which all the above values are members, the type-varia
 `));
   });
 
-  test ('uses Z.toString-like string representations', () => {
+  test ('uses show-like string representations', () => {
     //    f :: Null -> Null
     const f =
     def ('f')
@@ -1918,7 +1919,7 @@ f :: Null -> Null
      ^^^^
       1
 
-1)  ${Z.toString (x)} ::${types.length > 0 ? ` ${types}` : ''}
+1)  ${show (x)} ::${types.length > 0 ? ` ${types}` : ''}
 
 The value at position 1 is not a member of ‘Null’.
 
@@ -2920,7 +2921,7 @@ See https://github.com/sanctuary-js/sanctuary-type-classes/tree/v${Z$version}#Or
         ([$.Function ([a, b]), $.Function ([c, d]), f (a) (c), f (b) (d)])
         (curry3 (Z.bimap));
 
-    eq (String (bimap)) ('bimap :: Bifunctor f => (a -> b) -> (c -> d) -> f a c -> f b d');
+    eq (show (bimap)) ('bimap :: Bifunctor f => (a -> b) -> (c -> d) -> f a c -> f b d');
     eq (bimap (s => s.length) (Math.sqrt) (Pair ('Sanctuary') (25))) (Pair (9) (5));
 
     throws (() => bimap (xs => xs.length) (Math.sqrt) (Pair (['foo', true, 42]) (null)))
@@ -3016,7 +3017,7 @@ suite ('test', () => {
   test ('is a ternary function', () => {
     eq (typeof $.test) ('function');
     eq ($.test.length) (1);
-    eq (String ($.test)) ('test :: Array Type -> Type -> Any -> Boolean');
+    eq (show ($.test)) ('test :: Array Type -> Type -> Any -> Boolean');
   });
 
   test ('supports nullary types', () => {
@@ -3061,7 +3062,7 @@ suite ('NullaryType', () => {
   test ('is a ternary function', () => {
     eq (typeof $.NullaryType) ('function');
     eq ($.NullaryType.length) (1);
-    eq (String ($.NullaryType)) ('NullaryType :: String -> String -> (Any -> Boolean) -> Type');
+    eq (show ($.NullaryType)) ('NullaryType :: String -> String -> (Any -> Boolean) -> Type');
   });
 
 });
@@ -3071,7 +3072,7 @@ suite ('UnaryType', () => {
   test ('is a quaternary function', () => {
     eq (typeof $.UnaryType) ('function');
     eq ($.UnaryType.length) (1);
-    eq (String ($.UnaryType)) ('UnaryType :: String -> String -> (Any -> Boolean) -> (t a -> Array a) -> Function');
+    eq (show ($.UnaryType)) ('UnaryType :: String -> String -> (Any -> Boolean) -> (t a -> Array a) -> Function');
   });
 
   test ('returns a type constructor which type checks its arguments', () => {
@@ -3097,7 +3098,7 @@ suite ('BinaryType', () => {
   test ('is a quinary function', () => {
     eq (typeof $.BinaryType) ('function');
     eq ($.BinaryType.length) (1);
-    eq (String ($.BinaryType)) ('BinaryType :: String -> String -> (Any -> Boolean) -> (t a b -> Array a) -> (t a b -> Array b) -> Function');
+    eq (show ($.BinaryType)) ('BinaryType :: String -> String -> (Any -> Boolean) -> (t a b -> Array a) -> (t a b -> Array b) -> Function');
   });
 
   test ('returns a type constructor which type checks its arguments', () => {
@@ -3123,7 +3124,7 @@ suite ('TypeVariable', () => {
   test ('is a unary function', () => {
     eq (typeof $.TypeVariable) ('function');
     eq ($.TypeVariable.length) (1);
-    eq (String ($.TypeVariable)) ('TypeVariable :: String -> Type');
+    eq (show ($.TypeVariable)) ('TypeVariable :: String -> Type');
   });
 
 });
@@ -3133,7 +3134,7 @@ suite ('UnaryTypeVariable', () => {
   test ('is a unary function', () => {
     eq (typeof $.UnaryTypeVariable) ('function');
     eq ($.UnaryTypeVariable.length) (1);
-    eq (String ($.UnaryTypeVariable)) ('UnaryTypeVariable :: String -> Function');
+    eq (show ($.UnaryTypeVariable)) ('UnaryTypeVariable :: String -> Function');
   });
 
   test ('returns a function which type checks its arguments', () => {
@@ -3141,8 +3142,8 @@ suite ('UnaryTypeVariable', () => {
 
     eq (typeof f) ('function');
     eq (f.length) (1);
-    eq (String (f)) ('f :: Type -> Type');
-    eq (String (f (a))) ('(f a)');
+    eq (show (f)) ('f :: Type -> Type');
+    eq (show (f (a))) ('(f a)');
 
     throws (() => f (Number))
            (new TypeError (`Invalid value
@@ -3166,7 +3167,7 @@ suite ('BinaryTypeVariable', () => {
   test ('is a unary function', () => {
     eq (typeof $.BinaryTypeVariable) ('function');
     eq ($.BinaryTypeVariable.length) (1);
-    eq (String ($.BinaryTypeVariable)) ('BinaryTypeVariable :: String -> Function');
+    eq (show ($.BinaryTypeVariable)) ('BinaryTypeVariable :: String -> Function');
   });
 
   test ('returns a function which type checks its arguments', () => {
@@ -3174,8 +3175,8 @@ suite ('BinaryTypeVariable', () => {
 
     eq (typeof p) ('function');
     eq (p.length) (1);
-    eq (String (p)) ('p :: Type -> Type -> Type');
-    eq (String (p (a) (b))) ('(p a b)');
+    eq (show (p)) ('p :: Type -> Type -> Type');
+    eq (show (p (a) (b))) ('(p a b)');
 
     throws (() => p (Number))
            (new TypeError (`Invalid value
@@ -3199,7 +3200,7 @@ suite ('Thunk', () => {
   test ('is a unary function', () => {
     eq (typeof $.Thunk) ('function');
     eq ($.Thunk.length) (1);
-    eq (String ($.Thunk)) ('Thunk :: Type -> Type');
+    eq (show ($.Thunk)) ('Thunk :: Type -> Type');
   });
 
   test ('is short for `t => $.Function([t])`', () => {
@@ -3237,7 +3238,7 @@ suite ('Predicate', () => {
   test ('is a unary function', () => {
     eq (typeof $.Predicate) ('function');
     eq ($.Predicate.length) (1);
-    eq (String ($.Predicate)) ('Predicate :: Type -> Type');
+    eq (show ($.Predicate)) ('Predicate :: Type -> Type');
   });
 
   test ('is short for `t => $.Function([t, $.Boolean])`', () => {
