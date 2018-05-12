@@ -14,6 +14,7 @@
     "test": "npm run lint && sanctuary-test && npm run doctest"
   },
   "dependencies": {
+    "sanctuary-show": "1.0.x",
     "sanctuary-type-classes": "8.2.x",
     "sanctuary-type-identifiers": "2.0.x"
   },
