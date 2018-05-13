@@ -1721,9 +1721,10 @@
     var keys = Object.keys(fields).sort();
 
     function format(outer, inner) {
+      if (isEmpty(keys)) return outer('{}');
       return wrap(outer('{'))(outer(' }'))(Z.map(function(k) {
         var t = fields[k];
-        return outer(' ' + k + ' :: ') +
+        return outer(' ' + (/^(?!\d)[$\w]+$/.test(k) ? k : show(k)) + ' :: ') +
                unless(t.type === RECORD || isEmpty(t.keys),
                       stripOutermostParens,
                       inner(k)(show(t)));

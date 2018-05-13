@@ -1090,6 +1090,14 @@ Since there is no type of which all the above values are members, the type-varia
     eq (typeof $.RecordType) ('function');
     eq ($.RecordType.length) (1);
     eq (show ($.RecordType)) ('RecordType :: StrMap Type -> Type');
+    eq (show ($.RecordType ({}))) ('{}');
+    eq (show ($.RecordType ({x: $.Number}))) ('{ x :: Number }');
+    eq (show ($.RecordType ({x: $.Number, y: $.Number}))) ('{ x :: Number, y :: Number }');
+    eq (show ($.RecordType ({_ABC: $.Number, $123: $.Number}))) ('{ $123 :: Number, _ABC :: Number }');
+    eq (show ($.RecordType ({0: $.Number, 1: $.Number}))) ('{ "0" :: Number, "1" :: Number }');
+    eq (show ($.RecordType ({'foo-bar': $.Number}))) ('{ "foo-bar" :: Number }');
+    eq (show ($.RecordType ({'foo bar': $.Number}))) ('{ "foo bar" :: Number }');
+    eq (show ($.RecordType ({'x "y" z': $.Number}))) ('{ "x \\"y\\" z" :: Number }');
 
     //    Point :: Type
     const Point = $.RecordType ({x: $.Number, y: $.Number});
@@ -1243,6 +1251,29 @@ foo :: { x :: a, y :: a } -> { x :: a, y :: a }
 2)  123 :: Number
 
 Since there is no type of which all the above values are members, the type-variable constraint has been violated.
+`));
+
+    //    fooBarBaz :: { 'foo "bar" baz' :: Number } -> Number
+    const fooBarBaz =
+    def ('fooBarBaz')
+        ({})
+        ([$.RecordType ({'foo "bar" baz': $.Number}), $.Number])
+        (r => r['foo "bar" baz']);
+
+    eq (fooBarBaz ({'foo "bar" baz': 42})) (42);
+
+    throws (() => fooBarBaz ({'foo "bar" baz': null}))
+           (new TypeError (`Invalid value
+
+fooBarBaz :: { "foo \\"bar\\" baz" :: Number } -> Number
+                                    ^^^^^^
+                                      1
+
+1)  null :: Null
+
+The value at position 1 is not a member of ‘Number’.
+
+See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Number for information about the Number type.
 `));
   });
 
