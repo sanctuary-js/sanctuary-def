@@ -23,6 +23,9 @@ const curry3 = f => x => y => z => f (x, y, z);
 //    notImplemented :: () -> Undefined !
 const notImplemented = () => { throw new Error ('Not implemented'); };
 
+//    singleton :: String -> a -> StrMap a
+const singleton = k => v => { const m = {}; m[k] = v; return m; };
+
 
 const def = $.create ({checkTypes: true, env: $.env});
 
@@ -1099,6 +1102,18 @@ Since there is no type of which all the above values are members, the type-varia
     eq (show ($.RecordType ({'foo bar': $.Number}))) ('{ "foo bar" :: Number }');
     eq (show ($.RecordType ({'x "y" z': $.Number}))) ('{ "x \\"y\\" z" :: Number }');
 
+    const pred = $.test ([]) ($.RecordType ({x: $.Number}));
+
+    //  Own properties:
+    eq (pred ({x: 0})) (true);
+    eq (pred (Object.defineProperty ({}, 'x', {value: 0, enumerable: true}))) (true);
+    eq (pred (Object.defineProperty ({}, 'x', {value: 0, enumerable: false}))) (false);
+
+    //  Inherited properties:
+    eq (pred (Object.create ({x: 0}))) (true);
+    eq (pred (Object.create (Object.defineProperty ({}, 'x', {value: 0, enumerable: true})))) (true);
+    eq (pred (Object.create (Object.defineProperty ({}, 'x', {value: 0, enumerable: false})))) (false);
+
     //    Point :: Type
     const Point = $.RecordType ({x: $.Number, y: $.Number});
 
@@ -1274,6 +1289,65 @@ fooBarBaz :: { "foo \\"bar\\" baz" :: Number } -> Number
 The value at position 1 is not a member of ‘Number’.
 
 See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Number for information about the Number type.
+`));
+
+    //    prop :: String -> Function
+    const prop =
+    def ('prop')
+        ({})
+        ([$.String, $.AnyFunction])
+        (name => def ('prop (' + show (name) + ')')
+                     ({})
+                     ([$.RecordType (singleton (name) (a)), a])
+                     (r => r[name]));
+
+    eq (prop ('x') ({x: 1, y: 2})) (1);
+    eq (prop ('y') ({x: 1, y: 2})) (2);
+
+    throws (() => prop ('z') ({x: 1, y: 2}))
+           (new TypeError (`Invalid value
+
+prop ("z") :: { z :: a } -> a
+              ^^^^^^^^^^
+                  1
+
+1)  {"x": 1, "y": 2} :: Object, StrMap Number
+
+The value at position 1 is not a member of ‘{ z :: a }’.
+`));
+
+    const point = Object.create ({x: 0, y: 0});
+    eq (prop ('x') (point)) (0);
+    eq (prop ('y') (point)) (0);
+
+    eq (/x/g.global) (true);
+    eq ('global' in /x/g) (true);
+
+    throws (() => prop ('global') (/x/g))
+           (new TypeError (`Invalid value
+
+prop ("global") :: { global :: a } -> a
+                   ^^^^^^^^^^^^^^^
+                          1
+
+1)  /x/g :: RegExp
+
+The value at position 1 is not a member of ‘{ global :: a }’.
+`));
+
+    eq (['x'].length) (1);
+    eq ('length' in ['x']) (true);
+
+    throws (() => prop ('length') (['x']))
+           (new TypeError (`Invalid value
+
+prop ("length") :: { length :: a } -> a
+                   ^^^^^^^^^^^^^^^
+                          1
+
+1)  ["x"] :: Array String
+
+The value at position 1 is not a member of ‘{ length :: a }’.
 `));
   });
 

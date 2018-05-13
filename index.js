@@ -1668,7 +1668,8 @@
   //# RecordType :: StrMap Type -> Type
   //.
   //. `RecordType` is used to construct record types. The type definition
-  //. specifies the name and type of each required field.
+  //. specifies the name and type of each required field. A field is an
+  //. enumerable property (either an own property or an inherited property).
   //.
   //. To define a record type one must provide:
   //.
@@ -1731,8 +1732,10 @@
     }
 
     function test(x) {
-      return x != null &&
-             keys.every(function(k) { return hasOwnProperty.call(x, k); });
+      var missing = {};
+      keys.forEach(function(k) { missing[k] = k; });
+      for (var k in x) delete missing[k];
+      return isEmpty(Object.keys(missing));
     }
 
     var $types = {};
