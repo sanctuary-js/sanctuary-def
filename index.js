@@ -1975,14 +1975,10 @@
   //. The type of `_concat` is misleading: it suggests that it can operate on
   //. any two values of *any* one type. In fact there's an implicit constraint,
   //. since the type must support concatenation (in [mathematical][semigroup]
-  //. terms, the type must have a [semigroup][FL:Semigroup]). The run-time type
-  //. errors that result when this constraint is violated are not particularly
-  //. descriptive:
+  //. terms, the type must have a [semigroup][FL:Semigroup]). Violating this
+  //. implicit constraint results in a run-time error in the implementation:
   //.
   //. ```javascript
-  //. _concat ({}) ({});
-  //. // ! TypeError: undefined is not a function
-  //.
   //. _concat (null) (null);
   //. // ! TypeError: Cannot read property 'concat' of null
   //. ```
@@ -2011,19 +2007,6 @@
   //.
   //. concat ([1, 2]) ([3, 4]);
   //. // => [1, 2, 3, 4]
-  //.
-  //. concat ({}) ({});
-  //. // ! TypeError: Type-class constraint violation
-  //. //
-  //. //   concat :: Semigroup a => a -> a -> a
-  //. //             ^^^^^^^^^^^    ^
-  //. //                            1
-  //. //
-  //. //   1)  {} :: Object, StrMap ???
-  //. //
-  //. //   ‘concat’ requires ‘a’ to satisfy the Semigroup type-class constraint; the value at position 1 does not.
-  //. //
-  //. //   See http://example.com/my-package#Semigroup for information about the my-package/Semigroup type class.
   //.
   //. concat (null) (null);
   //. // ! TypeError: Type-class constraint violation
