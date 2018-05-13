@@ -1028,9 +1028,8 @@
     values.forEach(function(value) {
       $typeVarMap[typeVar.name].valuesByPath[key].push(value);
       $typeVarMap[typeVar.name].types = Z.chain(function(t) {
-        var invalid = !isValid(t)(value);
         return (
-          invalid ?
+          t.keys.length < typeVar.keys.length || !isValid(t)(value) ?
             [] :
           isNullaryTypeVar && t.type === UNARY ?
             Z.map(fromUnaryType(t),

@@ -2152,7 +2152,9 @@ Since there is no type of which all the above values are members, the type-varia
     def ('f')
         ({})
         ([a, a, a, a])
-        ((x, y, z) => x);
+        (x => y => z => x);
+
+    eq (f (1) (2) (3)) (1);
 
     throws (() => f (Left ('abc')) (Left (/XXX/)))
            (new TypeError (`Type-variable constraint violation
@@ -2635,13 +2637,15 @@ Expected one argument but received zero arguments.
     const env = Z.concat ($.env, [Integer, Maybe ($.Unknown), Either ($.Unknown) ($.Unknown)]);
     const def = $.create ({checkTypes: true, env});
 
-    //    alt :: Alternative a => a -> a -> a
+    //    alt :: Alt f => f a -> f a -> f a
     const alt =
     def ('alt')
-        ({a: [Z.Alternative]})
-        ([a, a, a])
+        ({f: [Z.Alt]})
+        ([f (a), f (a), f (a)])
         (curry2 (Z.alt));
 
+    eq (alt ([]) ([])) ([]);
+    eq (alt ({}) ({})) ({});
     eq (alt (Nothing) (Nothing)) (Nothing);
     eq (alt (Nothing) (Just (1))) (Just (1));
     eq (alt (Just (2)) (Nothing)) (Just (2));
@@ -2650,15 +2654,15 @@ Expected one argument but received zero arguments.
     throws (() => alt (Left (1)))
            (new TypeError (`Type-class constraint violation
 
-alt :: Alternative a => a -> a -> a
-       ^^^^^^^^^^^^^    ^
-                        1
+alt :: Alt f => f a -> f a -> f a
+       ^^^^^    ^^^
+                 1
 
 1)  Left (1) :: Either Number b, Either Integer b
 
-‘alt’ requires ‘a’ to satisfy the Alternative type-class constraint; the value at position 1 does not.
+‘alt’ requires ‘f’ to satisfy the Alt type-class constraint; the value at position 1 does not.
 
-See https://github.com/sanctuary-js/sanctuary-type-classes/tree/v${Z$version}#Alternative for information about the sanctuary-type-classes/Alternative type class.
+See https://github.com/sanctuary-js/sanctuary-type-classes/tree/v${Z$version}#Alt for information about the sanctuary-type-classes/Alt type class.
 `));
 
     //    concat :: Semigroup a => a -> a -> a
