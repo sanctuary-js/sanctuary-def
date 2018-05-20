@@ -19,7 +19,7 @@
     "sanctuary-type-identifiers": "2.0.x"
   },
   "devDependencies": {
-    "sanctuary-scripts": "1.6.x"
+    "sanctuary-scripts": "2.0.x"
   },
   "files": [
     "/LICENSE",

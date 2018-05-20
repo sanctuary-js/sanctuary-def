@@ -2,7 +2,6 @@
   "root": true,
   "extends": ["./node_modules/sanctuary-style/eslint-es3.json"],
   "rules": {
-    "func-call-spacing": ["off"],
     "indent": [
       "error",
       2,
@@ -22,32 +21,24 @@
           "MemberExpression"
         ]
       }
-    ],
-    "no-unexpected-multiline": ["off"]
+    ]
   },
   "overrides": [
     {
       "files": ["*.md"],
-      "plugins": ["markdown"],
-      "env": {"es6": true},
       "rules": {
         "comma-dangle": ["error", "always-multiline"],
-        "func-call-spacing": ["error", "always", {"allowNewlines": true}],
         "func-style": ["error", "declaration", {"allowArrowFunctions": true}],
         "max-len": ["off"],
         "no-undef": ["off"],
-        "no-unused-vars": ["off"],
-        "strict": ["off"]
+        "no-unused-vars": ["off"]
       }
     },
     {
       "files": ["test/**/*.js"],
-      "env": {"es6": true},
       "rules": {
         "comma-dangle": ["error", "always-multiline"],
-        "func-call-spacing": ["error", "always", {"allowNewlines": true}],
-        "func-style": ["error", "declaration", {"allowArrowFunctions": true}],
-        "no-extra-parens": ["off"]
+        "func-style": ["error", "declaration", {"allowArrowFunctions": true}]
       }
     }
   ]
