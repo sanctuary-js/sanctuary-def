@@ -183,21 +183,24 @@
 
   /* istanbul ignore else */
   if (typeof module === 'object' && typeof module.exports === 'object') {
-    module.exports = f (require ('sanctuary-show'),
+    module.exports = f (require ('sanctuary-either'),
+                        require ('sanctuary-show'),
                         require ('sanctuary-type-classes'),
                         require ('sanctuary-type-identifiers'));
   } else if (typeof define === 'function' && define.amd != null) {
-    define (['sanctuary-show',
+    define (['sanctuary-either',
+             'sanctuary-show',
              'sanctuary-type-classes',
              'sanctuary-type-identifiers'],
             f);
   } else {
-    self.sanctuaryDef = f (self.sanctuaryShow,
+    self.sanctuaryDef = f (self.sanctuaryEither,
+                           self.sanctuaryShow,
                            self.sanctuaryTypeClasses,
                            self.sanctuaryTypeIdentifiers);
   }
 
-} (function(show, Z, type) {
+} (function(Either, show, Z, type) {
 
   'use strict';
 
@@ -207,27 +210,11 @@
   var slice             = Array.prototype.slice;
   var hasOwnProperty    = Object.prototype.hasOwnProperty;
 
-  function Either(tag, value) {
-    this.isLeft = tag === 'Left';
-    this.isRight = tag === 'Right';
-    this.value = value;
-  }
-
-  Either['@@type'] = 'sanctuary-def/Either';
-
-  Either.prototype['fantasy-land/map'] = function(f) {
-    return this.isLeft ? this : Right (f (this.value));
-  };
-
-  Either.prototype['fantasy-land/chain'] = function(f) {
-    return this.isLeft ? this : f (this.value);
-  };
-
   //  Left :: a -> Either a b
-  function Left(x) { return new Either ('Left', x); }
+  var Left = Either.Left;
 
   //  Right :: b -> Either a b
-  function Right(x) { return new Either ('Right', x); }
+  var Right = Either.Right;
 
   //  K :: a -> b -> a
   function K(x) { return function(y) { return x; }; }
