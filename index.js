@@ -210,6 +210,16 @@
   var slice             = Array.prototype.slice;
   var hasOwnProperty    = Object.prototype.hasOwnProperty;
 
+  var inspect = (function() {
+    /* istanbul ignore else */
+    if (typeof module === 'object' && typeof module.exports === 'object') {
+      var util = require ('util');
+      /* istanbul ignore else */
+      if (typeof util.inspect.custom === 'symbol') return util.inspect.custom;
+    }
+    return 'inspect';
+  } ());
+
   //  Left :: a -> Either a b
   var Left = Either.Left;
 
@@ -2539,7 +2549,7 @@
       } :
       wrapNext ({}, [], 0);
 
-    wrapped.inspect = wrapped.toString = always0 (typeSignature (typeInfo));
+    wrapped[inspect] = wrapped.toString = always0 (typeSignature (typeInfo));
 
     return wrapped;
   }

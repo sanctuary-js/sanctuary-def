@@ -1,5 +1,6 @@
 'use strict';
 
+const util = require ('util');
 const vm = require ('vm');
 
 const {Left, Right} = require ('sanctuary-either');
@@ -238,7 +239,7 @@ See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Function for 
         ([$.Number, $.Number, $.Number])
         (x => y => x + y);
 
-    eq (add.inspect ()) ('add :: Number -> Number -> Number');
+    eq (util.inspect (add)) ('add :: Number -> Number -> Number');
     eq (show (add)) ('add :: Number -> Number -> Number');
 
     eq (show ($0)) ('$0 :: () -> Array a');
