@@ -2,6 +2,9 @@
 
 const vm = require ('vm');
 
+const {Left, Right} = require ('sanctuary-either');
+const {Nothing, Just} = require ('sanctuary-maybe');
+const Pair = require ('sanctuary-pair');
 const show = require ('sanctuary-show');
 const Z = require ('sanctuary-type-classes');
 const Z$version = (require ('sanctuary-type-classes/package.json')).version;
@@ -19,9 +22,6 @@ const curry2 = f => x => y => f (x, y);
 
 //    curry3 :: ((a, b, c) -> d) -> a -> b -> c -> d
 const curry3 = f => x => y => z => f (x, y, z);
-
-//    notImplemented :: () -> Undefined !
-const notImplemented = () => { throw new Error ('Not implemented'); };
 
 //    singleton :: String -> a -> StrMap a
 const singleton = k => v => { const m = {}; m[k] = v; return m; };
@@ -85,137 +85,26 @@ const Integer = $.NullaryType
         x >= MIN_SAFE_INTEGER &&
         x <= MAX_SAFE_INTEGER);
 
-
-function _Maybe(tag, value) {
-  this.isNothing = tag === 'Nothing';
-  this.isJust = tag === 'Just';
-  if (this.isJust) this.value = value;
-}
-
-//    Nothing :: Maybe a
-const Nothing = new _Maybe ('Nothing');
-
-//    Just :: a -> Maybe a
-const Just = x => new _Maybe ('Just', x);
-
-_Maybe['@@type'] = 'my-package/Maybe';
-
-_Maybe['fantasy-land/of'] = Just;
-
-_Maybe['fantasy-land/zero'] = () => Nothing;
-
-_Maybe.prototype['fantasy-land/equals'] = function(other) {
-  return this.isNothing ? other.isNothing
-                        : other.isJust && Z.equals (this.value, other.value);
-};
-
-_Maybe.prototype['fantasy-land/concat'] = notImplemented;
-
-_Maybe.prototype['fantasy-land/filter'] = function(pred) {
-  return this.isJust && pred (this.value) ? this : Nothing;
-};
-
-_Maybe.prototype['fantasy-land/map'] = function(f) {
-  return this.isNothing ? this : Just (f (this.value));
-};
-
-_Maybe.prototype['fantasy-land/ap'] = notImplemented;
-
-_Maybe.prototype['fantasy-land/chain'] = function(f) {
-  return this.isNothing ? this : f (this.value);
-};
-
-_Maybe.prototype['fantasy-land/alt'] = function(other) {
-  return this.isNothing ? other : this;
-};
-
-_Maybe.prototype['fantasy-land/reduce'] = function(f, x) {
-  return this.isNothing ? x : f (x, this.value);
-};
-
-_Maybe.prototype.inspect =
-_Maybe.prototype['@@show'] = function() {
-  return this.isNothing ? 'Nothing' : `Just (${show (this.value)})`;
-};
-
 //    Maybe :: Type -> Type
 const Maybe = $.UnaryType
   ('my-package/Maybe')
   ('http://example.com/my-package#Maybe')
-  (x => type (x) === 'my-package/Maybe')
+  (x => type (x) === 'sanctuary-maybe/Maybe@1')
   (maybe => maybe.isJust ? [maybe.value] : []);
-
-
-function _Either(tag, value) {
-  this.isLeft = tag === 'Left';
-  this.isRight = tag === 'Right';
-  this.value = value;
-}
-
-//    Left :: a -> Either a b
-const Left = x => new _Either ('Left', x);
-
-//    Right :: b -> Either a b
-const Right = x => new _Either ('Right', x);
-
-_Either['@@type'] = 'my-package/Either';
-
-_Either['fantasy-land/of'] = Right;
-
-_Either.prototype['fantasy-land/equals'] = function(other) {
-  return this.isLeft === other.isLeft && Z.equals (this.value, other.value);
-};
-
-_Either.prototype['fantasy-land/concat'] = function(other) {
-  return this.isLeft ?
-    other.isLeft ? Left (Z.concat (this.value, other.value)) : other :
-    other.isLeft ? this : Right (Z.concat (this.value, other.value));
-};
-
-_Either.prototype['fantasy-land/map'] = notImplemented;
-
-_Either.prototype['fantasy-land/ap'] = notImplemented;
-
-_Either.prototype['fantasy-land/chain'] = notImplemented;
-
-_Either.prototype['fantasy-land/reduce'] = function(f, x) {
-  return this.isLeft ? x : f (x, this.value);
-};
-
-_Either.prototype.inspect =
-_Either.prototype['@@show'] = function() {
-  return `${this.isLeft ? 'Left' : 'Right'} (${show (this.value)})`;
-};
 
 //    Either :: Type -> Type -> Type
 const Either = $.BinaryType
   ('my-package/Either')
   ('http://example.com/my-package#Either')
-  (x => type (x) === 'my-package/Either')
+  (x => type (x) === 'sanctuary-either/Either@1')
   (either => either.isLeft ? [either.value] : [])
   (either => either.isRight ? [either.value] : []);
-
-
-//    Pair :: a -> b -> Pair a b
-const Pair = fst => snd => {
-  const repr = `Pair (${show (fst)}) (${show (snd)})`;
-  return {
-    'constructor': {'@@type': 'my-package/Pair'},
-    'fst': fst,
-    'snd': snd,
-    'fantasy-land/equals': other => Z.equals (fst, other.fst) && Z.equals (snd, other.snd),
-    'fantasy-land/map': f => Pair (fst) (f (snd)),
-    'fantasy-land/bimap': (f, g) => Pair (f (fst)) (g (snd)),
-    'inspect': () => repr,
-    '@@show': () => repr,
-  };
-};
 
 //    $Pair :: Type -> Type -> Type
 const $Pair = $.BinaryType
   ('my-package/Pair')
   ('http://example.com/my-package#Pair')
-  (x => type (x) === 'my-package/Pair')
+  (x => type (x) === 'sanctuary-pair/Pair@1')
   (pair => [pair.fst])
   (pair => [pair.snd]);
 
@@ -2724,20 +2613,10 @@ Expected one argument but received zero arguments.
     eq (alt (Nothing) (Just (1))) (Just (1));
     eq (alt (Just (2)) (Nothing)) (Just (2));
     eq (alt (Just (3)) (Just (4))) (Just (3));
-
-    throws (() => alt (Left (1)))
-           (new TypeError (`Type-class constraint violation
-
-alt :: Alt f => f a -> f a -> f a
-       ^^^^^    ^^^
-                 1
-
-1)  Left (1) :: Either Number b, Either Integer b
-
-‘alt’ requires ‘f’ to satisfy the Alt type-class constraint; the value at position 1 does not.
-
-See https://github.com/sanctuary-js/sanctuary-type-classes/tree/v${Z$version}#Alt for information about the sanctuary-type-classes/Alt type class.
-`));
+    eq (alt (Left (1)) (Left (2))) (Left (2));
+    eq (alt (Left (3)) (Right (4))) (Right (4));
+    eq (alt (Right (5)) (Left (6))) (Right (5));
+    eq (alt (Right (7)) (Right (8))) (Right (7));
 
     //    concat :: Semigroup a => a -> a -> a
     const concat =
