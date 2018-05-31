@@ -173,54 +173,54 @@ Conceptually, a type is a set of values. One can think of a value of
 type `Type` as a function of type `Any -> Boolean` which tests values
 for membership in the set (though this is an oversimplification).
 
-#### <a name="Any" href="https://github.com/sanctuary-js/sanctuary-def/blob/v0.17.1/index.js#L465">`Any :: Type`</a>
+#### <a name="Any" href="https://github.com/sanctuary-js/sanctuary-def/blob/v0.17.2/index.js#L475">`Any :: Type`</a>
 
 Type comprising every JavaScript value.
 
-#### <a name="AnyFunction" href="https://github.com/sanctuary-js/sanctuary-def/blob/v0.17.1/index.js#L470">`AnyFunction :: Type`</a>
+#### <a name="AnyFunction" href="https://github.com/sanctuary-js/sanctuary-def/blob/v0.17.2/index.js#L480">`AnyFunction :: Type`</a>
 
 Type comprising every Function value.
 
-#### <a name="Arguments" href="https://github.com/sanctuary-js/sanctuary-def/blob/v0.17.1/index.js#L475">`Arguments :: Type`</a>
+#### <a name="Arguments" href="https://github.com/sanctuary-js/sanctuary-def/blob/v0.17.2/index.js#L485">`Arguments :: Type`</a>
 
 Type comprising every [`arguments`][arguments] object.
 
-#### <a name="Array" href="https://github.com/sanctuary-js/sanctuary-def/blob/v0.17.1/index.js#L480">`Array :: Type -⁠> Type`</a>
+#### <a name="Array" href="https://github.com/sanctuary-js/sanctuary-def/blob/v0.17.2/index.js#L490">`Array :: Type -⁠> Type`</a>
 
 Constructor for homogeneous Array types.
 
-#### <a name="Array0" href="https://github.com/sanctuary-js/sanctuary-def/blob/v0.17.1/index.js#L485">`Array0 :: Type`</a>
+#### <a name="Array0" href="https://github.com/sanctuary-js/sanctuary-def/blob/v0.17.2/index.js#L495">`Array0 :: Type`</a>
 
 Type whose sole member is `[]`.
 
-#### <a name="Array1" href="https://github.com/sanctuary-js/sanctuary-def/blob/v0.17.1/index.js#L493">`Array1 :: Type -⁠> Type`</a>
+#### <a name="Array1" href="https://github.com/sanctuary-js/sanctuary-def/blob/v0.17.2/index.js#L503">`Array1 :: Type -⁠> Type`</a>
 
 Constructor for singleton Array types.
 
-#### <a name="Array2" href="https://github.com/sanctuary-js/sanctuary-def/blob/v0.17.1/index.js#L502">`Array2 :: Type -⁠> Type -⁠> Type`</a>
+#### <a name="Array2" href="https://github.com/sanctuary-js/sanctuary-def/blob/v0.17.2/index.js#L512">`Array2 :: Type -⁠> Type -⁠> Type`</a>
 
 Constructor for heterogeneous Array types of length 2. `['foo', true]` is
 a member of `Array2 String Boolean`.
 
-#### <a name="Boolean" href="https://github.com/sanctuary-js/sanctuary-def/blob/v0.17.1/index.js#L513">`Boolean :: Type`</a>
+#### <a name="Boolean" href="https://github.com/sanctuary-js/sanctuary-def/blob/v0.17.2/index.js#L523">`Boolean :: Type`</a>
 
 Type comprising `true` and `false`.
 
-#### <a name="Date" href="https://github.com/sanctuary-js/sanctuary-def/blob/v0.17.1/index.js#L518">`Date :: Type`</a>
+#### <a name="Date" href="https://github.com/sanctuary-js/sanctuary-def/blob/v0.17.2/index.js#L528">`Date :: Type`</a>
 
 Type comprising every Date value.
 
-#### <a name="Error" href="https://github.com/sanctuary-js/sanctuary-def/blob/v0.17.1/index.js#L523">`Error :: Type`</a>
+#### <a name="Error" href="https://github.com/sanctuary-js/sanctuary-def/blob/v0.17.2/index.js#L533">`Error :: Type`</a>
 
 Type comprising every Error value, including values of more specific
 constructors such as [`SyntaxError`][] and [`TypeError`][].
 
-#### <a name="FiniteNumber" href="https://github.com/sanctuary-js/sanctuary-def/blob/v0.17.1/index.js#L529">`FiniteNumber :: Type`</a>
+#### <a name="FiniteNumber" href="https://github.com/sanctuary-js/sanctuary-def/blob/v0.17.2/index.js#L539">`FiniteNumber :: Type`</a>
 
 Type comprising every [`ValidNumber`][] value except `Infinity` and
 `-Infinity`.
 
-#### <a name="Function" href="https://github.com/sanctuary-js/sanctuary-def/blob/v0.17.1/index.js#L543">`Function :: NonEmpty (Array Type) -⁠> Type`</a>
+#### <a name="Function" href="https://github.com/sanctuary-js/sanctuary-def/blob/v0.17.2/index.js#L553">`Function :: NonEmpty (Array Type) -⁠> Type`</a>
 
 Constructor for Function types.
 
@@ -230,72 +230,72 @@ Examples:
     type; and
   - `$.Function ([a, b, a])` represents the `(a, b) -> a` type.
 
-#### <a name="GlobalRegExp" href="https://github.com/sanctuary-js/sanctuary-def/blob/v0.17.1/index.js#L582">`GlobalRegExp :: Type`</a>
+#### <a name="GlobalRegExp" href="https://github.com/sanctuary-js/sanctuary-def/blob/v0.17.2/index.js#L592">`GlobalRegExp :: Type`</a>
 
 Type comprising every [`RegExp`][] value whose `global` flag is `true`.
 
 See also [`NonGlobalRegExp`][].
 
-#### <a name="Integer" href="https://github.com/sanctuary-js/sanctuary-def/blob/v0.17.1/index.js#L592">`Integer :: Type`</a>
+#### <a name="Integer" href="https://github.com/sanctuary-js/sanctuary-def/blob/v0.17.2/index.js#L602">`Integer :: Type`</a>
 
 Type comprising every integer in the range
 [[`Number.MIN_SAFE_INTEGER`][min] .. [`Number.MAX_SAFE_INTEGER`][max]].
 
-#### <a name="NegativeFiniteNumber" href="https://github.com/sanctuary-js/sanctuary-def/blob/v0.17.1/index.js#L606">`NegativeFiniteNumber :: Type`</a>
+#### <a name="NegativeFiniteNumber" href="https://github.com/sanctuary-js/sanctuary-def/blob/v0.17.2/index.js#L616">`NegativeFiniteNumber :: Type`</a>
 
 Type comprising every [`FiniteNumber`][] value less than zero.
 
-#### <a name="NegativeInteger" href="https://github.com/sanctuary-js/sanctuary-def/blob/v0.17.1/index.js#L614">`NegativeInteger :: Type`</a>
+#### <a name="NegativeInteger" href="https://github.com/sanctuary-js/sanctuary-def/blob/v0.17.2/index.js#L624">`NegativeInteger :: Type`</a>
 
 Type comprising every [`Integer`][] value less than zero.
 
-#### <a name="NegativeNumber" href="https://github.com/sanctuary-js/sanctuary-def/blob/v0.17.1/index.js#L622">`NegativeNumber :: Type`</a>
+#### <a name="NegativeNumber" href="https://github.com/sanctuary-js/sanctuary-def/blob/v0.17.2/index.js#L632">`NegativeNumber :: Type`</a>
 
 Type comprising every [`Number`][] value less than zero.
 
-#### <a name="NonEmpty" href="https://github.com/sanctuary-js/sanctuary-def/blob/v0.17.1/index.js#L630">`NonEmpty :: Type -⁠> Type`</a>
+#### <a name="NonEmpty" href="https://github.com/sanctuary-js/sanctuary-def/blob/v0.17.2/index.js#L640">`NonEmpty :: Type -⁠> Type`</a>
 
 Constructor for non-empty types. `$.NonEmpty ($.String)`, for example, is
 the type comprising every [`String`][] value except `''`.
 
 The given type must satisfy the [Monoid][] and [Setoid][] specifications.
 
-#### <a name="NonGlobalRegExp" href="https://github.com/sanctuary-js/sanctuary-def/blob/v0.17.1/index.js#L646">`NonGlobalRegExp :: Type`</a>
+#### <a name="NonGlobalRegExp" href="https://github.com/sanctuary-js/sanctuary-def/blob/v0.17.2/index.js#L656">`NonGlobalRegExp :: Type`</a>
 
 Type comprising every [`RegExp`][] value whose `global` flag is `false`.
 
 See also [`GlobalRegExp`][].
 
-#### <a name="NonNegativeInteger" href="https://github.com/sanctuary-js/sanctuary-def/blob/v0.17.1/index.js#L656">`NonNegativeInteger :: Type`</a>
+#### <a name="NonNegativeInteger" href="https://github.com/sanctuary-js/sanctuary-def/blob/v0.17.2/index.js#L666">`NonNegativeInteger :: Type`</a>
 
 Type comprising every non-negative [`Integer`][] value (including `-0`).
 Also known as the set of natural numbers under ISO 80000-2:2009.
 
-#### <a name="NonZeroFiniteNumber" href="https://github.com/sanctuary-js/sanctuary-def/blob/v0.17.1/index.js#L665">`NonZeroFiniteNumber :: Type`</a>
+#### <a name="NonZeroFiniteNumber" href="https://github.com/sanctuary-js/sanctuary-def/blob/v0.17.2/index.js#L675">`NonZeroFiniteNumber :: Type`</a>
 
 Type comprising every [`FiniteNumber`][] value except `0` and `-0`.
 
-#### <a name="NonZeroInteger" href="https://github.com/sanctuary-js/sanctuary-def/blob/v0.17.1/index.js#L673">`NonZeroInteger :: Type`</a>
+#### <a name="NonZeroInteger" href="https://github.com/sanctuary-js/sanctuary-def/blob/v0.17.2/index.js#L683">`NonZeroInteger :: Type`</a>
 
 Type comprising every [`Integer`][] value except `0` and `-0`.
 
-#### <a name="NonZeroValidNumber" href="https://github.com/sanctuary-js/sanctuary-def/blob/v0.17.1/index.js#L681">`NonZeroValidNumber :: Type`</a>
+#### <a name="NonZeroValidNumber" href="https://github.com/sanctuary-js/sanctuary-def/blob/v0.17.2/index.js#L691">`NonZeroValidNumber :: Type`</a>
 
 Type comprising every [`ValidNumber`][] value except `0` and `-0`.
 
-#### <a name="Null" href="https://github.com/sanctuary-js/sanctuary-def/blob/v0.17.1/index.js#L689">`Null :: Type`</a>
+#### <a name="Null" href="https://github.com/sanctuary-js/sanctuary-def/blob/v0.17.2/index.js#L699">`Null :: Type`</a>
 
 Type whose sole member is `null`.
 
-#### <a name="Nullable" href="https://github.com/sanctuary-js/sanctuary-def/blob/v0.17.1/index.js#L694">`Nullable :: Type -⁠> Type`</a>
+#### <a name="Nullable" href="https://github.com/sanctuary-js/sanctuary-def/blob/v0.17.2/index.js#L704">`Nullable :: Type -⁠> Type`</a>
 
 Constructor for types which include `null` as a member.
 
-#### <a name="Number" href="https://github.com/sanctuary-js/sanctuary-def/blob/v0.17.1/index.js#L706">`Number :: Type`</a>
+#### <a name="Number" href="https://github.com/sanctuary-js/sanctuary-def/blob/v0.17.2/index.js#L716">`Number :: Type`</a>
 
 Type comprising every primitive Number value (including `NaN`).
 
-#### <a name="Object" href="https://github.com/sanctuary-js/sanctuary-def/blob/v0.17.1/index.js#L711">`Object :: Type`</a>
+#### <a name="Object" href="https://github.com/sanctuary-js/sanctuary-def/blob/v0.17.2/index.js#L721">`Object :: Type`</a>
 
 Type comprising every "plain" Object value. Specifically, values
 created via:
@@ -305,23 +305,23 @@ created via:
   - the `new` operator in conjunction with `Object` or a custom
     constructor function.
 
-#### <a name="PositiveFiniteNumber" href="https://github.com/sanctuary-js/sanctuary-def/blob/v0.17.1/index.js#L722">`PositiveFiniteNumber :: Type`</a>
+#### <a name="PositiveFiniteNumber" href="https://github.com/sanctuary-js/sanctuary-def/blob/v0.17.2/index.js#L732">`PositiveFiniteNumber :: Type`</a>
 
 Type comprising every [`FiniteNumber`][] value greater than zero.
 
-#### <a name="PositiveInteger" href="https://github.com/sanctuary-js/sanctuary-def/blob/v0.17.1/index.js#L730">`PositiveInteger :: Type`</a>
+#### <a name="PositiveInteger" href="https://github.com/sanctuary-js/sanctuary-def/blob/v0.17.2/index.js#L740">`PositiveInteger :: Type`</a>
 
 Type comprising every [`Integer`][] value greater than zero.
 
-#### <a name="PositiveNumber" href="https://github.com/sanctuary-js/sanctuary-def/blob/v0.17.1/index.js#L738">`PositiveNumber :: Type`</a>
+#### <a name="PositiveNumber" href="https://github.com/sanctuary-js/sanctuary-def/blob/v0.17.2/index.js#L748">`PositiveNumber :: Type`</a>
 
 Type comprising every [`Number`][] value greater than zero.
 
-#### <a name="RegExp" href="https://github.com/sanctuary-js/sanctuary-def/blob/v0.17.1/index.js#L746">`RegExp :: Type`</a>
+#### <a name="RegExp" href="https://github.com/sanctuary-js/sanctuary-def/blob/v0.17.2/index.js#L756">`RegExp :: Type`</a>
 
 Type comprising every RegExp value.
 
-#### <a name="RegexFlags" href="https://github.com/sanctuary-js/sanctuary-def/blob/v0.17.1/index.js#L751">`RegexFlags :: Type`</a>
+#### <a name="RegexFlags" href="https://github.com/sanctuary-js/sanctuary-def/blob/v0.17.2/index.js#L761">`RegexFlags :: Type`</a>
 
 Type comprising the canonical RegExp flags:
 
@@ -334,34 +334,34 @@ Type comprising the canonical RegExp flags:
   - `'im'`
   - `'gim'`
 
-#### <a name="StrMap" href="https://github.com/sanctuary-js/sanctuary-def/blob/v0.17.1/index.js#L768">`StrMap :: Type -⁠> Type`</a>
+#### <a name="StrMap" href="https://github.com/sanctuary-js/sanctuary-def/blob/v0.17.2/index.js#L778">`StrMap :: Type -⁠> Type`</a>
 
 Constructor for homogeneous Object types.
 
 `{foo: 1, bar: 2, baz: 3}`, for example, is a member of `StrMap Number`;
 `{foo: 1, bar: 2, baz: 'XXX'}` is not.
 
-#### <a name="String" href="https://github.com/sanctuary-js/sanctuary-def/blob/v0.17.1/index.js#L784">`String :: Type`</a>
+#### <a name="String" href="https://github.com/sanctuary-js/sanctuary-def/blob/v0.17.2/index.js#L794">`String :: Type`</a>
 
 Type comprising every primitive String value.
 
-#### <a name="Symbol" href="https://github.com/sanctuary-js/sanctuary-def/blob/v0.17.1/index.js#L789">`Symbol :: Type`</a>
+#### <a name="Symbol" href="https://github.com/sanctuary-js/sanctuary-def/blob/v0.17.2/index.js#L799">`Symbol :: Type`</a>
 
 Type comprising every Symbol value.
 
-#### <a name="Type" href="https://github.com/sanctuary-js/sanctuary-def/blob/v0.17.1/index.js#L794">`Type :: Type`</a>
+#### <a name="Type" href="https://github.com/sanctuary-js/sanctuary-def/blob/v0.17.2/index.js#L804">`Type :: Type`</a>
 
 Type comprising every `Type` value.
 
-#### <a name="TypeClass" href="https://github.com/sanctuary-js/sanctuary-def/blob/v0.17.1/index.js#L799">`TypeClass :: Type`</a>
+#### <a name="TypeClass" href="https://github.com/sanctuary-js/sanctuary-def/blob/v0.17.2/index.js#L809">`TypeClass :: Type`</a>
 
 Type comprising every [`TypeClass`][] value.
 
-#### <a name="Undefined" href="https://github.com/sanctuary-js/sanctuary-def/blob/v0.17.1/index.js#L807">`Undefined :: Type`</a>
+#### <a name="Undefined" href="https://github.com/sanctuary-js/sanctuary-def/blob/v0.17.2/index.js#L817">`Undefined :: Type`</a>
 
 Type whose sole member is `undefined`.
 
-#### <a name="Unknown" href="https://github.com/sanctuary-js/sanctuary-def/blob/v0.17.1/index.js#L812">`Unknown :: Type`</a>
+#### <a name="Unknown" href="https://github.com/sanctuary-js/sanctuary-def/blob/v0.17.2/index.js#L822">`Unknown :: Type`</a>
 
 Type used to represent missing type information. The type of `[]`,
 for example, is `Array ???`.
@@ -378,15 +378,15 @@ to include an infinite number of types in an environment:
   - `List (List (List String))`
   - `...`
 
-#### <a name="ValidDate" href="https://github.com/sanctuary-js/sanctuary-def/blob/v0.17.1/index.js#L831">`ValidDate :: Type`</a>
+#### <a name="ValidDate" href="https://github.com/sanctuary-js/sanctuary-def/blob/v0.17.2/index.js#L841">`ValidDate :: Type`</a>
 
 Type comprising every [`Date`][] value except `new Date (NaN)`.
 
-#### <a name="ValidNumber" href="https://github.com/sanctuary-js/sanctuary-def/blob/v0.17.1/index.js#L839">`ValidNumber :: Type`</a>
+#### <a name="ValidNumber" href="https://github.com/sanctuary-js/sanctuary-def/blob/v0.17.2/index.js#L849">`ValidNumber :: Type`</a>
 
 Type comprising every [`Number`][] value except `NaN`.
 
-#### <a name="env" href="https://github.com/sanctuary-js/sanctuary-def/blob/v0.17.1/index.js#L847">`env :: Array Type`</a>
+#### <a name="env" href="https://github.com/sanctuary-js/sanctuary-def/blob/v0.17.2/index.js#L857">`env :: Array Type`</a>
 
 An array of [types][]:
 
@@ -405,7 +405,7 @@ An array of [types][]:
   - <code>[Symbol](#Symbol)</code>
   - <code>[Undefined](#Undefined)</code>
 
-#### <a name="test" href="https://github.com/sanctuary-js/sanctuary-def/blob/v0.17.1/index.js#L1242">`test :: Array Type -⁠> Type -⁠> a -⁠> Boolean`</a>
+#### <a name="test" href="https://github.com/sanctuary-js/sanctuary-def/blob/v0.17.2/index.js#L1252">`test :: Array Type -⁠> Type -⁠> a -⁠> Boolean`</a>
 
 Takes an environment, a type, and any value. Returns `true` if the value
 is a member of the type; `false` otherwise.
@@ -431,7 +431,7 @@ and validate the bodies of incoming POST requests against these types.
 
 sanctuary-def provides several functions for defining types.
 
-#### <a name="NullaryType" href="https://github.com/sanctuary-js/sanctuary-def/blob/v0.17.1/index.js#L1276">`NullaryType :: String -⁠> String -⁠> (Any -⁠> Boolean) -⁠> Type`</a>
+#### <a name="NullaryType" href="https://github.com/sanctuary-js/sanctuary-def/blob/v0.17.2/index.js#L1286">`NullaryType :: String -⁠> String -⁠> (Any -⁠> Boolean) -⁠> Type`</a>
 
 Type constructor for types with no type variables (such as [`Number`][]).
 
@@ -495,7 +495,7 @@ rem (42) (0);
 //   The value at position 1 is not a member of ‘NonZeroInteger’.
 ```
 
-#### <a name="UnaryType" href="https://github.com/sanctuary-js/sanctuary-def/blob/v0.17.1/index.js#L1356">`UnaryType :: String -⁠> String -⁠> (Any -⁠> Boolean) -⁠> (t a -⁠> Array a) -⁠> Type -⁠> Type`</a>
+#### <a name="UnaryType" href="https://github.com/sanctuary-js/sanctuary-def/blob/v0.17.2/index.js#L1366">`UnaryType :: String -⁠> String -⁠> (Any -⁠> Boolean) -⁠> (t a -⁠> Array a) -⁠> Type -⁠> Type`</a>
 
 Type constructor for types with one type variable (such as [`Array`][]).
 
@@ -577,7 +577,7 @@ fromMaybe (0) (Just ('XXX'));
 //   Since there is no type of which all the above values are members, the type-variable constraint has been violated.
 ```
 
-#### <a name="BinaryType" href="https://github.com/sanctuary-js/sanctuary-def/blob/v0.17.1/index.js#L1477">`BinaryType :: String -⁠> String -⁠> (Any -⁠> Boolean) -⁠> (t a b -⁠> Array a) -⁠> (t a b -⁠> Array b) -⁠> Type -⁠> Type -⁠> Type`</a>
+#### <a name="BinaryType" href="https://github.com/sanctuary-js/sanctuary-def/blob/v0.17.2/index.js#L1487">`BinaryType :: String -⁠> String -⁠> (Any -⁠> Boolean) -⁠> (t a b -⁠> Array a) -⁠> (t a b -⁠> Array b) -⁠> Type -⁠> Type -⁠> Type`</a>
 
 Type constructor for types with two type variables (such as
 [`Array2`][]).
@@ -674,7 +674,7 @@ showCard (Pair ('X') ('♠'));
 //   The value at position 1 is not a member of ‘Rank’.
 ```
 
-#### <a name="EnumType" href="https://github.com/sanctuary-js/sanctuary-def/blob/v0.17.1/index.js#L1640">`EnumType :: String -⁠> String -⁠> Array Any -⁠> Type`</a>
+#### <a name="EnumType" href="https://github.com/sanctuary-js/sanctuary-def/blob/v0.17.2/index.js#L1650">`EnumType :: String -⁠> String -⁠> Array Any -⁠> Type`</a>
 
 Type constructor for [enumerated types][] (such as [`RegexFlags`][]).
 
@@ -696,7 +696,7 @@ const Denomination = $.EnumType
   ([10, 20, 50, 100, 200]);
 ```
 
-#### <a name="RecordType" href="https://github.com/sanctuary-js/sanctuary-def/blob/v0.17.1/index.js#L1673">`RecordType :: StrMap Type -⁠> Type`</a>
+#### <a name="RecordType" href="https://github.com/sanctuary-js/sanctuary-def/blob/v0.17.2/index.js#L1683">`RecordType :: StrMap Type -⁠> Type`</a>
 
 `RecordType` is used to construct record types. The type definition
 specifies the name and type of each required field. A field is an
@@ -749,7 +749,7 @@ dist (0);
 //   The value at position 1 is not a member of ‘{ x :: FiniteNumber, y :: FiniteNumber }’.
 ```
 
-#### <a name="TypeVariable" href="https://github.com/sanctuary-js/sanctuary-def/blob/v0.17.1/index.js#L1760">`TypeVariable :: String -⁠> Type`</a>
+#### <a name="TypeVariable" href="https://github.com/sanctuary-js/sanctuary-def/blob/v0.17.2/index.js#L1770">`TypeVariable :: String -⁠> Type`</a>
 
 Polymorphism is powerful. Not being able to define a function for
 all types would be very limiting indeed: one couldn't even define the
@@ -806,7 +806,7 @@ cmp (0) ('1');
 //   Since there is no type of which all the above values are members, the type-variable constraint has been violated.
 ```
 
-#### <a name="UnaryTypeVariable" href="https://github.com/sanctuary-js/sanctuary-def/blob/v0.17.1/index.js#L1823">`UnaryTypeVariable :: String -⁠> Type -⁠> Type`</a>
+#### <a name="UnaryTypeVariable" href="https://github.com/sanctuary-js/sanctuary-def/blob/v0.17.2/index.js#L1833">`UnaryTypeVariable :: String -⁠> Type -⁠> Type`</a>
 
 Combines [`UnaryType`][] and [`TypeVariable`][].
 
@@ -853,7 +853,7 @@ example, is `v`. One could replace `Functor => f` with `Map k` or with
 This shallow inspection makes it possible to constrain a value's "outer"
 and "inner" types independently.
 
-#### <a name="BinaryTypeVariable" href="https://github.com/sanctuary-js/sanctuary-def/blob/v0.17.1/index.js#L1889">`BinaryTypeVariable :: String -⁠> Type -⁠> Type -⁠> Type`</a>
+#### <a name="BinaryTypeVariable" href="https://github.com/sanctuary-js/sanctuary-def/blob/v0.17.2/index.js#L1899">`BinaryTypeVariable :: String -⁠> Type -⁠> Type -⁠> Type`</a>
 
 Combines [`BinaryType`][] and [`TypeVariable`][].
 
@@ -868,12 +868,12 @@ To define a binary type variable `t a b` one must provide:
 The more detailed explanation of [`UnaryTypeVariable`][] also applies to
 `BinaryTypeVariable`.
 
-#### <a name="Thunk" href="https://github.com/sanctuary-js/sanctuary-def/blob/v0.17.1/index.js#L1932">`Thunk :: Type -⁠> Type`</a>
+#### <a name="Thunk" href="https://github.com/sanctuary-js/sanctuary-def/blob/v0.17.2/index.js#L1942">`Thunk :: Type -⁠> Type`</a>
 
 `$.Thunk (T)` is shorthand for `$.Function ([T])`, the type comprising
 every nullary function (thunk) which returns a value of type `T`.
 
-#### <a name="Predicate" href="https://github.com/sanctuary-js/sanctuary-def/blob/v0.17.1/index.js#L1942">`Predicate :: Type -⁠> Type`</a>
+#### <a name="Predicate" href="https://github.com/sanctuary-js/sanctuary-def/blob/v0.17.2/index.js#L1952">`Predicate :: Type -⁠> Type`</a>
 
 `$.Predicate (T)` is shorthand for `$.Function ([T, $.Boolean])`, the
 type comprising every predicate function which takes a value of type `T`.
