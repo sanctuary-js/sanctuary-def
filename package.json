@@ -20,6 +20,8 @@
     "sanctuary-type-identifiers": "2.0.x"
   },
   "devDependencies": {
+    "sanctuary-maybe": "1.0.x",
+    "sanctuary-pair": "1.0.x",
     "sanctuary-scripts": "2.0.x"
   },
   "files": [
