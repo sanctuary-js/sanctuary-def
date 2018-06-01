@@ -1440,6 +1440,11 @@ See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Array2 for in
     eq (($.Function ([a, a])).url) ('');
   });
 
+  test ('provides the "HtmlElement" type', () => {
+    eq ($.HtmlElement.name) ('sanctuary-def/HtmlElement');
+    eq ($.HtmlElement.url) (`https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#HtmlElement`);
+  });
+
   test ('provides the "NonEmpty" type constructor', () => {
     eq (($.NonEmpty ($.String)).name) ('sanctuary-def/NonEmpty');
     eq (($.NonEmpty ($.String)).url) (`https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#NonEmpty`);
