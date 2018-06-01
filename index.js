@@ -875,6 +875,7 @@
   //.   - <code>[Boolean](#Boolean)</code>
   //.   - <code>[Date](#Date)</code>
   //.   - <code>[Error](#Error)</code>
+  //.   - <code>[HtmlElement](#HtmlElement)</code>
   //.   - <code>[Null](#Null)</code>
   //.   - <code>[Number](#Number)</code>
   //.   - <code>[Object](#Object)</code>
