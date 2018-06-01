@@ -209,6 +209,7 @@
 
   var slice             = Array.prototype.slice;
   var hasOwnProperty    = Object.prototype.hasOwnProperty;
+  var toString          = Object.prototype.toString;
 
   var inspect = (function() {
     /* istanbul ignore else */
@@ -599,6 +600,16 @@
     function(x) { return RegExp_._test (x) && x.global; }
   );
 
+  //# HtmlElement :: Type
+  //.
+  //. Type comprising every [HTML element][].
+  var HtmlElement = NullaryTypeWithUrl (
+    'sanctuary-def/HtmlElement',
+    function(x) {
+      return /^\[object HTML.+Element\]$/.test (toString.call (x));
+    }
+  );
+
   //# Integer :: Type
   //.
   //. Type comprising every integer in the range
@@ -879,6 +890,7 @@
     Boolean_,
     Date_,
     Error_,
+    HtmlElement,
     Null,
     Number_,
     Object_,
@@ -2615,6 +2627,7 @@
     FiniteNumber: FiniteNumber,
     Function: def ('Function') ({}) ([Array_ (Type), Type]) (Function_),
     GlobalRegExp: GlobalRegExp,
+    HtmlElement: HtmlElement,
     Integer: Integer,
     NegativeFiniteNumber: NegativeFiniteNumber,
     NegativeInteger: NegativeInteger,
@@ -2661,6 +2674,7 @@
 }));
 
 //. [FL:Semigroup]:         https://github.com/fantasyland/fantasy-land#semigroup
+//. [HTML element]:         https://developer.mozilla.org/en-US/docs/Web/HTML/Element
 //. [Monoid]:               https://github.com/fantasyland/fantasy-land#monoid
 //. [Setoid]:               https://github.com/fantasyland/fantasy-land#setoid
 //. [`Array`]:              #Array
