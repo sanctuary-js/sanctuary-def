@@ -2572,6 +2572,8 @@
       return function(constraints) {
         return function(expTypes) {
           return function(impl) {
+            Object.defineProperty (impl, 'name', {value: name});
+
             return opts.checkTypes ?
               withTypeChecking (opts.env,
                                 {name: name,
