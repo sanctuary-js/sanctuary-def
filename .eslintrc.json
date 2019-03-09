@@ -35,6 +35,12 @@
       }
     },
     {
+      "files": ["index.js"],
+      "rules": {
+        "multiline-comment-style": ["off"]
+      }
+    },
+    {
       "files": ["test/**/*.js"],
       "rules": {
         "comma-dangle": ["error", "always-multiline"],
