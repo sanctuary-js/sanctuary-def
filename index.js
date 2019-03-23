@@ -239,6 +239,9 @@
   //  always2 :: a -> (b, c) -> a
   function always2(x) { return function(y, z) { return x; }; }
 
+  //  captureStackTrace :: Assignable a => (a, Function) -> a
+  var captureStackTrace = Error.captureStackTrace || noop;
+
   //  compose :: (b -> c, a -> b) -> (a -> c)
   function compose(f, g) {
     return function(x) {
@@ -280,6 +283,9 @@
       return xs.some (function(x) { return Z.equals (x, y); });
     };
   }
+
+  //  noop :: () -> Undefined
+  function noop() {}
 
   //  or :: (Array a, Array a) -> Array a
   function or(xs, ys) { return isEmpty (xs) ? ys : xs; }
@@ -2061,12 +2067,12 @@
   //. Multiple constraints may be placed on a type variable by including
   //. multiple `TypeClass` values in the array (e.g. `{a: [Foo, Bar, Baz]}`).
 
-  //  invalidArgumentsCount :: (TypeInfo, Integer, Integer, Array Any) -> Error
+  //  invalidArgumentsCount :: (TypeInfo, Integer, Integer, Array Any, Function) -> Error
   //
   //  This function is used in `curry` when a function defined via `def`
   //  is applied to too many arguments.
-  function invalidArgumentsCount(typeInfo, index, numArgsExpected, args) {
-    return new TypeError (trimTrailingSpaces (
+  function invalidArgumentsCount(typeInfo, index, numArgsExpected, args, fn) {
+    var e = new TypeError (trimTrailingSpaces (
       q (typeInfo.name) + ' applied to the wrong number of arguments\n\n' +
       underline (
         typeInfo,
@@ -2081,6 +2087,8 @@
       ' but received ' + numArgs (args.length) +
       toMarkdownList ('.\n', ':\n\n', show, args)
     ));
+    captureStackTrace (e, fn);
+    return e;
   }
 
   //  constraintsRepr :: ... -> String
@@ -2387,9 +2395,10 @@
     typeInfo,           // :: TypeInfo
     index,              // :: Integer
     numArgsExpected,    // :: Integer
-    args                // :: Array Any
+    args,               // :: Array Any
+    fn                  // :: Function
   ) {
-    return new TypeError (trimTrailingSpaces (
+    var e = new TypeError (trimTrailingSpaces (
       q (typeInfo.name) +
       ' applied ' + showTypeQuoted (typeInfo.types[index]) +
       ' to the wrong number of arguments\n\n' +
@@ -2414,6 +2423,8 @@
       ' but received ' + numArgs (args.length) +
       toMarkdownList ('.\n', ':\n\n', show, args)
     ));
+    captureStackTrace (e, fn);
+    return e;
   }
 
   //  assertRight :: Either (() -> Error) a -> a !
@@ -2480,12 +2491,13 @@
       var isThunk = expType.types.$1.type.type === NO_ARGUMENTS;
       var numArgsExpected = isThunk ? 0 : expType.keys.length - 1;
       var typeVarMap = _typeVarMap;
-      return function(x) {
+      return function sanctuaryWrappedFunction(x) {
         if (arguments.length !== numArgsExpected) {
           throw invalidArgumentsLength (typeInfo,
                                         index,
                                         numArgsExpected,
-                                        slice.call (arguments));
+                                        slice.call (arguments),
+                                        sanctuaryWrappedFunction);
         }
 
         var args = arguments;
@@ -2507,10 +2519,14 @@
 
     //  wrapNext :: (TypeVarMap, Array Any, Integer) -> (a -> b)
     function wrapNext(_typeVarMap, _values, index) {
-      return function(x) {
+      return function sanctuaryWrappedFunction(x) {
         var args = slice.call (arguments);
         if (args.length !== 1) {
-          throw invalidArgumentsCount (typeInfo, index, 1, args);
+          throw invalidArgumentsCount (typeInfo,
+                                       index,
+                                       1,
+                                       args,
+                                       sanctuaryWrappedFunction);
         }
         var typeVarMap = (assertRight (
           satisfactoryTypes (env,
@@ -2544,9 +2560,13 @@
     }
 
     var wrapped = typeInfo.types[0].type === NO_ARGUMENTS ?
-      function() {
+      function sanctuaryWrappedFunction() {
         if (arguments.length !== 0) {
-          throw invalidArgumentsCount (typeInfo, 0, 0, slice.call (arguments));
+          throw invalidArgumentsCount (typeInfo,
+                                       0,
+                                       0,
+                                       slice.call (arguments),
+                                       sanctuaryWrappedFunction);
         }
         var value = impl ();
         var typeVarMap = assertRight (
