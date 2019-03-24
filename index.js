@@ -854,7 +854,7 @@
   //. Type comprising every [`Date`][] value except `new Date (NaN)`.
   var ValidDate = NullaryTypeWithUrl (
     'sanctuary-def/ValidDate',
-    function(x) { return Date_._test (x) && !isNaN (x.valueOf ()); }
+    function(x) { return Date_._test (x) && !(isNaN (x.valueOf ())); }
   );
 
   //# ValidNumber :: Type
@@ -862,7 +862,7 @@
   //. Type comprising every [`Number`][] value except `NaN`.
   var ValidNumber = NullaryTypeWithUrl (
     'sanctuary-def/ValidNumber',
-    function(x) { return Number_._test (x) && !isNaN (x); }
+    function(x) { return Number_._test (x) && !(isNaN (x)); }
   );
 
   //# env :: Array Type
@@ -1053,7 +1053,7 @@
       $typeVarMap[typeVar.name].valuesByPath[key].push (value);
       $typeVarMap[typeVar.name].types = Z.chain (function(t) {
         return (
-          t.keys.length < typeVar.keys.length || !isValid (t) (value) ?
+          t.keys.length < typeVar.keys.length || !(isValid (t) (value)) ?
             [] :
           isNullaryTypeVar && t.type === UNARY ?
             Z.map (fromUnaryType (t),
@@ -1135,7 +1135,7 @@
           var typeClasses = constraints[typeVarName];
           for (idx = 0; idx < values.length; idx += 1) {
             for (var idx2 = 0; idx2 < typeClasses.length; idx2 += 1) {
-              if (!typeClasses[idx2].test (values[idx])) {
+              if (!(typeClasses[idx2].test (values[idx]))) {
                 return Left (function() {
                   return typeClassConstraintViolation (
                     env,
@@ -2182,7 +2182,7 @@
     return unless (t.type === RECORD ||
                      isEmpty (t.keys) ||
                      t.type === FUNCTION && isEmpty (propPath) ||
-                     !isEmpty (propPath),
+                     !(isEmpty (propPath)),
                    stripOutermostParens,
                    formatType3 (t) (propPath) (t.format (_, function(k) {
                      return K (_underline (t.types[k].type,
