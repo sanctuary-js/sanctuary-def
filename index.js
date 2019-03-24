@@ -181,9 +181,12 @@
 
   'use strict';
 
+  var util = {inspect: {}};
+
   /* istanbul ignore else */
   if (typeof module === 'object' && typeof module.exports === 'object') {
-    module.exports = f (require ('sanctuary-either'),
+    module.exports = f (require ('util'),
+                        require ('sanctuary-either'),
                         require ('sanctuary-show'),
                         require ('sanctuary-type-classes'),
                         require ('sanctuary-type-identifiers'));
@@ -192,15 +195,18 @@
              'sanctuary-show',
              'sanctuary-type-classes',
              'sanctuary-type-identifiers'],
-            f);
+            function(Either, show, Z, type) {
+              return f (util, Either, show, Z, type);
+            });
   } else {
-    self.sanctuaryDef = f (self.sanctuaryEither,
+    self.sanctuaryDef = f (util,
+                           self.sanctuaryEither,
                            self.sanctuaryShow,
                            self.sanctuaryTypeClasses,
                            self.sanctuaryTypeIdentifiers);
   }
 
-} (function(Either, show, Z, type) {
+} (function(util, Either, show, Z, type) {
 
   'use strict';
 
@@ -211,15 +217,9 @@
   var hasOwnProperty    = Object.prototype.hasOwnProperty;
   var toString          = Object.prototype.toString;
 
-  var inspect = (function() {
-    /* istanbul ignore else */
-    if (typeof module === 'object' && typeof module.exports === 'object') {
-      var util = require ('util');
-      /* istanbul ignore else */
-      if (typeof util.inspect.custom === 'symbol') return util.inspect.custom;
-    }
-    return 'inspect';
-  } ());
+  var inspect = typeof util.inspect.custom === 'symbol' ?
+                util.inspect.custom :
+                /* istanbul ignore next */ 'inspect';
 
   //  Left :: a -> Either a b
   var Left = Either.Left;
