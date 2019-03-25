@@ -533,20 +533,19 @@
   //. Type comprising every Date value.
   var Date_ = NullaryTypeWithUrl ('Date', typeEq ('Date'));
 
+  //# ValidDate :: Type
+  //.
+  //. Type comprising every [`Date`][] value except `new Date (NaN)`.
+  var ValidDate = NullaryTypeWithUrl (
+    'sanctuary-def/ValidDate',
+    function(x) { return Date_._test (x) && !(isNaN (x.valueOf ())); }
+  );
+
   //# Error :: Type
   //.
   //. Type comprising every Error value, including values of more specific
   //. constructors such as [`SyntaxError`][] and [`TypeError`][].
   var Error_ = NullaryTypeWithUrl ('Error', typeEq ('Error'));
-
-  //# FiniteNumber :: Type
-  //.
-  //. Type comprising every [`ValidNumber`][] value except `Infinity` and
-  //. `-Infinity`.
-  var FiniteNumber = NullaryTypeWithUrl (
-    'sanctuary-def/FiniteNumber',
-    function(x) { return ValidNumber._test (x) && isFinite (x); }
-  );
 
   //  augmentThunk :: NonEmpty (Array Type) -> NonEmpty (Array Type)
   function augmentThunk(types) {
@@ -592,16 +591,6 @@
     return new _Type (FUNCTION, '', '', format, test, $keys, $types);
   }
 
-  //# GlobalRegExp :: Type
-  //.
-  //. Type comprising every [`RegExp`][] value whose `global` flag is `true`.
-  //.
-  //. See also [`NonGlobalRegExp`][].
-  var GlobalRegExp = NullaryTypeWithUrl (
-    'sanctuary-def/GlobalRegExp',
-    function(x) { return RegExp_._test (x) && x.global; }
-  );
-
   //# HtmlElement :: Type
   //.
   //. Type comprising every [HTML element][].
@@ -610,44 +599,6 @@
     function(x) {
       return /^\[object HTML.+Element\]$/.test (toString.call (x));
     }
-  );
-
-  //# Integer :: Type
-  //.
-  //. Type comprising every integer in the range
-  //. [[`Number.MIN_SAFE_INTEGER`][min] .. [`Number.MAX_SAFE_INTEGER`][max]].
-  var Integer = NullaryTypeWithUrl (
-    'sanctuary-def/Integer',
-    function(x) {
-      return ValidNumber._test (x) &&
-             Math.floor (x) === x &&
-             x >= MIN_SAFE_INTEGER &&
-             x <= MAX_SAFE_INTEGER;
-    }
-  );
-
-  //# NegativeFiniteNumber :: Type
-  //.
-  //. Type comprising every [`FiniteNumber`][] value less than zero.
-  var NegativeFiniteNumber = NullaryTypeWithUrl (
-    'sanctuary-def/NegativeFiniteNumber',
-    function(x) { return FiniteNumber._test (x) && x < 0; }
-  );
-
-  //# NegativeInteger :: Type
-  //.
-  //. Type comprising every [`Integer`][] value less than zero.
-  var NegativeInteger = NullaryTypeWithUrl (
-    'sanctuary-def/NegativeInteger',
-    function(x) { return Integer._test (x) && x < 0; }
-  );
-
-  //# NegativeNumber :: Type
-  //.
-  //. Type comprising every [`Number`][] value less than zero.
-  var NegativeNumber = NullaryTypeWithUrl (
-    'sanctuary-def/NegativeNumber',
-    function(x) { return Number_._test (x) && x < 0; }
   );
 
   //# NonEmpty :: Type -> Type
@@ -664,49 +615,6 @@
              !(Z.equals (x, Z.empty (x.constructor)));
     },
     function(monoid) { return [monoid]; }
-  );
-
-  //# NonGlobalRegExp :: Type
-  //.
-  //. Type comprising every [`RegExp`][] value whose `global` flag is `false`.
-  //.
-  //. See also [`GlobalRegExp`][].
-  var NonGlobalRegExp = NullaryTypeWithUrl (
-    'sanctuary-def/NonGlobalRegExp',
-    function(x) { return RegExp_._test (x) && !x.global; }
-  );
-
-  //# NonNegativeInteger :: Type
-  //.
-  //. Type comprising every non-negative [`Integer`][] value (including `-0`).
-  //. Also known as the set of natural numbers under ISO 80000-2:2009.
-  var NonNegativeInteger = NullaryTypeWithUrl (
-    'sanctuary-def/NonNegativeInteger',
-    function(x) { return Integer._test (x) && x >= 0; }
-  );
-
-  //# NonZeroFiniteNumber :: Type
-  //.
-  //. Type comprising every [`FiniteNumber`][] value except `0` and `-0`.
-  var NonZeroFiniteNumber = NullaryTypeWithUrl (
-    'sanctuary-def/NonZeroFiniteNumber',
-    function(x) { return FiniteNumber._test (x) && x !== 0; }
-  );
-
-  //# NonZeroInteger :: Type
-  //.
-  //. Type comprising every [`Integer`][] value except `0` and `-0`.
-  var NonZeroInteger = NullaryTypeWithUrl (
-    'sanctuary-def/NonZeroInteger',
-    function(x) { return Integer._test (x) && x !== 0; }
-  );
-
-  //# NonZeroValidNumber :: Type
-  //.
-  //. Type comprising every [`ValidNumber`][] value except `0` and `-0`.
-  var NonZeroValidNumber = NullaryTypeWithUrl (
-    'sanctuary-def/NonZeroValidNumber',
-    function(x) { return ValidNumber._test (x) && x !== 0; }
   );
 
   //# Null :: Type
@@ -731,6 +639,118 @@
   //. Type comprising every primitive Number value (including `NaN`).
   var Number_ = NullaryTypeWithUrl ('Number', typeofEq ('number'));
 
+  //# PositiveNumber :: Type
+  //.
+  //. Type comprising every [`Number`][] value greater than zero.
+  var PositiveNumber = NullaryTypeWithUrl (
+    'sanctuary-def/PositiveNumber',
+    function(x) { return Number_._test (x) && x > 0; }
+  );
+
+  //# NegativeNumber :: Type
+  //.
+  //. Type comprising every [`Number`][] value less than zero.
+  var NegativeNumber = NullaryTypeWithUrl (
+    'sanctuary-def/NegativeNumber',
+    function(x) { return Number_._test (x) && x < 0; }
+  );
+
+  //# ValidNumber :: Type
+  //.
+  //. Type comprising every [`Number`][] value except `NaN`.
+  var ValidNumber = NullaryTypeWithUrl (
+    'sanctuary-def/ValidNumber',
+    function(x) { return Number_._test (x) && !(isNaN (x)); }
+  );
+
+  //# NonZeroValidNumber :: Type
+  //.
+  //. Type comprising every [`ValidNumber`][] value except `0` and `-0`.
+  var NonZeroValidNumber = NullaryTypeWithUrl (
+    'sanctuary-def/NonZeroValidNumber',
+    function(x) { return ValidNumber._test (x) && x !== 0; }
+  );
+
+  //# FiniteNumber :: Type
+  //.
+  //. Type comprising every [`ValidNumber`][] value except `Infinity` and
+  //. `-Infinity`.
+  var FiniteNumber = NullaryTypeWithUrl (
+    'sanctuary-def/FiniteNumber',
+    function(x) { return ValidNumber._test (x) && isFinite (x); }
+  );
+
+  //# NonZeroFiniteNumber :: Type
+  //.
+  //. Type comprising every [`FiniteNumber`][] value except `0` and `-0`.
+  var NonZeroFiniteNumber = NullaryTypeWithUrl (
+    'sanctuary-def/NonZeroFiniteNumber',
+    function(x) { return FiniteNumber._test (x) && x !== 0; }
+  );
+
+  //# PositiveFiniteNumber :: Type
+  //.
+  //. Type comprising every [`FiniteNumber`][] value greater than zero.
+  var PositiveFiniteNumber = NullaryTypeWithUrl (
+    'sanctuary-def/PositiveFiniteNumber',
+    function(x) { return FiniteNumber._test (x) && x > 0; }
+  );
+
+  //# NegativeFiniteNumber :: Type
+  //.
+  //. Type comprising every [`FiniteNumber`][] value less than zero.
+  var NegativeFiniteNumber = NullaryTypeWithUrl (
+    'sanctuary-def/NegativeFiniteNumber',
+    function(x) { return FiniteNumber._test (x) && x < 0; }
+  );
+
+  //# Integer :: Type
+  //.
+  //. Type comprising every integer in the range
+  //. [[`Number.MIN_SAFE_INTEGER`][min] .. [`Number.MAX_SAFE_INTEGER`][max]].
+  var Integer = NullaryTypeWithUrl (
+    'sanctuary-def/Integer',
+    function(x) {
+      return ValidNumber._test (x) &&
+             Math.floor (x) === x &&
+             x >= MIN_SAFE_INTEGER &&
+             x <= MAX_SAFE_INTEGER;
+    }
+  );
+
+  //# NonZeroInteger :: Type
+  //.
+  //. Type comprising every [`Integer`][] value except `0` and `-0`.
+  var NonZeroInteger = NullaryTypeWithUrl (
+    'sanctuary-def/NonZeroInteger',
+    function(x) { return Integer._test (x) && x !== 0; }
+  );
+
+  //# NonNegativeInteger :: Type
+  //.
+  //. Type comprising every non-negative [`Integer`][] value (including `-0`).
+  //. Also known as the set of natural numbers under ISO 80000-2:2009.
+  var NonNegativeInteger = NullaryTypeWithUrl (
+    'sanctuary-def/NonNegativeInteger',
+    function(x) { return Integer._test (x) && x >= 0; }
+  );
+
+  //# PositiveInteger :: Type
+  //.
+  //. Type comprising every [`Integer`][] value greater than zero.
+  var PositiveInteger = NullaryTypeWithUrl (
+    'sanctuary-def/PositiveInteger',
+    function(x) { return Integer._test (x) && x > 0; }
+  );
+
+  //# NegativeInteger :: Type
+  //.
+  //. Type comprising every [`Integer`][] value less than zero.
+  var NegativeInteger = NullaryTypeWithUrl (
+    'sanctuary-def/NegativeInteger',
+    function(x) { return Integer._test (x) && x < 0; }
+  );
+
   //# Object :: Type
   //.
   //. Type comprising every "plain" Object value. Specifically, values
@@ -742,34 +762,30 @@
   //.     constructor function.
   var Object_ = NullaryTypeWithUrl ('Object', typeEq ('Object'));
 
-  //# PositiveFiniteNumber :: Type
-  //.
-  //. Type comprising every [`FiniteNumber`][] value greater than zero.
-  var PositiveFiniteNumber = NullaryTypeWithUrl (
-    'sanctuary-def/PositiveFiniteNumber',
-    function(x) { return FiniteNumber._test (x) && x > 0; }
-  );
-
-  //# PositiveInteger :: Type
-  //.
-  //. Type comprising every [`Integer`][] value greater than zero.
-  var PositiveInteger = NullaryTypeWithUrl (
-    'sanctuary-def/PositiveInteger',
-    function(x) { return Integer._test (x) && x > 0; }
-  );
-
-  //# PositiveNumber :: Type
-  //.
-  //. Type comprising every [`Number`][] value greater than zero.
-  var PositiveNumber = NullaryTypeWithUrl (
-    'sanctuary-def/PositiveNumber',
-    function(x) { return Number_._test (x) && x > 0; }
-  );
-
   //# RegExp :: Type
   //.
   //. Type comprising every RegExp value.
   var RegExp_ = NullaryTypeWithUrl ('RegExp', typeEq ('RegExp'));
+
+  //# GlobalRegExp :: Type
+  //.
+  //. Type comprising every [`RegExp`][] value whose `global` flag is `true`.
+  //.
+  //. See also [`NonGlobalRegExp`][].
+  var GlobalRegExp = NullaryTypeWithUrl (
+    'sanctuary-def/GlobalRegExp',
+    function(x) { return RegExp_._test (x) && x.global; }
+  );
+
+  //# NonGlobalRegExp :: Type
+  //.
+  //. Type comprising every [`RegExp`][] value whose `global` flag is `false`.
+  //.
+  //. See also [`GlobalRegExp`][].
+  var NonGlobalRegExp = NullaryTypeWithUrl (
+    'sanctuary-def/NonGlobalRegExp',
+    function(x) { return RegExp_._test (x) && !x.global; }
+  );
 
   //# RegexFlags :: Type
   //.
@@ -850,22 +866,6 @@
   //.   - `...`
   var Unknown =
   new _Type (UNKNOWN, '', '', always2 ('Unknown'), K (true), [], {});
-
-  //# ValidDate :: Type
-  //.
-  //. Type comprising every [`Date`][] value except `new Date (NaN)`.
-  var ValidDate = NullaryTypeWithUrl (
-    'sanctuary-def/ValidDate',
-    function(x) { return Date_._test (x) && !(isNaN (x.valueOf ())); }
-  );
-
-  //# ValidNumber :: Type
-  //.
-  //. Type comprising every [`Number`][] value except `NaN`.
-  var ValidNumber = NullaryTypeWithUrl (
-    'sanctuary-def/ValidNumber',
-    function(x) { return Number_._test (x) && !(isNaN (x)); }
-  );
 
   //# env :: Array Type
   //.
@@ -2614,29 +2614,31 @@
     Array2: fromUncheckedBinaryType (Array2),
     Boolean: Boolean_,
     Date: Date_,
+    ValidDate: ValidDate,
     Error: Error_,
-    FiniteNumber: FiniteNumber,
     Function: def ('Function') ({}) ([Array_ (Type), Type]) (Function_),
-    GlobalRegExp: GlobalRegExp,
     HtmlElement: HtmlElement,
-    Integer: Integer,
-    NegativeFiniteNumber: NegativeFiniteNumber,
-    NegativeInteger: NegativeInteger,
-    NegativeNumber: NegativeNumber,
     NonEmpty: NonEmpty,
-    NonGlobalRegExp: NonGlobalRegExp,
-    NonNegativeInteger: NonNegativeInteger,
-    NonZeroFiniteNumber: NonZeroFiniteNumber,
-    NonZeroInteger: NonZeroInteger,
-    NonZeroValidNumber: NonZeroValidNumber,
     Null: Null,
     Nullable: fromUncheckedUnaryType (Nullable),
     Number: Number_,
-    Object: Object_,
-    PositiveFiniteNumber: PositiveFiniteNumber,
-    PositiveInteger: PositiveInteger,
     PositiveNumber: PositiveNumber,
+    NegativeNumber: NegativeNumber,
+    ValidNumber: ValidNumber,
+    NonZeroValidNumber: NonZeroValidNumber,
+    FiniteNumber: FiniteNumber,
+    NonZeroFiniteNumber: NonZeroFiniteNumber,
+    PositiveFiniteNumber: PositiveFiniteNumber,
+    NegativeFiniteNumber: NegativeFiniteNumber,
+    Integer: Integer,
+    NonZeroInteger: NonZeroInteger,
+    NonNegativeInteger: NonNegativeInteger,
+    PositiveInteger: PositiveInteger,
+    NegativeInteger: NegativeInteger,
+    Object: Object_,
     RegExp: RegExp_,
+    GlobalRegExp: GlobalRegExp,
+    NonGlobalRegExp: NonGlobalRegExp,
     RegexFlags: RegexFlags,
     StrMap: fromUncheckedUnaryType (StrMap),
     String: String_,
@@ -2645,8 +2647,6 @@
     TypeClass: TypeClass,
     Undefined: Undefined,
     Unknown: Unknown,
-    ValidDate: ValidDate,
-    ValidNumber: ValidNumber,
     env: env,
     create: create,
     test: def ('test') ({}) ([Array_ (Type), Type, Any, Boolean_]) (test),
