@@ -227,6 +227,15 @@
   //  Right :: b -> Either a b
   var Right = Either.Right;
 
+  //  B :: (b -> c) -> (a -> b) -> a -> c
+  function B(f) {
+    return function(g) {
+      return function(x) {
+        return f (g (x));
+      };
+    };
+  }
+
   //  K :: a -> b -> a
   function K(x) { return function(y) { return x; }; }
 
@@ -238,13 +247,6 @@
 
   //  always2 :: a -> (b, c) -> a
   function always2(x) { return function(y, z) { return x; }; }
-
-  //  compose :: (b -> c, a -> b) -> (a -> c)
-  function compose(f, g) {
-    return function(x) {
-      return f (g (x));
-    };
-  }
 
   //  id :: a -> a
   function id(x) { return x; }
@@ -1484,12 +1486,8 @@
         Function_ ([Unchecked ('t a'), Array_ (Unchecked ('a'))]),
         AnyFunction])
       (function(name) {
-         return function(url) {
-           return function(test) {
-             return compose (def (stripNamespace (name)) ({}) ([Type, Type]),
-                             UnaryType (name) (url) (test));
-           };
-         };
+         return B (B (B (def (stripNamespace (name)) ({}) ([Type, Type]))))
+                  (UnaryType (name));
        });
 
   //  fromUnaryType :: Type -> (Type -> Type)
@@ -1633,18 +1631,10 @@
         Function_ ([Unchecked ('t a b'), Array_ (Unchecked ('b'))]),
         AnyFunction])
       (function(name) {
-         return function(url) {
-           return function(test) {
-             return function(_1) {
-               return function(_2) {
-                 return def (stripNamespace (name))
-                            ({})
-                            ([Type, Type, Type])
-                            (BinaryType (name) (url) (test) (_1) (_2));
-               };
-             };
-           };
-         };
+         return B (B (B (B (def (stripNamespace (name))
+                                ({})
+                                ([Type, Type, Type])))))
+                  (BinaryType (name));
        });
 
   //  xprod :: (Type, Array Type, Array Type) -> Array Type
@@ -1683,7 +1673,7 @@
   //. ```
   function EnumType(name) {
     return function(url) {
-      return compose (NullaryType (name) (url), memberOf);
+      return B (NullaryType (name) (url)) (memberOf);
     };
   }
 
