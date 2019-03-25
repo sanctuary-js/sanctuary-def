@@ -236,6 +236,9 @@
     };
   }
 
+  //  I :: a -> a
+  function I(x) { return x; }
+
   //  K :: a -> b -> a
   function K(x) { return function(y) { return x; }; }
 
@@ -247,9 +250,6 @@
 
   //  always2 :: a -> (b, c) -> a
   function always2(x) { return function(y, z) { return x; }; }
-
-  //  id :: a -> a
-  function id(x) { return x; }
 
   //  init :: Array a -> Array a
   function init(xs) { return xs.slice (0, -1); }
@@ -403,7 +403,7 @@
   };
 
   _Type.prototype['@@show'] = function() {
-    return this.format (id, K (id));
+    return this.format (I, K (I));
   };
 
   var BINARY        = 'BINARY';
@@ -493,7 +493,7 @@
   //# Array :: Type -> Type
   //.
   //. Constructor for homogeneous Array types.
-  var Array_ = UnaryTypeWithUrl ('Array', typeEq ('Array'), id);
+  var Array_ = UnaryTypeWithUrl ('Array', typeEq ('Array'), I);
 
   //# Array0 :: Type
   //.
@@ -509,7 +509,7 @@
   var Array1 = UnaryTypeWithUrl (
     'sanctuary-def/Array1',
     function(x) { return typeEq ('Array') (x) && x.length === 1; },
-    id
+    I
   );
 
   //# Array2 :: Type -> Type -> Type
@@ -2156,7 +2156,7 @@
     var reprs = Z.map (showTypeWith (typeInfo), typeInfo.types);
     var arity = reprs.length - 1;
     return typeInfo.name + ' :: ' +
-             constraintsRepr (typeInfo.constraints, id, K (K (id))) +
+             constraintsRepr (typeInfo.constraints, I, K (K (I))) +
              when (arity === 0,
                    parenthesize,
                    joinWith (' -> ', init (reprs))) +
@@ -2232,7 +2232,7 @@
             var indexedPropPath_ = Z.concat ([index_], propPath_);
             var p = isPrefix (indexedPropPath_) (indexedPropPath);
             var q = isPrefix (indexedPropPath) (indexedPropPath_);
-            return p && q ? f : p ? id : _;
+            return p && q ? f : p ? I : _;
           };
         };
       };
