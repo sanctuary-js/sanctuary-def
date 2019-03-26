@@ -351,6 +351,40 @@
   //  stripNamespace :: String -> String
   function stripNamespace(s) { return s.slice (s.indexOf ('/') + 1); }
 
+  var Type$prototype = {
+    'constructor': {'@@type': 'sanctuary-def/Type@1'},
+    'validate': function(x) {
+      if (!(this._test (x))) return Left ({value: x, propPath: []});
+      for (var idx = 0; idx < this.keys.length; idx += 1) {
+        var k = this.keys[idx];
+        var t = this.types[k];
+        for (var idx2 = 0, ys = t.extractor (x); idx2 < ys.length; idx2 += 1) {
+          var result = t.type.validate (ys[idx2]);
+          if (result.isLeft) {
+            var value = result.value.value;
+            var propPath = Z.concat ([k], result.value.propPath);
+            return Left ({value: value, propPath: propPath});
+          }
+        }
+      }
+      return Right (x);
+    },
+    'fantasy-land/equals': function(other) {
+      return (
+        Z.equals (this.type, other.type) &&
+        Z.equals (this.name, other.name) &&
+        Z.equals (this.url, other.url) &&
+        Z.equals (this.keys, other.keys) &&
+        this.keys.every (function(k) {
+          return Z.equals (this.types[k].type, other.types[k].type);
+        }, this)
+      );
+    },
+    '@@show': function() {
+      return this.format (I, K (I));
+    }
+  };
+
   //  _Type :: ... -> Type
   function _Type(
     type,       // :: String
@@ -361,50 +395,16 @@
     keys,       // :: Array String
     types       // :: StrMap { extractor :: a -> Array b, type :: Type }
   ) {
-    this._test = test;
-    this.format = format;
-    this.keys = keys;
-    this.name = name;
-    this.type = type;
-    this.types = types;
-    this.url = url;
+    var t = Object.create (Type$prototype);
+    t._test = test;
+    t.format = format;
+    t.keys = keys;
+    t.name = name;
+    t.type = type;
+    t.types = types;
+    t.url = url;
+    return t;
   }
-
-  _Type['@@type'] = 'sanctuary-def/Type@1';
-
-  //  Type#fantasy-land/equals :: Type ~> Type -> Boolean
-  _Type.prototype['fantasy-land/equals'] = function(other) {
-    return (
-      Z.equals (this.type, other.type) &&
-      Z.equals (this.name, other.name) &&
-      Z.equals (this.url, other.url) &&
-      Z.equals (this.keys, other.keys) &&
-      this.keys.every (function(k) {
-        return Z.equals (this.types[k].type, other.types[k].type);
-      }, this)
-    );
-  };
-
-  _Type.prototype.validate = function(x) {
-    if (!(this._test (x))) return Left ({value: x, propPath: []});
-    for (var idx = 0; idx < this.keys.length; idx += 1) {
-      var k = this.keys[idx];
-      var t = this.types[k];
-      for (var idx2 = 0, ys = t.extractor (x); idx2 < ys.length; idx2 += 1) {
-        var result = t.type.validate (ys[idx2]);
-        if (result.isLeft) {
-          var value = result.value.value;
-          var propPath = Z.concat ([k], result.value.propPath);
-          return Left ({value: value, propPath: propPath});
-        }
-      }
-    }
-    return Right (x);
-  };
-
-  _Type.prototype['@@show'] = function() {
-    return this.format (I, K (I));
-  };
 
   var BINARY        = 'BINARY';
   var FUNCTION      = 'FUNCTION';
@@ -418,11 +418,11 @@
 
   //  Inconsistent :: Type
   var Inconsistent =
-  new _Type (INCONSISTENT, '', '', always2 ('???'), K (false), [], {});
+  _Type (INCONSISTENT, '', '', always2 ('???'), K (false), [], {});
 
   //  NoArguments :: Type
   var NoArguments =
-  new _Type (NO_ARGUMENTS, '', '', always2 ('()'), K (true), [], {});
+  _Type (NO_ARGUMENTS, '', '', always2 ('()'), K (true), [], {});
 
   //  typeEq :: String -> a -> Boolean
   function typeEq(name) {
@@ -581,7 +581,7 @@
       $types[k] = {extractor: K ([]), type: t};
     });
 
-    return new _Type (FUNCTION, '', '', format, test, $keys, $types);
+    return _Type (FUNCTION, '', '', format, test, $keys, $types);
   }
 
   //# HtmlElement :: Type
@@ -853,7 +853,7 @@
   //.   - `List (List (List String))`
   //.   - `...`
   var Unknown =
-  new _Type (UNKNOWN, '', '', always2 ('Unknown'), K (true), [], {});
+  _Type (UNKNOWN, '', '', always2 ('Unknown'), K (true), [], {});
 
   //# env :: Array Type
   //.
@@ -1355,7 +1355,7 @@
     }
     return function(url) {
       return function(test) {
-        return new _Type (NULLARY, name, url, format, test, [], {});
+        return _Type (NULLARY, name, url, format, test, [], {});
       };
     };
   }
@@ -1458,7 +1458,7 @@
                      outer (')');
             }
             var types = {$1: {extractor: _1, type: $1}};
-            return new _Type (UNARY, name, url, format, test, ['$1'], types);
+            return _Type (UNARY, name, url, format, test, ['$1'], types);
           };
         };
       };
@@ -1593,14 +1593,14 @@
                          inner ('$2') (show ($2)) +
                          outer (')');
                 }
-                return new _Type (BINARY,
-                                  name,
-                                  url,
-                                  format,
-                                  test,
-                                  ['$1', '$2'],
-                                  {$1: {extractor: _1, type: $1},
-                                   $2: {extractor: _2, type: $2}});
+                return _Type (BINARY,
+                              name,
+                              url,
+                              format,
+                              test,
+                              ['$1', '$2'],
+                              {$1: {extractor: _1, type: $1},
+                               $2: {extractor: _2, type: $2}});
               };
             };
           };
@@ -1752,7 +1752,7 @@
       $types[k] = {extractor: function(x) { return [x[k]]; }, type: fields[k]};
     });
 
-    return new _Type (RECORD, '', '', format, test, keys, $types);
+    return _Type (RECORD, '', '', format, test, keys, $types);
   }
 
   var CheckedRecordType =
@@ -1815,7 +1815,7 @@
   //. //   Since there is no type of which all the above values are members, the type-variable constraint has been violated.
   //. ```
   function TypeVariable(name) {
-    return new _Type (VARIABLE, name, '', always2 (name), K (true), [], {});
+    return _Type (VARIABLE, name, '', always2 (name), K (true), [], {});
   }
 
   var CheckedTypeVariable =
@@ -1875,7 +1875,7 @@
                outer (')');
       }
       var types = {$1: {extractor: K ([]), type: $1}};
-      return new _Type (VARIABLE, name, '', format, K (true), ['$1'], types);
+      return _Type (VARIABLE, name, '', format, K (true), ['$1'], types);
     };
   }
 
@@ -1914,7 +1914,7 @@
         var keys = ['$1', '$2'];
         var types = {$1: {extractor: K ([]), type: $1},
                      $2: {extractor: K ([]), type: $2}};
-        return new _Type (VARIABLE, name, '', format, K (true), keys, types);
+        return _Type (VARIABLE, name, '', format, K (true), keys, types);
       };
     };
   }
