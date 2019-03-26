@@ -14,7 +14,7 @@ suite ('NODE_ENV', () => {
 
   const invalid = new TypeError (`Invalid value
 
-NullaryType :: String -> String -> (Any -> Boolean) -> Type
+NullaryType :: String -> String -> Array Type -> (Any -> Boolean) -> Type
                ^^^^^^
                  1
 

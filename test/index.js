@@ -18,6 +18,9 @@ const eq = require ('./internal/eq');
 const throws = require ('./internal/throws');
 
 
+//    complement :: (a -> Boolean) -> a -> Boolean
+const complement = pred => x => !(pred (x));
+
 //    curry2 :: ((a, b) -> c) -> a -> b -> c
 const curry2 = f => x => y => f (x, y);
 
@@ -1219,11 +1222,11 @@ The value at position 1 is not a member of ‘{ length :: a }’.
   test ('supports named record types', () => {
     eq (typeof $.NamedRecordType) ('function');
     eq ($.NamedRecordType.length) (1);
-    eq (show ($.NamedRecordType)) ('NamedRecordType :: NonEmpty String -> String -> StrMap Type -> Type');
-    eq (show ($.NamedRecordType ('Circle') ('') ({radius: $.PositiveFiniteNumber}))) ('Circle');
+    eq (show ($.NamedRecordType)) ('NamedRecordType :: NonEmpty String -> String -> Array Type -> StrMap Type -> Type');
+    eq (show ($.NamedRecordType ('Circle') ('') ([]) ({radius: $.PositiveFiniteNumber}))) ('Circle');
 
     //    Empty :: Type
-    const Empty = $.NamedRecordType ('Empty') ('') ({});
+    const Empty = $.NamedRecordType ('Empty') ('') ([]) ({});
 
     eq ($.test ([]) (Empty) (null)) (false);
     eq ($.test ([]) (Empty) (undefined)) (false);
@@ -1236,12 +1239,12 @@ The value at position 1 is not a member of ‘{ length :: a }’.
     eq ($.test ([]) (Empty) ([])) (true);
     eq ($.test ([]) (Empty) ({})) (true);
 
-    throws (() => { $.NamedRecordType ('Circle') ('') ({radius: Number}); })
+    throws (() => { $.NamedRecordType ('Circle') ('') ([]) ({radius: Number}); })
            (new TypeError (`Invalid value
 
-NamedRecordType :: NonEmpty String -> String -> StrMap Type -> Type
-                                                       ^^^^
-                                                        1
+NamedRecordType :: NonEmpty String -> String -> Array Type -> StrMap Type -> Type
+                                                                     ^^^^
+                                                                      1
 
 1)  ${Number} :: Function
 
@@ -1254,7 +1257,15 @@ See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Type for info
     const Circle = $.NamedRecordType
       ('Circle')
       ('http://example.com/my-package#Circle')
+      ([])
       ({radius: $.PositiveFiniteNumber});
+
+    //    Cylinder :: Type
+    const Cylinder = $.NamedRecordType
+      ('Cylinder')
+      ('http://example.com/my-package#Cylinder')
+      ([Circle])
+      ({height: $.PositiveFiniteNumber});
 
     const isCircle = $.test ([]) (Circle);
     eq (isCircle (null)) (false);
@@ -1263,6 +1274,20 @@ See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Type for info
     eq (isCircle ({radius: 0})) (false);
     eq (isCircle ({radius: 1})) (true);
     eq (isCircle ({radius: 1, height: 1})) (true);
+
+    const isCylinder = $.test ([]) (Cylinder);
+    eq (isCylinder (null)) (false);
+    eq (isCylinder ({})) (false);
+    eq (isCylinder ({radius: null})) (false);
+    eq (isCylinder ({height: null})) (false);
+    eq (isCylinder ({radius: 0})) (false);
+    eq (isCylinder ({height: 0})) (false);
+    eq (isCylinder ({radius: 1})) (false);
+    eq (isCylinder ({height: 1})) (false);
+    eq (isCylinder ({radius: 0, height: 0})) (false);
+    eq (isCylinder ({radius: 0, height: 1})) (false);
+    eq (isCylinder ({radius: 1, height: 0})) (false);
+    eq (isCylinder ({radius: 1, height: 1})) (true);
 
     //    area :: Circle -> PositiveFiniteNumber
     const area =
@@ -1384,11 +1409,13 @@ Since there is no type of which all the above values are members, the type-varia
   test ('provides the "Any" type', () => {
     eq ($.Any.name) ('Any');
     eq ($.Any.url) (`https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Any`);
+    eq ($.Any.supertypes) ([]);
   });
 
   test ('provides the "AnyFunction" type', () => {
     eq ($.AnyFunction.name) ('Function');
     eq ($.AnyFunction.url) (`https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Function`);
+    eq ($.AnyFunction.supertypes) ([]);
 
     function Identity(x) { this.value = x; }
     Identity['@@type'] = 'my-package/Identity';
@@ -1403,16 +1430,19 @@ Since there is no type of which all the above values are members, the type-varia
   test ('provides the "Arguments" type', () => {
     eq ($.Arguments.name) ('Arguments');
     eq ($.Arguments.url) (`https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Arguments`);
+    eq ($.Arguments.supertypes) ([]);
   });
 
   test ('provides the "Array" type constructor', () => {
     eq (($.Array (a)).name) ('Array');
     eq (($.Array (a)).url) (`https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Array`);
+    eq (($.Array (a)).supertypes) ([]);
   });
 
   test ('provides the "Array0" type', () => {
     eq ($.Array0.name) ('Array0');
     eq ($.Array0.url) (`https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Array0`);
+    eq ($.Array0.supertypes) ([$.Array ($.Unknown)]);
 
     const isEmptyArray = $.test ([]) ($.Array0);
     eq (isEmptyArray (null)) (false);
@@ -1427,6 +1457,7 @@ Since there is no type of which all the above values are members, the type-varia
     eq (show ($.Array1 (a))) ('(Array1 a)');
     eq (($.Array1 (a)).name) ('Array1');
     eq (($.Array1 (a)).url) (`https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Array1`);
+    eq (($.Array1 (a)).supertypes) ([$.Array ($.Unknown)]);
 
     const isSingletonStringArray = $.test ([]) ($.Array1 ($.String));
     eq (isSingletonStringArray (null)) (false);
@@ -1443,6 +1474,7 @@ Since there is no type of which all the above values are members, the type-varia
     eq (show ($.Array2 (a) (b))) ('(Array2 a b)');
     eq (($.Array2 (a) (b)).name) ('Array2');
     eq (($.Array2 (a) (b)).url) (`https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Array2`);
+    eq (($.Array2 (a) (b)).supertypes) ([$.Array ($.Unknown)]);
 
     //    fst :: Array2 a b -> a
     const fst = def ('fst') ({}) ([$.Array2 (a) (b), a]) (array2 => array2[0]);
@@ -1471,11 +1503,13 @@ See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Array2 for in
   test ('provides the "Boolean" type', () => {
     eq ($.Boolean.name) ('Boolean');
     eq ($.Boolean.url) (`https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Boolean`);
+    eq ($.Boolean.supertypes) ([]);
   });
 
   test ('provides the "Date" type', () => {
     eq ($.Date.name) ('Date');
     eq ($.Date.url) (`https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Date`);
+    eq ($.Date.supertypes) ([]);
   });
 
   test ('provides the "Either" type constructor', () => {
@@ -1497,16 +1531,19 @@ See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Array2 for in
   test ('provides the "Error" type', () => {
     eq ($.Error.name) ('Error');
     eq ($.Error.url) (`https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Error`);
+    eq ($.Error.supertypes) ([]);
   });
 
   test ('provides the "Function" type constructor', () => {
     eq (($.Function ([a, a])).name) ('');
     eq (($.Function ([a, a])).url) ('');
+    eq (($.Function ([a, a])).supertypes) ([$.AnyFunction]);
   });
 
   test ('provides the "HtmlElement" type', () => {
     eq ($.HtmlElement.name) ('HtmlElement');
     eq ($.HtmlElement.url) (`https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#HtmlElement`);
+    eq ($.HtmlElement.supertypes) ([]);
   });
 
   test ('provides the "Maybe" type constructor', () => {
@@ -1527,6 +1564,7 @@ See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Array2 for in
   test ('provides the "NonEmpty" type constructor', () => {
     eq (($.NonEmpty ($.String)).name) ('NonEmpty');
     eq (($.NonEmpty ($.String)).url) (`https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#NonEmpty`);
+    eq (($.NonEmpty ($.String)).supertypes) ([]);
 
     const isNonEmptyIntegerArray = $.test ([]) ($.NonEmpty ($.Array ($.Integer)));
     eq (isNonEmptyIntegerArray ([])) (false);
@@ -1537,21 +1575,25 @@ See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Array2 for in
   test ('provides the "Null" type', () => {
     eq ($.Null.name) ('Null');
     eq ($.Null.url) (`https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Null`);
+    eq ($.Null.supertypes) ([]);
   });
 
   test ('provides the "Nullable" type constructor', () => {
     eq (($.Nullable (a)).name) ('Nullable');
     eq (($.Nullable (a)).url) (`https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Nullable`);
+    eq (($.Nullable (a)).supertypes) ([]);
   });
 
   test ('provides the "Number" type', () => {
     eq ($.Number.name) ('Number');
     eq ($.Number.url) (`https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Number`);
+    eq ($.Number.supertypes) ([]);
   });
 
   test ('provides the "Object" type', () => {
     eq ($.Object.name) ('Object');
     eq ($.Object.url) (`https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Object`);
+    eq ($.Object.supertypes) ([]);
   });
 
   test ('provides the "Pair" type constructor', () => {
@@ -1573,41 +1615,49 @@ See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Array2 for in
   test ('provides the "RegExp" type', () => {
     eq ($.RegExp.name) ('RegExp');
     eq ($.RegExp.url) (`https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#RegExp`);
+    eq ($.RegExp.supertypes) ([]);
   });
 
   test ('provides the "String" type', () => {
     eq ($.String.name) ('String');
     eq ($.String.url) (`https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#String`);
+    eq ($.String.supertypes) ([]);
   });
 
   test ('provides the "Symbol" type', () => {
     eq ($.Symbol.name) ('Symbol');
     eq ($.Symbol.url) (`https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Symbol`);
+    eq ($.Symbol.supertypes) ([]);
   });
 
   test ('provides the "Type" type', () => {
     eq ($.Type.name) ('Type');
     eq ($.Type.url) (`https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Type`);
+    eq ($.Type.supertypes) ([]);
   });
 
   test ('provides the "TypeClass" type', () => {
     eq ($.TypeClass.name) ('TypeClass');
     eq ($.TypeClass.url) (`https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#TypeClass`);
+    eq ($.TypeClass.supertypes) ([]);
   });
 
   test ('provides the "Undefined" type', () => {
     eq ($.Undefined.name) ('Undefined');
     eq ($.Undefined.url) (`https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Undefined`);
+    eq ($.Undefined.supertypes) ([]);
   });
 
   test ('provides the "Unknown" type', () => {
     eq ($.Unknown.name) ('');
     eq ($.Unknown.url) ('');
+    eq ($.Unknown.supertypes) ([]);
   });
 
   test ('provides the "ValidDate" type', () => {
     eq ($.ValidDate.name) ('ValidDate');
     eq ($.ValidDate.url) (`https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#ValidDate`);
+    eq ($.ValidDate.supertypes) ([$.Date]);
 
     //    sinceEpoch :: ValidDate -> Number
     const sinceEpoch =
@@ -1636,6 +1686,7 @@ See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#ValidDate for
   test ('provides the "PositiveNumber" type', () => {
     eq ($.PositiveNumber.name) ('PositiveNumber');
     eq ($.PositiveNumber.url) (`https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#PositiveNumber`);
+    eq ($.PositiveNumber.supertypes) ([$.Number]);
 
     const isPositiveNumber = $.test ([]) ($.PositiveNumber);
     eq (isPositiveNumber (null)) (false);
@@ -1651,6 +1702,7 @@ See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#ValidDate for
   test ('provides the "NegativeNumber" type', () => {
     eq ($.NegativeNumber.name) ('NegativeNumber');
     eq ($.NegativeNumber.url) (`https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#NegativeNumber`);
+    eq ($.NegativeNumber.supertypes) ([$.Number]);
 
     const isNegativeNumber = $.test ([]) ($.NegativeNumber);
     eq (isNegativeNumber (null)) (false);
@@ -1666,6 +1718,7 @@ See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#ValidDate for
   test ('provides the "ValidNumber" type', () => {
     eq ($.ValidNumber.name) ('ValidNumber');
     eq ($.ValidNumber.url) (`https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#ValidNumber`);
+    eq ($.ValidNumber.supertypes) ([$.Number]);
 
     const isValidNumber = $.test ([]) ($.ValidNumber);
     eq (isValidNumber (NaN)) (false);
@@ -1676,6 +1729,7 @@ See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#ValidDate for
   test ('provides the "NonZeroValidNumber" type', () => {
     eq ($.NonZeroValidNumber.name) ('NonZeroValidNumber');
     eq ($.NonZeroValidNumber.url) (`https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#NonZeroValidNumber`);
+    eq ($.NonZeroValidNumber.supertypes) ([$.ValidNumber]);
 
     const isNonZeroValidNumber = $.test ([]) ($.NonZeroValidNumber);
     eq (isNonZeroValidNumber (0)) (false);
@@ -1687,6 +1741,7 @@ See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#ValidDate for
   test ('provides the "FiniteNumber" type', () => {
     eq ($.FiniteNumber.name) ('FiniteNumber');
     eq ($.FiniteNumber.url) (`https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#FiniteNumber`);
+    eq ($.FiniteNumber.supertypes) ([$.ValidNumber]);
 
     const isFiniteNumber = $.test ([]) ($.FiniteNumber);
     eq (isFiniteNumber (Infinity)) (false);
@@ -1698,6 +1753,7 @@ See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#ValidDate for
   test ('provides the "PositiveFiniteNumber" type', () => {
     eq ($.PositiveFiniteNumber.name) ('PositiveFiniteNumber');
     eq ($.PositiveFiniteNumber.url) (`https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#PositiveFiniteNumber`);
+    eq ($.PositiveFiniteNumber.supertypes) ([$.FiniteNumber]);
 
     const isPositiveFiniteNumber = $.test ([]) ($.PositiveFiniteNumber);
     eq (isPositiveFiniteNumber (null)) (false);
@@ -1713,6 +1769,7 @@ See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#ValidDate for
   test ('provides the "NegativeFiniteNumber" type', () => {
     eq ($.NegativeFiniteNumber.name) ('NegativeFiniteNumber');
     eq ($.NegativeFiniteNumber.url) (`https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#NegativeFiniteNumber`);
+    eq ($.NegativeFiniteNumber.supertypes) ([$.FiniteNumber]);
 
     const isNegativeFiniteNumber = $.test ([]) ($.NegativeFiniteNumber);
     eq (isNegativeFiniteNumber (null)) (false);
@@ -1728,6 +1785,7 @@ See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#ValidDate for
   test ('provides the "NonZeroFiniteNumber" type', () => {
     eq ($.NonZeroFiniteNumber.name) ('NonZeroFiniteNumber');
     eq ($.NonZeroFiniteNumber.url) (`https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#NonZeroFiniteNumber`);
+    eq ($.NonZeroFiniteNumber.supertypes) ([$.FiniteNumber]);
 
     const isNonZeroFiniteNumber = $.test ([]) ($.NonZeroFiniteNumber);
     eq (isNonZeroFiniteNumber (0)) (false);
@@ -1741,6 +1799,7 @@ See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#ValidDate for
   test ('provides the "Integer" type', () => {
     eq ($.Integer.name) ('Integer');
     eq ($.Integer.url) (`https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Integer`);
+    eq ($.Integer.supertypes) ([$.ValidNumber]);
 
     const isInteger = $.test ([]) ($.Integer);
     eq (isInteger (3.14)) (false);
@@ -1753,6 +1812,7 @@ See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#ValidDate for
   test ('provides the "NonZeroInteger" type', () => {
     eq ($.NonZeroInteger.name) ('NonZeroInteger');
     eq ($.NonZeroInteger.url) (`https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#NonZeroInteger`);
+    eq ($.NonZeroInteger.supertypes) ([$.Integer]);
 
     const isNonZeroInteger = $.test ([]) ($.NonZeroInteger);
     eq (isNonZeroInteger (0)) (false);
@@ -1765,6 +1825,7 @@ See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#ValidDate for
   test ('provides the "NonNegativeInteger" type', () => {
     eq ($.NonNegativeInteger.name) ('NonNegativeInteger');
     eq ($.NonNegativeInteger.url) (`https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#NonNegativeInteger`);
+    eq ($.NonNegativeInteger.supertypes) ([$.Integer]);
 
     const isNonNegativeInteger = $.test ([]) ($.NonNegativeInteger);
     eq (isNonNegativeInteger (0)) (true);
@@ -1778,6 +1839,7 @@ See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#ValidDate for
   test ('provides the "PositiveInteger" type', () => {
     eq ($.PositiveInteger.name) ('PositiveInteger');
     eq ($.PositiveInteger.url) (`https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#PositiveInteger`);
+    eq ($.PositiveInteger.supertypes) ([$.Integer]);
 
     const isPositiveInteger = $.test ([]) ($.PositiveInteger);
     eq (isPositiveInteger (1.5)) (false);
@@ -1789,6 +1851,7 @@ See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#ValidDate for
   test ('provides the "NegativeInteger" type', () => {
     eq ($.NegativeInteger.name) ('NegativeInteger');
     eq ($.NegativeInteger.url) (`https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#NegativeInteger`);
+    eq ($.NegativeInteger.supertypes) ([$.Integer]);
 
     const isNegativeInteger = $.test ([]) ($.NegativeInteger);
     eq (isNegativeInteger (-1.5)) (false);
@@ -1800,6 +1863,7 @@ See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#ValidDate for
   test ('provides the "GlobalRegExp" type', () => {
     eq ($.GlobalRegExp.name) ('GlobalRegExp');
     eq ($.GlobalRegExp.url) (`https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#GlobalRegExp`);
+    eq ($.GlobalRegExp.supertypes) ([$.RegExp]);
 
     const isGlobalRegExp = $.test ([]) ($.GlobalRegExp);
     eq (isGlobalRegExp (null)) (false);
@@ -1817,6 +1881,7 @@ See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#ValidDate for
   test ('provides the "NonGlobalRegExp" type', () => {
     eq ($.NonGlobalRegExp.name) ('NonGlobalRegExp');
     eq ($.NonGlobalRegExp.url) (`https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#NonGlobalRegExp`);
+    eq ($.NonGlobalRegExp.supertypes) ([$.RegExp]);
 
     const isNonGlobalRegExp = $.test ([]) ($.NonGlobalRegExp);
     eq (isNonGlobalRegExp (null)) (false);
@@ -1834,6 +1899,7 @@ See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#ValidDate for
   test ('provides the "RegexFlags" type', () => {
     eq ($.RegexFlags.name) ('RegexFlags');
     eq ($.RegexFlags.url) (`https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#RegexFlags`);
+    eq ($.RegexFlags.supertypes) ([]);
 
     const isRegexFlags = $.test ([]) ($.RegexFlags);
     eq (isRegexFlags ('')) (true);
@@ -1859,6 +1925,7 @@ See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#ValidDate for
     eq (show ($.StrMap (a))) ('(StrMap a)');
     eq (($.StrMap (a)).name) ('StrMap');
     eq (($.StrMap (a)).url) (`https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#StrMap`);
+    eq (($.StrMap (a)).supertypes) ([$.Object]);
 
     //    id :: a -> a
     const id =
@@ -3031,6 +3098,7 @@ Since there is no type of which all the above values are members, the type-varia
     const Void = $.NullaryType
       ('Void')
       ('http://example.com/my-package#Void')
+      ([])
       (x => { count += 1; return false; });
 
     const env = [$.Array ($.Unknown), $.Maybe ($.Unknown), $.Number, Void];
@@ -3122,7 +3190,40 @@ suite ('NullaryType', () => {
   test ('is a ternary function', () => {
     eq (typeof $.NullaryType) ('function');
     eq ($.NullaryType.length) (1);
-    eq (show ($.NullaryType)) ('NullaryType :: String -> String -> (Any -> Boolean) -> Type');
+    eq (show ($.NullaryType)) ('NullaryType :: String -> String -> Array Type -> (Any -> Boolean) -> Type');
+  });
+
+  test ('supports subtyping', () => {
+    //    Number_ :: Type
+    const Number_ = $.NullaryType
+      ('Number')
+      ('')
+      ([])
+      (x => typeof x === 'number');
+
+    //    ValidNumber :: Type
+    const ValidNumber = $.NullaryType
+      ('ValidNumber')
+      ('')
+      ([Number_])
+      (complement (isNaN));
+
+    //    FiniteNumber :: Type
+    const FiniteNumber = $.NullaryType
+      ('FiniteNumber')
+      ('')
+      ([ValidNumber])
+      (isFinite);
+
+    eq ($.test ([]) (Number_) (null)) (false);
+    eq ($.test ([]) (Number_) (NaN)) (true);
+    eq ($.test ([]) (ValidNumber) (null)) (false);
+    eq ($.test ([]) (ValidNumber) (NaN)) (false);
+    eq ($.test ([]) (ValidNumber) (Infinity)) (true);
+    eq ($.test ([]) (FiniteNumber) (null)) (false);
+    eq ($.test ([]) (FiniteNumber) (NaN)) (false);
+    eq ($.test ([]) (FiniteNumber) (Infinity)) (false);
+    eq ($.test ([]) (FiniteNumber) (0)) (true);
   });
 
 });
@@ -3132,7 +3233,7 @@ suite ('UnaryType', () => {
   test ('is a quaternary function', () => {
     eq (typeof $.UnaryType) ('function');
     eq ($.UnaryType.length) (1);
-    eq (show ($.UnaryType)) ('UnaryType :: String -> String -> (Any -> Boolean) -> (t a -> Array a) -> Type -> Type');
+    eq (show ($.UnaryType)) ('UnaryType :: String -> String -> Array Type -> (Any -> Boolean) -> (t a -> Array a) -> Type -> Type');
   });
 
   test ('returns a type constructor which type checks its arguments', () => {
@@ -3140,7 +3241,8 @@ suite ('UnaryType', () => {
     const MyUnaryType = $.UnaryType
       ('MyUnaryType')
       ('')
-      (x => type (x) === 'MyUnaryType@1')
+      ([])
+      (x => type (x) === 'my-package/MyUnaryType@1')
       (_ => []);
 
     throws (() => { MyUnaryType ({x: $.Number, y: $.Number}); })
@@ -3158,6 +3260,23 @@ See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Type for info
 `));
   });
 
+  test ('supports subtyping', () => {
+    //    Palindrome :: Type -> Type
+    const Palindrome = $.UnaryType
+      ('Palindrome')
+      ('http://example.com/my-package#Palindrome')
+      ([$.Array ($.Unknown)])
+      (xs => Z.equals (xs, Z.reverse (xs)))
+      (palindrome => palindrome);
+
+    eq ($.test ([]) (Palindrome ($.Number)) (null)) (false);
+    eq ($.test ([]) (Palindrome ($.Number)) ([])) (true);
+    eq ($.test ([]) (Palindrome ($.Number)) ([1])) (true);
+    eq ($.test ([]) (Palindrome ($.Number)) ([1, 2, 3])) (false);
+    eq ($.test ([]) (Palindrome ($.Number)) ([1, 2, 1])) (true);
+    eq ($.test ([]) (Palindrome ($.Number)) (['foo', 'bar', 'foo'])) (false);
+  });
+
 });
 
 suite ('BinaryType', () => {
@@ -3165,7 +3284,7 @@ suite ('BinaryType', () => {
   test ('is a quinary function', () => {
     eq (typeof $.BinaryType) ('function');
     eq ($.BinaryType.length) (1);
-    eq (show ($.BinaryType)) ('BinaryType :: String -> String -> (Any -> Boolean) -> (t a b -> Array a) -> (t a b -> Array b) -> Type -> Type -> Type');
+    eq (show ($.BinaryType)) ('BinaryType :: String -> String -> Array Type -> (Any -> Boolean) -> (t a b -> Array a) -> (t a b -> Array b) -> Type -> Type -> Type');
   });
 
   test ('returns a type constructor which type checks its arguments', () => {
@@ -3173,6 +3292,7 @@ suite ('BinaryType', () => {
     const MyBinaryType = $.BinaryType
       ('MyBinaryType')
       ('')
+      ([])
       (x => type (x) === 'my-package/MyBinaryType@1')
       (_ => [])
       (_ => []);
@@ -3190,6 +3310,23 @@ The value at position 1 is not a member of ‘Type’.
 
 See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Type for information about the Type type.
 `));
+  });
+
+  test ('supports subtyping', () => {
+    //    Different :: Type -> Type -> Type
+    const Different = $.BinaryType
+      ('Different')
+      ('http://example.com/my-package#Different')
+      ([$.Array2 ($.Unknown) ($.Unknown)])
+      (array2 => !(Z.equals (array2[0], array2[1])))
+      (different => [different[0]])
+      (different => [different[1]]);
+
+    eq ($.test ([]) (Different ($.String) ($.String)) ([null, null])) (false);
+    eq ($.test ([]) (Different ($.String) ($.String)) ([null, 'foo'])) (false);
+    eq ($.test ([]) (Different ($.String) ($.String)) (['foo', null])) (false);
+    eq ($.test ([]) (Different ($.String) ($.String)) (['foo', 'foo'])) (false);
+    eq ($.test ([]) (Different ($.String) ($.String)) (['foo', 'bar'])) (true);
   });
 
 });
@@ -3356,14 +3493,26 @@ suite ('interoperability', () => {
     eq (Z.equals ($.RecordType ({x: $.Number}), $.RecordType ({x: $.Number}))) (true);
     eq (Z.equals ($.RecordType ({x: $.Number}), $.RecordType ({y: $.Number}))) (false);
     eq (Z.equals ($.RecordType ({x: $.Number}), $.RecordType ({x: $.String}))) (false);
-    eq (Z.equals ($.NullaryType ('X') ('') (x => true), $.NullaryType ('X') ('') (x => true))) (true);
-    eq (Z.equals ($.NullaryType ('X') ('') (x => true), $.NullaryType ('Y') ('') (x => true))) (false);
-    eq (Z.equals ($.NullaryType ('X') ('') (x => true), $.NullaryType ('X') ('') (x => false))) (true);
-    eq (Z.equals ($.Array ($.NullaryType ('X') ('http://x.com/') (x => true)),
-                  $.Array ($.NullaryType ('X') ('http://x.com/') (x => true))))
+    eq (Z.equals ($.NullaryType ('X') ('') ([$.Number]) (x => true),
+                  $.NullaryType ('X') ('') ([$.Number]) (x => true)))
        (true);
-    eq (Z.equals ($.Array ($.NullaryType ('X') ('http://x.com/') (x => true)),
-                  $.Array ($.NullaryType ('X') ('http://x.org/') (x => true))))
+    eq (Z.equals ($.NullaryType ('X') ('') ([$.Number]) (x => true),
+                  $.NullaryType ('X') ('') ([$.String]) (x => true)))
+       (false);
+    eq (Z.equals ($.NullaryType ('X') ('') ([]) (x => true),
+                  $.NullaryType ('X') ('') ([]) (x => true)))
+       (true);
+    eq (Z.equals ($.NullaryType ('X') ('') ([]) (x => true),
+                  $.NullaryType ('Y') ('') ([]) (x => true)))
+       (false);
+    eq (Z.equals ($.NullaryType ('X') ('') ([]) (x => true),
+                  $.NullaryType ('X') ('') ([]) (x => false)))
+       (true);
+    eq (Z.equals ($.Array ($.NullaryType ('X') ('http://x.com/') ([]) (x => true)),
+                  $.Array ($.NullaryType ('X') ('http://x.com/') ([]) (x => true))))
+       (true);
+    eq (Z.equals ($.Array ($.NullaryType ('X') ('http://x.com/') ([]) (x => true)),
+                  $.Array ($.NullaryType ('X') ('http://x.org/') ([]) (x => true))))
        (false);
   });
 
