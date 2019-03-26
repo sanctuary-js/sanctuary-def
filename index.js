@@ -1472,8 +1472,8 @@
       ({})
       ([String_,
         String_,
-        Function_ ([Any, Boolean_]),
-        Function_ ([Unchecked ('t a'), Array_ (Unchecked ('a'))]),
+        Unchecked ('(Any -> Boolean)'),
+        Unchecked ('(t a -> Array a)'),
         AnyFunction])
       (function(name) {
          return B (B (B (def (stripNamespace (name)) ({}) ([Type, Type]))))
@@ -1616,9 +1616,9 @@
       ({})
       ([String_,
         String_,
-        Function_ ([Any, Boolean_]),
-        Function_ ([Unchecked ('t a b'), Array_ (Unchecked ('a'))]),
-        Function_ ([Unchecked ('t a b'), Array_ (Unchecked ('b'))]),
+        Unchecked ('(Any -> Boolean)'),
+        Unchecked ('(t a b -> Array a)'),
+        Unchecked ('(t a b -> Array b)'),
         AnyFunction])
       (function(name) {
          return B (B (B (B (def (stripNamespace (name))
