@@ -361,9 +361,11 @@
         for (var idx2 = 0, ys = t.extractor (x); idx2 < ys.length; idx2 += 1) {
           var result = t.type.validate (ys[idx2]);
           if (result.isLeft) {
-            var value = result.value.value;
-            var propPath = Z.concat ([k], result.value.propPath);
-            return Left ({value: value, propPath: propPath});
+            return Left (this.type === RECORD && this.name !== '' ?
+                         {value: x,
+                          propPath: []} :
+                         {value: result.value.value,
+                          propPath: Z.concat ([k], result.value.propPath)});
           }
         }
       }
@@ -1673,11 +1675,11 @@
 
   //# RecordType :: StrMap Type -> Type
   //.
-  //. `RecordType` is used to construct record types. The type definition
-  //. specifies the name and type of each required field. A field is an
-  //. enumerable property (either an own property or an inherited property).
+  //. `RecordType` is used to construct anonymous record types. The type
+  //. definition specifies the name and type of each required field. A field is
+  //. an enumerable property (either an own property or an inherited property).
   //.
-  //. To define a record type one must provide:
+  //. To define an anonymous record type one must provide:
   //.
   //.   - an object mapping field name to type.
   //.
@@ -1757,6 +1759,85 @@
 
   var CheckedRecordType =
   def ('RecordType') ({}) ([StrMap (Type), Type]) (RecordType);
+
+  //# NamedRecordType :: NonEmpty String -> String -> StrMap Type -> Type
+  //.
+  //. `NamedRecordType` is used to construct named record types. The type
+  //. definition specifies the name and type of each required field. A field is
+  //. an enumerable property (either an own property or an inherited property).
+  //.
+  //. To define a named record type `t` one must provide:
+  //.
+  //.   - the name of `t` (exposed as `t.name`);
+  //.
+  //.   - the documentation URL of `t` (exposed as `t.url`); and
+  //.
+  //.   - an object mapping field name to type.
+  //.
+  //. For example:
+  //.
+  //. ```javascript
+  //. //    Cylinder :: Type
+  //. const Cylinder = $.NamedRecordType
+  //.   ('my-package/Cylinder')
+  //.   ('http://example.com/my-package#Cylinder')
+  //.   ({radius: $.PositiveFiniteNumber, height: $.PositiveFiniteNumber});
+  //.
+  //. //    volume :: Cylinder -> PositiveFiniteNumber
+  //. const volume =
+  //. def ('volume')
+  //.     ({})
+  //.     ([Cylinder, $.FiniteNumber])
+  //.     (cyl => Math.PI * cyl.radius * cyl.radius * cyl.height);
+  //.
+  //. volume ({radius: 2, height: 10});
+  //. // => 125.66370614359172
+  //.
+  //. volume ({radius: 2});
+  //. // ! TypeError: Invalid value
+  //. //
+  //. //   volume :: Cylinder -> FiniteNumber
+  //. //             ^^^^^^^^
+  //. //                1
+  //. //
+  //. //   1)  {"radius": 2} :: Object, StrMap Number
+  //. //
+  //. //   The value at position 1 is not a member of ‘Cylinder’.
+  //. //
+  //. //   See http://example.com/my-package#Cylinder for information about the my-package/Cylinder type.
+  //. ```
+  function NamedRecordType(name) {
+    return function(url) {
+      return function(fields) {
+        var keys = sortedKeys (fields);
+
+        function format(outer, inner) {
+          return outer (stripNamespace (name));
+        }
+
+        function test(x) {
+          var missing = {};
+          keys.forEach (function(k) { missing[k] = k; });
+          for (var k in x) delete missing[k];
+          return isEmpty (Object.keys (missing));
+        }
+
+        var $types = {};
+        keys.forEach (function(k) {
+          $types[k] = {extractor: function(x) { return [x[k]]; },
+                       type: fields[k]};
+        });
+
+        return _Type (RECORD, name, url, format, test, keys, $types);
+      };
+    };
+  }
+
+  var CheckedNamedRecordType =
+  def ('NamedRecordType')
+      ({})
+      ([NonEmpty (String_), String_, StrMap (Type), Type])
+      (NamedRecordType);
 
   //# TypeVariable :: String -> Type
   //.
@@ -2643,6 +2724,7 @@
     BinaryType: CheckedBinaryType,
     EnumType: CheckedEnumType,
     RecordType: CheckedRecordType,
+    NamedRecordType: CheckedNamedRecordType,
     TypeVariable: CheckedTypeVariable,
     UnaryTypeVariable: CheckedUnaryTypeVariable,
     BinaryTypeVariable: CheckedBinaryTypeVariable,

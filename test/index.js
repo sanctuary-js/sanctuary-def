@@ -979,7 +979,7 @@ Since there is no type of which all the above values are members, the type-varia
 `));
   });
 
-  test ('supports record types', () => {
+  test ('supports anonymous record types', () => {
     eq (typeof $.RecordType) ('function');
     eq ($.RecordType.length) (1);
     eq (show ($.RecordType)) ('RecordType :: StrMap Type -> Type');
@@ -1238,6 +1238,65 @@ prop ("length") :: { length :: a } -> a
 1)  ["x"] :: Array String
 
 The value at position 1 is not a member of ‘{ length :: a }’.
+`));
+  });
+
+  test ('supports named record types', () => {
+    eq (typeof $.NamedRecordType) ('function');
+    eq ($.NamedRecordType.length) (1);
+    eq (show ($.NamedRecordType)) ('NamedRecordType :: NonEmpty String -> String -> StrMap Type -> Type');
+    eq (show ($.NamedRecordType ('my-package/Circle') ('') ({radius: $.PositiveFiniteNumber}))) ('Circle');
+
+    throws (() => { $.NamedRecordType ('my-package/Circle') ('') ({radius: Number}); })
+           (new TypeError (`Invalid value
+
+NamedRecordType :: NonEmpty String -> String -> StrMap Type -> Type
+                                                       ^^^^
+                                                        1
+
+1)  ${Number} :: Function
+
+The value at position 1 is not a member of ‘Type’.
+
+See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Type for information about the Type type.
+`));
+
+    //    Circle :: Type
+    const Circle = $.NamedRecordType
+      ('my-package/Circle')
+      ('http://example.com/my-package#Circle')
+      ({radius: $.PositiveFiniteNumber});
+
+    const isCircle = $.test ([]) (Circle);
+    eq (isCircle (null)) (false);
+    eq (isCircle ({})) (false);
+    eq (isCircle ({radius: null})) (false);
+    eq (isCircle ({radius: 0})) (false);
+    eq (isCircle ({radius: 1})) (true);
+    eq (isCircle ({radius: 1, height: 1})) (true);
+
+    //    area :: Circle -> PositiveFiniteNumber
+    const area =
+    def ('area')
+        ({})
+        ([Circle, $.PositiveFiniteNumber])
+        (circle => Math.PI * circle.radius * circle.radius);
+
+    eq (area ({radius: 1})) (3.141592653589793);
+    eq (area ({radius: 2})) (12.566370614359172);
+
+    throws (() => { area ({radius: 0}); })
+           (new TypeError (`Invalid value
+
+area :: Circle -> PositiveFiniteNumber
+        ^^^^^^
+          1
+
+1)  {"radius": 0} :: Object, StrMap Number
+
+The value at position 1 is not a member of ‘Circle’.
+
+See http://example.com/my-package#Circle for information about the my-package/Circle type.
 `));
   });
 
