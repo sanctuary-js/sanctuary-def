@@ -118,7 +118,7 @@ suite ('create', () => {
   });
 
   test ('type checks its arguments', () => {
-    throws (() => $.create (true))
+    throws (() => { $.create (true); })
            (new TypeError (`Invalid value
 
 create :: { checkTypes :: Boolean, env :: Array Any } -> Function
@@ -136,7 +136,7 @@ The value at position 1 is not a member of ‘{ checkTypes :: Boolean, env :: Ar
 suite ('def', () => {
 
   test ('type checks its arguments when checkTypes is true', () => {
-    throws (() => def (null))
+    throws (() => { def (null); })
            (new TypeError (`Invalid value
 
 def :: String -> StrMap (Array TypeClass) -> NonEmpty (Array Type) -> Function -> Function
@@ -150,7 +150,7 @@ The value at position 1 is not a member of ‘String’.
 See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#String for information about the String type.
 `));
 
-    throws (() => def ('') (null))
+    throws (() => { def ('') (null); })
            (new TypeError (`Invalid value
 
 def :: String -> StrMap (Array TypeClass) -> NonEmpty (Array Type) -> Function -> Function
@@ -164,7 +164,7 @@ The value at position 1 is not a member of ‘StrMap (Array TypeClass)’.
 See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#StrMap for information about the sanctuary-def/StrMap type.
 `));
 
-    throws (() => def ('') ({}) ([]))
+    throws (() => { def ('') ({}) ([]); })
            (new TypeError (`Invalid value
 
 def :: String -> StrMap (Array TypeClass) -> NonEmpty (Array Type) -> Function -> Function
@@ -178,7 +178,7 @@ The value at position 1 is not a member of ‘NonEmpty (Array Type)’.
 See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#NonEmpty for information about the sanctuary-def/NonEmpty type.
 `));
 
-    throws (() => def ('') ({}) ([1, 2, 3]))
+    throws (() => { def ('') ({}) ([1, 2, 3]); })
            (new TypeError (`Invalid value
 
 def :: String -> StrMap (Array TypeClass) -> NonEmpty (Array Type) -> Function -> Function
@@ -192,7 +192,7 @@ The value at position 1 is not a member of ‘Type’.
 See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Type for information about the Type type.
 `));
 
-    throws (() => def ('') ({}) ([$.Null]) (null))
+    throws (() => { def ('') ({}) ([$.Null]) (null); })
            (new TypeError (`Invalid value
 
 def :: String -> StrMap (Array TypeClass) -> NonEmpty (Array Type) -> Function -> Function
@@ -259,7 +259,7 @@ See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Function for 
   });
 
   test ('returns a function which throws if given too many args', () => {
-    throws (() => $0 (1))
+    throws (() => { $0 (1); })
            (new TypeError (`‘$0’ applied to the wrong number of arguments
 
 $0 :: () -> Array a
@@ -271,7 +271,7 @@ Expected zero arguments but received one argument:
   - 1
 `));
 
-    throws (() => $1 (1, 2))
+    throws (() => { $1 (1, 2); })
            (new TypeError (`‘$1’ applied to the wrong number of arguments
 
 $1 :: a -> Array a
@@ -284,7 +284,7 @@ Expected one argument but received two arguments:
   - 2
 `));
 
-    throws (() => $2 (1, 2, 3, 4, 5, 6, 7, 8, 9, 10))
+    throws (() => { $2 (1, 2, 3, 4, 5, 6, 7, 8, 9, 10); })
            (new TypeError (`‘$2’ applied to the wrong number of arguments
 
 $2 :: a -> a -> Array a
@@ -322,7 +322,7 @@ Expected one argument but received 10 arguments:
           $.Array ($.Number)])
         (_1 => _2 => _3 => _4 => _5 => _6 => _7 => _8 => _9 => [_1, _2, _3, _4, _5, _6, _7, _8, _9]);
 
-    throws (() => $9 ('X'))
+    throws (() => { $9 ('X'); })
            (new TypeError (`Invalid value
 
 $9 :: Number -> Number -> Number -> Number -> Number -> Number -> Number -> Number -> Number -> Array Number
@@ -336,7 +336,7 @@ The value at position 1 is not a member of ‘Number’.
 See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Number for information about the Number type.
 `));
 
-    throws (() => $9 (1) ('X'))
+    throws (() => { $9 (1) ('X'); })
            (new TypeError (`Invalid value
 
 $9 :: Number -> Number -> Number -> Number -> Number -> Number -> Number -> Number -> Number -> Array Number
@@ -350,7 +350,7 @@ The value at position 1 is not a member of ‘Number’.
 See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Number for information about the Number type.
 `));
 
-    throws (() => $9 (1) (2) ('X'))
+    throws (() => { $9 (1) (2) ('X'); })
            (new TypeError (`Invalid value
 
 $9 :: Number -> Number -> Number -> Number -> Number -> Number -> Number -> Number -> Number -> Array Number
@@ -364,7 +364,7 @@ The value at position 1 is not a member of ‘Number’.
 See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Number for information about the Number type.
 `));
 
-    throws (() => $9 (1) (2) (3) ('X'))
+    throws (() => { $9 (1) (2) (3) ('X'); })
            (new TypeError (`Invalid value
 
 $9 :: Number -> Number -> Number -> Number -> Number -> Number -> Number -> Number -> Number -> Array Number
@@ -378,7 +378,7 @@ The value at position 1 is not a member of ‘Number’.
 See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Number for information about the Number type.
 `));
 
-    throws (() => $9 (1) (2) (3) (4) ('X'))
+    throws (() => { $9 (1) (2) (3) (4) ('X'); })
            (new TypeError (`Invalid value
 
 $9 :: Number -> Number -> Number -> Number -> Number -> Number -> Number -> Number -> Number -> Array Number
@@ -392,7 +392,7 @@ The value at position 1 is not a member of ‘Number’.
 See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Number for information about the Number type.
 `));
 
-    throws (() => $9 (1) (2) (3) (4) (5) ('X'))
+    throws (() => { $9 (1) (2) (3) (4) (5) ('X'); })
            (new TypeError (`Invalid value
 
 $9 :: Number -> Number -> Number -> Number -> Number -> Number -> Number -> Number -> Number -> Array Number
@@ -406,7 +406,7 @@ The value at position 1 is not a member of ‘Number’.
 See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Number for information about the Number type.
 `));
 
-    throws (() => $9 (1) (2) (3) (4) (5) (6) ('X'))
+    throws (() => { $9 (1) (2) (3) (4) (5) (6) ('X'); })
            (new TypeError (`Invalid value
 
 $9 :: Number -> Number -> Number -> Number -> Number -> Number -> Number -> Number -> Number -> Array Number
@@ -420,7 +420,7 @@ The value at position 1 is not a member of ‘Number’.
 See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Number for information about the Number type.
 `));
 
-    throws (() => $9 (1) (2) (3) (4) (5) (6) (7) ('X'))
+    throws (() => { $9 (1) (2) (3) (4) (5) (6) (7) ('X'); })
            (new TypeError (`Invalid value
 
 $9 :: Number -> Number -> Number -> Number -> Number -> Number -> Number -> Number -> Number -> Array Number
@@ -434,7 +434,7 @@ The value at position 1 is not a member of ‘Number’.
 See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Number for information about the Number type.
 `));
 
-    throws (() => $9 (1) (2) (3) (4) (5) (6) (7) (8) ('X'))
+    throws (() => { $9 (1) (2) (3) (4) (5) (6) (7) (8) ('X'); })
            (new TypeError (`Invalid value
 
 $9 :: Number -> Number -> Number -> Number -> Number -> Number -> Number -> Number -> Number -> Array Number
@@ -461,7 +461,7 @@ See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Number for in
 
     eq (sqrt (25)) (5);
 
-    throws (() => sqrt (null))
+    throws (() => { sqrt (null); })
            (new TypeError (`Invalid value
 
 sqrt :: Number -> Number
@@ -475,7 +475,7 @@ The value at position 1 is not a member of ‘Number’.
 See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Number for information about the Number type.
 `));
 
-    throws (() => sqrt (undefined))
+    throws (() => { sqrt (undefined); })
            (new TypeError (`Invalid value
 
 sqrt :: Number -> Number
@@ -529,7 +529,7 @@ See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Number for in
         ([a, b, Either ($.Array ($.Array (a))) ($.Array (b)), a])
         (x => y => z => x);
 
-    throws (() => a00 (1) ('a'))
+    throws (() => { a00 (1) ('a'); })
            (new TypeError (`Type-variable constraint violation
 
 a00 :: a -> a -> a
@@ -543,7 +543,7 @@ a00 :: a -> a -> a
 Since there is no type of which all the above values are members, the type-variable constraint has been violated.
 `));
 
-    throws (() => a00 (1) (['a']))
+    throws (() => { a00 (1) (['a']); })
            (new TypeError (`Type-variable constraint violation
 
 a00 :: a -> a -> a
@@ -557,7 +557,7 @@ a00 :: a -> a -> a
 Since there is no type of which all the above values are members, the type-variable constraint has been violated.
 `));
 
-    throws (() => a00 (1) (Just (1)))
+    throws (() => { a00 (1) (Just (1)); })
            (new TypeError (`Type-variable constraint violation
 
 a00 :: a -> a -> a
@@ -571,7 +571,7 @@ a00 :: a -> a -> a
 Since there is no type of which all the above values are members, the type-variable constraint has been violated.
 `));
 
-    throws (() => a01 (1) (['a', 'b']))
+    throws (() => { a01 (1) (['a', 'b']); })
            (new TypeError (`Type-variable constraint violation
 
 a01 :: a -> Array a -> a
@@ -586,7 +586,7 @@ a01 :: a -> Array a -> a
 Since there is no type of which all the above values are members, the type-variable constraint has been violated.
 `));
 
-    throws (() => a01 ([1, 2]) ([1, 2, 3, 4]))
+    throws (() => { a01 ([1, 2]) ([1, 2, 3, 4]); })
            (new TypeError (`Type-variable constraint violation
 
 a01 :: a -> Array a -> a
@@ -603,7 +603,7 @@ a01 :: a -> Array a -> a
 Since there is no type of which all the above values are members, the type-variable constraint has been violated.
 `));
 
-    throws (() => a01 ([1, 2]) ([['a', 'b'], ['c', 'd']]))
+    throws (() => { a01 ([1, 2]) ([['a', 'b'], ['c', 'd']]); })
            (new TypeError (`Type-variable constraint violation
 
 a01 :: a -> Array a -> a
@@ -618,7 +618,7 @@ a01 :: a -> Array a -> a
 Since there is no type of which all the above values are members, the type-variable constraint has been violated.
 `));
 
-    throws (() => a01 ([[1, 2], [3, 4]]) ([[1, 2], [3, 4]]))
+    throws (() => { a01 ([[1, 2], [3, 4]]) ([[1, 2], [3, 4]]); })
            (new TypeError (`Type-variable constraint violation
 
 a01 :: a -> Array a -> a
@@ -633,7 +633,7 @@ a01 :: a -> Array a -> a
 Since there is no type of which all the above values are members, the type-variable constraint has been violated.
 `));
 
-    throws (() => a02 ([1, 2]) ([[1, 2], [3, 4, 5, 6]]))
+    throws (() => { a02 ([1, 2]) ([[1, 2], [3, 4, 5, 6]]); })
            (new TypeError (`Type-variable constraint violation
 
 a02 :: a -> Array (Array a) -> a
@@ -652,7 +652,7 @@ a02 :: a -> Array (Array a) -> a
 Since there is no type of which all the above values are members, the type-variable constraint has been violated.
 `));
 
-    throws (() => ab02e (1) ('x') ([[Left ('a'), Left ('b')], [Left ('c'), Left ('d')]]))
+    throws (() => { ab02e (1) ('x') ([[Left ('a'), Left ('b')], [Left ('c'), Left ('d')]]); })
            (new TypeError (`Type-variable constraint violation
 
 ab02e :: a -> b -> Array (Array (Either a b)) -> a
@@ -669,7 +669,7 @@ ab02e :: a -> b -> Array (Array (Either a b)) -> a
 Since there is no type of which all the above values are members, the type-variable constraint has been violated.
 `));
 
-    throws (() => ab02e (1) ('x') ([[Right (1), Right (2)], [Right (3), Right (4)]]))
+    throws (() => { ab02e (1) ('x') ([[Right (1), Right (2)], [Right (3), Right (4)]]); })
            (new TypeError (`Type-variable constraint violation
 
 ab02e :: a -> b -> Array (Array (Either a b)) -> a
@@ -686,7 +686,7 @@ ab02e :: a -> b -> Array (Array (Either a b)) -> a
 Since there is no type of which all the above values are members, the type-variable constraint has been violated.
 `));
 
-    throws (() => ab0e21 (1) ('x') (Left ([['a', 'b'], ['c', 'd']])))
+    throws (() => { ab0e21 (1) ('x') (Left ([['a', 'b'], ['c', 'd']])); })
            (new TypeError (`Type-variable constraint violation
 
 ab0e21 :: a -> b -> Either (Array (Array a)) (Array b) -> a
@@ -703,7 +703,7 @@ ab0e21 :: a -> b -> Either (Array (Array a)) (Array b) -> a
 Since there is no type of which all the above values are members, the type-variable constraint has been violated.
 `));
 
-    throws (() => ab0e21 (1) ('x') (Right ([1, 2])))
+    throws (() => { ab0e21 (1) ('x') (Right ([1, 2])); })
            (new TypeError (`Type-variable constraint violation
 
 ab0e21 :: a -> b -> Either (Array (Array a)) (Array b) -> a
@@ -730,7 +730,7 @@ Since there is no type of which all the above values are members, the type-varia
         ([a, a])
         (x => x);
 
-    throws (() => id (/xxx/))
+    throws (() => { id (/xxx/); })
            (new TypeError (`Unrecognized value
 
 id :: a -> a
@@ -754,7 +754,7 @@ The environment is empty! Polymorphic functions require a non-empty environment.
         ([a, a])
         (x => x);
 
-    throws (() => id (/xxx/))
+    throws (() => { id (/xxx/); })
            (new TypeError (`Unrecognized value
 
 id :: a -> a
@@ -782,7 +782,7 @@ The environment contains the following types:
         ([$.Number, $.Number, $.Number])
         (x => y => 'XXX');
 
-    throws (() => add (2) (2))
+    throws (() => { add (2) (2); })
            (new TypeError (`Invalid value
 
 add :: Number -> Number -> Number
@@ -809,7 +809,7 @@ See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Number for in
     eq (lt (1) (1)) (false);
     eq (lt (1) (2)) (false);
 
-    throws (() => lt (123) ('abc'))
+    throws (() => { lt (123) ('abc'); })
            (new TypeError (`Type-variable constraint violation
 
 lt :: Ord a => a -> (a -> Boolean)
@@ -864,7 +864,7 @@ Since there is no type of which all the above values are members, the type-varia
     const z = [];
     z.push (z);
 
-    throws (() => id (z))
+    throws (() => { id (z); })
            (new TypeError (`Type-variable constraint violation
 
 id :: a -> a
@@ -885,7 +885,7 @@ Since there is no type of which all the above values are members, the type-varia
         ([a, Maybe (a), a])
         (x => maybe => maybe.isJust ? maybe.value : x);
 
-    throws (() => fromMaybe ('x') (Just (null)))
+    throws (() => { fromMaybe ('x') (Just (null)); })
            (new TypeError (`Type-variable constraint violation
 
 fromMaybe :: a -> Maybe a -> a
@@ -927,7 +927,7 @@ Since there is no type of which all the above values are members, the type-varia
            };
          });
 
-    throws (() => convertTo ('days') (new Date (0)))
+    throws (() => { convertTo ('days') (new Date (0)); })
            (new TypeError (`Invalid value
 
 convertTo :: TimeUnit -> ValidDate -> ValidNumber
@@ -966,7 +966,7 @@ The value at position 1 is not a member of ‘TimeUnit’.
 
     eq (id (['foo', true])) (['foo', true]);
 
-    throws (() => id (['foo', false]))
+    throws (() => { id (['foo', false]); })
            (new TypeError (`Type-variable constraint violation
 
 id :: a -> a
@@ -1033,7 +1033,7 @@ Since there is no type of which all the above values are members, the type-varia
     eq (length ({start: {x: 1, y: 1}, end: {x: 4, y: 5}})) (5);
     eq (length ({start: {x: 1, y: 1}, end: {x: 4, y: 5, color: 'red'}})) (5);
 
-    throws (() => dist (null))
+    throws (() => { dist (null); })
            (new TypeError (`Invalid value
 
 dist :: { x :: Number, y :: Number } -> { x :: Number, y :: Number } -> Number
@@ -1045,7 +1045,7 @@ dist :: { x :: Number, y :: Number } -> { x :: Number, y :: Number } -> Number
 The value at position 1 is not a member of ‘{ x :: Number, y :: Number }’.
 `));
 
-    throws (() => dist ({}))
+    throws (() => { dist ({}); })
            (new TypeError (`Invalid value
 
 dist :: { x :: Number, y :: Number } -> { x :: Number, y :: Number } -> Number
@@ -1057,7 +1057,7 @@ dist :: { x :: Number, y :: Number } -> { x :: Number, y :: Number } -> Number
 The value at position 1 is not a member of ‘{ x :: Number, y :: Number }’.
 `));
 
-    throws (() => dist ({x: 0}))
+    throws (() => { dist ({x: 0}); })
            (new TypeError (`Invalid value
 
 dist :: { x :: Number, y :: Number } -> { x :: Number, y :: Number } -> Number
@@ -1069,7 +1069,7 @@ dist :: { x :: Number, y :: Number } -> { x :: Number, y :: Number } -> Number
 The value at position 1 is not a member of ‘{ x :: Number, y :: Number }’.
 `));
 
-    throws (() => dist ({x: 0, y: null}))
+    throws (() => { dist ({x: 0, y: null}); })
            (new TypeError (`Invalid value
 
 dist :: { x :: Number, y :: Number } -> { x :: Number, y :: Number } -> Number
@@ -1083,7 +1083,7 @@ The value at position 1 is not a member of ‘Number’.
 See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Number for information about the Number type.
 `));
 
-    throws (() => length ({start: 0, end: 0}))
+    throws (() => { length ({start: 0, end: 0}); })
            (new TypeError (`Invalid value
 
 length :: { end :: { x :: Number, y :: Number }, start :: { x :: Number, y :: Number } } -> Number
@@ -1095,7 +1095,7 @@ length :: { end :: { x :: Number, y :: Number }, start :: { x :: Number, y :: Nu
 The value at position 1 is not a member of ‘{ x :: Number, y :: Number }’.
 `));
 
-    throws (() => length ({start: {x: 0, y: 0}, end: {x: null, y: null}}))
+    throws (() => { length ({start: {x: 0, y: 0}, end: {x: null, y: null}}); })
            (new TypeError (`Invalid value
 
 length :: { end :: { x :: Number, y :: Number }, start :: { x :: Number, y :: Number } } -> Number
@@ -1118,7 +1118,7 @@ See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Number for in
 
     eq (id ([{x: 0, y: 0}, {x: 1, y: 1}])) ([{x: 0, y: 0}, {x: 1, y: 1}]);
 
-    throws (() => $.RecordType ({x: /XXX/, y: /XXX/, z: $.Any}))
+    throws (() => { $.RecordType ({x: /XXX/, y: /XXX/, z: $.Any}); })
            (new TypeError (`Invalid value
 
 RecordType :: StrMap Type -> Type
@@ -1144,7 +1144,7 @@ See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Type for info
 
     eq (foo ({x: 1, y: 2, z: 3})) ({x: 1, y: 2, z: 3});
 
-    throws (() => foo ({x: 'abc', y: 123}))
+    throws (() => { foo ({x: 'abc', y: 123}); })
            (new TypeError (`Type-variable constraint violation
 
 foo :: { x :: a, y :: a } -> { x :: a, y :: a }
@@ -1167,7 +1167,7 @@ Since there is no type of which all the above values are members, the type-varia
 
     eq (fooBarBaz ({'foo "bar" baz': 42})) (42);
 
-    throws (() => fooBarBaz ({'foo "bar" baz': null}))
+    throws (() => { fooBarBaz ({'foo "bar" baz': null}); })
            (new TypeError (`Invalid value
 
 fooBarBaz :: { "foo \\"bar\\" baz" :: Number } -> Number
@@ -1194,7 +1194,7 @@ See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Number for in
     eq (prop ('x') ({x: 1, y: 2})) (1);
     eq (prop ('y') ({x: 1, y: 2})) (2);
 
-    throws (() => prop ('z') ({x: 1, y: 2}))
+    throws (() => { prop ('z') ({x: 1, y: 2}); })
            (new TypeError (`Invalid value
 
 prop ("z") :: { z :: a } -> a
@@ -1213,7 +1213,7 @@ The value at position 1 is not a member of ‘{ z :: a }’.
     eq (/x/g.global) (true);
     eq ('global' in /x/g) (true);
 
-    throws (() => prop ('global') (/x/g))
+    throws (() => { prop ('global') (/x/g); })
            (new TypeError (`Invalid value
 
 prop ("global") :: { global :: a } -> a
@@ -1228,7 +1228,7 @@ The value at position 1 is not a member of ‘{ global :: a }’.
     eq (['x'].length) (1);
     eq ('length' in ['x']) (true);
 
-    throws (() => prop ('length') (['x']))
+    throws (() => { prop ('length') (['x']); })
            (new TypeError (`Invalid value
 
 prop ("length") :: { length :: a } -> a
@@ -1246,7 +1246,7 @@ The value at position 1 is not a member of ‘{ length :: a }’.
     eq ($.Nullable.length) (1);
     eq (show ($.Nullable)) ('Nullable :: Type -> Type');
 
-    throws (() => $.Nullable (null))
+    throws (() => { $.Nullable (null); })
            (new TypeError (`Invalid value
 
 Nullable :: Type -> Type
@@ -1270,7 +1270,7 @@ See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Type for info
     eq (toUpper (null)) (null);
     eq (toUpper ('abc')) ('ABC');
 
-    throws (() => toUpper (['abc']))
+    throws (() => { toUpper (['abc']); })
            (new TypeError (`Invalid value
 
 toUpper :: Nullable String -> Nullable String
@@ -1294,7 +1294,7 @@ See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#String for in
     eq (defaultTo (0) (null)) (0);
     eq (defaultTo (0) (42)) (42);
 
-    throws (() => defaultTo (0) ('XXX'))
+    throws (() => { defaultTo (0) ('XXX'); })
            (new TypeError (`Type-variable constraint violation
 
 defaultTo :: a -> Nullable a -> a
@@ -1318,7 +1318,7 @@ Since there is no type of which all the above values are members, the type-varia
     eq (f (null)) (42);
     eq (f (0)) (42);
 
-    throws (() => f ('XXX'))
+    throws (() => { f ('XXX'); })
            (new TypeError (`Type-variable constraint violation
 
 f :: Nullable a -> Nullable a
@@ -1405,7 +1405,7 @@ Since there is no type of which all the above values are members, the type-varia
     eq (fst (['foo', 42])) ('foo');
     eq (snd (['foo', 42])) (42);
 
-    throws (() => fst (['foo']))
+    throws (() => { fst (['foo']); })
            (new TypeError (`Invalid value
 
 fst :: Array2 a b -> a
@@ -1521,7 +1521,7 @@ See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Array2 for in
         ([$.ValidDate, $.Number])
         (date => date.valueOf () / 1000);
 
-    throws (() => sinceEpoch (new Date ('foo')))
+    throws (() => { sinceEpoch (new Date ('foo')); })
            (new TypeError (`Invalid value
 
 sinceEpoch :: ValidDate -> Number
@@ -1800,7 +1800,7 @@ See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#ValidDate for
     eq (keys ({x: 1, y: 2, z: 3})) (['x', 'y', 'z']);
     eq (keys (o)) (['x', 'y', 'z']);
 
-    throws (() => keys ({a: 1, b: 'XXX'}))
+    throws (() => { keys ({a: 1, b: 'XXX'}); })
            (new TypeError (`Type-variable constraint violation
 
 keys :: StrMap a -> Array String
@@ -1817,7 +1817,7 @@ Since there is no type of which all the above values are members, the type-varia
     eq (values ({x: 1, y: 2, z: 3})) ([1, 2, 3]);
     eq (values (o)) ([1, 2, 3]);
 
-    throws (() => values ({a: 1, b: 'XXX'}))
+    throws (() => { values ({a: 1, b: 'XXX'}); })
            (new TypeError (`Type-variable constraint violation
 
 values :: StrMap a -> Array a
@@ -1839,7 +1839,7 @@ Since there is no type of which all the above values are members, the type-varia
 
     eq (testUnaryType ([{x: 1}, {y: 2}, {z: 3}])) ([{x: 1}, {y: 2}, {z: 3}]);
 
-    throws (() => testUnaryType ([{x: /xxx/}]))
+    throws (() => { testUnaryType ([{x: /xxx/}]); })
            (new TypeError (`Invalid value
 
 testUnaryType :: Array (StrMap Number) -> Array (StrMap Number)
@@ -1863,7 +1863,7 @@ See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Number for in
     eq (testBinaryType (Left ('XXX'))) (Left ('XXX'));
     eq (testBinaryType (Right ({x: 1, y: 2, z: 3}))) (Right ({x: 1, y: 2, z: 3}));
 
-    throws (() => testBinaryType (Right ({x: ['foo', false]})))
+    throws (() => { testBinaryType (Right ({x: ['foo', false]})); })
            (new TypeError (`Type-variable constraint violation
 
 testBinaryType :: Either a (StrMap b) -> Either a (StrMap b)
@@ -1912,7 +1912,7 @@ Since there is no type of which all the above values are members, the type-varia
     values.forEach (pair => {
       const x = pair[0];
       const types = pair[1];
-      throws (() => f (x))
+      throws (() => { f (x); })
              (new TypeError (`Invalid value
 
 f :: Null -> Null
@@ -1939,7 +1939,7 @@ See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Null for info
         ([$.Number, $.Number, $.Number])
         (x => y => x + y);
 
-    throws (() => add ([[1], [2]]))
+    throws (() => { add ([[1], [2]]); })
            (new TypeError (`Invalid value
 
 add :: Number -> Number -> Number
@@ -1979,7 +1979,7 @@ See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Number for in
     eq (ab (0) (false)) (Pair (0) (false));
     eq (ab (false) (0)) (Pair (false) (0));
 
-    throws (() => aa (0) (/x/))
+    throws (() => { aa (0) (/x/); })
            (new TypeError (`Type-variable constraint violation
 
 aa :: a -> a -> Pair a a
@@ -1993,7 +1993,7 @@ aa :: a -> a -> Pair a a
 Since there is no type of which all the above values are members, the type-variable constraint has been violated.
 `));
 
-    throws (() => aa ([Left ('XXX'), 42]))
+    throws (() => { aa ([Left ('XXX'), 42]); })
            (new TypeError (`Type-variable constraint violation
 
 aa :: a -> a -> Pair a a
@@ -2015,7 +2015,7 @@ Since there is no type of which all the above values are members, the type-varia
     eq (fromMaybe (0) (Nothing)) (0);
     eq (fromMaybe (0) (Just (42))) (42);
 
-    throws (() => fromMaybe (0) ([1, 2, 3]))
+    throws (() => { fromMaybe (0) ([1, 2, 3]); })
            (new TypeError (`Invalid value
 
 fromMaybe :: a -> Maybe a -> a
@@ -2038,7 +2038,7 @@ See http://example.com/my-package#Maybe for information about the my-package/May
 
     eq (fst (Pair ('XXX') (42))) ('XXX');
 
-    throws (() => fst (['XXX', 42]))
+    throws (() => { fst (['XXX', 42]); })
            (new TypeError (`Invalid value
 
 fst :: Pair a b -> a
@@ -2062,7 +2062,7 @@ See http://example.com/my-package#Pair for information about the my-package/Pair
     eq (twin (Pair (42) (42))) (true);
     eq (twin (Pair (42) (99))) (false);
 
-    throws (() => twin (Pair (42) ('XXX')))
+    throws (() => { twin (Pair (42) ('XXX')); })
            (new TypeError (`Type-variable constraint violation
 
 twin :: Pair a a -> Boolean
@@ -2088,7 +2088,7 @@ Since there is no type of which all the above values are members, the type-varia
     eq (concat (Right ('ABC')) (Left ('abc'))) (Right ('ABC'));
     eq (concat (Right ('ABC')) (Right ('DEF'))) (Right ('ABCDEF'));
 
-    throws (() => concat (Left ('abc')) (Left ([1, 2, 3])))
+    throws (() => { concat (Left ('abc')) (Left ([1, 2, 3])); })
            (new TypeError (`Type-variable constraint violation
 
 concat :: Either a b -> Either a b -> Either a b
@@ -2102,7 +2102,7 @@ concat :: Either a b -> Either a b -> Either a b
 Since there is no type of which all the above values are members, the type-variable constraint has been violated.
 `));
 
-    throws (() => concat (Right ('abc')) (Right ([1, 2, 3])))
+    throws (() => { concat (Right ('abc')) (Right ([1, 2, 3])); })
            (new TypeError (`Type-variable constraint violation
 
 concat :: Either a b -> Either a b -> Either a b
@@ -2125,7 +2125,7 @@ Since there is no type of which all the above values are members, the type-varia
 
     eq (f (1) (2) (3)) (1);
 
-    throws (() => f (Left ('abc')) (Left (/XXX/)))
+    throws (() => { f (Left ('abc')) (Left (/XXX/)); })
            (new TypeError (`Type-variable constraint violation
 
 f :: a -> a -> a -> a
@@ -2139,7 +2139,7 @@ f :: a -> a -> a -> a
 Since there is no type of which all the above values are members, the type-variable constraint has been violated.
 `));
 
-    throws (() => f (Right (123)) (Right (/XXX/)))
+    throws (() => { f (Right (123)) (Right (/XXX/)); })
            (new TypeError (`Type-variable constraint violation
 
 f :: a -> a -> a -> a
@@ -2153,7 +2153,7 @@ f :: a -> a -> a -> a
 Since there is no type of which all the above values are members, the type-variable constraint has been violated.
 `));
 
-    throws (() => f (Left ('abc')) (Right (123)) (Left (/XXX/)))
+    throws (() => { f (Left ('abc')) (Right (123)) (Left (/XXX/)); })
            (new TypeError (`Type-variable constraint violation
 
 f :: a -> a -> a -> a
@@ -2167,7 +2167,7 @@ f :: a -> a -> a -> a
 Since there is no type of which all the above values are members, the type-variable constraint has been violated.
 `));
 
-    throws (() => f (Left ('abc')) (Right (123)) (Right (/XXX/)))
+    throws (() => { f (Left ('abc')) (Right (123)) (Right (/XXX/)); })
            (new TypeError (`Type-variable constraint violation
 
 f :: a -> a -> a -> a
@@ -2196,7 +2196,7 @@ Since there is no type of which all the above values are members, the type-varia
     eq (unnest ([[1, 2], [3, 4], [5, 6]])) ([1, 2, 3, 4, 5, 6]);
     eq (unnest ([[null], [null], [null]])) ([null, null, null]);
 
-    throws (() => unnest ([1, 2, 3]))
+    throws (() => { unnest ([1, 2, 3]); })
            (new TypeError (`Invalid value
 
 unnest :: Array (Array a) -> Array a
@@ -2219,7 +2219,7 @@ See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Array for inf
           $.Array (Either ($.String) ($.Integer))])
         (xs => ys => [Left (/xxx/)]);
 
-    throws (() => concatComplex ([Left (/xxx/), Right (0), Right (0.1), Right (0.2)]))
+    throws (() => { concatComplex ([Left (/xxx/), Right (0), Right (0.1), Right (0.2)]); })
            (new TypeError (`Invalid value
 
 concatComplex :: Array (Either String Integer) -> Array (Either String Integer) -> Array (Either String Integer)
@@ -2233,7 +2233,7 @@ The value at position 1 is not a member of ‘String’.
 See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#String for information about the String type.
 `));
 
-    throws (() => concatComplex ([Left ('abc'), Right (0), Right (0.1), Right (0.2)]))
+    throws (() => { concatComplex ([Left ('abc'), Right (0), Right (0.1), Right (0.2)]); })
            (new TypeError (`Invalid value
 
 concatComplex :: Array (Either String Integer) -> Array (Either String Integer) -> Array (Either String Integer)
@@ -2247,7 +2247,7 @@ The value at position 1 is not a member of ‘Integer’.
 See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Integer for information about the sanctuary-def/Integer type.
 `));
 
-    throws (() => concatComplex ([]) ([Left (/xxx/), Right (0), Right (0.1), Right (0.2)]))
+    throws (() => { concatComplex ([]) ([Left (/xxx/), Right (0), Right (0.1), Right (0.2)]); })
            (new TypeError (`Invalid value
 
 concatComplex :: Array (Either String Integer) -> Array (Either String Integer) -> Array (Either String Integer)
@@ -2261,7 +2261,7 @@ The value at position 1 is not a member of ‘String’.
 See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#String for information about the String type.
 `));
 
-    throws (() => concatComplex ([]) ([Left ('abc'), Right (0), Right (0.1), Right (0.2)]))
+    throws (() => { concatComplex ([]) ([Left ('abc'), Right (0), Right (0.1), Right (0.2)]); })
            (new TypeError (`Invalid value
 
 concatComplex :: Array (Either String Integer) -> Array (Either String Integer) -> Array (Either String Integer)
@@ -2275,7 +2275,7 @@ The value at position 1 is not a member of ‘Integer’.
 See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Integer for information about the sanctuary-def/Integer type.
 `));
 
-    throws (() => concatComplex ([]) ([]))
+    throws (() => { concatComplex ([]) ([]); })
            (new TypeError (`Invalid value
 
 concatComplex :: Array (Either String Integer) -> Array (Either String Integer) -> Array (Either String Integer)
@@ -2307,7 +2307,7 @@ See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#String for in
     eq (concat ([1, 2, 3]) ([4, 5, 6])) ([1, 2, 3, 4, 5, 6]);
     eq (concat ([Left ('XXX')]) ([Right (42)])) ([Left ('XXX'), Right (42)]);
 
-    throws (() => concat ([[1, 2, 3], [Left ('XXX'), Right (42)]]))
+    throws (() => { concat ([[1, 2, 3], [Left ('XXX'), Right (42)]]); })
            (new TypeError (`Type-variable constraint violation
 
 concat :: Array a -> Array a -> Array a
@@ -2320,7 +2320,7 @@ concat :: Array a -> Array a -> Array a
 Since there is no type of which all the above values are members, the type-variable constraint has been violated.
 `));
 
-    throws (() => concat ([[1, 2, 3], [Right (42), Left ('XXX')]]))
+    throws (() => { concat ([[1, 2, 3], [Right (42), Left ('XXX')]]); })
            (new TypeError (`Type-variable constraint violation
 
 concat :: Array a -> Array a -> Array a
@@ -2340,7 +2340,7 @@ Since there is no type of which all the above values are members, the type-varia
         ([$.Array ($.Array (a)), $.Array ($.Array (a)), $.Array ($.Array (a))])
         (xss => yss => [['a', 'b', 'c'], [1, 2, 3]]);
 
-    throws (() => concatNested ([['a', 'b', 'c'], [1, 2, 3]]))
+    throws (() => { concatNested ([['a', 'b', 'c'], [1, 2, 3]]); })
            (new TypeError (`Type-variable constraint violation
 
 concatNested :: Array (Array a) -> Array (Array a) -> Array (Array a)
@@ -2357,7 +2357,7 @@ concatNested :: Array (Array a) -> Array (Array a) -> Array (Array a)
 Since there is no type of which all the above values are members, the type-variable constraint has been violated.
 `));
 
-    throws (() => concatNested ([]) ([['a', 'b', 'c'], [1, 2, 3]]))
+    throws (() => { concatNested ([]) ([['a', 'b', 'c'], [1, 2, 3]]); })
            (new TypeError (`Type-variable constraint violation
 
 concatNested :: Array (Array a) -> Array (Array a) -> Array (Array a)
@@ -2374,7 +2374,7 @@ concatNested :: Array (Array a) -> Array (Array a) -> Array (Array a)
 Since there is no type of which all the above values are members, the type-variable constraint has been violated.
 `));
 
-    throws (() => concatNested ([]) ([]))
+    throws (() => { concatNested ([]) ([]); })
            (new TypeError (`Type-variable constraint violation
 
 concatNested :: Array (Array a) -> Array (Array a) -> Array (Array a)
@@ -2412,7 +2412,7 @@ Since there is no type of which all the above values are members, the type-varia
 
     eq (f (s => s.length) (['foo', 'bar', 'baz', 'quux'])) ([3, 3, 3, 4]);
 
-    throws (() => g (/xxx/))
+    throws (() => { g (/xxx/); })
            (new TypeError (`Invalid value
 
 g :: (String -> Number) -> Array String -> Array Number
@@ -2424,7 +2424,7 @@ g :: (String -> Number) -> Array String -> Array Number
 The value at position 1 is not a member of ‘String -> Number’.
 `));
 
-    throws (() => g (s => s.length) (['a', 'b', 'c']))
+    throws (() => { g (s => s.length) (['a', 'b', 'c']); })
            (new TypeError (`Invalid value
 
 g :: (String -> Number) -> Array String -> Array Number
@@ -2438,7 +2438,7 @@ The value at position 1 is not a member of ‘String’.
 See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#String for information about the String type.
 `));
 
-    throws (() => f (x => x) (['a', 'b', 'c']))
+    throws (() => { f (x => x) (['a', 'b', 'c']); })
            (new TypeError (`Invalid value
 
 f :: (String -> Number) -> Array String -> Array Number
@@ -2467,7 +2467,7 @@ See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Number for in
 
     eq (map (s => s.length) (['foo', 'bar'])) ([3, 3]);
 
-    throws (() => map (s => s.length) (['foo', 'bar', 'baz', 'quux']))
+    throws (() => { map (s => s.length) (['foo', 'bar', 'baz', 'quux']); })
            (new TypeError (`Type-variable constraint violation
 
 map :: (a -> b) -> Array a -> Array b
@@ -2487,7 +2487,7 @@ map :: (a -> b) -> Array a -> Array b
 Since there is no type of which all the above values are members, the type-variable constraint has been violated.
 `));
 
-    throws (() => map (s => s === 'baz' ? null : s.length) (['foo', 'bar', 'baz']))
+    throws (() => { map (s => s === 'baz' ? null : s.length) (['foo', 'bar', 'baz']); })
            (new TypeError (`Type-variable constraint violation
 
 map :: (a -> b) -> Array a -> Array b
@@ -2510,7 +2510,7 @@ Since there is no type of which all the above values are members, the type-varia
 
     eq (reduce_ ((x, y) => x + y) (0) ([1, 2, 3, 4, 5, 6])) (21);
 
-    throws (() => reduce_ (null))
+    throws (() => { reduce_ (null); })
            (new TypeError (`Invalid value
 
 reduce_ :: ((a, b) -> a) -> a -> Array b -> a
@@ -2542,7 +2542,7 @@ The value at position 1 is not a member of ‘(a, b) -> a’.
     eq (unfoldr (h) (4)) ([4]);
     eq (unfoldr (h) (1)) ([1, 2, 3, 4]);
 
-    throws (() => unfoldr (null))
+    throws (() => { unfoldr (null); })
            (new TypeError (`Invalid value
 
 unfoldr :: (b -> Maybe (Array2 a b)) -> b -> Array a
@@ -2554,7 +2554,7 @@ unfoldr :: (b -> Maybe (Array2 a b)) -> b -> Array a
 The value at position 1 is not a member of ‘b -> Maybe (Array2 a b)’.
 `));
 
-    throws (() => unfoldr (n => n >= 5 ? Nothing : Just (n)) (1))
+    throws (() => { unfoldr (n => n >= 5 ? Nothing : Just (n)) (1); })
            (new TypeError (`Invalid value
 
 unfoldr :: (b -> Maybe (Array2 a b)) -> b -> Array a
@@ -2568,7 +2568,7 @@ The value at position 1 is not a member of ‘Array2 a b’.
 See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Array2 for information about the sanctuary-def/Array2 type.
 `));
 
-    throws (() => unfoldr (n => n >= 5 ? Nothing : Just ([null, 'XXX'])) (1))
+    throws (() => { unfoldr (n => n >= 5 ? Nothing : Just ([null, 'XXX'])) (1); })
            (new TypeError (`Type-variable constraint violation
 
 unfoldr :: (b -> Maybe (Array2 a b)) -> b -> Array a
@@ -2591,7 +2591,7 @@ Since there is no type of which all the above values are members, the type-varia
         ([a, $.Function ([a, b]), b])
         (x => f => f (/* x */));
 
-    throws (() => T (100) (Math.sqrt))
+    throws (() => { T (100) (Math.sqrt); })
            (new TypeError (`‘T’ applied ‘a -> b’ to the wrong number of arguments
 
 T :: a -> (a -> b) -> b
@@ -2634,7 +2634,7 @@ Expected one argument but received zero arguments.
     eq (concat ([1, 2, 3]) ([4, 5, 6])) ([1, 2, 3, 4, 5, 6]);
     eq (concat ('abc') ('def')) ('abcdef');
 
-    throws (() => concat (/x/))
+    throws (() => { concat (/x/); })
            (new TypeError (`Type-class constraint violation
 
 concat :: Semigroup a => a -> a -> a
@@ -2648,7 +2648,7 @@ concat :: Semigroup a => a -> a -> a
 See https://github.com/sanctuary-js/sanctuary-type-classes/tree/v${Z$version}#Semigroup for information about the sanctuary-type-classes/Semigroup type class.
 `));
 
-    throws (() => concat ([]) (''))
+    throws (() => { concat ([]) (''); })
            (new TypeError (`Type-variable constraint violation
 
 concat :: Semigroup a => a -> a -> a
@@ -2662,7 +2662,7 @@ concat :: Semigroup a => a -> a -> a
 Since there is no type of which all the above values are members, the type-variable constraint has been violated.
 `));
 
-    throws (() => concat ('') ([]))
+    throws (() => { concat ('') ([]); })
            (new TypeError (`Type-variable constraint violation
 
 concat :: Semigroup a => a -> a -> a
@@ -2690,7 +2690,7 @@ Since there is no type of which all the above values are members, the type-varia
     eq (filter (even) (Just (9))) (Nothing);
     eq (filter (even) (Just (4))) (Just (4));
 
-    throws (() => filter (even) (Right (42)))
+    throws (() => { filter (even) (Right (42)); })
            (new TypeError (`Type-class constraint violation
 
 filter :: Filterable f => (a -> Boolean) -> f a -> f a
@@ -2711,7 +2711,7 @@ See https://github.com/sanctuary-js/sanctuary-type-classes/tree/v${Z$version}#Fi
         ([Maybe (a), Maybe (a), Maybe (a)])
         (m => n => Just (/xxx/));
 
-    throws (() => concatMaybes (Just (/xxx/)))
+    throws (() => { concatMaybes (Just (/xxx/)); })
            (new TypeError (`Type-class constraint violation
 
 concatMaybes :: Semigroup a => Maybe a -> Maybe a -> Maybe a
@@ -2725,7 +2725,7 @@ concatMaybes :: Semigroup a => Maybe a -> Maybe a -> Maybe a
 See https://github.com/sanctuary-js/sanctuary-type-classes/tree/v${Z$version}#Semigroup for information about the sanctuary-type-classes/Semigroup type class.
 `));
 
-    throws (() => concatMaybes (Just ('abc')) (Just (/xxx/)))
+    throws (() => { concatMaybes (Just ('abc')) (Just (/xxx/)); })
            (new TypeError (`Type-class constraint violation
 
 concatMaybes :: Semigroup a => Maybe a -> Maybe a -> Maybe a
@@ -2739,7 +2739,7 @@ concatMaybes :: Semigroup a => Maybe a -> Maybe a -> Maybe a
 See https://github.com/sanctuary-js/sanctuary-type-classes/tree/v${Z$version}#Semigroup for information about the sanctuary-type-classes/Semigroup type class.
 `));
 
-    throws (() => concatMaybes (Just ('abc')) (Just ('def')))
+    throws (() => { concatMaybes (Just ('abc')) (Just ('def')); })
            (new TypeError (`Type-class constraint violation
 
 concatMaybes :: Semigroup a => Maybe a -> Maybe a -> Maybe a
@@ -2762,7 +2762,7 @@ See https://github.com/sanctuary-js/sanctuary-type-classes/tree/v${Z$version}#Se
 
     eq (sillyConst (Just (42)) ([1, 2, 3])) (Just (42));
 
-    throws (() => sillyConst (true))
+    throws (() => { sillyConst (true); })
            (new TypeError (`Type-class constraint violation
 
 sillyConst :: (Alternative a, Semigroup b) => a -> b -> a
@@ -2797,7 +2797,7 @@ See https://github.com/sanctuary-js/sanctuary-type-classes/tree/v${Z$version}#Al
     const xs = [1, 4, 9];
     xs['fantasy-land/map'] = xs.map;
 
-    throws (() => map (Math.sqrt) (xs))
+    throws (() => { map (Math.sqrt) (xs); })
            (new TypeError (`‘map’ applied ‘a -> b’ to the wrong number of arguments
 
 map :: Functor f => (a -> b) -> f a -> f b
@@ -2824,7 +2824,7 @@ Expected one argument but received three arguments:
     eq (sum (Left ('XXX'))) (0);
     eq (sum (Right (42))) (42);
 
-    throws (() => sum (42))
+    throws (() => { sum (42); })
            (new TypeError (`Type-class constraint violation
 
 sum :: Foldable f => f FiniteNumber -> FiniteNumber
@@ -2838,7 +2838,7 @@ sum :: Foldable f => f FiniteNumber -> FiniteNumber
 See https://github.com/sanctuary-js/sanctuary-type-classes/tree/v${Z$version}#Foldable for information about the sanctuary-type-classes/Foldable type class.
 `));
 
-    throws (() => sum (Just (Infinity)))
+    throws (() => { sum (Just (Infinity)); })
            (new TypeError (`Invalid value
 
 sum :: Foldable f => f FiniteNumber -> FiniteNumber
@@ -2873,7 +2873,7 @@ See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#FiniteNumber 
 
     eq (sort (['foo', 'bar', 'baz'])) (['bar', 'baz', 'foo']);
 
-    throws (() => sort (['foo', true, 42]))
+    throws (() => { sort (['foo', true, 42]); })
            (new TypeError (`Type-variable constraint violation
 
 sort :: (Ord a, Applicative f, Foldable f, Monoid f) => f a -> f a
@@ -2886,7 +2886,7 @@ sort :: (Ord a, Applicative f, Foldable f, Monoid f) => f a -> f a
 Since there is no type of which all the above values are members, the type-variable constraint has been violated.
 `));
 
-    throws (() => sort ([Math.sin, Math.cos]))
+    throws (() => { sort ([Math.sin, Math.cos]); })
            (new TypeError (`Type-class constraint violation
 
 sort :: (Ord a, Applicative f, Foldable f, Monoid f) => f a -> f a
@@ -2918,7 +2918,7 @@ See https://github.com/sanctuary-js/sanctuary-type-classes/tree/v${Z$version}#Or
     eq (show (bimap)) ('bimap :: Bifunctor f => (a -> b) -> (c -> d) -> f a c -> f b d');
     eq (bimap (s => s.length) (Math.sqrt) (Pair ('Sanctuary') (25))) (Pair (9) (5));
 
-    throws (() => bimap (xs => xs.length) (Math.sqrt) (Pair (['foo', true, 42]) (null)))
+    throws (() => { bimap (xs => xs.length) (Math.sqrt) (Pair (['foo', true, 42]) (null)); })
            (new TypeError (`Type-variable constraint violation
 
 bimap :: Bifunctor f => (a -> b) -> (c -> d) -> f a c -> f b d
@@ -2937,7 +2937,7 @@ Since there is no type of which all the above values are members, the type-varia
         ([$.Function ([a, m (b)]), m (a), m (b)])
         (curry2 (Z.chain));
 
-    throws (() => chain (Left) (Just ('x')))
+    throws (() => { chain (Left) (Just ('x')); })
            (new TypeError (`Type-variable constraint violation
 
 chain :: Chain m => (a -> m b) -> m a -> m b
@@ -2991,7 +2991,7 @@ Since there is no type of which all the above values are members, the type-varia
         ([$.Function ([a, b]), f (a), f (b)])
         (curry2 (Z.map));
 
-    throws (() => map (Right (Right (Right (Right (0))))))
+    throws (() => { map (Right (Right (Right (Right (0))))); })
            (new TypeError (`Invalid value
 
 map :: Functor f => (a -> b) -> f a -> f b
@@ -3070,7 +3070,7 @@ suite ('UnaryType', () => {
   });
 
   test ('returns a type constructor which type checks its arguments', () => {
-    throws (() => Maybe ({x: $.Number, y: $.Number}))
+    throws (() => { Maybe ({x: $.Number, y: $.Number}); })
            (new TypeError (`Invalid value
 
 Maybe :: Type -> Type
@@ -3096,7 +3096,7 @@ suite ('BinaryType', () => {
   });
 
   test ('returns a type constructor which type checks its arguments', () => {
-    throws (() => Either ($.Number) ({x: $.Number, y: $.Number}))
+    throws (() => { Either ($.Number) ({x: $.Number, y: $.Number}); })
            (new TypeError (`Invalid value
 
 Either :: Type -> Type -> Type
@@ -3139,7 +3139,7 @@ suite ('UnaryTypeVariable', () => {
     eq (show (f)) ('f :: Type -> Type');
     eq (show (f (a))) ('(f a)');
 
-    throws (() => f (Number))
+    throws (() => { f (Number); })
            (new TypeError (`Invalid value
 
 f :: Type -> Type
@@ -3172,7 +3172,7 @@ suite ('BinaryTypeVariable', () => {
     eq (show (p)) ('p :: Type -> Type -> Type');
     eq (show (p (a) (b))) ('(p a b)');
 
-    throws (() => p (Number))
+    throws (() => { p (Number); })
            (new TypeError (`Invalid value
 
 p :: Type -> Type -> Type
@@ -3210,7 +3210,7 @@ suite ('Thunk', () => {
 
     eq (why (() => 42)) (42);
 
-    throws (() => why (() => 'Who knows?'))
+    throws (() => { why (() => 'Who knows?'); })
            (new TypeError (`Invalid value
 
 why :: (() -> Integer) -> Integer
@@ -3252,7 +3252,7 @@ suite ('Predicate', () => {
     eq (abs (42)) (42);
     eq (abs (-1)) (1);
 
-    throws (() => when (x => x) (x => x) ('foo'))
+    throws (() => { when (x => x) (x => x) ('foo'); })
            (new TypeError (`Invalid value
 
 when :: (a -> Boolean) -> (a -> a) -> a -> a
