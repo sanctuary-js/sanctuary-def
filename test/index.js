@@ -1004,6 +1004,20 @@ Since there is no type of which all the above values are members, the type-varia
     eq (pred (Object.create (Object.defineProperty ({}, 'x', {value: 0, enumerable: true})))) (true);
     eq (pred (Object.create (Object.defineProperty ({}, 'x', {value: 0, enumerable: false})))) (false);
 
+    //    Empty :: Type
+    const Empty = $.RecordType ({});
+
+    eq ($.test ([]) (Empty) (null)) (true);
+    eq ($.test ([]) (Empty) (undefined)) (true);
+    eq ($.test ([]) (Empty) (false)) (true);
+    eq ($.test ([]) (Empty) (12.34)) (true);
+    eq ($.test ([]) (Empty) ('xyz')) (true);
+    eq ($.test ([]) (Empty) (new Boolean (true))) (true);
+    eq ($.test ([]) (Empty) (new Number (12.34))) (true);
+    eq ($.test ([]) (Empty) (new String ('xyz'))) (true);
+    eq ($.test ([]) (Empty) ([])) (true);
+    eq ($.test ([]) (Empty) ({})) (true);
+
     //    Point :: Type
     const Point = $.RecordType ({x: $.Number, y: $.Number});
 
@@ -1246,6 +1260,20 @@ The value at position 1 is not a member of ‘{ length :: a }’.
     eq ($.NamedRecordType.length) (1);
     eq (show ($.NamedRecordType)) ('NamedRecordType :: NonEmpty String -> String -> StrMap Type -> Type');
     eq (show ($.NamedRecordType ('my-package/Circle') ('') ({radius: $.PositiveFiniteNumber}))) ('Circle');
+
+    //    Empty :: Type
+    const Empty = $.NamedRecordType ('my-package/Empty') ('') ({});
+
+    eq ($.test ([]) (Empty) (null)) (true);
+    eq ($.test ([]) (Empty) (undefined)) (true);
+    eq ($.test ([]) (Empty) (false)) (true);
+    eq ($.test ([]) (Empty) (12.34)) (true);
+    eq ($.test ([]) (Empty) ('xyz')) (true);
+    eq ($.test ([]) (Empty) (new Boolean (true))) (true);
+    eq ($.test ([]) (Empty) (new Number (12.34))) (true);
+    eq ($.test ([]) (Empty) (new String ('xyz'))) (true);
+    eq ($.test ([]) (Empty) ([])) (true);
+    eq ($.test ([]) (Empty) ({})) (true);
 
     throws (() => { $.NamedRecordType ('my-package/Circle') ('') ({radius: Number}); })
            (new TypeError (`Invalid value
