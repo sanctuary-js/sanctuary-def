@@ -2033,9 +2033,9 @@
 
   //. ### Type classes
   //.
-  //. `concatS`, defined earlier, is a function that concatenates two strings.
-  //. This is overly restrictive, since other types support concatenation
-  //. (Array, for example).
+  //. One can trivially define a function of type `String -> String -> String`
+  //. that concatenates two strings. This is overly restrictive, though, since
+  //. other types support concatenation (`Array a`, for example).
   //.
   //. One could use a type variable to define a polymorphic "concat" function:
   //.
