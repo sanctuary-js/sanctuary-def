@@ -1743,6 +1743,7 @@
     }
 
     function test(x) {
+      if (x == null) return false;
       var missing = {};
       keys.forEach (function(k) { missing[k] = k; });
       for (var k in x) delete missing[k];
@@ -1816,6 +1817,7 @@
         }
 
         function test(x) {
+          if (x == null) return false;
           var missing = {};
           keys.forEach (function(k) { missing[k] = k; });
           for (var k in x) delete missing[k];
