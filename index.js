@@ -11,7 +11,7 @@
 //. # sanctuary-def
 //.
 //. sanctuary-def is a run-time type system for JavaScript. It facilitates
-//. the definition of curried JavaScript functions which are explicit about
+//. the definition of curried JavaScript functions that are explicit about
 //. the number of arguments to which they may be applied and the types of
 //. those arguments.
 //.
@@ -23,7 +23,7 @@
 //.
 //. The next step is to define an environment. An environment is an array
 //. of [types][]. [`env`][] is an environment containing all the built-in
-//. JavaScript types. It may be used as the basis for environments which
+//. JavaScript types. It may be used as the basis for environments that
 //. include custom types in addition to the built-in types:
 //.
 //. ```javascript
@@ -456,7 +456,7 @@
   //. ### Types
   //.
   //. Conceptually, a type is a set of values. One can think of a value of
-  //. type `Type` as a function of type `Any -> Boolean` which tests values
+  //. type `Type` as a function of type `Any -> Boolean` that tests values
   //. for membership in the set (though this is an oversimplification).
 
   //# Any :: Type
@@ -619,7 +619,7 @@
 
   //# Nullable :: Type -> Type
   //.
-  //. Constructor for types which include `null` as a member.
+  //. Constructor for types that include `null` as a member.
   var Nullable = UnaryTypeWithUrl
     ('sanctuary-def/Nullable')
     (K (true))
@@ -1298,7 +1298,7 @@
   //.
   //.   - the documentation URL of `t` (exposed as `t.url`); and
   //.
-  //.   - a predicate which accepts any JavaScript value and returns `true` if
+  //.   - a predicate that accepts any JavaScript value and returns `true` if
   //.     (and only if) the value is a member of `t`.
   //.
   //. For example:
@@ -1378,10 +1378,10 @@
   //.
   //.   - the documentation URL of `t` (exposed as `t.url`);
   //.
-  //.   - a predicate which accepts any JavaScript value and returns `true`
+  //.   - a predicate that accepts any JavaScript value and returns `true`
   //.     if (and only if) the value is a member of `t x` for some type `x`;
   //.
-  //.   - a function which takes any value of type `t a` and returns an array
+  //.   - a function that takes any value of type `t a` and returns an array
   //.     of the values of type `a` contained in the `t` (exposed as
   //.     `t.types.$1.extractor`); and
   //.
@@ -1496,15 +1496,15 @@
   //.
   //.   - the documentation URL of `t` (exposed as `t.url`);
   //.
-  //.   - a predicate which accepts any JavaScript value and returns `true`
+  //.   - a predicate that accepts any JavaScript value and returns `true`
   //.     if (and only if) the value is a member of `t x y` for some types
   //.     `x` and `y`;
   //.
-  //.   - a function which takes any value of type `t a b` and returns an array
+  //.   - a function that takes any value of type `t a b` and returns an array
   //.     of the values of type `a` contained in the `t` (exposed as
   //.     `t.types.$1.extractor`);
   //.
-  //.   - a function which takes any value of type `t a b` and returns an array
+  //.   - a function that takes any value of type `t a b` and returns an array
   //.     of the values of type `b` contained in the `t` (exposed as
   //.     `t.types.$2.extractor`);
   //.
@@ -2014,7 +2014,7 @@
   //# Thunk :: Type -> Type
   //.
   //. `$.Thunk (T)` is shorthand for `$.Function ([T])`, the type comprising
-  //. every nullary function (thunk) which returns a value of type `T`.
+  //. every nullary function (thunk) that returns a value of type `T`.
   var Thunk =
   def ('Thunk')
       ({})
@@ -2024,7 +2024,7 @@
   //# Predicate :: Type -> Type
   //.
   //. `$.Predicate (T)` is shorthand for `$.Function ([T, $.Boolean])`, the
-  //. type comprising every predicate function which takes a value of type `T`.
+  //. type comprising every predicate function that takes a value of type `T`.
   var Predicate =
   def ('Predicate')
       ({})
@@ -2033,7 +2033,7 @@
 
   //. ### Type classes
   //.
-  //. `concatS`, defined earlier, is a function which concatenates two strings.
+  //. `concatS`, defined earlier, is a function that concatenates two strings.
   //. This is overly restrictive, since other types support concatenation
   //. (Array, for example).
   //.
