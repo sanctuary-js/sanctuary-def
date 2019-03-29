@@ -1007,8 +1007,8 @@ Since there is no type of which all the above values are members, the type-varia
     //    Empty :: Type
     const Empty = $.RecordType ({});
 
-    eq ($.test ([]) (Empty) (null)) (true);
-    eq ($.test ([]) (Empty) (undefined)) (true);
+    eq ($.test ([]) (Empty) (null)) (false);
+    eq ($.test ([]) (Empty) (undefined)) (false);
     eq ($.test ([]) (Empty) (false)) (true);
     eq ($.test ([]) (Empty) (12.34)) (true);
     eq ($.test ([]) (Empty) ('xyz')) (true);
@@ -1264,8 +1264,8 @@ The value at position 1 is not a member of ‘{ length :: a }’.
     //    Empty :: Type
     const Empty = $.NamedRecordType ('my-package/Empty') ('') ({});
 
-    eq ($.test ([]) (Empty) (null)) (true);
-    eq ($.test ([]) (Empty) (undefined)) (true);
+    eq ($.test ([]) (Empty) (null)) (false);
+    eq ($.test ([]) (Empty) (undefined)) (false);
     eq ($.test ([]) (Empty) (false)) (true);
     eq ($.test ([]) (Empty) (12.34)) (true);
     eq ($.test ([]) (Empty) ('xyz')) (true);
