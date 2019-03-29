@@ -905,8 +905,6 @@
     process.env != null &&
     process.env.NODE_ENV === 'production';
 
-  var def = _create ({checkTypes: !production, env: env});
-
   //  numbers :: Array String
   var numbers = [
     'zero',
@@ -1362,12 +1360,6 @@
     };
   }
 
-  var CheckedNullaryType =
-  def ('NullaryType')
-      ({})
-      ([String_, String_, Function_ ([Any, Boolean_]), Type])
-      (NullaryType);
-
   //# UnaryType :: String -> String -> (Any -> Boolean) -> (t a -> Array a) -> Type -> Type
   //.
   //. Type constructor for types with one type variable (such as [`Array`][]).
@@ -1466,19 +1458,6 @@
       };
     };
   }
-
-  var CheckedUnaryType =
-  def ('UnaryType')
-      ({})
-      ([String_,
-        String_,
-        Unchecked ('(Any -> Boolean)'),
-        Unchecked ('(t a -> Array a)'),
-        AnyFunction])
-      (function(name) {
-         return B (B (B (def (stripNamespace (name)) ({}) ([Type, Type]))))
-                  (UnaryType (name));
-       });
 
   //  fromUnaryType :: Type -> (Type -> Type)
   function fromUnaryType(t) {
@@ -1611,22 +1590,6 @@
     };
   }
 
-  var CheckedBinaryType =
-  def ('BinaryType')
-      ({})
-      ([String_,
-        String_,
-        Unchecked ('(Any -> Boolean)'),
-        Unchecked ('(t a b -> Array a)'),
-        Unchecked ('(t a b -> Array b)'),
-        AnyFunction])
-      (function(name) {
-         return B (B (B (B (def (stripNamespace (name))
-                                ({})
-                                ([Type, Type, Type])))))
-                  (BinaryType (name));
-       });
-
   //  xprod :: (Type, Array Type, Array Type) -> Array Type
   function xprod(t, $1s, $2s) {
     return Z.chain (
@@ -1666,12 +1629,6 @@
       return B (NullaryType (name) (url)) (memberOf);
     };
   }
-
-  var CheckedEnumType =
-  def ('EnumType')
-      ({})
-      ([String_, String_, Array_ (Any), Type])
-      (EnumType);
 
   //# RecordType :: StrMap Type -> Type
   //.
@@ -1758,9 +1715,6 @@
     return _Type (RECORD, '', '', format, test, keys, $types);
   }
 
-  var CheckedRecordType =
-  def ('RecordType') ({}) ([StrMap (Type), Type]) (RecordType);
-
   //# NamedRecordType :: NonEmpty String -> String -> StrMap Type -> Type
   //.
   //. `NamedRecordType` is used to construct named record types. The type
@@ -1835,12 +1789,6 @@
     };
   }
 
-  var CheckedNamedRecordType =
-  def ('NamedRecordType')
-      ({})
-      ([NonEmpty (String_), String_, StrMap (Type), Type])
-      (NamedRecordType);
-
   //# TypeVariable :: String -> Type
   //.
   //. Polymorphism is powerful. Not being able to define a function for
@@ -1901,9 +1849,6 @@
     return _Type (VARIABLE, name, '', always2 (name), K (true), [], {});
   }
 
-  var CheckedTypeVariable =
-  def ('TypeVariable') ({}) ([String_, Type]) (TypeVariable);
-
   //# UnaryTypeVariable :: String -> Type -> Type
   //.
   //. Combines [`UnaryType`][] and [`TypeVariable`][].
@@ -1962,14 +1907,6 @@
     };
   }
 
-  var CheckedUnaryTypeVariable =
-  def ('UnaryTypeVariable')
-      ({})
-      ([String_, AnyFunction])
-      (function(name) {
-         return def (name) ({}) ([Type, Type]) (UnaryTypeVariable (name));
-       });
-
   //# BinaryTypeVariable :: String -> Type -> Type -> Type
   //.
   //. Combines [`BinaryType`][] and [`TypeVariable`][].
@@ -2002,36 +1939,17 @@
     };
   }
 
-  var CheckedBinaryTypeVariable =
-  def ('BinaryTypeVariable')
-      ({})
-      ([String_, AnyFunction])
-      (function(name) {
-         return def (name)
-                    ({})
-                    ([Type, Type, Type])
-                    (BinaryTypeVariable (name));
-       });
-
   //# Thunk :: Type -> Type
   //.
   //. `$.Thunk (T)` is shorthand for `$.Function ([T])`, the type comprising
   //. every nullary function (thunk) that returns a value of type `T`.
-  var Thunk =
-  def ('Thunk')
-      ({})
-      ([Type, Type])
-      (function(t) { return Function_ ([t]); });
+  function Thunk(t) { return Function_ ([t]); }
 
   //# Predicate :: Type -> Type
   //.
   //. `$.Predicate (T)` is shorthand for `$.Function ([T, $.Boolean])`, the
   //. type comprising every predicate function that takes a value of type `T`.
-  var Predicate =
-  def ('Predicate')
-      ({})
-      ([Type, Type])
-      (function(t) { return Function_ ([t, Boolean_]); });
+  function Predicate(t) { return Function_ ([t, Boolean_]); }
 
   //. ### Type classes
   //.
@@ -2628,7 +2546,16 @@
     return wrapped;
   }
 
-  function _create(opts) {
+  //  defTypes :: NonEmpty (Array Type)
+  var defTypes = [
+    String_,
+    StrMap (Array_ (TypeClass)),
+    NonEmpty (Array_ (Type)),
+    AnyFunction,
+    AnyFunction
+  ];
+
+  function create(opts) {
     function def(name) {
       return function(constraints) {
         return function(expTypes) {
@@ -2644,27 +2571,19 @@
         };
       };
     }
-    return def (def.name)
-               ({})
-               ([String_,
-                 StrMap (Array_ (TypeClass)),
-                 NonEmpty (Array_ (Type)),
-                 AnyFunction,
-                 AnyFunction])
-               (def);
+    return def (def.name) ({}) (defTypes) (def);
   }
 
-  var create =
-  def ('create')
-      ({})
-      ([RecordType ({checkTypes: Boolean_, env: Array_ (Any)}), AnyFunction])
-      (_create);
+  var def = create ({checkTypes: !production, env: env});
 
   //  fromUncheckedUnaryType :: (Type -> Type) -> Type -> Type
   function fromUncheckedUnaryType(typeConstructor) {
     var t = typeConstructor (Unknown);
     var _1 = t.types.$1.extractor;
-    return CheckedUnaryType (t.name) (t.url) (t._test) (_1);
+    return def (stripNamespace (t.name))
+               ({})
+               ([Type, Type])
+               (UnaryType (t.name) (t.url) (t._test) (_1));
   }
 
   //  fromUncheckedBinaryType :: (Type -> Type -> Type) -> Type -> Type -> Type
@@ -2672,7 +2591,10 @@
     var t = typeConstructor (Unknown) (Unknown);
     var _1 = t.types.$1.extractor;
     var _2 = t.types.$2.extractor;
-    return CheckedBinaryType (t.name) (t.url) (t._test) (_1) (_2);
+    return def (stripNamespace (t.name))
+               ({})
+               ([Type, Type, Type])
+               (BinaryType (t.name) (t.url) (t._test) (_1) (_2));
   }
 
   return {
@@ -2719,19 +2641,100 @@
     Undefined: Undefined,
     Unknown: Unknown,
     env: env,
-    create: create,
-    test: def ('test') ({}) ([Array_ (Type), Type, Any, Boolean_]) (test),
-    NullaryType: CheckedNullaryType,
-    UnaryType: CheckedUnaryType,
-    BinaryType: CheckedBinaryType,
-    EnumType: CheckedEnumType,
-    RecordType: CheckedRecordType,
-    NamedRecordType: CheckedNamedRecordType,
-    TypeVariable: CheckedTypeVariable,
-    UnaryTypeVariable: CheckedUnaryTypeVariable,
-    BinaryTypeVariable: CheckedBinaryTypeVariable,
-    Thunk: Thunk,
-    Predicate: Predicate
+    create:
+      def ('create')
+          ({})
+          ([RecordType ({checkTypes: Boolean_, env: Array_ (Type)}),
+            Unchecked (joinWith (' -> ', Z.map (function(t) {
+              return unless (t.type === RECORD || isEmpty (t.keys),
+                             stripOutermostParens,
+                             show (t));
+            }, defTypes)))])
+          (create),
+    test:
+      def ('test')
+          ({})
+          ([Array_ (Type), Type, Any, Boolean_])
+          (test),
+    NullaryType:
+      def ('NullaryType')
+          ({})
+          ([String_, String_, Function_ ([Any, Boolean_]), Type])
+          (NullaryType),
+    UnaryType:
+      def ('UnaryType')
+          ({})
+          ([String_,
+            String_,
+            Unchecked ('(Any -> Boolean)'),
+            Unchecked ('(t a -> Array a)'),
+            Unchecked ('Type -> Type')])
+          (function(name) {
+             return B (B (B (def (stripNamespace (name)) ({}) ([Type, Type]))))
+                      (UnaryType (name));
+           }),
+    BinaryType:
+      def ('BinaryType')
+          ({})
+          ([String_,
+            String_,
+            Unchecked ('(Any -> Boolean)'),
+            Unchecked ('(t a b -> Array a)'),
+            Unchecked ('(t a b -> Array b)'),
+            Unchecked ('Type -> Type -> Type')])
+          (function(name) {
+             return B (B (B (B (def (stripNamespace (name))
+                                    ({})
+                                    ([Type, Type, Type])))))
+                      (BinaryType (name));
+           }),
+    EnumType:
+      def ('EnumType')
+          ({})
+          ([String_, String_, Array_ (Any), Type])
+          (EnumType),
+    RecordType:
+      def ('RecordType')
+          ({})
+          ([StrMap (Type), Type])
+          (RecordType),
+    NamedRecordType:
+      def ('NamedRecordType')
+          ({})
+          ([NonEmpty (String_), String_, StrMap (Type), Type])
+          (NamedRecordType),
+    TypeVariable:
+      def ('TypeVariable')
+          ({})
+          ([String_, Type])
+          (TypeVariable),
+    UnaryTypeVariable:
+      def ('UnaryTypeVariable')
+          ({})
+          ([String_, Unchecked ('Type -> Type')])
+          (function(name) {
+             return def (name) ({}) ([Type, Type]) (UnaryTypeVariable (name));
+           }),
+    BinaryTypeVariable:
+      def ('BinaryTypeVariable')
+          ({})
+          ([String_, Unchecked ('Type -> Type -> Type')])
+          (function(name) {
+             return def (name)
+                        ({})
+                        ([Type, Type, Type])
+                        (BinaryTypeVariable (name));
+           }),
+    Thunk:
+      def ('Thunk')
+          ({})
+          ([Type, Type])
+          (Thunk),
+    Predicate:
+      def ('Predicate')
+          ({})
+          ([Type, Type])
+          (Predicate)
   };
 
 }));

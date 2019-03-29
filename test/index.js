@@ -121,13 +121,13 @@ suite ('create', () => {
     throws (() => { $.create (true); })
            (new TypeError (`Invalid value
 
-create :: { checkTypes :: Boolean, env :: Array Any } -> Function
-          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+create :: { checkTypes :: Boolean, env :: Array Type } -> String -> StrMap (Array TypeClass) -> NonEmpty (Array Type) -> Function -> Function
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
                                1
 
 1)  true :: Boolean
 
-The value at position 1 is not a member of ‘{ checkTypes :: Boolean, env :: Array Any }’.
+The value at position 1 is not a member of ‘{ checkTypes :: Boolean, env :: Array Type }’.
 `));
   });
 
@@ -3153,7 +3153,7 @@ suite ('UnaryType', () => {
   test ('is a quaternary function', () => {
     eq (typeof $.UnaryType) ('function');
     eq ($.UnaryType.length) (1);
-    eq (show ($.UnaryType)) ('UnaryType :: String -> String -> (Any -> Boolean) -> (t a -> Array a) -> Function');
+    eq (show ($.UnaryType)) ('UnaryType :: String -> String -> (Any -> Boolean) -> (t a -> Array a) -> Type -> Type');
   });
 
   test ('returns a type constructor which type checks its arguments', () => {
@@ -3179,7 +3179,7 @@ suite ('BinaryType', () => {
   test ('is a quinary function', () => {
     eq (typeof $.BinaryType) ('function');
     eq ($.BinaryType.length) (1);
-    eq (show ($.BinaryType)) ('BinaryType :: String -> String -> (Any -> Boolean) -> (t a b -> Array a) -> (t a b -> Array b) -> Function');
+    eq (show ($.BinaryType)) ('BinaryType :: String -> String -> (Any -> Boolean) -> (t a b -> Array a) -> (t a b -> Array b) -> Type -> Type -> Type');
   });
 
   test ('returns a type constructor which type checks its arguments', () => {
@@ -3215,7 +3215,7 @@ suite ('UnaryTypeVariable', () => {
   test ('is a unary function', () => {
     eq (typeof $.UnaryTypeVariable) ('function');
     eq ($.UnaryTypeVariable.length) (1);
-    eq (show ($.UnaryTypeVariable)) ('UnaryTypeVariable :: String -> Function');
+    eq (show ($.UnaryTypeVariable)) ('UnaryTypeVariable :: String -> Type -> Type');
   });
 
   test ('returns a function which type checks its arguments', () => {
@@ -3248,7 +3248,7 @@ suite ('BinaryTypeVariable', () => {
   test ('is a unary function', () => {
     eq (typeof $.BinaryTypeVariable) ('function');
     eq ($.BinaryTypeVariable.length) (1);
-    eq (show ($.BinaryTypeVariable)) ('BinaryTypeVariable :: String -> Function');
+    eq (show ($.BinaryTypeVariable)) ('BinaryTypeVariable :: String -> Type -> Type -> Type');
   });
 
   test ('returns a function which type checks its arguments', () => {
