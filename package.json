@@ -14,14 +14,14 @@
     "test": "npm run lint && sanctuary-test && npm run doctest"
   },
   "dependencies": {
-    "sanctuary-either": "1.1.x",
+    "sanctuary-either": "1.1.0",
     "sanctuary-show": "1.0.x",
     "sanctuary-type-classes": "10.0.x",
     "sanctuary-type-identifiers": "2.0.x"
   },
   "devDependencies": {
-    "sanctuary-maybe": "1.1.x",
-    "sanctuary-pair": "1.1.x",
+    "sanctuary-maybe": "1.1.0",
+    "sanctuary-pair": "1.1.0",
     "sanctuary-scripts": "3.1.x"
   },
   "files": [

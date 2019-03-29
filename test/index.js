@@ -74,42 +74,6 @@ def ('$26')
        [a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p, q, r, s, t, u, v, w, x, y, z]);
 
 
-const MAX_SAFE_INTEGER = Math.pow (2, 53) - 1;
-const MIN_SAFE_INTEGER = -MAX_SAFE_INTEGER;
-
-//    Integer :: Type
-const Integer = $.NullaryType
-  ('my-package/Integer')
-  ('http://example.com/my-package#Integer')
-  (x => $.Number._test (x) &&
-        Math.floor (x) === Number (x) &&
-        x >= MIN_SAFE_INTEGER &&
-        x <= MAX_SAFE_INTEGER);
-
-//    Maybe :: Type -> Type
-const Maybe = $.UnaryType
-  ('my-package/Maybe')
-  ('http://example.com/my-package#Maybe')
-  (x => type (x) === 'sanctuary-maybe/Maybe@1')
-  (maybe => maybe.isJust ? [maybe.value] : []);
-
-//    Either :: Type -> Type -> Type
-const Either = $.BinaryType
-  ('my-package/Either')
-  ('http://example.com/my-package#Either')
-  (x => type (x) === 'sanctuary-either/Either@1')
-  (either => either.isLeft ? [either.value] : [])
-  (either => either.isRight ? [either.value] : []);
-
-//    $Pair :: Type -> Type -> Type
-const $Pair = $.BinaryType
-  ('my-package/Pair')
-  ('http://example.com/my-package#Pair')
-  (x => type (x) === 'sanctuary-pair/Pair@1')
-  (pair => [pair.fst])
-  (pair => [pair.snd]);
-
-
 suite ('create', () => {
 
   test ('is a unary function', () => {
@@ -491,9 +455,6 @@ See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Number for in
   });
 
   test ('reports type error correctly for parameterized types', () => {
-    const env = Z.concat ($.env, [Either ($.Unknown) ($.Unknown), Maybe ($.Unknown)]);
-    const def = $.create ({checkTypes: true, env});
-
     //    a00 :: a -> a -> a
     const a00 =
     def ('a00')
@@ -519,14 +480,14 @@ See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Number for in
     const ab02e =
     def ('ab02e')
         ({})
-        ([a, b, $.Array ($.Array (Either (a) (b))), a])
+        ([a, b, $.Array ($.Array ($.Either (a) (b))), a])
         (x => y => z => x);
 
     //    ab0e21 :: a -> b -> Either (Array (Array a)) (Array b) -> a
     const ab0e21 =
     def ('ab0e21')
         ({})
-        ([a, b, Either ($.Array ($.Array (a))) ($.Array (b)), a])
+        ([a, b, $.Either ($.Array ($.Array (a))) ($.Array (b)), a])
         (x => y => z => x);
 
     throws (() => { a00 (1) ('a'); })
@@ -882,7 +843,7 @@ Since there is no type of which all the above values are members, the type-varia
     const fromMaybe =
     def ('fromMaybe')
         ({})
-        ([a, Maybe (a), a])
+        ([a, $.Maybe (a), a])
         (x => maybe => maybe.isJust ? maybe.value : x);
 
     throws (() => { fromMaybe ('x') (Just (null)); })
@@ -1517,6 +1478,22 @@ See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Array2 for in
     eq ($.Date.url) (`https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Date`);
   });
 
+  test ('provides the "Either" type constructor', () => {
+    eq (typeof $.Either) ('function');
+    eq ($.Either.length) (1);
+    eq (show ($.Either)) ('Either :: Type -> Type -> Type');
+    eq (show ($.Either (a) (b))) ('(Either a b)');
+    eq (($.Either (a) (b)).name) ('sanctuary-def/Either');
+    eq (($.Either (a) (b)).url) (`https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Either`);
+
+    const isEitherStringNumber = $.test ($.env) ($.Either ($.String) ($.Number));
+    eq (isEitherStringNumber (null)) (false);
+    eq (isEitherStringNumber (Left ('abc'))) (true);
+    eq (isEitherStringNumber (Left (/XXX/))) (false);
+    eq (isEitherStringNumber (Right (12.34))) (true);
+    eq (isEitherStringNumber (Right (/XXX/))) (false);
+  });
+
   test ('provides the "Error" type', () => {
     eq ($.Error.name) ('Error');
     eq ($.Error.url) (`https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Error`);
@@ -1530,6 +1507,21 @@ See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Array2 for in
   test ('provides the "HtmlElement" type', () => {
     eq ($.HtmlElement.name) ('sanctuary-def/HtmlElement');
     eq ($.HtmlElement.url) (`https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#HtmlElement`);
+  });
+
+  test ('provides the "Maybe" type constructor', () => {
+    eq (typeof $.Maybe) ('function');
+    eq ($.Maybe.length) (1);
+    eq (show ($.Maybe)) ('Maybe :: Type -> Type');
+    eq (show ($.Maybe (a))) ('(Maybe a)');
+    eq (($.Maybe (a)).name) ('sanctuary-def/Maybe');
+    eq (($.Maybe (a)).url) (`https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Maybe`);
+
+    const isMaybeNumber = $.test ($.env) ($.Maybe ($.Number));
+    eq (isMaybeNumber (null)) (false);
+    eq (isMaybeNumber (Nothing)) (true);
+    eq (isMaybeNumber (Just (12.34))) (true);
+    eq (isMaybeNumber (Just (/XXX/))) (false);
   });
 
   test ('provides the "NonEmpty" type constructor', () => {
@@ -1560,6 +1552,22 @@ See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Array2 for in
   test ('provides the "Object" type', () => {
     eq ($.Object.name) ('Object');
     eq ($.Object.url) (`https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Object`);
+  });
+
+  test ('provides the "Pair" type constructor', () => {
+    eq (typeof $.Pair) ('function');
+    eq ($.Pair.length) (1);
+    eq (show ($.Pair)) ('Pair :: Type -> Type -> Type');
+    eq (show ($.Pair (a) (b))) ('(Pair a b)');
+    eq (($.Pair (a) (b)).name) ('sanctuary-def/Pair');
+    eq (($.Pair (a) (b)).url) (`https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Pair`);
+
+    const isPairStringNumber = $.test ($.env) ($.Pair ($.String) ($.Number));
+    eq (isPairStringNumber (null)) (false);
+    eq (isPairStringNumber (Pair ('abc') ('xyz'))) (false);
+    eq (isPairStringNumber (Pair ('abc') (67.89))) (true);
+    eq (isPairStringNumber (Pair (12.34) ('xyz'))) (false);
+    eq (isPairStringNumber (Pair (12.34) (67.89))) (false);
   });
 
   test ('provides the "RegExp" type', () => {
@@ -1944,7 +1952,7 @@ See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Number for in
     const testBinaryType =
     def ('testBinaryType')
         ({})
-        ([Either (a) ($.StrMap (b)), Either (a) ($.StrMap (b))])
+        ([$.Either (a) ($.StrMap (b)), $.Either (a) ($.StrMap (b))])
         (e => e);
 
     eq (testBinaryType (Left ('XXX'))) (Left ('XXX'));
@@ -2042,21 +2050,18 @@ See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Number for in
   });
 
   test ('supports polymorphism via type variables', () => {
-    const env = Z.concat ($.env, [Either ($.Unknown) ($.Unknown), Maybe ($.Unknown), $Pair ($.Unknown) ($.Unknown)]);
-    const def = $.create ({checkTypes: true, env});
-
     //    aa :: a -> a -> Pair a a
     const aa =
     def ('aa')
         ({})
-        ([a, a, $Pair (a) (a)])
+        ([a, a, $.Pair (a) (a)])
         (Pair);
 
     //    ab :: a -> b -> Pair a b
     const ab =
     def ('ab')
         ({})
-        ([a, b, $Pair (a) (b)])
+        ([a, b, $.Pair (a) (b)])
         (Pair);
 
     eq (aa (0) (1)) (Pair (0) (1));
@@ -2096,7 +2101,7 @@ Since there is no type of which all the above values are members, the type-varia
     const fromMaybe =
     def ('fromMaybe')
         ({})
-        ([a, Maybe (a), a])
+        ([a, $.Maybe (a), a])
         (x => maybe => maybe.isJust ? maybe.value : x);
 
     eq (fromMaybe (0) (Nothing)) (0);
@@ -2113,14 +2118,14 @@ fromMaybe :: a -> Maybe a -> a
 
 The value at position 1 is not a member of ‘Maybe a’.
 
-See http://example.com/my-package#Maybe for information about the my-package/Maybe type.
+See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Maybe for information about the sanctuary-def/Maybe type.
 `));
 
     //    fst :: Pair a b -> a
     const fst =
     def ('fst')
         ({})
-        ([$Pair (a) (b), a])
+        ([$.Pair (a) (b), a])
         (pair => pair.fst);
 
     eq (fst (Pair ('XXX') (42))) ('XXX');
@@ -2136,14 +2141,14 @@ fst :: Pair a b -> a
 
 The value at position 1 is not a member of ‘Pair a b’.
 
-See http://example.com/my-package#Pair for information about the my-package/Pair type.
+See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Pair for information about the sanctuary-def/Pair type.
 `));
 
     //    twin :: Pair a a -> Boolean
     const twin =
     def ('twin')
         ({})
-        ([$Pair (a) (a), $.Boolean])
+        ([$.Pair (a) (a), $.Boolean])
         (pair => Z.equals (pair.fst, pair.snd));
 
     eq (twin (Pair (42) (42))) (true);
@@ -2167,7 +2172,7 @@ Since there is no type of which all the above values are members, the type-varia
     const concat =
     def ('concat')
         ({})
-        ([Either (a) (b), Either (a) (b), Either (a) (b)])
+        ([$.Either (a) (b), $.Either (a) (b), $.Either (a) (b)])
         (curry2 (Z.concat));
 
     eq (concat (Left ('abc')) (Left ('def'))) (Left ('abcdef'));
@@ -2270,9 +2275,6 @@ Since there is no type of which all the above values are members, the type-varia
   });
 
   test ('supports arbitrary nesting of types', () => {
-    const env = Z.concat ($.env, [Either ($.Unknown) ($.Unknown), $.Integer]);
-    const def = $.create ({checkTypes: true, env});
-
     //    unnest :: Array (Array a) -> Array a
     const unnest =
     def ('unnest')
@@ -2290,7 +2292,7 @@ unnest :: Array (Array a) -> Array a
                  ^^^^^^^
                     1
 
-1)  1 :: Number, Integer
+1)  1 :: Number
 
 The value at position 1 is not a member of ‘Array a’.
 
@@ -2301,9 +2303,9 @@ See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Array for inf
     const concatComplex =
     def ('concatComplex')
         ({})
-        ([$.Array (Either ($.String) ($.Integer)),
-          $.Array (Either ($.String) ($.Integer)),
-          $.Array (Either ($.String) ($.Integer))])
+        ([$.Array ($.Either ($.String) ($.Integer)),
+          $.Array ($.Either ($.String) ($.Integer)),
+          $.Array ($.Either ($.String) ($.Integer))])
         (xs => ys => [Left (/xxx/)]);
 
     throws (() => { concatComplex ([Left (/xxx/), Right (0), Right (0.1), Right (0.2)]); })
@@ -2378,9 +2380,6 @@ See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#String for in
   });
 
   test ('does not allow heterogeneous arrays', () => {
-    const env = Z.concat ($.env, [Either ($.Unknown) ($.Unknown)]);
-    const def = $.create ({checkTypes: true, env});
-
     //    concat :: Array a -> Array a -> Array a
     const concat =
     def ('concat')
@@ -2480,9 +2479,6 @@ Since there is no type of which all the above values are members, the type-varia
   });
 
   test ('supports higher-order functions', () => {
-    const env = Z.concat ($.env, [Maybe ($.Unknown)]);
-    const def = $.create ({checkTypes: true, env});
-
     //    f :: (String -> Number) -> Array String -> Array Number
     const f =
     def ('f')
@@ -2613,7 +2609,7 @@ The value at position 1 is not a member of ‘(a, b) -> a’.
     const unfoldr =
     def ('unfoldr')
         ({})
-        ([$.Function ([b, Maybe ($.Array2 (a) (b))]), b, $.Array (a)])
+        ([$.Function ([b, $.Maybe ($.Array2 (a) (b))]), b, $.Array (a)])
         (f => x => {
            const result = [];
            for (let m = f (x); m.isJust; m = f (m.value[1])) {
@@ -2690,9 +2686,6 @@ Expected one argument but received zero arguments.
   });
 
   test ('supports type-class constraints', () => {
-    const env = Z.concat ($.env, [Integer, Maybe ($.Unknown), Either ($.Unknown) ($.Unknown)]);
-    const def = $.create ({checkTypes: true, env});
-
     //    alt :: Alt f => f a -> f a -> f a
     const alt =
     def ('alt')
@@ -2784,7 +2777,7 @@ filter :: Filterable f => (a -> Boolean) -> f a -> f a
           ^^^^^^^^^^^^                      ^^^
                                              1
 
-1)  Right (42) :: Either b Number, Either b Integer
+1)  Right (42) :: Either b Number
 
 ‘filter’ requires ‘f’ to satisfy the Filterable type-class constraint; the value at position 1 does not.
 
@@ -2795,7 +2788,7 @@ See https://github.com/sanctuary-js/sanctuary-type-classes/tree/v${Z$version}#Fi
     const concatMaybes =
     def ('concatMaybes')
         ({a: [Z.Semigroup]})
-        ([Maybe (a), Maybe (a), Maybe (a)])
+        ([$.Maybe (a), $.Maybe (a), $.Maybe (a)])
         (m => n => Just (/xxx/));
 
     throws (() => { concatMaybes (Just (/xxx/)); })
@@ -2865,12 +2858,6 @@ See https://github.com/sanctuary-js/sanctuary-type-classes/tree/v${Z$version}#Al
   });
 
   test ('supports unary type variables', () => {
-    const env = Z.concat ($.env, [Either ($.Unknown) ($.Unknown), Maybe ($.Unknown)]);
-    const def = $.create ({checkTypes: true, env});
-
-    //    f :: Type -> Type
-    const f = $.UnaryTypeVariable ('f');
-
     //    map :: Functor f => (a -> b) -> f a -> f b
     const map =
     def ('map')
@@ -2989,9 +2976,6 @@ See https://github.com/sanctuary-js/sanctuary-type-classes/tree/v${Z$version}#Or
   });
 
   test ('supports binary type variables', () => {
-    const env = Z.concat ($.env, [Either ($.Unknown) ($.Unknown), Maybe ($.Unknown), $Pair ($.Unknown) ($.Unknown)]);
-    const def = $.create ({checkTypes: true, env});
-
     //    f :: Type -> Type -> Type
     const f = $.BinaryTypeVariable ('f');
 
@@ -3049,14 +3033,14 @@ Since there is no type of which all the above values are members, the type-varia
       ('http://example.com/my-package#Void')
       (x => { count += 1; return false; });
 
-    const env = [$.Array ($.Unknown), Maybe ($.Unknown), $.Number, Void];
+    const env = [$.Array ($.Unknown), $.Maybe ($.Unknown), $.Number, Void];
     const def = $.create ({checkTypes: true, env});
 
     //    head :: Array a -> Maybe a
     const head =
     def ('head')
         ({})
-        ([$.Array (a), Maybe (a)])
+        ([$.Array (a), $.Maybe (a)])
         (xs => xs.length > 0 ? Just (xs[0]) : Nothing);
 
     eq (head ([])) (Nothing);
@@ -3066,11 +3050,6 @@ Since there is no type of which all the above values are members, the type-varia
   });
 
   test ('replaces Unknowns with free type variables', () => {
-    const env = [Either ($.Unknown) ($.Unknown), $.Number];
-    const def = $.create ({checkTypes: true, env});
-
-    const f = $.UnaryTypeVariable ('f');
-
     //    map :: Functor f => (a -> b) -> f a -> f b
     const map =
     def ('map')
@@ -3117,10 +3096,10 @@ suite ('test', () => {
   });
 
   test ('supports binary types', () => {
-    eq ($.test ($.env) ($Pair ($.Number) ($.String)) (Pair (42) (42))) (false);
-    eq ($.test ($.env) ($Pair ($.Number) ($.String)) (Pair ('') (''))) (false);
-    eq ($.test ($.env) ($Pair ($.Number) ($.String)) (Pair ('') (42))) (false);
-    eq ($.test ($.env) ($Pair ($.Number) ($.String)) (Pair (42) (''))) (true);
+    eq ($.test ($.env) ($.Pair ($.Number) ($.String)) (Pair (42) (42))) (false);
+    eq ($.test ($.env) ($.Pair ($.Number) ($.String)) (Pair ('') (''))) (false);
+    eq ($.test ($.env) ($.Pair ($.Number) ($.String)) (Pair ('') (42))) (false);
+    eq ($.test ($.env) ($.Pair ($.Number) ($.String)) (Pair (42) (''))) (true);
   });
 
   test ('supports type variables', () => {
@@ -3131,9 +3110,9 @@ suite ('test', () => {
     eq ($.test ($.env) ($.Array (a)) ([])) (true);
     eq ($.test ($.env) ($.Array (a)) ([1, 2, 3])) (true);
 
-    eq ($.test ($.env) ($Pair (a) (a)) (Pair ('foo') (42))) (false);
-    eq ($.test ($.env) ($Pair (a) (a)) (Pair ('foo') ('bar'))) (true);
-    eq ($.test ($.env) ($Pair (a) (b)) (Pair ('foo') (42))) (true);
+    eq ($.test ($.env) ($.Pair (a) (a)) (Pair ('foo') (42))) (false);
+    eq ($.test ($.env) ($.Pair (a) (a)) (Pair ('foo') ('bar'))) (true);
+    eq ($.test ($.env) ($.Pair (a) (b)) (Pair ('foo') (42))) (true);
   });
 
 });
@@ -3157,12 +3136,19 @@ suite ('UnaryType', () => {
   });
 
   test ('returns a type constructor which type checks its arguments', () => {
-    throws (() => { Maybe ({x: $.Number, y: $.Number}); })
+    //    MyUnaryType :: Type -> Type
+    const MyUnaryType = $.UnaryType
+      ('my-package/MyUnaryType')
+      ('')
+      (x => type (x) === 'my-package/MyUnaryType@1')
+      (_ => []);
+
+    throws (() => { MyUnaryType ({x: $.Number, y: $.Number}); })
            (new TypeError (`Invalid value
 
-Maybe :: Type -> Type
-         ^^^^
-          1
+MyUnaryType :: Type -> Type
+               ^^^^
+                1
 
 1)  {"x": Number, "y": Number} :: Object, StrMap ???
 
@@ -3183,12 +3169,20 @@ suite ('BinaryType', () => {
   });
 
   test ('returns a type constructor which type checks its arguments', () => {
-    throws (() => { Either ($.Number) ({x: $.Number, y: $.Number}); })
+    //    MyBinaryType :: Type -> Type -> Type
+    const MyBinaryType = $.BinaryType
+      ('my-package/MyBinaryType')
+      ('')
+      (x => type (x) === 'my-package/MyBinaryType@1')
+      (_ => [])
+      (_ => []);
+
+    throws (() => { MyBinaryType ($.Number) ({x: $.Number, y: $.Number}); })
            (new TypeError (`Invalid value
 
-Either :: Type -> Type -> Type
-                  ^^^^
-                   1
+MyBinaryType :: Type -> Type -> Type
+                        ^^^^
+                         1
 
 1)  {"x": Number, "y": Number} :: Object, StrMap ???
 
@@ -3219,6 +3213,7 @@ suite ('UnaryTypeVariable', () => {
   });
 
   test ('returns a function which type checks its arguments', () => {
+    //    f :: Type -> Type
     const f = $.UnaryTypeVariable ('f');
 
     eq (typeof f) ('function');
@@ -3252,6 +3247,7 @@ suite ('BinaryTypeVariable', () => {
   });
 
   test ('returns a function which type checks its arguments', () => {
+    //    p :: Type -> Type -> Type
     const p = $.BinaryTypeVariable ('p');
 
     eq (typeof p) ('function');
@@ -3285,9 +3281,6 @@ suite ('Thunk', () => {
   });
 
   test ('is short for `t => $.Function([t])`', () => {
-    const env = $.env;
-    const def = $.create ({checkTypes: true, env});
-
     //    why :: (() -> Integer) -> Integer
     const why =
     def ('why')
@@ -3323,9 +3316,6 @@ suite ('Predicate', () => {
   });
 
   test ('is short for `t => $.Function([t, $.Boolean])`', () => {
-    const env = $.env;
-    const def = $.create ({checkTypes: true, env});
-
     //    when :: (a -> Boolean) -> (a -> a) -> a -> a
     const when =
     def ('when')
