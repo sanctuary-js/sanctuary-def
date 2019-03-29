@@ -362,28 +362,35 @@
     return typeClass.name.slice (typeClass.name.indexOf ('/') + 1);
   }
 
-  function _test(x) {
-    return function recur(t) {
-      return t.supertypes.every (recur) && t._test (x);
+  function _test(env) {
+    return function(x) {
+      return function recur(t) {
+        return t.supertypes.every (recur) && t._test (env) (x);
+      };
     };
   }
 
   var Type$prototype = {
     'constructor': {'@@type': 'sanctuary-def/Type@1'},
-    'validate': function(x) {
-      if (!(_test (x) (this))) return Left ({value: x, propPath: []});
-      for (var idx = 0; idx < this.keys.length; idx += 1) {
-        var k = this.keys[idx];
-        var t = this.types[k];
-        for (var idx2 = 0, ys = t.extractor (x); idx2 < ys.length; idx2 += 1) {
-          var result = t.type.validate (ys[idx2]);
-          if (result.isLeft) {
-            return Left ({value: result.value.value,
-                          propPath: Z.concat ([k], result.value.propPath)});
+    'validate': function(env) {
+      var test2 = _test (env);
+      var type = this;
+      return function(x) {
+        if (!(test2 (x) (type))) return Left ({value: x, propPath: []});
+        for (var idx = 0; idx < type.keys.length; idx += 1) {
+          var k = type.keys[idx];
+          var t = type.types[k];
+          var ys = t.extractor (x);
+          for (var idx2 = 0; idx2 < ys.length; idx2 += 1) {
+            var result = t.type.validate (env) (ys[idx2]);
+            if (result.isLeft) {
+              return Left ({value: result.value.value,
+                            propPath: Z.concat ([k], result.value.propPath)});
+            }
           }
         }
-      }
-      return Right (x);
+        return Right (x);
+      };
     },
     'fantasy-land/equals': function(other) {
       return (
@@ -437,15 +444,19 @@
 
   //  Inconsistent :: Type
   var Inconsistent =
-  _Type (INCONSISTENT, '', '', always2 ('???'), [], K (false), [], {});
+  _Type (INCONSISTENT, '', '', always2 ('???'), [], K (K (false)), [], {});
 
   //  NoArguments :: Type
   var NoArguments =
-  _Type (NO_ARGUMENTS, '', '', always2 ('()'), [], K (true), [], {});
+  _Type (NO_ARGUMENTS, '', '', always2 ('()'), [], K (K (true)), [], {});
 
-  //  isParameterizedType :: Type -> Boolean
-  function isParameterizedType(t) {
-    return t.type === UNARY || t.type === BINARY;
+  //  arityGte :: NonNegativeInteger -> Type -> Boolean
+  function arityGte(n) {
+    return function(t) {
+      return t.type === BINARY && n <= 2 ||
+             t.type === UNARY && n <= 1 ||
+             n === 0;
+    };
   }
 
   //  typeEq :: String -> a -> Boolean
@@ -498,7 +509,7 @@
   //.   - `List (List (List String))`
   //.   - `...`
   var Unknown =
-  _Type (UNKNOWN, '', '', always2 ('Unknown'), [], K (true), [], {});
+  _Type (UNKNOWN, '', '', always2 ('Unknown'), [], K (K (true)), [], {});
 
   //# Any :: Type
   //.
@@ -648,7 +659,7 @@
                   '',
                   format,
                   [AnyFunction],
-                  K (true),
+                  K (K (true)),
                   $keys,
                   $types);
   }
@@ -1061,7 +1072,7 @@
       }
       return Z.chain (function(t) {
         return (
-          (t.validate (value)).isLeft ?
+          (t.validate (env) (value)).isLeft ?
             [] :
           t.type === UNARY ?
             Z.map (fromUnaryType (t),
@@ -1129,7 +1140,10 @@
       $typeVarMap[typeVarName] = $entry;
     }
     if (!(hasOwnProperty.call ($typeVarMap, typeVar.name))) {
-      $typeVarMap[typeVar.name] = {types: env.slice (), valuesByPath: {}};
+      $typeVarMap[typeVar.name] = {
+        types: Z.filter (arityGte (typeVar.keys.length), env),
+        valuesByPath: {}
+      };
     }
 
     var key = JSON.stringify (Z.concat ([index], propPath));
@@ -1209,7 +1223,7 @@
     var recur = satisfactoryTypes;
 
     for (var idx = 0; idx < values.length; idx += 1) {
-      var result = expType.validate (values[idx]);
+      var result = expType.validate (env) (values[idx]);
       if (result.isLeft) {
         return Left (function() {
           return invalidValue (env,
@@ -1456,7 +1470,14 @@
     return function(url) {
       return function(supertypes) {
         return function(test) {
-          return _Type (NULLARY, name, url, format, supertypes, test, [], {});
+          return _Type (NULLARY,
+                        name,
+                        url,
+                        format,
+                        supertypes,
+                        K (test),
+                        [],
+                        {});
         };
       };
     };
@@ -1560,7 +1581,7 @@
                             url,
                             format,
                             supertypes,
-                            test,
+                            K (test),
                             ['$1'],
                             {$1: {extractor: _1, type: $1}});
             };
@@ -1575,7 +1596,7 @@
     return UnaryType (t.name)
                      (t.url)
                      (t.supertypes)
-                     (t._test)
+                     (t._test ([]))
                      (t.types.$1.extractor);
   }
 
@@ -1641,17 +1662,15 @@
   //. const Rank = $.NullaryType
   //.   ('Rank')
   //.   ('http://example.com/my-package#Rank')
-  //.   ([])
-  //.   (x => typeof x === 'string' &&
-  //.         /^(A|2|3|4|5|6|7|8|9|10|J|Q|K)$/.test (x));
+  //.   ([$.String])
+  //.   (x => /^(A|2|3|4|5|6|7|8|9|10|J|Q|K)$/.test (x));
   //.
   //. //    Suit :: Type
   //. const Suit = $.NullaryType
   //.   ('Suit')
   //.   ('http://example.com/my-package#Suit')
-  //.   ([])
-  //.   (x => typeof x === 'string' &&
-  //.         /^[\u2660\u2663\u2665\u2666]$/.test (x));
+  //.   ([$.String])
+  //.   (x => /^[\u2660\u2663\u2665\u2666]$/.test (x));
   //.
   //. //    Card :: Type
   //. const Card = $Pair (Rank) (Suit);
@@ -1699,7 +1718,7 @@
                                 url,
                                 format,
                                 supertypes,
-                                test,
+                                K (test),
                                 ['$1', '$2'],
                                 {$1: {extractor: _1, type: $1},
                                  $2: {extractor: _2, type: $2}});
@@ -1717,7 +1736,7 @@
     return BinaryType (t.name)
                       (t.url)
                       (t.supertypes)
-                      (t._test)
+                      (t._test ([]))
                       (t.types.$1.extractor)
                       (t.types.$2.extractor);
   }
@@ -1820,12 +1839,14 @@
       return wrap (outer ('{')) (outer (' }')) (joinWith (outer (','), reprs));
     }
 
-    function test(x) {
-      if (x == null) return false;
-      var missing = {};
-      keys.forEach (function(k) { missing[k] = k; });
-      for (var k in x) delete missing[k];
-      return isEmpty (Object.keys (missing));
+    function test(env) {
+      return function(x) {
+        if (x == null) return false;
+        var missing = {};
+        keys.forEach (function(k) { missing[k] = k; });
+        for (var k in x) delete missing[k];
+        return isEmpty (Object.keys (missing));
+      };
     }
 
     var $types = {};
@@ -1902,14 +1923,18 @@
             return outer (name);
           }
 
-          function test(x) {
-            if (x == null) return false;
-            var missing = {};
-            keys.forEach (function(k) { missing[k] = k; });
-            for (var k in x) delete missing[k];
-            return isEmpty (Object.keys (missing)) && keys.every (function(k) {
-              return _test (x[k]) (fields[k]);
-            });
+          function test(env) {
+            var test2 = _test (env);
+            return function(x) {
+              if (x == null) return false;
+              var missing = {};
+              keys.forEach (function(k) { missing[k] = k; });
+              for (var k in x) delete missing[k];
+              return isEmpty (Object.keys (missing)) &&
+                     keys.every (function(k) {
+                       return test2 (x[k]) (fields[k]);
+                     });
+            };
           }
 
           var $types = {};
@@ -1927,6 +1952,18 @@
                         keys,
                         $types);
         };
+      };
+    };
+  }
+
+  //  typeVarPred :: NonNegativeInteger -> Array Type -> Any -> Boolean
+  function typeVarPred(arity) {
+    var filter = arityGte (arity);
+    return function(env) {
+      var test2 = _test (env);
+      return function(x) {
+        var test1 = test2 (x);
+        return env.some (function(t) { return filter (t) && test1 (t); });
       };
     };
   }
@@ -1988,7 +2025,9 @@
   //. //   Since there is no type of which all the above values are members, the type-variable constraint has been violated.
   //. ```
   function TypeVariable(name) {
-    return _Type (VARIABLE, name, '', always2 (name), [], K (true), [], {});
+    var keys = [];
+    var test = typeVarPred (keys.length);
+    return _Type (VARIABLE, name, '', always2 (name), [], test, keys, {});
   }
 
   //# UnaryTypeVariable :: String -> Type -> Type
@@ -2044,8 +2083,10 @@
                inner ('$1') (show ($1)) +
                outer (')');
       }
+      var keys = ['$1'];
+      var test = typeVarPred (keys.length);
       var types = {$1: {extractor: K ([]), type: $1}};
-      return _Type (VARIABLE, name, '', format, [], K (true), ['$1'], types);
+      return _Type (VARIABLE, name, '', format, [], test, keys, types);
     };
   }
 
@@ -2074,9 +2115,10 @@
                  outer (')');
         }
         var keys = ['$1', '$2'];
+        var test = typeVarPred (keys.length);
         var types = {$1: {extractor: K ([]), type: $1},
                      $2: {extractor: K ([]), type: $2}};
-        return _Type (VARIABLE, name, '', format, [], K (true), keys, types);
+        return _Type (VARIABLE, name, '', format, [], test, keys, types);
       };
     };
   }
@@ -2275,8 +2317,12 @@
   ) {
     var showType = showTypeWith (typeInfo);
     return show (pos) + ')  ' + joinWith ('\n    ', Z.map (function(x) {
-      var types = determineActualTypesLoose (env, [x]);
-      return show (x) + ' :: ' + joinWith (', ', Z.map (showType, types));
+      return show (x) +
+             ' :: ' +
+             joinWith (', ',
+                       or (Z.map (showType,
+                                  determineActualTypesLoose (env, [x])),
+                           ['(no types)']));
     }, values));
   }
 
@@ -2444,34 +2490,19 @@
                        }, {}, keys));
 
     return new TypeError (trimTrailingSpaces (
-      values.length === 1 &&
-      isEmpty (determineActualTypesLoose (env, values)) ?
-        'Unrecognized value\n\n' +
-        underlinedTypeVars + '\n' +
-        '1)  ' + show (values[0]) + ' :: (no types)\n\n' +
-        toMarkdownList (
-          'The environment is empty! ' +
-          'Polymorphic functions require a non-empty environment.\n',
-          'The value at position 1 is not a member of any type in ' +
-          'the environment.\n\n' +
-          'The environment contains the following types:\n\n',
-          showTypeWith (typeInfo),
-          env
-        ) :
-      // else
-        'Type-variable constraint violation\n\n' +
-        underlinedTypeVars + '\n' +
-        (Z.reduce (function(st, k) {
-          var values = valuesByPath[k];
-          return isEmpty (values) ? st : {
-            idx: st.idx + 1,
-            s: st.s +
-               showValuesAndTypes (env, typeInfo, values, st.idx + 1) +
-               '\n\n'
-          };
-        }, {idx: 0, s: ''}, keys)).s +
-        'Since there is no type of which all the above values are ' +
-        'members, the type-variable constraint has been violated.\n'
+      'Type-variable constraint violation\n\n' +
+      underlinedTypeVars + '\n' +
+      (Z.reduce (function(st, k) {
+        var values = valuesByPath[k];
+        return isEmpty (values) ? st : {
+          idx: st.idx + 1,
+          s: st.s +
+             showValuesAndTypes (env, typeInfo, values, st.idx + 1) +
+             '\n\n'
+        };
+      }, {idx: 0, s: ''}, keys)).s +
+      'Since there is no type of which all the above values are ' +
+      'members, the type-variable constraint has been violated.\n'
     ));
   }
 
@@ -2484,16 +2515,34 @@
     value           // :: Any
   ) {
     var t = resolvePropPath (typeInfo.types[index], propPath);
+
+    var underlinedTypeVars =
+    underline (typeInfo,
+               K (K (_)),
+               formatType6 (Z.concat ([index], propPath)));
+
     return new TypeError (trimTrailingSpaces (
-      'Invalid value\n\n' +
-      underline (typeInfo,
-                 K (K (_)),
-                 formatType6 (Z.concat ([index], propPath))) +
-      '\n' +
-      showValuesAndTypes (env, typeInfo, [value], 1) + '\n\n' +
-      'The value at position 1 is not a member of ' +
-      showTypeQuoted (t) + '.\n' +
-      see (isParameterizedType (t) ? 'type constructor' : 'type', t)
+      t.type === VARIABLE &&
+      isEmpty (determineActualTypesLoose (env, [value])) ?
+        'Unrecognized value\n\n' +
+        underlinedTypeVars + '\n' +
+        showValuesAndTypes (env, typeInfo, [value], 1) + '\n\n' +
+        toMarkdownList (
+          'The environment is empty! ' +
+          'Polymorphic functions require a non-empty environment.\n',
+          'The value at position 1 is not a member of any type in ' +
+          'the environment.\n\n' +
+          'The environment contains the following types:\n\n',
+          showTypeWith (typeInfo),
+          env
+        ) :
+      // else
+        'Invalid value\n\n' +
+        underlinedTypeVars + '\n' +
+        showValuesAndTypes (env, typeInfo, [value], 1) + '\n\n' +
+        'The value at position 1 is not a member of ' +
+        showTypeQuoted (t) + '.\n' +
+        see (arityGte (1) (t) ? 'type constructor' : 'type', t)
     ));
   }
 
