@@ -534,6 +534,15 @@
     ('sanctuary-def/ValidDate')
     (function(x) { return Date_._test (x) && !(isNaN (x.valueOf ())); });
 
+  //# Either :: Type -> Type -> Type
+  //.
+  //. [Either][] type constructor.
+  var Either_ = BinaryTypeWithUrl
+    ('sanctuary-def/Either')
+    (typeEq ('sanctuary-either/Either@1'))
+    (function(either) { return either.isLeft ? [either.value] : []; })
+    (function(either) { return either.isLeft ? [] : [either.value]; });
+
   //# Error :: Type
   //.
   //. Type comprising every Error value, including values of more specific
@@ -594,6 +603,14 @@
     (function(x) {
        return /^\[object HTML.+Element\]$/.test (toString.call (x));
      });
+
+  //# Maybe :: Type -> Type
+  //.
+  //. [Maybe][] type constructor.
+  var Maybe = UnaryTypeWithUrl
+    ('sanctuary-def/Maybe')
+    (typeEq ('sanctuary-maybe/Maybe@1'))
+    (function(maybe) { return maybe.isJust ? [maybe.value] : []; });
 
   //# NonEmpty :: Type -> Type
   //.
@@ -747,6 +764,15 @@
     ('Object')
     (typeEq ('Object'));
 
+  //# Pair :: Type -> Type -> Type
+  //.
+  //. [Pair][] type constructor.
+  var Pair = BinaryTypeWithUrl
+    ('sanctuary-def/Pair')
+    (typeEq ('sanctuary-pair/Pair@1'))
+    (function(pair) { return [pair.fst]; })
+    (function(pair) { return [pair.snd]; });
+
   //# RegExp :: Type
   //.
   //. Type comprising every RegExp value.
@@ -863,16 +889,19 @@
   //.
   //.   - <code>[AnyFunction](#AnyFunction)</code>
   //.   - <code>[Arguments](#Arguments)</code>
-  //.   - <code>[Array](#Array) ([Unknown](#Unknown))</code>
+  //.   - <code>[Array](#Array) ([Unknown][])</code>
   //.   - <code>[Boolean](#Boolean)</code>
   //.   - <code>[Date](#Date)</code>
+  //.   - <code>[Either](#Either) ([Unknown][]) ([Unknown][])</code>
   //.   - <code>[Error](#Error)</code>
   //.   - <code>[HtmlElement](#HtmlElement)</code>
+  //.   - <code>[Maybe](#Maybe) ([Unknown][])</code>
   //.   - <code>[Null](#Null)</code>
   //.   - <code>[Number](#Number)</code>
   //.   - <code>[Object](#Object)</code>
+  //.   - <code>[Pair](#Pair) ([Unknown][]) ([Unknown][])</code>
   //.   - <code>[RegExp](#RegExp)</code>
-  //.   - <code>[StrMap](#StrMap) ([Unknown](#Unknown))</code>
+  //.   - <code>[StrMap](#StrMap) ([Unknown][])</code>
   //.   - <code>[String](#String)</code>
   //.   - <code>[Symbol](#Symbol)</code>
   //.   - <code>[Undefined](#Undefined)</code>
@@ -882,11 +911,14 @@
     Array_ (Unknown),
     Boolean_,
     Date_,
+    Either_ (Unknown) (Unknown),
     Error_,
     HtmlElement,
+    Maybe (Unknown),
     Null,
     Number_,
     Object_,
+    Pair (Unknown) (Unknown),
     RegExp_,
     StrMap (Unknown),
     String_,
@@ -2608,9 +2640,11 @@
     Boolean: Boolean_,
     Date: Date_,
     ValidDate: ValidDate,
+    Either: fromUncheckedBinaryType (Either_),
     Error: Error_,
     Function: def ('Function') ({}) ([Array_ (Type), Type]) (Function_),
     HtmlElement: HtmlElement,
+    Maybe: fromUncheckedUnaryType (Maybe),
     NonEmpty: NonEmpty,
     Null: Null,
     Nullable: fromUncheckedUnaryType (Nullable),
@@ -2629,6 +2663,7 @@
     PositiveInteger: PositiveInteger,
     NegativeInteger: NegativeInteger,
     Object: Object_,
+    Pair: fromUncheckedBinaryType (Pair),
     RegExp: RegExp_,
     GlobalRegExp: GlobalRegExp,
     NonGlobalRegExp: NonGlobalRegExp,
@@ -2739,10 +2774,14 @@
 
 }));
 
+//. [Either]:               v:sanctuary-js/sanctuary-either
 //. [FL:Semigroup]:         https://github.com/fantasyland/fantasy-land#semigroup
 //. [HTML element]:         https://developer.mozilla.org/en-US/docs/Web/HTML/Element
+//. [Maybe]:                v:sanctuary-js/sanctuary-maybe
 //. [Monoid]:               https://github.com/fantasyland/fantasy-land#monoid
+//. [Pair]:                 v:sanctuary-js/sanctuary-pair
 //. [Setoid]:               https://github.com/fantasyland/fantasy-land#setoid
+//. [Unknown]:              #Unknown
 //. [`Array`]:              #Array
 //. [`Array2`]:             #Array2
 //. [`BinaryType`]:         #BinaryType
