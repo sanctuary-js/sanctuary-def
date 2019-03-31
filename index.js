@@ -988,7 +988,7 @@
       }
       return Z.chain (function(t) {
         return (
-          t.name === 'sanctuary-def/Nullable' || (t.validate (value)).isLeft ?
+          (t.validate (value)).isLeft ?
             [] :
           t.type === UNARY ?
             Z.map (fromUnaryType (t),
