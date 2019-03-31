@@ -1393,7 +1393,7 @@ Since there is no type of which all the above values are members, the type-varia
     function Identity(x) { this.value = x; }
     Identity['@@type'] = 'my-package/Identity';
 
-    const isAnyFunction = $.test ($.env) ($.AnyFunction);
+    const isAnyFunction = $.test ([]) ($.AnyFunction);
     eq (isAnyFunction (null)) (false);
     eq (isAnyFunction (Math.abs)) (true);
     eq (isAnyFunction (Identity)) (true);
@@ -1414,7 +1414,7 @@ Since there is no type of which all the above values are members, the type-varia
     eq ($.Array0.name) ('Array0');
     eq ($.Array0.url) (`https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Array0`);
 
-    const isEmptyArray = $.test ($.env) ($.Array0);
+    const isEmptyArray = $.test ([]) ($.Array0);
     eq (isEmptyArray (null)) (false);
     eq (isEmptyArray ([])) (true);
     eq (isEmptyArray ([0])) (false);
@@ -1428,7 +1428,7 @@ Since there is no type of which all the above values are members, the type-varia
     eq (($.Array1 (a)).name) ('Array1');
     eq (($.Array1 (a)).url) (`https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Array1`);
 
-    const isSingletonStringArray = $.test ($.env) ($.Array1 ($.String));
+    const isSingletonStringArray = $.test ([]) ($.Array1 ($.String));
     eq (isSingletonStringArray (null)) (false);
     eq (isSingletonStringArray ([])) (false);
     eq (isSingletonStringArray ([0])) (false);
@@ -1486,7 +1486,7 @@ See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Array2 for in
     eq (($.Either (a) (b)).name) ('Either');
     eq (($.Either (a) (b)).url) (`https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Either`);
 
-    const isEitherStringNumber = $.test ($.env) ($.Either ($.String) ($.Number));
+    const isEitherStringNumber = $.test ([]) ($.Either ($.String) ($.Number));
     eq (isEitherStringNumber (null)) (false);
     eq (isEitherStringNumber (Left ('abc'))) (true);
     eq (isEitherStringNumber (Left (/XXX/))) (false);
@@ -1517,7 +1517,7 @@ See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Array2 for in
     eq (($.Maybe (a)).name) ('Maybe');
     eq (($.Maybe (a)).url) (`https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Maybe`);
 
-    const isMaybeNumber = $.test ($.env) ($.Maybe ($.Number));
+    const isMaybeNumber = $.test ([]) ($.Maybe ($.Number));
     eq (isMaybeNumber (null)) (false);
     eq (isMaybeNumber (Nothing)) (true);
     eq (isMaybeNumber (Just (12.34))) (true);
@@ -1528,7 +1528,7 @@ See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Array2 for in
     eq (($.NonEmpty ($.String)).name) ('NonEmpty');
     eq (($.NonEmpty ($.String)).url) (`https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#NonEmpty`);
 
-    const isNonEmptyIntegerArray = $.test ($.env) ($.NonEmpty ($.Array ($.Integer)));
+    const isNonEmptyIntegerArray = $.test ([]) ($.NonEmpty ($.Array ($.Integer)));
     eq (isNonEmptyIntegerArray ([])) (false);
     eq (isNonEmptyIntegerArray ([0])) (true);
     eq (isNonEmptyIntegerArray ([0.5])) (false);
@@ -1562,7 +1562,7 @@ See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Array2 for in
     eq (($.Pair (a) (b)).name) ('Pair');
     eq (($.Pair (a) (b)).url) (`https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Pair`);
 
-    const isPairStringNumber = $.test ($.env) ($.Pair ($.String) ($.Number));
+    const isPairStringNumber = $.test ([]) ($.Pair ($.String) ($.Number));
     eq (isPairStringNumber (null)) (false);
     eq (isPairStringNumber (Pair ('abc') ('xyz'))) (false);
     eq (isPairStringNumber (Pair ('abc') (67.89))) (true);
@@ -1637,7 +1637,7 @@ See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#ValidDate for
     eq ($.PositiveNumber.name) ('PositiveNumber');
     eq ($.PositiveNumber.url) (`https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#PositiveNumber`);
 
-    const isPositiveNumber = $.test ($.env) ($.PositiveNumber);
+    const isPositiveNumber = $.test ([]) ($.PositiveNumber);
     eq (isPositiveNumber (null)) (false);
     eq (isPositiveNumber (NaN)) (false);
     eq (isPositiveNumber (-1)) (false);
@@ -1652,7 +1652,7 @@ See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#ValidDate for
     eq ($.NegativeNumber.name) ('NegativeNumber');
     eq ($.NegativeNumber.url) (`https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#NegativeNumber`);
 
-    const isNegativeNumber = $.test ($.env) ($.NegativeNumber);
+    const isNegativeNumber = $.test ([]) ($.NegativeNumber);
     eq (isNegativeNumber (null)) (false);
     eq (isNegativeNumber (NaN)) (false);
     eq (isNegativeNumber (1)) (false);
@@ -1667,7 +1667,7 @@ See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#ValidDate for
     eq ($.ValidNumber.name) ('ValidNumber');
     eq ($.ValidNumber.url) (`https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#ValidNumber`);
 
-    const isValidNumber = $.test ($.env) ($.ValidNumber);
+    const isValidNumber = $.test ([]) ($.ValidNumber);
     eq (isValidNumber (NaN)) (false);
     eq (isValidNumber (1)) (true);
     eq (isValidNumber (new Number (1))) (false);
@@ -1677,7 +1677,7 @@ See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#ValidDate for
     eq ($.NonZeroValidNumber.name) ('NonZeroValidNumber');
     eq ($.NonZeroValidNumber.url) (`https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#NonZeroValidNumber`);
 
-    const isNonZeroValidNumber = $.test ($.env) ($.NonZeroValidNumber);
+    const isNonZeroValidNumber = $.test ([]) ($.NonZeroValidNumber);
     eq (isNonZeroValidNumber (0)) (false);
     eq (isNonZeroValidNumber (-0)) (false);
     eq (isNonZeroValidNumber (1)) (true);
@@ -1688,7 +1688,7 @@ See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#ValidDate for
     eq ($.FiniteNumber.name) ('FiniteNumber');
     eq ($.FiniteNumber.url) (`https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#FiniteNumber`);
 
-    const isFiniteNumber = $.test ($.env) ($.FiniteNumber);
+    const isFiniteNumber = $.test ([]) ($.FiniteNumber);
     eq (isFiniteNumber (Infinity)) (false);
     eq (isFiniteNumber (-Infinity)) (false);
     eq (isFiniteNumber (1)) (true);
@@ -1699,7 +1699,7 @@ See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#ValidDate for
     eq ($.PositiveFiniteNumber.name) ('PositiveFiniteNumber');
     eq ($.PositiveFiniteNumber.url) (`https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#PositiveFiniteNumber`);
 
-    const isPositiveFiniteNumber = $.test ($.env) ($.PositiveFiniteNumber);
+    const isPositiveFiniteNumber = $.test ([]) ($.PositiveFiniteNumber);
     eq (isPositiveFiniteNumber (null)) (false);
     eq (isPositiveFiniteNumber (NaN)) (false);
     eq (isPositiveFiniteNumber (Infinity)) (false);
@@ -1714,7 +1714,7 @@ See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#ValidDate for
     eq ($.NegativeFiniteNumber.name) ('NegativeFiniteNumber');
     eq ($.NegativeFiniteNumber.url) (`https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#NegativeFiniteNumber`);
 
-    const isNegativeFiniteNumber = $.test ($.env) ($.NegativeFiniteNumber);
+    const isNegativeFiniteNumber = $.test ([]) ($.NegativeFiniteNumber);
     eq (isNegativeFiniteNumber (null)) (false);
     eq (isNegativeFiniteNumber (NaN)) (false);
     eq (isNegativeFiniteNumber (-Infinity)) (false);
@@ -1729,7 +1729,7 @@ See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#ValidDate for
     eq ($.NonZeroFiniteNumber.name) ('NonZeroFiniteNumber');
     eq ($.NonZeroFiniteNumber.url) (`https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#NonZeroFiniteNumber`);
 
-    const isNonZeroFiniteNumber = $.test ($.env) ($.NonZeroFiniteNumber);
+    const isNonZeroFiniteNumber = $.test ([]) ($.NonZeroFiniteNumber);
     eq (isNonZeroFiniteNumber (0)) (false);
     eq (isNonZeroFiniteNumber (-0)) (false);
     eq (isNonZeroFiniteNumber (Infinity)) (false);
@@ -1742,7 +1742,7 @@ See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#ValidDate for
     eq ($.Integer.name) ('Integer');
     eq ($.Integer.url) (`https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Integer`);
 
-    const isInteger = $.test ($.env) ($.Integer);
+    const isInteger = $.test ([]) ($.Integer);
     eq (isInteger (3.14)) (false);
     eq (isInteger (9007199254740992)) (false);
     eq (isInteger (-9007199254740992)) (false);
@@ -1754,7 +1754,7 @@ See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#ValidDate for
     eq ($.NonZeroInteger.name) ('NonZeroInteger');
     eq ($.NonZeroInteger.url) (`https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#NonZeroInteger`);
 
-    const isNonZeroInteger = $.test ($.env) ($.NonZeroInteger);
+    const isNonZeroInteger = $.test ([]) ($.NonZeroInteger);
     eq (isNonZeroInteger (0)) (false);
     eq (isNonZeroInteger (-0)) (false);
     eq (isNonZeroInteger (3.14)) (false);
@@ -1766,7 +1766,7 @@ See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#ValidDate for
     eq ($.NonNegativeInteger.name) ('NonNegativeInteger');
     eq ($.NonNegativeInteger.url) (`https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#NonNegativeInteger`);
 
-    const isNonNegativeInteger = $.test ($.env) ($.NonNegativeInteger);
+    const isNonNegativeInteger = $.test ([]) ($.NonNegativeInteger);
     eq (isNonNegativeInteger (0)) (true);
     eq (isNonNegativeInteger (-0)) (true);
     eq (isNonNegativeInteger (1)) (true);
@@ -1779,7 +1779,7 @@ See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#ValidDate for
     eq ($.PositiveInteger.name) ('PositiveInteger');
     eq ($.PositiveInteger.url) (`https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#PositiveInteger`);
 
-    const isPositiveInteger = $.test ($.env) ($.PositiveInteger);
+    const isPositiveInteger = $.test ([]) ($.PositiveInteger);
     eq (isPositiveInteger (1.5)) (false);
     eq (isPositiveInteger (-1)) (false);
     eq (isPositiveInteger (1)) (true);
@@ -1790,7 +1790,7 @@ See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#ValidDate for
     eq ($.NegativeInteger.name) ('NegativeInteger');
     eq ($.NegativeInteger.url) (`https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#NegativeInteger`);
 
-    const isNegativeInteger = $.test ($.env) ($.NegativeInteger);
+    const isNegativeInteger = $.test ([]) ($.NegativeInteger);
     eq (isNegativeInteger (-1.5)) (false);
     eq (isNegativeInteger (1)) (false);
     eq (isNegativeInteger (-1)) (true);
@@ -1801,7 +1801,7 @@ See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#ValidDate for
     eq ($.GlobalRegExp.name) ('GlobalRegExp');
     eq ($.GlobalRegExp.url) (`https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#GlobalRegExp`);
 
-    const isGlobalRegExp = $.test ($.env) ($.GlobalRegExp);
+    const isGlobalRegExp = $.test ([]) ($.GlobalRegExp);
     eq (isGlobalRegExp (null)) (false);
     eq (isGlobalRegExp ({global: true})) (false);
     eq (isGlobalRegExp (/x/)) (false);
@@ -1818,7 +1818,7 @@ See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#ValidDate for
     eq ($.NonGlobalRegExp.name) ('NonGlobalRegExp');
     eq ($.NonGlobalRegExp.url) (`https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#NonGlobalRegExp`);
 
-    const isNonGlobalRegExp = $.test ($.env) ($.NonGlobalRegExp);
+    const isNonGlobalRegExp = $.test ([]) ($.NonGlobalRegExp);
     eq (isNonGlobalRegExp (null)) (false);
     eq (isNonGlobalRegExp ({global: false})) (false);
     eq (isNonGlobalRegExp (/x/g)) (false);
@@ -1835,7 +1835,7 @@ See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#ValidDate for
     eq ($.RegexFlags.name) ('RegexFlags');
     eq ($.RegexFlags.url) (`https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#RegexFlags`);
 
-    const isRegexFlags = $.test ($.env) ($.RegexFlags);
+    const isRegexFlags = $.test ([]) ($.RegexFlags);
     eq (isRegexFlags ('')) (true);
     eq (isRegexFlags ('g')) (true);
     eq (isRegexFlags ('i')) (true);
@@ -3081,25 +3081,25 @@ suite ('test', () => {
   });
 
   test ('supports nullary types', () => {
-    eq ($.test ($.env) ($.Number) (null)) (false);
-    eq ($.test ($.env) ($.Number) ('42')) (false);
-    eq ($.test ($.env) ($.Number) (42)) (true);
+    eq ($.test ([]) ($.Number) (null)) (false);
+    eq ($.test ([]) ($.Number) ('42')) (false);
+    eq ($.test ([]) ($.Number) (42)) (true);
   });
 
   test ('supports unary types', () => {
-    eq ($.test ($.env) ($.Array ($.Number)) (null)) (false);
-    eq ($.test ($.env) ($.Array ($.Number)) ('42')) (false);
-    eq ($.test ($.env) ($.Array ($.Number)) ([1, 2, '3'])) (false);
-    eq ($.test ($.env) ($.Array ($.Number)) (['42'])) (false);
-    eq ($.test ($.env) ($.Array ($.Number)) ([])) (true);
-    eq ($.test ($.env) ($.Array ($.Number)) ([1, 2, 3])) (true);
+    eq ($.test ([]) ($.Array ($.Number)) (null)) (false);
+    eq ($.test ([]) ($.Array ($.Number)) ('42')) (false);
+    eq ($.test ([]) ($.Array ($.Number)) ([1, 2, '3'])) (false);
+    eq ($.test ([]) ($.Array ($.Number)) (['42'])) (false);
+    eq ($.test ([]) ($.Array ($.Number)) ([])) (true);
+    eq ($.test ([]) ($.Array ($.Number)) ([1, 2, 3])) (true);
   });
 
   test ('supports binary types', () => {
-    eq ($.test ($.env) ($.Pair ($.Number) ($.String)) (Pair (42) (42))) (false);
-    eq ($.test ($.env) ($.Pair ($.Number) ($.String)) (Pair ('') (''))) (false);
-    eq ($.test ($.env) ($.Pair ($.Number) ($.String)) (Pair ('') (42))) (false);
-    eq ($.test ($.env) ($.Pair ($.Number) ($.String)) (Pair (42) (''))) (true);
+    eq ($.test ([]) ($.Pair ($.Number) ($.String)) (Pair (42) (42))) (false);
+    eq ($.test ([]) ($.Pair ($.Number) ($.String)) (Pair ('') (''))) (false);
+    eq ($.test ([]) ($.Pair ($.Number) ($.String)) (Pair ('') (42))) (false);
+    eq ($.test ([]) ($.Pair ($.Number) ($.String)) (Pair (42) (''))) (true);
   });
 
   test ('supports type variables', () => {
