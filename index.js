@@ -1067,9 +1067,9 @@
             Z.map (fromUnaryType (t),
                    expandUnknown (env, seen$, value, t.types.$1)) :
           t.type === BINARY ?
-            xprod (t,
-                   expandUnknown (env, seen$, value, t.types.$1),
-                   expandUnknown (env, seen$, value, t.types.$2)) :
+            Z.lift2 (fromBinaryType (t),
+                     expandUnknown (env, seen$, value, t.types.$1),
+                     expandUnknown (env, seen$, value, t.types.$2)) :
           // else
             [t]
         );
@@ -1154,9 +1154,9 @@
             Z.map (fromUnaryType (t),
                    expandUnknownStrict (value, t.types.$1)) :
           isNullaryTypeVar && t.type === BINARY ?
-            xprod (t,
-                   expandUnknownStrict (value, t.types.$1),
-                   expandUnknownStrict (value, t.types.$2)) :
+            Z.lift2 (fromBinaryType (t),
+                     expandUnknownStrict (value, t.types.$1),
+                     expandUnknownStrict (value, t.types.$2)) :
           // else
             [t]
         );
@@ -1316,9 +1316,9 @@
                 var $2s = result.types;
                 return {
                   typeVarMap: result.typeVarMap,
-                  types: xprod (expType,
-                                or ($1s, [expType.types.$1.type]),
-                                or ($2s, [expType.types.$2.type]))
+                  types: Z.lift2 (fromBinaryType (expType),
+                                  or ($1s, [expType.types.$1.type]),
+                                  or ($2s, [expType.types.$2.type]))
                 };
               },
               recur (env,
@@ -1720,14 +1720,6 @@
                       (t._test)
                       (t.types.$1.extractor)
                       (t.types.$2.extractor);
-  }
-
-  //  xprod :: (Type, Array Type, Array Type) -> Array Type
-  function xprod(t, $1s, $2s) {
-    return Z.chain (
-      function(specialize) { return Z.map (specialize, $2s); },
-      Z.map (fromBinaryType (t), $1s)
-    );
   }
 
   //# EnumType :: String -> String -> Array Any -> Type
