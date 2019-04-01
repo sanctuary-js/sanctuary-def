@@ -1712,17 +1712,21 @@
     };
   }
 
+  //  fromBinaryType :: (Type -> Type -> Type) -> Type -> Type -> Type
+  function fromBinaryType(t) {
+    return BinaryType (t.name)
+                      (t.url)
+                      (t.supertypes)
+                      (t._test)
+                      (t.types.$1.extractor)
+                      (t.types.$2.extractor);
+  }
+
   //  xprod :: (Type, Array Type, Array Type) -> Array Type
   function xprod(t, $1s, $2s) {
     return Z.chain (
       function(specialize) { return Z.map (specialize, $2s); },
-      Z.map (BinaryType (t.name)
-                        (t.url)
-                        (t.supertypes)
-                        (t._test)
-                        (t.types.$1.extractor)
-                        (t.types.$2.extractor),
-             $1s)
+      Z.map (fromBinaryType (t), $1s)
     );
   }
 
@@ -2723,28 +2727,13 @@
   //  fromUncheckedUnaryType :: (Type -> Type) -> Type -> Type
   function fromUncheckedUnaryType(typeConstructor) {
     var t = typeConstructor (Unknown);
-    return def (t.name)
-               ({})
-               ([Type, Type])
-               (UnaryType (t.name)
-                          (t.url)
-                          (t.supertypes)
-                          (t._test)
-                          (t.types.$1.extractor));
+    return def (t.name) ({}) ([Type, Type]) (fromUnaryType (t));
   }
 
   //  fromUncheckedBinaryType :: (Type -> Type -> Type) -> Type -> Type -> Type
   function fromUncheckedBinaryType(typeConstructor) {
     var t = typeConstructor (Unknown) (Unknown);
-    return def (t.name)
-               ({})
-               ([Type, Type, Type])
-               (BinaryType (t.name)
-                           (t.url)
-                           (t.supertypes)
-                           (t._test)
-                           (t.types.$1.extractor)
-                           (t.types.$2.extractor));
+    return def (t.name) ({}) ([Type, Type, Type]) (fromBinaryType (t));
   }
 
   return {
