@@ -1899,7 +1899,7 @@ See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#ValidDate for
   test ('provides the "RegexFlags" type', () => {
     eq ($.RegexFlags.name) ('RegexFlags');
     eq ($.RegexFlags.url) (`https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#RegexFlags`);
-    eq ($.RegexFlags.supertypes) ([]);
+    eq ($.RegexFlags.supertypes) ([$.String]);
 
     const isRegexFlags = $.test ([]) ($.RegexFlags);
     eq (isRegexFlags ('')) (true);
