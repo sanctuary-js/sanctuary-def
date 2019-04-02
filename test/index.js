@@ -2081,7 +2081,7 @@ f :: Null -> Null
      ^^^^
       1
 
-1)  ${show (x)} ::${types.length > 0 ? ` ${types}` : ''}
+1)  ${show (x)} :: ${types.length > 0 ? `${types}` : '(no types)'}
 
 The value at position 1 is not a member of ‘Null’.
 
@@ -2925,6 +2925,24 @@ See https://github.com/sanctuary-js/sanctuary-type-classes/tree/v${Z$version}#Al
   });
 
   test ('supports unary type variables', () => {
+    //    Box :: a -> Box a
+    const Box = x => ({
+      'constructor': {'@@type': 'my-package/Box@1'},
+      'value': x,
+      '@@show': () => 'Box (' + show (x) + ')',
+    });
+
+    //    $Box :: Type -> Type
+    const $Box = $.UnaryType
+      ('Box')
+      ('http://example.com/my-package#Box')
+      ([])
+      (x => type (x) === 'my-package/Box@1')
+      (box => [box.value]);
+
+    const env = Z.concat ($.env, [$Box ($.Unknown)]);
+    const def = $.create ({checkTypes: true, env});
+
     //    map :: Functor f => (a -> b) -> f a -> f b
     const map =
     def ('map')
@@ -2966,13 +2984,25 @@ Expected one argument but received three arguments:
     eq (sum (Right (42))) (42);
 
     throws (() => { sum (42); })
+           (new TypeError (`Invalid value
+
+sum :: Foldable f => f FiniteNumber -> FiniteNumber
+                     ^^^^^^^^^^^^^^
+                           1
+
+1)  42 :: Number
+
+The value at position 1 is not a member of ‘f FiniteNumber’.
+`));
+
+    throws (() => { sum (Box (42)); })
            (new TypeError (`Type-class constraint violation
 
 sum :: Foldable f => f FiniteNumber -> FiniteNumber
        ^^^^^^^^^^    ^^^^^^^^^^^^^^
                            1
 
-1)  42 :: Number
+1)  Box (42) :: Box Number
 
 ‘sum’ requires ‘f’ to satisfy the Foldable type-class constraint; the value at position 1 does not.
 
@@ -3040,6 +3070,40 @@ sort :: (Ord a, Applicative f, Foldable f, Monoid f) => f a -> f a
 
 See https://github.com/sanctuary-js/sanctuary-type-classes/tree/v${Z$version}#Ord for information about the sanctuary-type-classes/Ord type class.
 `));
+
+    //    xxx :: f String -> Null
+    const xxx = def ('xxx') ({}) ([f ($.String), $.Null]) (x => null);
+
+    eq (xxx ([])) (null);
+    eq (xxx (['foo'])) (null);
+    eq (xxx (['foo', 'bar'])) (null);
+    eq (xxx (['foo', 'bar', 'baz'])) (null);
+
+    throws (() => { xxx ('XXX'); })
+           (new TypeError (`Invalid value
+
+xxx :: f String -> Null
+       ^^^^^^^^
+          1
+
+1)  "XXX" :: String
+
+The value at position 1 is not a member of ‘f String’.
+`));
+
+    throws (() => { xxx ([1, 2, 3]); })
+           (new TypeError (`Invalid value
+
+xxx :: f String -> Null
+         ^^^^^^
+           1
+
+1)  1 :: Number
+
+The value at position 1 is not a member of ‘String’.
+
+See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#String for information about the String type.
+`));
   });
 
   test ('supports binary type variables', () => {
@@ -3087,6 +3151,53 @@ chain :: Chain m => (a -> m b) -> m a -> m b
 2)  Just ("x") :: Maybe String
 
 Since there is no type of which all the above values are members, the type-variable constraint has been violated.
+`));
+
+    //    xxx :: f String Number -> Null
+    const xxx = def ('xxx') ({}) ([f ($.String) ($.Number), $.Null]) (x => null);
+
+    eq (xxx (Pair ('abc') (123))) (null);
+    eq (xxx (Left ('abc'))) (null);
+    eq (xxx (Right (123))) (null);
+
+    throws (() => { xxx (/XXX/); })
+           (new TypeError (`Invalid value
+
+xxx :: f String Number -> Null
+       ^^^^^^^^^^^^^^^
+              1
+
+1)  /XXX/ :: RegExp
+
+The value at position 1 is not a member of ‘f String Number’.
+`));
+
+    throws (() => { xxx (Left (/XXX/)); })
+           (new TypeError (`Invalid value
+
+xxx :: f String Number -> Null
+         ^^^^^^
+           1
+
+1)  /XXX/ :: RegExp
+
+The value at position 1 is not a member of ‘String’.
+
+See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#String for information about the String type.
+`));
+
+    throws (() => { xxx (Right (/XXX/)); })
+           (new TypeError (`Invalid value
+
+xxx :: f String Number -> Null
+                ^^^^^^
+                  1
+
+1)  /XXX/ :: RegExp
+
+The value at position 1 is not a member of ‘Number’.
+
+See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Number for information about the Number type.
 `));
   });
 
