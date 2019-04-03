@@ -482,7 +482,6 @@
   }
 
   var NullaryTypeWithUrl = Z.ap (NullaryType, functionUrl);
-  var EnumTypeWithUrl = Z.ap (EnumType, functionUrl);
   var UnaryTypeWithUrl = Z.ap (UnaryType, functionUrl);
   var BinaryTypeWithUrl = Z.ap (BinaryType, functionUrl);
 
@@ -895,22 +894,6 @@
     ([RegExp_])
     (complement (prop ('global')));
 
-  //# RegexFlags :: Type
-  //.
-  //. Type comprising the canonical RegExp flags:
-  //.
-  //.   - `''`
-  //.   - `'g'`
-  //.   - `'i'`
-  //.   - `'m'`
-  //.   - `'gi'`
-  //.   - `'gm'`
-  //.   - `'im'`
-  //.   - `'gim'`
-  var RegexFlags = EnumTypeWithUrl
-    ('RegexFlags')
-    (['', 'g', 'i', 'm', 'gi', 'gm', 'im', 'gim']);
-
   //# StrMap :: Type -> Type
   //.
   //. Constructor for homogeneous Object types.
@@ -934,6 +917,23 @@
     ('String')
     ([])
     (typeofEq ('string'));
+
+  //# RegexFlags :: Type
+  //.
+  //. Type comprising the canonical RegExp flags:
+  //.
+  //.   - `''`
+  //.   - `'g'`
+  //.   - `'i'`
+  //.   - `'m'`
+  //.   - `'gi'`
+  //.   - `'gm'`
+  //.   - `'im'`
+  //.   - `'gim'`
+  var RegexFlags = NullaryTypeWithUrl
+    ('RegexFlags')
+    ([String_])
+    (function(s) { return /^g?i?m?$/.test (s); });
 
   //# Symbol :: Type
   //.
