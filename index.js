@@ -254,6 +254,13 @@
   //  complement :: (a -> Boolean) -> a -> Boolean
   function complement(pred) { return function(x) { return !(pred (x)); }; }
 
+  //  filter :: Filterable f => (a -> Boolean) -> f a -> f a
+  function filter(pred) {
+    return function(xs) {
+      return Z.filter (pred, xs);
+    };
+  }
+
   //  init :: Array a -> Array a
   function init(xs) { return xs.slice (0, -1); }
 
@@ -380,9 +387,9 @@
         for (var idx = 0; idx < type.keys.length; idx += 1) {
           var k = type.keys[idx];
           var t = type.types[k];
-          var ys = t.extractor (x);
+          var ys = type.extractors[k] (x);
           for (var idx2 = 0; idx2 < ys.length; idx2 += 1) {
-            var result = t.type.validate (env) (ys[idx2]);
+            var result = t.validate (env) (ys[idx2]);
             if (result.isLeft) {
               return Left ({value: result.value.value,
                             propPath: Z.concat ([k], result.value.propPath)});
@@ -399,9 +406,7 @@
         Z.equals (this.url, other.url) &&
         Z.equals (this.supertypes, other.supertypes) &&
         Z.equals (this.keys, other.keys) &&
-        this.keys.every (function(k) {
-          return Z.equals (this.types[k].type, other.types[k].type);
-        }, this)
+        Z.equals (this.types, other.types)
       );
     },
     '@@show': function() {
@@ -417,17 +422,23 @@
     format,     // :: (String -> String, String -> String -> String) -> String
     supertypes, // :: Array Type
     test,       // :: Any -> Boolean
-    keys,       // :: Array String
-    types       // :: StrMap { extractor :: a -> Array b, type :: Type }
+    tuples      // :: Array (Array3 String (a -> Array b) Type)
   ) {
     var t = Object.create (Type$prototype);
     t._test = test;
+    t.extractors = tuples.reduce (function(extractors, tuple) {
+      extractors[tuple[0]] = tuple[1];
+      return extractors;
+    }, {});
     t.format = format;
-    t.keys = keys;
+    t.keys = tuples.map (function(tuple) { return tuple[0]; });
     t.name = name;
     t.supertypes = supertypes;
     t.type = type;
-    t.types = types;
+    t.types = tuples.reduce (function(types, tuple) {
+      types[tuple[0]] = tuple[2];
+      return types;
+    }, {});
     t.url = url;
     return t;
   }
@@ -444,11 +455,11 @@
 
   //  Inconsistent :: Type
   var Inconsistent =
-  _Type (INCONSISTENT, '', '', always2 ('???'), [], K (K (false)), [], {});
+  _Type (INCONSISTENT, '', '', always2 ('???'), [], K (K (false)), []);
 
   //  NoArguments :: Type
   var NoArguments =
-  _Type (NO_ARGUMENTS, '', '', always2 ('()'), [], K (K (true)), [], {});
+  _Type (NO_ARGUMENTS, '', '', always2 ('()'), [], K (K (true)), []);
 
   //  arityGte :: NonNegativeInteger -> Type -> Boolean
   function arityGte(n) {
@@ -508,7 +519,7 @@
   //.   - `List (List (List String))`
   //.   - `...`
   var Unknown =
-  _Type (UNKNOWN, '', '', always2 ('Unknown'), [], K (K (true)), [], {});
+  _Type (UNKNOWN, '', '', always2 ('Unknown'), [], K (K (true)), []);
 
   //# Any :: Type
   //.
@@ -645,22 +656,16 @@
                            last (xs));
     }
 
-    var $keys = [];
-    var $types = {};
-    types.forEach (function(t, idx) {
-      var k = '$' + show (idx + 1);
-      $keys.push (k);
-      $types[k] = {extractor: K ([]), type: t};
-    });
-
     return _Type (FUNCTION,
                   '',
                   '',
                   format,
                   [AnyFunction],
                   K (K (true)),
-                  $keys,
-                  $types);
+                  types.reduce (function(tuples, t) {
+                    tuples.push (['$' + show (tuples.length + 1), K ([]), t]);
+                    return tuples;
+                  }, []));
   }
 
   //# HtmlElement :: Type
@@ -1041,16 +1046,25 @@
            (n === 1 ? 'argument' : 'arguments');
   }
 
-  //  expandUnknown :: ... -> Array Type
-  function expandUnknown(
-    env,            // :: Array Type
-    seen,           // :: Array Object
-    value,          // :: Any
-    r               // :: { extractor :: a -> Array b, type :: Type }
-  ) {
-    return r.type.type === UNKNOWN ?
-      _determineActualTypes (env, seen, r.extractor (value)) :
-      [r.type];
+  //  expandUnknown
+  //  :: Array Type
+  //  -> Array Object
+  //  -> Any
+  //  -> (a -> Array b)
+  //  -> Type
+  //  -> Array Type
+  function expandUnknown(env) {
+    return function(seen) {
+      return function(value) {
+        return function(extractor) {
+          return function(type) {
+            return type.type === UNKNOWN ?
+                   _determineActualTypes (env, seen, extractor (value)) :
+                   [type];
+          };
+        };
+      };
+    };
   }
 
   //  _determineActualTypes :: ... -> Array Type
@@ -1059,6 +1073,8 @@
     seen,           // :: Array Object
     values          // :: Array Any
   ) {
+    var expandUnknown4 = expandUnknown (env);
+
     function refine(types, value) {
       var seen$;
       if (typeof value === 'object' && value != null ||
@@ -1070,17 +1086,18 @@
       } else {
         seen$ = seen;
       }
+      var expandUnknown2 = expandUnknown4 (seen$) (value);
       return Z.chain (function(t) {
         return (
           (t.validate (env) (value)).isLeft ?
             [] :
           t.type === UNARY ?
             Z.map (fromUnaryType (t),
-                   expandUnknown (env, seen$, value, t.types.$1)) :
+                   expandUnknown2 (t.extractors.$1) (t.types.$1)) :
           t.type === BINARY ?
             Z.lift2 (fromBinaryType (t),
-                     expandUnknown (env, seen$, value, t.types.$1),
-                     expandUnknown (env, seen$, value, t.types.$2)) :
+                     expandUnknown2 (t.extractors.$1) (t.types.$1),
+                     expandUnknown2 (t.extractors.$2) (t.types.$2)) :
           // else
             [t]
         );
@@ -1094,9 +1111,9 @@
 
   //  isConsistent :: Type -> Boolean
   function isConsistent(t) {
-    return t.type === UNARY   ? isConsistent (t.types.$1.type) :
-           t.type === BINARY  ? isConsistent (t.types.$1.type) &&
-                                isConsistent (t.types.$2.type) :
+    return t.type === UNARY   ? isConsistent (t.types.$1) :
+           t.type === BINARY  ? isConsistent (t.types.$1) &&
+                                isConsistent (t.types.$2) :
            /* else */           t.type !== INCONSISTENT;
   }
 
@@ -1154,11 +1171,11 @@
     var isNullaryTypeVar = isEmpty (typeVar.keys);
     var isValid = test (env);
 
-    function expandUnknownStrict(value, r) {
-      return Z.filter (isConsistent, expandUnknown (env, [], value, r));
-    }
+    var expandUnknownStrict = B (B (B (filter (isConsistent))))
+                                (expandUnknown (env) ([]));
 
     values.forEach (function(value) {
+      var expandUnknownStrict2 = expandUnknownStrict (value);
       $typeVarMap[typeVar.name].valuesByPath[key].push (value);
       $typeVarMap[typeVar.name].types = Z.chain (function(t) {
         return (
@@ -1166,11 +1183,11 @@
             [] :
           isNullaryTypeVar && t.type === UNARY ?
             Z.map (fromUnaryType (t),
-                   expandUnknownStrict (value, t.types.$1)) :
+                   expandUnknownStrict2 (t.extractors.$1) (t.types.$1)) :
           isNullaryTypeVar && t.type === BINARY ?
             Z.lift2 (fromBinaryType (t),
-                     expandUnknownStrict (value, t.types.$1),
-                     expandUnknownStrict (value, t.types.$2)) :
+                     expandUnknownStrict2 (t.extractors.$1) (t.types.$1),
+                     expandUnknownStrict2 (t.extractors.$2) (t.types.$2)) :
           // else
             [t]
         );
@@ -1287,13 +1304,13 @@
               //  the actual type depending on the actual type's arity.
               var offset = t.keys.length - expType.keys.length;
               return expType.keys.reduce (function(e, k, idx) {
-                var extractor = t.types[t.keys[offset + idx]].extractor;
+                var extractor = t.extractors[t.keys[offset + idx]];
                 return Z.reduce (function(e, x) {
                   return Z.chain (function(r) {
                     return recur (env,
                                   typeInfo,
                                   r.typeVarMap,
-                                  expType.types[k].type,
+                                  expType.types[k],
                                   index,
                                   Z.concat (propPath, [k]),
                                   [x]);
@@ -1309,16 +1326,16 @@
             return {
               typeVarMap: result.typeVarMap,
               types: Z.map (fromUnaryType (expType),
-                            or (result.types, [expType.types.$1.type]))
+                            or (result.types, [expType.types.$1]))
             };
           },
           recur (env,
                  typeInfo,
                  typeVarMap,
-                 expType.types.$1.type,
+                 expType.types.$1,
                  index,
                  Z.concat (propPath, ['$1']),
-                 Z.chain (expType.types.$1.extractor, values))
+                 Z.chain (expType.extractors.$1, values))
         );
 
       case BINARY:
@@ -1331,26 +1348,26 @@
                 return {
                   typeVarMap: result.typeVarMap,
                   types: Z.lift2 (fromBinaryType (expType),
-                                  or ($1s, [expType.types.$1.type]),
-                                  or ($2s, [expType.types.$2.type]))
+                                  or ($1s, [expType.types.$1]),
+                                  or ($2s, [expType.types.$2]))
                 };
               },
               recur (env,
                      typeInfo,
                      result.typeVarMap,
-                     expType.types.$2.type,
+                     expType.types.$2,
                      index,
                      Z.concat (propPath, ['$2']),
-                     Z.chain (expType.types.$2.extractor, values))
+                     Z.chain (expType.extractors.$2, values))
             );
           },
           recur (env,
                  typeInfo,
                  typeVarMap,
-                 expType.types.$1.type,
+                 expType.types.$1,
                  index,
                  Z.concat (propPath, ['$1']),
-                 Z.chain (expType.types.$1.extractor, values))
+                 Z.chain (expType.extractors.$1, values))
         );
 
       case RECORD:
@@ -1359,10 +1376,10 @@
             return recur (env,
                           typeInfo,
                           r.typeVarMap,
-                          expType.types[k].type,
+                          expType.types[k],
                           index,
                           Z.concat (propPath, [k]),
-                          Z.chain (expType.types[k].extractor, values));
+                          Z.chain (expType.extractors[k], values));
           }, e);
         }, Right ({typeVarMap: typeVarMap, types: [expType]}), expType.keys);
 
@@ -1470,14 +1487,7 @@
     return function(url) {
       return function(supertypes) {
         return function(test) {
-          return _Type (NULLARY,
-                        name,
-                        url,
-                        format,
-                        supertypes,
-                        K (test),
-                        [],
-                        {});
+          return _Type (NULLARY, name, url, format, supertypes, K (test), []);
         };
       };
     };
@@ -1500,10 +1510,9 @@
   //.     is a member of `t x` for some type `x`;
   //.
   //.   - a function that takes any value of type `t a` and returns an array
-  //.     of the values of type `a` contained in the `t` (exposed as
-  //.     `t.types.$1.extractor`); and
+  //.     of the values of type `a` contained in the `t`; and
   //.
-  //.   - the type of `a` (exposed as `t.types.$1.type`).
+  //.   - the type of `a`.
   //.
   //. For example:
   //.
@@ -1582,8 +1591,7 @@
                             format,
                             supertypes,
                             K (test),
-                            ['$1'],
-                            {$1: {extractor: _1, type: $1}});
+                            [['$1', _1, $1]]);
             };
           };
         };
@@ -1597,7 +1605,7 @@
                      (t.url)
                      (t.supertypes)
                      (t._test ([]))
-                     (t.types.$1.extractor);
+                     (t.extractors.$1);
   }
 
   //# BinaryType :: String -> String -> Array Type -> (Any -> Boolean) -> (t a b -> Array a) -> (t a b -> Array b) -> Type -> Type -> Type
@@ -1618,16 +1626,14 @@
   //.     is a member of `t x y` for some types `x` and `y`;
   //.
   //.   - a function that takes any value of type `t a b` and returns an array
-  //.     of the values of type `a` contained in the `t` (exposed as
-  //.     `t.types.$1.extractor`);
+  //.     of the values of type `a` contained in the `t`;
   //.
   //.   - a function that takes any value of type `t a b` and returns an array
-  //.     of the values of type `b` contained in the `t` (exposed as
-  //.     `t.types.$2.extractor`);
+  //.     of the values of type `b` contained in the `t`;
   //.
-  //.   - the type of `a` (exposed as `t.types.$1.type`); and
+  //.   - the type of `a`; and
   //.
-  //.   - the type of `b` (exposed as `t.types.$2.type`).
+  //.   - the type of `b`.
   //.
   //. For example:
   //.
@@ -1719,9 +1725,8 @@
                                 format,
                                 supertypes,
                                 K (test),
-                                ['$1', '$2'],
-                                {$1: {extractor: _1, type: $1},
-                                 $2: {extractor: _2, type: $2}});
+                                [['$1', _1, $1],
+                                 ['$2', _2, $2]]);
                 };
               };
             };
@@ -1737,8 +1742,8 @@
                       (t.url)
                       (t.supertypes)
                       (t._test ([]))
-                      (t.types.$1.extractor)
-                      (t.types.$2.extractor);
+                      (t.extractors.$1)
+                      (t.extractors.$2);
   }
 
   //# EnumType :: String -> String -> Array Any -> Type
@@ -1847,12 +1852,11 @@
       };
     }
 
-    var $types = {};
-    keys.forEach (function(k) {
-      $types[k] = {extractor: function(x) { return [x[k]]; }, type: fields[k]};
+    var tuples = keys.map (function(k) {
+      return [k, function(x) { return [x[k]]; }, fields[k]];
     });
 
-    return _Type (RECORD, '', '', format, [], test, keys, $types);
+    return _Type (RECORD, '', '', format, [], test, tuples);
   }
 
   //# NamedRecordType :: NonEmpty String -> String -> Array Type -> StrMap Type -> Type
@@ -1935,20 +1939,11 @@
             };
           }
 
-          var $types = {};
-          keys.forEach (function(k) {
-            $types[k] = {extractor: function(x) { return [x[k]]; },
-                         type: fields[k]};
+          var tuples = keys.map (function(k) {
+            return [k, function(x) { return [x[k]]; }, fields[k]];
           });
 
-          return _Type (RECORD,
-                        name,
-                        url,
-                        format,
-                        supertypes,
-                        test,
-                        keys,
-                        $types);
+          return _Type (RECORD, name, url, format, supertypes, test, tuples);
         };
       };
     };
@@ -2023,9 +2018,9 @@
   //. //   Since there is no type of which all the above values are members, the type-variable constraint has been violated.
   //. ```
   function TypeVariable(name) {
-    var keys = [];
-    var test = typeVarPred (keys.length);
-    return _Type (VARIABLE, name, '', always2 (name), [], test, keys, {});
+    var tuples = [];
+    var test = typeVarPred (tuples.length);
+    return _Type (VARIABLE, name, '', always2 (name), [], test, tuples);
   }
 
   //# UnaryTypeVariable :: String -> Type -> Type
@@ -2036,7 +2031,7 @@
   //.
   //.   - a name (conventionally matching `^[a-z]$`); and
   //.
-  //.   - the type of `a` (exposed as `t.types.$1.type`).
+  //.   - the type of `a`.
   //.
   //. Consider the type of a generalized `map`:
   //.
@@ -2081,10 +2076,9 @@
                inner ('$1') (show ($1)) +
                outer (')');
       }
-      var keys = ['$1'];
-      var test = typeVarPred (keys.length);
-      var types = {$1: {extractor: K ([]), type: $1}};
-      return _Type (VARIABLE, name, '', format, [], test, keys, types);
+      var tuples = [['$1', K ([]), $1]];
+      var test = typeVarPred (tuples.length);
+      return _Type (VARIABLE, name, '', format, [], test, tuples);
     };
   }
 
@@ -2096,9 +2090,9 @@
   //.
   //.   - a name (conventionally matching `^[a-z]$`);
   //.
-  //.   - the type of `a` (exposed as `t.types.$1.type`); and
+  //.   - the type of `a`; and
   //.
-  //.   - the type of `b` (exposed as `t.types.$2.type`).
+  //.   - the type of `b`.
   //.
   //. The more detailed explanation of [`UnaryTypeVariable`][] also applies to
   //. `BinaryTypeVariable`.
@@ -2112,11 +2106,10 @@
                  inner ('$2') (show ($2)) +
                  outer (')');
         }
-        var keys = ['$1', '$2'];
-        var test = typeVarPred (keys.length);
-        var types = {$1: {extractor: K ([]), type: $1},
-                     $2: {extractor: K ([]), type: $2}};
-        return _Type (VARIABLE, name, '', format, [], test, keys, types);
+        var tuples = [['$1', K ([]), $1],
+                      ['$2', K ([]), $2]];
+        var test = typeVarPred (tuples.length);
+        return _Type (VARIABLE, name, '', format, [], test, tuples);
       };
     };
   }
@@ -2277,7 +2270,7 @@
   function typeVarNames(t) {
     return Z.concat (
       t.type === VARIABLE ? [t.name] : [],
-      Z.chain (function(k) { return typeVarNames (t.types[k].type); }, t.keys)
+      Z.chain (function(k) { return typeVarNames (t.types[k]); }, t.keys)
     );
   }
 
@@ -2348,7 +2341,7 @@
                      !(isEmpty (propPath)),
                    stripOutermostParens,
                    formatType3 (t) (propPath) (t.format (_, function(k) {
-                     return K (_underline (t.types[k].type,
+                     return K (_underline (t.types[k],
                                            Z.concat (propPath, [k]),
                                            formatType3));
                    })));
@@ -2389,7 +2382,7 @@
 
   //  resolvePropPath :: (Type, Array String) -> Type
   function resolvePropPath(t, propPath) {
-    return Z.reduce (function(t, prop) { return t.types[prop].type; },
+    return Z.reduce (function(t, prop) { return t.types[prop]; },
                      t,
                      propPath);
   }
@@ -2605,7 +2598,7 @@
       //  checkValue :: (TypeVarMap, Integer, String, a) -> Either (() -> Error) TypeVarMap
       function checkValue(typeVarMap, index, k, x) {
         var propPath = [k];
-        var t = expType.types[k].type;
+        var t = expType.types[k];
         return (
           t.type === VARIABLE ?
             Z.chain (
@@ -2643,7 +2636,7 @@
         );
       }
 
-      var isThunk = expType.types.$1.type.type === NO_ARGUMENTS;
+      var isThunk = expType.types.$1.type === NO_ARGUMENTS;
       var numArgsExpected = isThunk ? 0 : expType.keys.length - 1;
       var typeVarMap = _typeVarMap;
       return function(x) {
