@@ -1776,8 +1776,6 @@
   //.
   //. To define an anonymous record type one must provide:
   //.
-  //.   - an array of supertypes (exposed as `t.supertypes`); and
-  //.
   //.   - an object mapping field name to type.
   //.
   //. For example:
