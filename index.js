@@ -2842,7 +2842,7 @@
           ([String_,
             String_,
             Array_ (Type),
-            Function_ ([Any, Boolean_]),
+            Unchecked ('(Any -> Boolean)'),
             Type])
           (NullaryType),
     UnaryType:
