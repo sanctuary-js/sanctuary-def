@@ -5,6 +5,7 @@ const vm = require ('vm');
 
 const Descending = require ('sanctuary-descending');
 const {Left, Right} = require ('sanctuary-either');
+const Identity = require ('sanctuary-identity');
 const {Nothing, Just} = require ('sanctuary-maybe');
 const Pair = require ('sanctuary-pair');
 const show = require ('sanctuary-show');
@@ -1559,6 +1560,20 @@ See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Array2 for in
     eq ($.HtmlElement.name) ('HtmlElement');
     eq ($.HtmlElement.url) (`https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#HtmlElement`);
     eq ($.HtmlElement.supertypes) ([]);
+  });
+
+  test ('provides the "Identity" type constructor', () => {
+    eq (typeof $.Identity) ('function');
+    eq ($.Identity.length) (1);
+    eq (show ($.Identity)) ('Identity :: Type -> Type');
+    eq (show ($.Identity (a))) ('(Identity a)');
+    eq (($.Identity (a)).name) ('Identity');
+    eq (($.Identity (a)).url) (`https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Identity`);
+
+    const isIdentityString = $.test ([]) ($.Identity ($.String));
+    eq (isIdentityString (null)) (false);
+    eq (isIdentityString (Identity (12.34))) (false);
+    eq (isIdentityString (Identity ('abc'))) (true);
   });
 
   test ('provides the "Maybe" type constructor', () => {

@@ -697,6 +697,15 @@
        return /^\[object HTML.+Element\]$/.test (toString.call (x));
      });
 
+  //# Identity :: Type -> Type
+  //.
+  //. [Identity][] type constructor.
+  var Identity = UnaryTypeWithUrl
+    ('Identity')
+    ([])
+    (typeEq ('sanctuary-identity/Identity@1'))
+    (I);
+
   //# Maybe :: Type -> Type
   //.
   //. [Maybe][] type constructor.
@@ -1000,6 +1009,7 @@
   //.   - <code>[Either](#Either) ([Unknown][]) ([Unknown][])</code>
   //.   - <code>[Error](#Error)</code>
   //.   - <code>[HtmlElement](#HtmlElement)</code>
+  //.   - <code>[Identity](#Identity) ([Unknown][])</code>
   //.   - <code>[Maybe](#Maybe) ([Unknown][])</code>
   //.   - <code>[Null](#Null)</code>
   //.   - <code>[Number](#Number)</code>
@@ -1020,6 +1030,7 @@
     Either_ (Unknown) (Unknown),
     Error_,
     HtmlElement,
+    Identity (Unknown),
     Maybe (Unknown),
     Null,
     Number_,
@@ -2801,6 +2812,7 @@
     Error: Error_,
     Function: def ('Function') ({}) ([Array_ (Type), Type]) (Function_),
     HtmlElement: HtmlElement,
+    Identity: fromUncheckedUnaryType (Identity),
     Maybe: fromUncheckedUnaryType (Maybe),
     NonEmpty: NonEmpty,
     Null: Null,
@@ -2939,6 +2951,7 @@
 //. [Either]:               v:sanctuary-js/sanctuary-either
 //. [FL:Semigroup]:         https://github.com/fantasyland/fantasy-land#semigroup
 //. [HTML element]:         https://developer.mozilla.org/en-US/docs/Web/HTML/Element
+//. [Identity]:             v:sanctuary-js/sanctuary-identity
 //. [Maybe]:                v:sanctuary-js/sanctuary-maybe
 //. [Monoid]:               https://github.com/fantasyland/fantasy-land#monoid
 //. [Pair]:                 v:sanctuary-js/sanctuary-pair
