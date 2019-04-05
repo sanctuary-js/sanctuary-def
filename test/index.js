@@ -3,6 +3,7 @@
 const util = require ('util');
 const vm = require ('vm');
 
+const Descending = require ('sanctuary-descending');
 const {Left, Right} = require ('sanctuary-either');
 const {Nothing, Just} = require ('sanctuary-maybe');
 const Pair = require ('sanctuary-pair');
@@ -1510,6 +1511,20 @@ See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Array2 for in
     eq ($.Date.name) ('Date');
     eq ($.Date.url) (`https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Date`);
     eq ($.Date.supertypes) ([]);
+  });
+
+  test ('provides the "Descending" type constructor', () => {
+    eq (typeof $.Descending) ('function');
+    eq ($.Descending.length) (1);
+    eq (show ($.Descending)) ('Descending :: Type -> Type');
+    eq (show ($.Descending (a))) ('(Descending a)');
+    eq (($.Descending (a)).name) ('Descending');
+    eq (($.Descending (a)).url) (`https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Descending`);
+
+    const isDescendingString = $.test ([]) ($.Descending ($.String));
+    eq (isDescendingString (null)) (false);
+    eq (isDescendingString (Descending (12.34))) (false);
+    eq (isDescendingString (Descending ('abc'))) (true);
   });
 
   test ('provides the "Either" type constructor', () => {
