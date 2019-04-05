@@ -616,6 +616,15 @@
     ([Date_])
     (B (complement (isNaN)) (Number));
 
+  //# Descending :: Type -> Type
+  //.
+  //. [Descending][] type constructor.
+  var Descending = UnaryTypeWithUrl
+    ('Descending')
+    ([])
+    (typeEq ('sanctuary-descending/Descending@1'))
+    (I);
+
   //# Either :: Type -> Type -> Type
   //.
   //. [Either][] type constructor.
@@ -987,6 +996,7 @@
   //.   - <code>[Array](#Array) ([Unknown][])</code>
   //.   - <code>[Boolean](#Boolean)</code>
   //.   - <code>[Date](#Date)</code>
+  //.   - <code>[Descending](#Descending) ([Unknown][])</code>
   //.   - <code>[Either](#Either) ([Unknown][]) ([Unknown][])</code>
   //.   - <code>[Error](#Error)</code>
   //.   - <code>[HtmlElement](#HtmlElement)</code>
@@ -1006,6 +1016,7 @@
     Array_ (Unknown),
     Boolean_,
     Date_,
+    Descending (Unknown),
     Either_ (Unknown) (Unknown),
     Error_,
     HtmlElement,
@@ -2785,6 +2796,7 @@
     Boolean: Boolean_,
     Date: Date_,
     ValidDate: ValidDate,
+    Descending: fromUncheckedUnaryType (Descending),
     Either: fromUncheckedBinaryType (Either_),
     Error: Error_,
     Function: def ('Function') ({}) ([Array_ (Type), Type]) (Function_),
@@ -2923,6 +2935,7 @@
 
 }));
 
+//. [Descending]:           v:sanctuary-js/sanctuary-descending
 //. [Either]:               v:sanctuary-js/sanctuary-either
 //. [FL:Semigroup]:         https://github.com/fantasyland/fantasy-land#semigroup
 //. [HTML element]:         https://developer.mozilla.org/en-US/docs/Web/HTML/Element
