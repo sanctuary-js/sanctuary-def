@@ -3344,7 +3344,7 @@ suite ('UnaryType', () => {
   test ('is a quaternary function', () => {
     eq (typeof $.UnaryType) ('function');
     eq ($.UnaryType.length) (1);
-    eq (show ($.UnaryType)) ('UnaryType :: String -> String -> Array Type -> (Any -> Boolean) -> (t a -> Array a) -> Type -> Type');
+    eq (show ($.UnaryType)) ('UnaryType :: Foldable f => String -> String -> Array Type -> (Any -> Boolean) -> (t a -> f a) -> Type -> Type');
   });
 
   test ('returns a type constructor which type checks its arguments', () => {
@@ -3395,7 +3395,7 @@ suite ('BinaryType', () => {
   test ('is a quinary function', () => {
     eq (typeof $.BinaryType) ('function');
     eq ($.BinaryType.length) (1);
-    eq (show ($.BinaryType)) ('BinaryType :: String -> String -> Array Type -> (Any -> Boolean) -> (t a b -> Array a) -> (t a b -> Array b) -> Type -> Type -> Type');
+    eq (show ($.BinaryType)) ('BinaryType :: Foldable f => String -> String -> Array Type -> (Any -> Boolean) -> (t a b -> f a) -> (t a b -> f b) -> Type -> Type -> Type');
   });
 
   test ('returns a type constructor which type checks its arguments', () => {

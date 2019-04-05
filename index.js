@@ -264,8 +264,8 @@
   //  init :: Array a -> Array a
   function init(xs) { return xs.slice (0, -1); }
 
-  //  isEmpty :: Array a -> Boolean
-  function isEmpty(xs) { return xs.length === 0; }
+  //  isEmpty :: Foldable f => f a -> Boolean
+  function isEmpty(xs) { return Z.size (xs) === 0; }
 
   //  isPrefix :: Array a -> Array a -> Boolean
   function isPrefix(candidate) {
@@ -325,6 +325,15 @@
   //  stripOutermostParens :: String -> String
   function stripOutermostParens(s) {
     return s.slice ('('.length, -')'.length);
+  }
+
+  //  toArray :: Foldable f => f a -> Array a
+  function toArray(foldable) {
+    return Array.isArray (foldable) ?
+           foldable :
+           Z.reduce (function(xs, x) { xs.push (x); return xs; },
+                     [],
+                     foldable);
   }
 
   //  toMarkdownList :: (String, String, a -> String, Array a) -> String
@@ -426,10 +435,11 @@
   ) {
     var t = Object.create (Type$prototype);
     t._test = test;
-    t.extractors = tuples.reduce (function(extractors, tuple) {
-      extractors[tuple[0]] = tuple[1];
-      return extractors;
+    t._extractors = tuples.reduce (function(_extractors, tuple) {
+      _extractors[tuple[0]] = tuple[1];
+      return _extractors;
     }, {});
+    t.extractors = Z.map (B (toArray), t._extractors);
     t.format = format;
     t.keys = tuples.map (function(tuple) { return tuple[0]; });
     t.name = name;
@@ -685,7 +695,7 @@
     ('Maybe')
     ([])
     (typeEq ('sanctuary-maybe/Maybe@1'))
-    (function(maybe) { return maybe.isJust ? [maybe.value] : []; });
+    (I);
 
   //# NonEmpty :: Type -> Type
   //.
@@ -909,11 +919,7 @@
     ('StrMap')
     ([Object_])
     (K (true))
-    (function(strMap) {
-       return Z.reduce (function(xs, x) { xs.push (x); return xs; },
-                        [],
-                        strMap);
-     });
+    (I);
 
   //# String :: Type
   //.
@@ -1493,7 +1499,7 @@
     };
   }
 
-  //# UnaryType :: String -> String -> Array Type -> (Any -> Boolean) -> (t a -> Array a) -> Type -> Type
+  //# UnaryType :: Foldable f => String -> String -> Array Type -> (Any -> Boolean) -> (t a -> f a) -> Type -> Type
   //.
   //. Type constructor for types with one type variable (such as [`Array`][]).
   //.
@@ -1509,8 +1515,8 @@
   //.     the given supertypes, and returns `true` if (and only if) the value
   //.     is a member of `t x` for some type `x`;
   //.
-  //.   - a function that takes any value of type `t a` and returns an array
-  //.     of the values of type `a` contained in the `t`; and
+  //.   - a function that takes any value of type `t a` and returns the values
+  //.     of type `a` contained in the `t`; and
   //.
   //.   - the type of `a`.
   //.
@@ -1605,10 +1611,10 @@
                      (t.url)
                      (t.supertypes)
                      (t._test ([]))
-                     (t.extractors.$1);
+                     (t._extractors.$1);
   }
 
-  //# BinaryType :: String -> String -> Array Type -> (Any -> Boolean) -> (t a b -> Array a) -> (t a b -> Array b) -> Type -> Type -> Type
+  //# BinaryType :: Foldable f => String -> String -> Array Type -> (Any -> Boolean) -> (t a b -> f a) -> (t a b -> f b) -> Type -> Type -> Type
   //.
   //. Type constructor for types with two type variables (such as
   //. [`Array2`][]).
@@ -1625,11 +1631,11 @@
   //.     the given supertypes, and returns `true` if (and only if) the value
   //.     is a member of `t x y` for some types `x` and `y`;
   //.
-  //.   - a function that takes any value of type `t a b` and returns an array
-  //.     of the values of type `a` contained in the `t`;
+  //.   - a function that takes any value of type `t a b` and returns the
+  //.     values of type `a` contained in the `t`;
   //.
-  //.   - a function that takes any value of type `t a b` and returns an array
-  //.     of the values of type `b` contained in the `t`;
+  //.   - a function that takes any value of type `t a b` and returns the
+  //.     values of type `b` contained in the `t`;
   //.
   //.   - the type of `a`; and
   //.
@@ -1742,8 +1748,8 @@
                       (t.url)
                       (t.supertypes)
                       (t._test ([]))
-                      (t.extractors.$1)
-                      (t.extractors.$2);
+                      (t._extractors.$1)
+                      (t._extractors.$2);
   }
 
   //# EnumType :: String -> String -> Array Any -> Type
@@ -1848,7 +1854,7 @@
         var missing = {};
         keys.forEach (function(k) { missing[k] = k; });
         for (var k in x) delete missing[k];
-        return isEmpty (Object.keys (missing));
+        return isEmpty (missing);
       };
     }
 
@@ -1932,7 +1938,7 @@
               var missing = {};
               keys.forEach (function(k) { missing[k] = k; });
               for (var k in x) delete missing[k];
-              return isEmpty (Object.keys (missing)) &&
+              return isEmpty (missing) &&
                      keys.every (function(k) {
                        return test2 (x[k]) (fields[k]);
                      });
@@ -2841,12 +2847,12 @@
           (NullaryType),
     UnaryType:
       def ('UnaryType')
-          ({})
+          ({f: [Z.Foldable]})
           ([String_,
             String_,
             Array_ (Type),
             Unchecked ('(Any -> Boolean)'),
-            Unchecked ('(t a -> Array a)'),
+            Unchecked ('(t a -> f a)'),
             Unchecked ('Type -> Type')])
           (function(name) {
              return B (B (B (B (def (name) ({}) ([Type, Type])))))
@@ -2854,13 +2860,13 @@
            }),
     BinaryType:
       def ('BinaryType')
-          ({})
+          ({f: [Z.Foldable]})
           ([String_,
             String_,
             Array_ (Type),
             Unchecked ('(Any -> Boolean)'),
-            Unchecked ('(t a b -> Array a)'),
-            Unchecked ('(t a b -> Array b)'),
+            Unchecked ('(t a b -> f a)'),
+            Unchecked ('(t a b -> f b)'),
             Unchecked ('Type -> Type -> Type')])
           (function(name) {
              return B (B (B (B (B (def (name) ({}) ([Type, Type, Type]))))))
