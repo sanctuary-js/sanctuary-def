@@ -1521,6 +1521,7 @@ See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Array2 for in
     eq (show ($.Descending (a))) ('(Descending a)');
     eq (($.Descending (a)).name) ('Descending');
     eq (($.Descending (a)).url) (`https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Descending`);
+    eq (($.Descending (a)).supertypes) ([]);
 
     const isDescendingString = $.test ([]) ($.Descending ($.String));
     eq (isDescendingString (null)) (false);
@@ -1535,6 +1536,7 @@ See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Array2 for in
     eq (show ($.Either (a) (b))) ('(Either a b)');
     eq (($.Either (a) (b)).name) ('Either');
     eq (($.Either (a) (b)).url) (`https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Either`);
+    eq (($.Either (a) (b)).supertypes) ([]);
 
     const isEitherStringNumber = $.test ([]) ($.Either ($.String) ($.Number));
     eq (isEitherStringNumber (null)) (false);
@@ -1569,6 +1571,7 @@ See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Array2 for in
     eq (show ($.Identity (a))) ('(Identity a)');
     eq (($.Identity (a)).name) ('Identity');
     eq (($.Identity (a)).url) (`https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Identity`);
+    eq (($.Identity (a)).supertypes) ([]);
 
     const isIdentityString = $.test ([]) ($.Identity ($.String));
     eq (isIdentityString (null)) (false);
@@ -1583,6 +1586,7 @@ See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Array2 for in
     eq (show ($.Maybe (a))) ('(Maybe a)');
     eq (($.Maybe (a)).name) ('Maybe');
     eq (($.Maybe (a)).url) (`https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Maybe`);
+    eq (($.Maybe (a)).supertypes) ([]);
 
     const isMaybeNumber = $.test ([]) ($.Maybe ($.Number));
     eq (isMaybeNumber (null)) (false);
@@ -1633,6 +1637,7 @@ See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Array2 for in
     eq (show ($.Pair (a) (b))) ('(Pair a b)');
     eq (($.Pair (a) (b)).name) ('Pair');
     eq (($.Pair (a) (b)).url) (`https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Pair`);
+    eq (($.Pair (a) (b)).supertypes) ([]);
 
     const isPairStringNumber = $.test ([]) ($.Pair ($.String) ($.Number));
     eq (isPairStringNumber (null)) (false);
