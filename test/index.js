@@ -1456,7 +1456,7 @@ Since there is no type of which all the above values are members, the type-varia
     eq (typeof $.Array1) ('function');
     eq ($.Array1.length) (1);
     eq (show ($.Array1)) ('Array1 :: Type -> Type');
-    eq (show ($.Array1 (a))) ('(Array1 a)');
+    eq (show ($.Array1 (a))) ('Array1 a');
     eq (($.Array1 (a)).name) ('Array1');
     eq (($.Array1 (a)).url) (`https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Array1`);
     eq (($.Array1 (a)).supertypes) ([$.Array ($.Unknown)]);
@@ -1473,7 +1473,7 @@ Since there is no type of which all the above values are members, the type-varia
     eq (typeof $.Array2) ('function');
     eq ($.Array2.length) (1);
     eq (show ($.Array2)) ('Array2 :: Type -> Type -> Type');
-    eq (show ($.Array2 (a) (b))) ('(Array2 a b)');
+    eq (show ($.Array2 (a) (b))) ('Array2 a b');
     eq (($.Array2 (a) (b)).name) ('Array2');
     eq (($.Array2 (a) (b)).url) (`https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Array2`);
     eq (($.Array2 (a) (b)).supertypes) ([$.Array ($.Unknown)]);
@@ -1518,7 +1518,7 @@ See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Array2 for in
     eq (typeof $.Descending) ('function');
     eq ($.Descending.length) (1);
     eq (show ($.Descending)) ('Descending :: Type -> Type');
-    eq (show ($.Descending (a))) ('(Descending a)');
+    eq (show ($.Descending (a))) ('Descending a');
     eq (($.Descending (a)).name) ('Descending');
     eq (($.Descending (a)).url) (`https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Descending`);
     eq (($.Descending (a)).supertypes) ([]);
@@ -1533,7 +1533,7 @@ See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Array2 for in
     eq (typeof $.Either) ('function');
     eq ($.Either.length) (1);
     eq (show ($.Either)) ('Either :: Type -> Type -> Type');
-    eq (show ($.Either (a) (b))) ('(Either a b)');
+    eq (show ($.Either (a) (b))) ('Either a b');
     eq (($.Either (a) (b)).name) ('Either');
     eq (($.Either (a) (b)).url) (`https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Either`);
     eq (($.Either (a) (b)).supertypes) ([]);
@@ -1556,10 +1556,36 @@ See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Array2 for in
     eq (typeof $.Function) ('function');
     eq ($.Function.length) (1);
     eq (show ($.Function)) ('Function :: NonEmpty (Array Type) -> Type');
-    eq (show ($.Function ([a, b]))) ('(a -> b)');
+    eq (show ($.Function ([a, b]))) ('a -> b');
     eq (($.Function ([a, b])).name) ('');
     eq (($.Function ([a, b])).url) ('');
     eq (($.Function ([a, b])).supertypes) ([$.AnyFunction]);
+
+    //  Fn :: Type -> Type -> Type
+    function Fn($1) { return function($2) { return $.Function ([$1, $2]); }; }
+
+    //  https://gist.github.com/Avaq/1f0636ec5c8d6aed2e45
+    var I = Fn (a) (a);
+    var K = Fn (a) (Fn (b) (a));
+    var A = Fn (Fn (a) (b)) (Fn (a) (b));
+    var T = Fn (a) (Fn (Fn (a) (b)) (b));
+    var W = Fn (Fn (a) (Fn (a) (b))) (Fn (a) (b));
+    var C = Fn (Fn (a) (Fn (b) (c))) (Fn (b) (Fn (a) (c)));
+    var B = Fn (Fn (b) (c)) (Fn (Fn (a) (b)) (Fn (a) (c)));
+    var S = Fn (Fn (a) (Fn (b) (c))) (Fn (Fn (a) (b)) (Fn (a) (c)));
+    var P = Fn (Fn (b) (Fn (b) (c))) (Fn (Fn (a) (b)) (Fn (a) (Fn (a) (c))));
+    var Y = Fn (Fn (a) (a)) (a);
+
+    eq (show (I)) ('a -> a');
+    eq (show (K)) ('a -> b -> a');
+    eq (show (A)) ('(a -> b) -> a -> b');
+    eq (show (T)) ('a -> (a -> b) -> b');
+    eq (show (W)) ('(a -> a -> b) -> a -> b');
+    eq (show (C)) ('(a -> b -> c) -> b -> a -> c');
+    eq (show (B)) ('(b -> c) -> (a -> b) -> a -> c');
+    eq (show (S)) ('(a -> b -> c) -> (a -> b) -> a -> c');
+    eq (show (P)) ('(b -> b -> c) -> (a -> b) -> a -> a -> c');
+    eq (show (Y)) ('(a -> a) -> a');
   });
 
   test ('provides the "HtmlElement" type', () => {
@@ -1572,7 +1598,7 @@ See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Array2 for in
     eq (typeof $.Identity) ('function');
     eq ($.Identity.length) (1);
     eq (show ($.Identity)) ('Identity :: Type -> Type');
-    eq (show ($.Identity (a))) ('(Identity a)');
+    eq (show ($.Identity (a))) ('Identity a');
     eq (($.Identity (a)).name) ('Identity');
     eq (($.Identity (a)).url) (`https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Identity`);
     eq (($.Identity (a)).supertypes) ([]);
@@ -1587,7 +1613,7 @@ See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Array2 for in
     eq (typeof $.Maybe) ('function');
     eq ($.Maybe.length) (1);
     eq (show ($.Maybe)) ('Maybe :: Type -> Type');
-    eq (show ($.Maybe (a))) ('(Maybe a)');
+    eq (show ($.Maybe (a))) ('Maybe a');
     eq (($.Maybe (a)).name) ('Maybe');
     eq (($.Maybe (a)).url) (`https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Maybe`);
     eq (($.Maybe (a)).supertypes) ([]);
@@ -1638,7 +1664,7 @@ See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Array2 for in
     eq (typeof $.Pair) ('function');
     eq ($.Pair.length) (1);
     eq (show ($.Pair)) ('Pair :: Type -> Type -> Type');
-    eq (show ($.Pair (a) (b))) ('(Pair a b)');
+    eq (show ($.Pair (a) (b))) ('Pair a b');
     eq (($.Pair (a) (b)).name) ('Pair');
     eq (($.Pair (a) (b)).url) (`https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Pair`);
     eq (($.Pair (a) (b)).supertypes) ([]);
@@ -1961,7 +1987,7 @@ See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#ValidDate for
     eq (typeof $.StrMap) ('function');
     eq ($.StrMap.length) (1);
     eq (show ($.StrMap)) ('StrMap :: Type -> Type');
-    eq (show ($.StrMap (a))) ('(StrMap a)');
+    eq (show ($.StrMap (a))) ('StrMap a');
     eq (($.StrMap (a)).name) ('StrMap');
     eq (($.StrMap (a)).url) (`https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#StrMap`);
     eq (($.StrMap (a)).supertypes) ([$.Object]);
@@ -3395,6 +3421,12 @@ suite ('UnaryType', () => {
       (x => type (x) === 'my-package/MyUnaryType@1')
       (_ => []);
 
+    eq (show (def ('f')
+                  ({})
+                  ([MyUnaryType ($.RecordType ({x: $.Number, y: $.Number}))])
+                  (() => {})))
+       ('f :: () -> MyUnaryType { x :: Number, y :: Number }');
+
     throws (() => { MyUnaryType ({x: $.Number, y: $.Number}); })
            (new TypeError (`Invalid value
 
@@ -3506,7 +3538,7 @@ suite ('UnaryTypeVariable', () => {
     eq (typeof f) ('function');
     eq (f.length) (1);
     eq (show (f)) ('f :: Type -> Type');
-    eq (show (f (a))) ('(f a)');
+    eq (show (f (a))) ('f a');
 
     throws (() => { f (Number); })
            (new TypeError (`Invalid value
@@ -3540,7 +3572,7 @@ suite ('BinaryTypeVariable', () => {
     eq (typeof p) ('function');
     eq (p.length) (1);
     eq (show (p)) ('p :: Type -> Type -> Type');
-    eq (show (p (a) (b))) ('(p a b)');
+    eq (show (p (a) (b))) ('p a b');
 
     throws (() => { p (Number); })
            (new TypeError (`Invalid value
