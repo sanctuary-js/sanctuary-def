@@ -2810,7 +2810,11 @@
     Descending: fromUncheckedUnaryType (Descending),
     Either: fromUncheckedBinaryType (Either_),
     Error: Error_,
-    Function: def ('Function') ({}) ([Array_ (Type), Type]) (Function_),
+    Function:
+      def ('Function')
+          ({})
+          ([NonEmpty (Array_ (Type)), Type])
+          (Function_),
     HtmlElement: HtmlElement,
     Identity: fromUncheckedUnaryType (Identity),
     Maybe: fromUncheckedUnaryType (Maybe),

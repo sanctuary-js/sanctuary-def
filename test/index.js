@@ -1553,9 +1553,13 @@ See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Array2 for in
   });
 
   test ('provides the "Function" type constructor', () => {
-    eq (($.Function ([a, a])).name) ('');
-    eq (($.Function ([a, a])).url) ('');
-    eq (($.Function ([a, a])).supertypes) ([$.AnyFunction]);
+    eq (typeof $.Function) ('function');
+    eq ($.Function.length) (1);
+    eq (show ($.Function)) ('Function :: NonEmpty (Array Type) -> Type');
+    eq (show ($.Function ([a, b]))) ('(a -> b)');
+    eq (($.Function ([a, b])).name) ('');
+    eq (($.Function ([a, b])).url) ('');
+    eq (($.Function ([a, b])).supertypes) ([$.AnyFunction]);
   });
 
   test ('provides the "HtmlElement" type', () => {
