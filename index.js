@@ -422,6 +422,7 @@
     type,       // :: String
     name,       // :: String
     url,        // :: String
+    arity,      // :: NonNegativeInteger
     format,
     // :: Nullable ((String -> String, String -> String -> String) -> String)
     supertypes, // :: Array Type
@@ -434,12 +435,13 @@
       _extractors[tuple[0]] = tuple[1];
       return _extractors;
     }, {});
+    t.arity = arity;  // number of type parameters
     t.extractors = Z.map (B (toArray), t._extractors);
     t.format = format || function(outer, inner) {
       return Z.reduce (function(s, tuple) {
         return s +
                outer (' ') +
-               when (tuple[2].keys.length > 0 && tuple[2].type !== RECORD)
+               when (tuple[2].arity > 0)
                     (parenthesize (outer))
                     (inner (tuple[0]) (show (tuple[2])));
       }, outer (name), tuples);
@@ -468,18 +470,16 @@
 
   //  Inconsistent :: Type
   var Inconsistent =
-  _Type (INCONSISTENT, '', '', always2 ('???'), [], K (K (false)), []);
+  _Type (INCONSISTENT, '', '', 0, always2 ('???'), [], K (K (false)), []);
 
   //  NoArguments :: Type
   var NoArguments =
-  _Type (NO_ARGUMENTS, '', '', always2 ('()'), [], K (K (true)), []);
+  _Type (NO_ARGUMENTS, '', '', 0, always2 ('()'), [], K (K (true)), []);
 
   //  arityGte :: NonNegativeInteger -> Type -> Boolean
   function arityGte(n) {
     return function(t) {
-      return t.type === BINARY && n <= 2 ||
-             t.type === UNARY && n <= 1 ||
-             n === 0;
+      return t.arity >= n;
     };
   }
 
@@ -532,7 +532,7 @@
   //.   - `List (List (List String))`
   //.   - `...`
   var Unknown =
-  _Type (UNKNOWN, '', '', always2 ('Unknown'), [], K (K (true)), []);
+  _Type (UNKNOWN, '', '', 0, always2 ('Unknown'), [], K (K (true)), []);
 
   //# Any :: Type
   //.
@@ -647,11 +647,6 @@
     ([])
     (typeEq ('Error'));
 
-  //  augmentThunk :: NonEmpty (Array Type) -> NonEmpty (Array Type)
-  function augmentThunk(types) {
-    return types.length === 1 ? Z.concat ([NoArguments], types) : types;
-  }
-
   //# Function :: NonEmpty (Array Type) -> Type
   //.
   //. Constructor for Function types.
@@ -661,11 +656,11 @@
   //.   - `$.Function ([$.Date, $.String])` represents the `Date -> String`
   //.     type; and
   //.   - `$.Function ([a, b, a])` represents the `(a, b) -> a` type.
-  function Function_(_types) {
+  function Function_(types) {
     var tuples = Z.reduce (function(tuples, t) {
       tuples.push (['$' + show (tuples.length + 1), K ([]), t]);
       return tuples;
-    }, [], augmentThunk (_types));
+    }, [], types);
 
     function format(outer, inner) {
       return when (tuples.length !== 2)
@@ -685,6 +680,7 @@
     return _Type (FUNCTION,
                   '',
                   '',
+                  types.length,
                   format,
                   [AnyFunction],
                   K (K (true)),
@@ -1190,7 +1186,7 @@
     }
     if (!(hasOwnProperty.call ($typeVarMap, typeVar.name))) {
       $typeVarMap[typeVar.name] = {
-        types: Z.filter (arityGte (typeVar.keys.length), env),
+        types: Z.filter (arityGte (typeVar.arity), env),
         valuesByPath: {}
       };
     }
@@ -1200,7 +1196,6 @@
       $typeVarMap[typeVar.name].valuesByPath[key] = [];
     }
 
-    var isNullaryTypeVar = isEmpty (typeVar.keys);
     var isValid = test (env);
 
     var expandUnknownStrict = B (B (B (filter (isConsistent))))
@@ -1211,12 +1206,12 @@
       $typeVarMap[typeVar.name].valuesByPath[key].push (value);
       $typeVarMap[typeVar.name].types = Z.chain (function(t) {
         return (
-          t.keys.length < typeVar.keys.length || !(isValid (t) (value)) ?
+          !(isValid (t) (value)) ?
             [] :
-          isNullaryTypeVar && t.type === UNARY ?
+          typeVar.arity === 0 && t.type === UNARY ?
             Z.map (fromUnaryType (t),
                    expandUnknownStrict2 (t.extractors.$1) (t.types.$1)) :
-          isNullaryTypeVar && t.type === BINARY ?
+          typeVar.arity === 0 && t.type === BINARY ?
             Z.lift2 (fromBinaryType (t),
                      expandUnknownStrict2 (t.extractors.$1) (t.types.$1),
                      expandUnknownStrict2 (t.extractors.$2) (t.types.$2)) :
@@ -1334,7 +1329,7 @@
               //  in `Maybe a` but to the `b` in `Either a b`. A type
               //  variable's $1 will correspond to either $1 or $2 of
               //  the actual type depending on the actual type's arity.
-              var offset = t.keys.length - expType.keys.length;
+              var offset = t.arity - expType.arity;
               return expType.keys.reduce (function(e, k, idx) {
                 var extractor = t.extractors[t.keys[offset + idx]];
                 return Z.reduce (function(e, x) {
@@ -1516,7 +1511,7 @@
     return function(url) {
       return function(supertypes) {
         return function(test) {
-          return _Type (NULLARY, name, url, null, supertypes, K (test), []);
+          return _Type (NULLARY, name, url, 0, null, supertypes, K (test), []);
         };
       };
     };
@@ -1612,6 +1607,7 @@
               return _Type (UNARY,
                             name,
                             url,
+                            1,
                             null,
                             supertypes,
                             K (test),
@@ -1739,6 +1735,7 @@
                   return _Type (BINARY,
                                 name,
                                 url,
+                                2,
                                 null,
                                 supertypes,
                                 K (test),
@@ -1871,7 +1868,7 @@
       return [k, function(x) { return [x[k]]; }, fields[k]];
     });
 
-    return _Type (RECORD, '', '', format, [], test, tuples);
+    return _Type (RECORD, '', '', 0, format, [], test, tuples);
   }
 
   //# NamedRecordType :: NonEmpty String -> String -> Array Type -> StrMap Type -> Type
@@ -1958,7 +1955,14 @@
             return [k, function(x) { return [x[k]]; }, fields[k]];
           });
 
-          return _Type (RECORD, name, url, format, supertypes, test, tuples);
+          return _Type (RECORD,
+                        name,
+                        url,
+                        0,
+                        format,
+                        supertypes,
+                        test,
+                        tuples);
         };
       };
     };
@@ -2035,7 +2039,7 @@
   function TypeVariable(name) {
     var tuples = [];
     var test = typeVarPred (tuples.length);
-    return _Type (VARIABLE, name, '', always2 (name), [], test, tuples);
+    return _Type (VARIABLE, name, '', 0, always2 (name), [], test, tuples);
   }
 
   //# UnaryTypeVariable :: String -> Type -> Type
@@ -2088,7 +2092,7 @@
     return function($1) {
       var tuples = [['$1', K ([]), $1]];
       var test = typeVarPred (tuples.length);
-      return _Type (VARIABLE, name, '', null, [], test, tuples);
+      return _Type (VARIABLE, name, '', 1, null, [], test, tuples);
     };
   }
 
@@ -2112,7 +2116,7 @@
         var tuples = [['$1', K ([]), $1],
                       ['$2', K ([]), $2]];
         var test = typeVarPred (tuples.length);
-        return _Type (VARIABLE, name, '', null, [], test, tuples);
+        return _Type (VARIABLE, name, '', 2, null, [], test, tuples);
       };
     };
   }
@@ -2575,9 +2579,8 @@
 
     //  wrapFunctionCond :: (TypeVarMap, Integer, a) -> a
     function wrapFunctionCond(_typeVarMap, index, value) {
-      if (typeInfo.types[index].type !== FUNCTION) return value;
-
       var expType = typeInfo.types[index];
+      if (expType.type !== FUNCTION) return value;
 
       //  checkValue :: (TypeVarMap, Integer, String, a) -> Either (() -> Error) TypeVarMap
       function checkValue(typeVarMap, index, k, x) {
@@ -2620,14 +2623,12 @@
         );
       }
 
-      var isThunk = expType.types.$1.type === NO_ARGUMENTS;
-      var numArgsExpected = isThunk ? 0 : expType.keys.length - 1;
       var typeVarMap = _typeVarMap;
       return function(x) {
-        if (arguments.length !== numArgsExpected) {
+        if (arguments.length !== expType.arity - 1) {
           throw invalidArgumentsLength (typeInfo,
                                         index,
-                                        numArgsExpected,
+                                        expType.arity - 1,
                                         slice.call (arguments));
         }
 
@@ -2692,7 +2693,7 @@
           throw invalidArgumentsCount (typeInfo, 0, 0, slice.call (arguments));
         }
         var value = impl ();
-        var typeVarMap = assertRight (
+        var typeVarMap = (assertRight (
           satisfactoryTypes (env,
                              typeInfo,
                              {},
@@ -2700,7 +2701,7 @@
                              n,
                              [],
                              [value])
-        ).typeVarMap;
+        )).typeVarMap;
         return wrapFunctionCond (typeVarMap, n, value);
       } :
       wrapNext ({}, [], 0);
@@ -2728,7 +2729,9 @@
               withTypeChecking (opts.env,
                                 {name: name,
                                  constraints: constraints,
-                                 types: augmentThunk (expTypes)},
+                                 types: expTypes.length === 1 ?
+                                        Z.concat ([NoArguments], expTypes) :
+                                        expTypes},
                                 impl) :
               impl;
           };
