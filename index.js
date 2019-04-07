@@ -322,11 +322,6 @@
     return (Object.keys (o)).sort ();
   }
 
-  //  stripOutermostParens :: String -> String
-  function stripOutermostParens(s) {
-    return s.slice ('('.length, -')'.length);
-  }
-
   //  toArray :: Foldable f => f a -> Array a
   function toArray(foldable) {
     return Array.isArray (foldable) ?
@@ -348,14 +343,13 @@
     return s.replace (/[ ]+$/gm, '');
   }
 
-  //  unless :: (Boolean, (a -> a), a) -> a
-  function unless(bool, f, x) {
-    return bool ? x : f (x);
-  }
-
-  //  when :: (Boolean, (a -> a), a) -> a
-  function when(bool, f, x) {
-    return bool ? f (x) : x;
+  //  when :: Boolean -> (a -> a) -> a -> a
+  function when(bool) {
+    return function(f) {
+      return function(x) {
+        return bool ? f (x) : x;
+      };
+    };
   }
 
   //  wrap :: String -> String -> String -> String
@@ -367,8 +361,8 @@
     };
   }
 
-  //  parenthesize :: String -> String
-  var parenthesize = wrap ('(') (')');
+  //  parenthesize :: (String -> String) -> String -> String
+  function parenthesize(f) { return wrap (f ('(')) (f (')')); }
 
   //  q :: String -> String
   var q = wrap ('\u2018') ('\u2019');
@@ -428,7 +422,8 @@
     type,       // :: String
     name,       // :: String
     url,        // :: String
-    format,     // :: (String -> String, String -> String -> String) -> String
+    format,
+    // :: Nullable ((String -> String, String -> String -> String) -> String)
     supertypes, // :: Array Type
     test,       // :: Any -> Boolean
     tuples      // :: Array (Array3 String (a -> Array b) Type)
@@ -440,7 +435,15 @@
       return _extractors;
     }, {});
     t.extractors = Z.map (B (toArray), t._extractors);
-    t.format = format;
+    t.format = format || function(outer, inner) {
+      return Z.reduce (function(s, tuple) {
+        return s +
+               outer (' ') +
+               when (tuple[2].keys.length > 0 && tuple[2].type !== RECORD)
+                    (parenthesize (outer))
+                    (inner (tuple[0]) (show (tuple[2])));
+      }, outer (name), tuples);
+    };
     t.keys = tuples.map (function(tuple) { return tuple[0]; });
     t.name = name;
     t.supertypes = supertypes;
@@ -659,20 +662,24 @@
   //.     type; and
   //.   - `$.Function ([a, b, a])` represents the `(a, b) -> a` type.
   function Function_(_types) {
-    var types = augmentThunk (_types);
+    var tuples = Z.reduce (function(tuples, t) {
+      tuples.push (['$' + show (tuples.length + 1), K ([]), t]);
+      return tuples;
+    }, [], augmentThunk (_types));
 
     function format(outer, inner) {
-      var xs = types.map (function(t, idx) {
-        return unless (t.type === RECORD || isEmpty (t.keys),
-                       stripOutermostParens,
-                       inner ('$' + show (idx + 1)) (show (t)));
-      });
-      var parenthesize = wrap (outer ('(')) (outer (')'));
-      return parenthesize (unless (types.length === 2,
-                                   parenthesize,
-                                   joinWith (outer (', '), init (xs))) +
-                           outer (' -> ') +
-                           last (xs));
+      return when (tuples.length !== 2)
+                  (parenthesize (outer))
+                  (joinWith (outer (', '),
+                             Z.map (function(tuple) {
+                               return when (tuple[2].type === FUNCTION)
+                                           (parenthesize (outer))
+                                           (inner (tuple[0])
+                                                  (show (tuple[2])));
+                             }, init (tuples)))) +
+             outer (' -> ') +
+             inner ((last (tuples))[0])
+                   (show ((last (tuples))[2]));
     }
 
     return _Type (FUNCTION,
@@ -681,10 +688,7 @@
                   format,
                   [AnyFunction],
                   K (K (true)),
-                  types.reduce (function(tuples, t) {
-                    tuples.push (['$' + show (tuples.length + 1), K ([]), t]);
-                    return tuples;
-                  }, []));
+                  tuples);
   }
 
   //# HtmlElement :: Type
@@ -1509,13 +1513,10 @@
   //. //   See http://example.com/my-package#NonZeroInteger for information about the NonZeroInteger type.
   //. ```
   function NullaryType(name) {
-    function format(outer, inner) {
-      return outer (name);
-    }
     return function(url) {
       return function(supertypes) {
         return function(test) {
-          return _Type (NULLARY, name, url, format, supertypes, K (test), []);
+          return _Type (NULLARY, name, url, null, supertypes, K (test), []);
         };
       };
     };
@@ -1608,15 +1609,10 @@
         return function(test) {
           return function(_1) {
             return function($1) {
-              function format(outer, inner) {
-                return outer ('(' + name + ' ') +
-                       inner ('$1') (show ($1)) +
-                       outer (')');
-              }
               return _Type (UNARY,
                             name,
                             url,
-                            format,
+                            null,
                             supertypes,
                             K (test),
                             [['$1', _1, $1]]);
@@ -1740,17 +1736,10 @@
             return function(_2) {
               return function($1) {
                 return function($2) {
-                  function format(outer, inner) {
-                    return outer ('(' + name + ' ') +
-                           inner ('$1') (show ($1)) +
-                           outer (' ') +
-                           inner ('$2') (show ($2)) +
-                           outer (')');
-                  }
                   return _Type (BINARY,
                                 name,
                                 url,
-                                format,
+                                null,
                                 supertypes,
                                 K (test),
                                 [['$1', _1, $1],
@@ -1863,9 +1852,7 @@
         return outer (' ') +
                outer (/^(?!\d)[$\w]+$/.test (k) ? k : show (k)) +
                outer (' :: ') +
-               unless (t.type === RECORD || isEmpty (t.keys),
-                       stripOutermostParens,
-                       inner (k) (show (t)));
+               inner (k) (show (t));
       }, keys);
       return wrap (outer ('{')) (outer (' }')) (joinWith (outer (','), reprs));
     }
@@ -2099,14 +2086,9 @@
   //. and "inner" types independently.
   function UnaryTypeVariable(name) {
     return function($1) {
-      function format(outer, inner) {
-        return outer ('(' + name + ' ') +
-               inner ('$1') (show ($1)) +
-               outer (')');
-      }
       var tuples = [['$1', K ([]), $1]];
       var test = typeVarPred (tuples.length);
-      return _Type (VARIABLE, name, '', format, [], test, tuples);
+      return _Type (VARIABLE, name, '', null, [], test, tuples);
     };
   }
 
@@ -2127,17 +2109,10 @@
   function BinaryTypeVariable(name) {
     return function($1) {
       return function($2) {
-        function format(outer, inner) {
-          return outer ('(' + name + ' ') +
-                 inner ('$1') (show ($1)) +
-                 outer (' ') +
-                 inner ('$2') (show ($2)) +
-                 outer (')');
-        }
         var tuples = [['$1', K ([]), $1],
                       ['$2', K ([]), $2]];
         var test = typeVarPred (tuples.length);
-        return _Type (VARIABLE, name, '', format, [], test, tuples);
+        return _Type (VARIABLE, name, '', null, [], test, tuples);
       };
     };
   }
@@ -2278,11 +2253,11 @@
         $reprs.push (f (typeClass) (stripNamespace (typeClass) + ' ' + k));
       });
     });
-    return when ($reprs.length > 0,
-                 function(s) { return s + outer (' => '); },
-                 when ($reprs.length > 1,
-                       wrap (outer ('(')) (outer (')')),
-                       joinWith (outer (', '), $reprs)));
+    return when ($reprs.length > 0)
+                (wrap ('') (outer (' => ')))
+                (when ($reprs.length > 1)
+                      (parenthesize (outer))
+                      (joinWith (outer (', '), $reprs)));
   }
 
   //  label :: String -> String -> String
@@ -2302,29 +2277,20 @@
     );
   }
 
-  //  showTypeWith :: TypeInfo -> Type -> String
-  function showTypeWith(typeInfo) {
-    var names = Z.chain (typeVarNames, typeInfo.types);
+  //  showTypeWith :: Array Type -> Type -> String
+  function showTypeWith(types) {
+    var names = Z.chain (typeVarNames, types);
     return function(t) {
       var code = 'a'.charCodeAt (0);
-      return unless (
-        t.type === FUNCTION || t.type === RECORD || isEmpty (t.keys),
-        stripOutermostParens,
-        (show (t)).replace (/\bUnknown\b/g, function() {
-          // eslint-disable-next-line no-plusplus
-          do var name = String.fromCharCode (code++);
-          while (names.indexOf (name) >= 0);
-          return name;
-        })
-      );
+      return when (t.type === FUNCTION)
+                  (parenthesize (I))
+                  ((show (t)).replace (/\bUnknown\b/g, function() {
+                     // eslint-disable-next-line no-plusplus
+                     do var name = String.fromCharCode (code++);
+                     while (names.indexOf (name) >= 0);
+                     return name;
+                   }));
     };
-  }
-
-  //  showTypeQuoted :: Type -> String
-  function showTypeQuoted(t) {
-    return q (unless (t.type === RECORD || isEmpty (t.keys),
-                      stripOutermostParens,
-                      show (t)));
   }
 
   //  showValuesAndTypes :: ... -> String
@@ -2334,7 +2300,7 @@
     values,         // :: Array Any
     pos             // :: Integer
   ) {
-    var showType = showTypeWith (typeInfo);
+    var showType = showTypeWith (typeInfo.types);
     return show (pos) + ')  ' + joinWith ('\n    ', Z.map (function(x) {
       return show (x) +
              ' :: ' +
@@ -2347,14 +2313,10 @@
 
   //  typeSignature :: TypeInfo -> String
   function typeSignature(typeInfo) {
-    var reprs = Z.map (showTypeWith (typeInfo), typeInfo.types);
-    var arity = reprs.length - 1;
     return typeInfo.name + ' :: ' +
-             constraintsRepr (typeInfo.constraints, I, K (K (I))) +
-             when (arity === 0,
-                   parenthesize,
-                   joinWith (' -> ', init (reprs))) +
-             ' -> ' + last (reprs);
+           constraintsRepr (typeInfo.constraints, I, K (K (I))) +
+           joinWith (' -> ',
+                     Z.map (showTypeWith (typeInfo.types), typeInfo.types));
   }
 
   //  _underline :: ... -> String
@@ -2363,16 +2325,11 @@
     propPath,       // :: PropPath
     formatType3     // :: Type -> Array String -> String -> String
   ) {
-    return unless (t.type === RECORD ||
-                     isEmpty (t.keys) ||
-                     t.type === FUNCTION && isEmpty (propPath) ||
-                     !(isEmpty (propPath)),
-                   stripOutermostParens,
-                   formatType3 (t) (propPath) (t.format (_, function(k) {
-                     return K (_underline (t.types[k],
-                                           Z.concat (propPath, [k]),
-                                           formatType3));
-                   })));
+    return formatType3 (t) (propPath) (t.format (_, function(k) {
+      return K (_underline (t.types[k],
+                            Z.concat (propPath, [k]),
+                            formatType3));
+    }));
   }
 
   //  underline :: ... -> String
@@ -2384,18 +2341,17 @@
   ) {
     var st = typeInfo.types.reduce (function(st, t, index) {
       var formatType4 = formatType5 (index);
-      st.numbers.push (_underline (t, [], formatType4 (function(s) {
+      function f(g) {
+        return function(type) {
+          return B (B (B (when (type.type === FUNCTION)
+                               (parenthesize (_)))))
+                   (formatType4 (g));
+        };
+      }
+      st.carets.push (_underline (t, [], W (f (r ('^')))));
+      st.numbers.push (_underline (t, [], W (f (function(s) {
         return label (show (st.counter += 1)) (s);
-      })));
-      st.carets.push (_underline (t, [], W (function(type) {
-        var repr = show (type);
-        var parenthesized = repr.slice (0, 1) + repr.slice (-1) === '()';
-        return formatType4 (function(s) {
-          return parenthesized && repr !== '()' && s.length === repr.length ?
-            _ ('(') + r ('^') (s.slice (1, -1)) + _ (')') :
-            r ('^') (s);
-        });
-      })));
+      }))));
       return st;
     }, {carets: [], numbers: [], counter: 0});
 
@@ -2552,7 +2508,7 @@
           'The value at position 1 is not a member of any type in ' +
           'the environment.\n\n' +
           'The environment contains the following types:\n\n',
-          showTypeWith (typeInfo),
+          showTypeWith (typeInfo.types),
           env
         ) :
       // else
@@ -2560,7 +2516,7 @@
         underlinedTypeVars + '\n' +
         showValuesAndTypes (env, typeInfo, [value], 1) + '\n\n' +
         'The value at position 1 is not a member of ' +
-        showTypeQuoted (t) + '.\n' +
+        q (show (t)) + '.\n' +
         see (arityGte (1) (t) ? 'type constructor' : 'type', t)
     ));
   }
@@ -2578,7 +2534,7 @@
   ) {
     return new TypeError (trimTrailingSpaces (
       q (typeInfo.name) +
-      ' applied ' + showTypeQuoted (typeInfo.types[index]) +
+      ' applied ' + q (show (typeInfo.types[index])) +
       ' to the wrong number of arguments\n\n' +
       underline (
         typeInfo,
@@ -2853,11 +2809,7 @@
       def ('create')
           ({})
           ([RecordType ({checkTypes: Boolean_, env: Array_ (Type)}),
-            Unchecked (joinWith (' -> ', Z.map (function(t) {
-              return unless (t.type === RECORD || isEmpty (t.keys),
-                             stripOutermostParens,
-                             show (t));
-            }, defTypes)))])
+            Unchecked (joinWith (' -> ', Z.map (show, defTypes)))])
           (create),
     test:
       def ('test')
