@@ -3597,6 +3597,9 @@ suite ('Thunk', () => {
     eq (typeof $.Thunk) ('function');
     eq ($.Thunk.length) (1);
     eq (show ($.Thunk)) ('Thunk :: Type -> Type');
+    eq (show ($.Thunk (a))) ('() -> a');
+    eq (show ($.Thunk ($.Thunk (a)))) ('() -> () -> a');
+    eq (show ($.Thunk ($.Thunk ($.Thunk (a))))) ('() -> () -> () -> a');
   });
 
   test ('is short for `t => $.Function([t])`', () => {
@@ -3632,6 +3635,9 @@ suite ('Predicate', () => {
     eq (typeof $.Predicate) ('function');
     eq ($.Predicate.length) (1);
     eq (show ($.Predicate)) ('Predicate :: Type -> Type');
+    eq (show ($.Predicate (a))) ('a -> Boolean');
+    eq (show ($.Predicate ($.Predicate (a)))) ('(a -> Boolean) -> Boolean');
+    eq (show ($.Predicate ($.Predicate ($.Predicate (a))))) ('((a -> Boolean) -> Boolean) -> Boolean');
   });
 
   test ('is short for `t => $.Function([t, $.Boolean])`', () => {
