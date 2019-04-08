@@ -647,6 +647,13 @@
     ([])
     (typeEq ('Error'));
 
+  //# Fn :: Type -> Type -> Type
+  //.
+  //. Binary type constructor for unary function types. `$.Fn (I) (O)`
+  //. represents `I -> O`, the type of functions that take a value of
+  //. type `I` and return a value of type `O`.
+  function Fn($1) { return function($2) { return Function_ ([$1, $2]); }; }
+
   //# Function :: NonEmpty (Array Type) -> Type
   //.
   //. Constructor for Function types.
@@ -1008,6 +1015,7 @@
   //.   - <code>[Descending](#Descending) ([Unknown][])</code>
   //.   - <code>[Either](#Either) ([Unknown][]) ([Unknown][])</code>
   //.   - <code>[Error](#Error)</code>
+  //.   - <code>[Fn](#Fn) ([Unknown][]) ([Unknown][])</code>
   //.   - <code>[HtmlElement](#HtmlElement)</code>
   //.   - <code>[Identity](#Identity) ([Unknown][])</code>
   //.   - <code>[Maybe](#Maybe) ([Unknown][])</code>
@@ -1029,6 +1037,7 @@
     Descending (Unknown),
     Either_ (Unknown) (Unknown),
     Error_,
+    Fn (Unknown) (Unknown),
     HtmlElement,
     Identity (Unknown),
     Maybe (Unknown),
@@ -2129,9 +2138,9 @@
 
   //# Predicate :: Type -> Type
   //.
-  //. `$.Predicate (T)` is shorthand for `$.Function ([T, $.Boolean])`, the
-  //. type comprising every predicate function that takes a value of type `T`.
-  function Predicate(t) { return Function_ ([t, Boolean_]); }
+  //. `$.Predicate (T)` is shorthand for `$.Fn (T) ($.Boolean)`, the type
+  //. comprising every predicate function that takes a value of type `T`.
+  function Predicate(t) { return Fn (t) (Boolean_); }
 
   //. ### Type classes
   //.
@@ -2769,6 +2778,11 @@
     Descending: fromUncheckedUnaryType (Descending),
     Either: fromUncheckedBinaryType (Either_),
     Error: Error_,
+    Fn:
+      def ('Fn')
+          ({})
+          ([Type, Type, Type])
+          (Fn),
     Function:
       def ('Function')
           ({})

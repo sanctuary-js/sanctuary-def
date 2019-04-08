@@ -768,7 +768,7 @@ See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Number for in
     const lt =
     def ('lt')
         ({a: [Z.Ord]})
-        ([a, $.Function ([a, $.Boolean])])
+        ([a, $.Fn (a) ($.Boolean)])
         (y => x => x < y);
 
     eq (lt (1) (0)) (true);
@@ -1248,7 +1248,7 @@ NamedRecordType :: NonEmpty String -> String -> Array Type -> StrMap Type -> Typ
                                                                      ^^^^
                                                                       1
 
-1)  ${Number} :: Function
+1)  ${Number} :: Function, (a -> b)
 
 The value at position 1 is not a member of ‘Type’.
 
@@ -1550,6 +1550,16 @@ See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Array2 for in
     eq ($.Error.name) ('Error');
     eq ($.Error.url) (`https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Error`);
     eq ($.Error.supertypes) ([]);
+  });
+
+  test ('provides the "Fn" type constructor', () => {
+    eq (typeof $.Fn) ('function');
+    eq ($.Fn.length) (1);
+    eq (show ($.Fn)) ('Fn :: Type -> Type -> Type');
+    eq (show ($.Fn (a) (b))) ('a -> b');
+    eq (($.Fn (a) (b)).name) ('');
+    eq (($.Fn (a) (b)).url) ('');
+    eq (($.Fn (a) (b)).supertypes) ([$.AnyFunction]);
   });
 
   test ('provides the "Function" type constructor', () => {
@@ -2615,14 +2625,14 @@ Since there is no type of which all the above values are members, the type-varia
     const f =
     def ('f')
         ({})
-        ([$.Function ([$.String, $.Number]), $.Array ($.String), $.Array ($.Number)])
+        ([$.Fn ($.String) ($.Number), $.Array ($.String), $.Array ($.Number)])
         (curry2 (Z.map));
 
     //    g :: (String -> Number) -> Array String -> Array Number
     const g =
     def ('g')
         ({})
-        ([$.Function ([$.String, $.Number]), $.Array ($.String), $.Array ($.Number)])
+        ([$.Fn ($.String) ($.Number), $.Array ($.String), $.Array ($.Number)])
         (f => xs => f (xs));
 
     eq (f (s => s.length) (['foo', 'bar', 'baz', 'quux'])) ([3, 3, 3, 4]);
@@ -2671,7 +2681,7 @@ See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Number for in
     const map =
     def ('map')
         ({})
-        ([$.Function ([a, b]), $.Array (a), $.Array (b)])
+        ([$.Fn (a) (b), $.Array (a), $.Array (b)])
         (f => xs => {
            const result = [];
            for (let idx = 0; idx < xs.length; idx += 1) {
@@ -2741,7 +2751,7 @@ The value at position 1 is not a member of ‘(a, b) -> a’.
     const unfoldr =
     def ('unfoldr')
         ({})
-        ([$.Function ([b, $.Maybe ($.Array2 (a) (b))]), b, $.Array (a)])
+        ([$.Fn (b) ($.Maybe ($.Array2 (a) (b))), b, $.Array (a)])
         (f => x => {
            const result = [];
            for (let m = f (x); m.isJust; m = f (m.value[1])) {
@@ -2803,7 +2813,7 @@ Since there is no type of which all the above values are members, the type-varia
     const T =
     def ('T')
         ({})
-        ([a, $.Function ([a, b]), b])
+        ([a, $.Fn (a) (b), b])
         (x => f => f (/* x */));
 
     throws (() => { T (100) (Math.sqrt); })
@@ -2892,7 +2902,7 @@ Since there is no type of which all the above values are members, the type-varia
     const filter =
     def ('filter')
         ({f: [Z.Filterable]})
-        ([$.Function ([a, $.Boolean]), f (a), f (a)])
+        ([$.Fn (a) ($.Boolean), f (a), f (a)])
         (curry2 (Z.filter));
 
     //    even :: Integer -> Boolean
@@ -3012,11 +3022,13 @@ See https://github.com/sanctuary-js/sanctuary-type-classes/tree/v${Z$version}#Al
     const map =
     def ('map')
         ({f: [Z.Functor]})
-        ([$.Function ([a, b]), f (a), f (b)])
+        ([$.Fn (a) (b), f (a), f (b)])
         (curry2 (Z.map));
 
     eq (map (Math.sqrt) (Nothing)) (Nothing);
     eq (map (Math.sqrt) (Just (9))) (Just (3));
+
+    eq (map (Math.sqrt) (Math.sqrt) (625)) (5);
 
     const xs = [1, 4, 9];
     xs['fantasy-land/map'] = xs.map;
@@ -3129,7 +3141,7 @@ sort :: (Ord a, Applicative f, Foldable f, Monoid f) => f a -> f a
          ^^^^^                                            ^
                                                           1
 
-1)  function sin() { [native code] } :: Function
+1)  function sin() { [native code] } :: Function, (b -> c)
 
 ‘sort’ requires ‘a’ to satisfy the Ord type-class constraint; the value at position 1 does not.
 
@@ -3179,7 +3191,7 @@ See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#String for in
     const bimap =
     def ('bimap')
         ({f: [Z.Bifunctor]})
-        ([$.Function ([a, b]), $.Function ([c, d]), f (a) (c), f (b) (d)])
+        ([$.Fn (a) (b), $.Fn (c) (d), f (a) (c), f (b) (d)])
         (curry3 (Z.bimap));
 
     eq (show (bimap)) ('bimap :: Bifunctor f => (a -> b) -> (c -> d) -> f a c -> f b d');
@@ -3201,7 +3213,7 @@ Since there is no type of which all the above values are members, the type-varia
     const chain =
     def ('chain')
         ({m: [Z.Chain]})
-        ([$.Function ([a, m (b)]), m (a), m (b)])
+        ([$.Fn (a) (m (b)), m (a), m (b)])
         (curry2 (Z.chain));
 
     throws (() => { chain (Left) (Just ('x')); })
@@ -3298,7 +3310,7 @@ See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Number for in
     const map =
     def ('map')
         ({f: [Z.Functor]})
-        ([$.Function ([a, b]), f (a), f (b)])
+        ([$.Fn (a) (b), f (a), f (b)])
         (curry2 (Z.map));
 
     throws (() => { map (Right (Right (Right (Right (0))))); })
@@ -3547,7 +3559,7 @@ f :: Type -> Type
      ^^^^
       1
 
-1)  function Number() { [native code] } :: Function
+1)  function Number() { [native code] } :: Function, (a -> b)
 
 The value at position 1 is not a member of ‘Type’.
 
@@ -3581,7 +3593,7 @@ p :: Type -> Type -> Type
      ^^^^
       1
 
-1)  function Number() { [native code] } :: Function
+1)  function Number() { [native code] } :: Function, (a -> b)
 
 The value at position 1 is not a member of ‘Type’.
 
@@ -3602,7 +3614,7 @@ suite ('Thunk', () => {
     eq (show ($.Thunk ($.Thunk ($.Thunk (a))))) ('() -> () -> () -> a');
   });
 
-  test ('is short for `t => $.Function([t])`', () => {
+  test ('is short for `t => $.Function ([t])`', () => {
     //    why :: (() -> Integer) -> Integer
     const why =
     def ('why')
@@ -3640,12 +3652,12 @@ suite ('Predicate', () => {
     eq (show ($.Predicate ($.Predicate ($.Predicate (a))))) ('((a -> Boolean) -> Boolean) -> Boolean');
   });
 
-  test ('is short for `t => $.Function([t, $.Boolean])`', () => {
+  test ('is short for `t => $.Fn (t) ($.Boolean)`', () => {
     //    when :: (a -> Boolean) -> (a -> a) -> a -> a
     const when =
     def ('when')
         ({})
-        ([$.Predicate (a), $.Function ([a, a]), a, a])
+        ([$.Predicate (a), $.Fn (a) (a), a, a])
         (pred => f => x => pred (x) ? f (x) : x);
 
     //    abs :: Number -> Number
