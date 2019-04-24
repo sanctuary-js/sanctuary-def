@@ -1010,6 +1010,7 @@
   //.   - <code>[AnyFunction](#AnyFunction)</code>
   //.   - <code>[Arguments](#Arguments)</code>
   //.   - <code>[Array](#Array) ([Unknown][])</code>
+  //.   - <code>[Array2](#Array2) ([Unknown][]) ([Unknown][])</code>
   //.   - <code>[Boolean](#Boolean)</code>
   //.   - <code>[Date](#Date)</code>
   //.   - <code>[Descending](#Descending) ([Unknown][])</code>
@@ -1027,11 +1028,14 @@
   //.   - <code>[StrMap](#StrMap) ([Unknown][])</code>
   //.   - <code>[String](#String)</code>
   //.   - <code>[Symbol](#Symbol)</code>
+  //.   - <code>[Type](#Type)</code>
+  //.   - <code>[TypeClass](#TypeClass)</code>
   //.   - <code>[Undefined](#Undefined)</code>
   var env = [
     AnyFunction,
     Arguments,
     Array_ (Unknown),
+    Array2 (Unknown) (Unknown),
     Boolean_,
     Date_,
     Descending (Unknown),
@@ -1049,6 +1053,8 @@
     StrMap (Unknown),
     String_,
     Symbol_,
+    Type,
+    TypeClass,
     Undefined
   ];
 
