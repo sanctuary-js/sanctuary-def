@@ -559,7 +559,7 @@ a01 :: a -> Array a -> a
        ^          ^
        1          2
 
-1)  [1, 2] :: Array Number
+1)  [1, 2] :: Array Number, Array2 Number Number
 
 2)  1 :: Number
     2 :: Number
@@ -576,10 +576,10 @@ a01 :: a -> Array a -> a
        ^          ^
        1          2
 
-1)  [1, 2] :: Array Number
+1)  [1, 2] :: Array Number, Array2 Number Number
 
-2)  ["a", "b"] :: Array String
-    ["c", "d"] :: Array String
+2)  ["a", "b"] :: Array String, Array2 String String
+    ["c", "d"] :: Array String, Array2 String String
 
 Since there is no type of which all the above values are members, the type-variable constraint has been violated.
 `));
@@ -591,10 +591,10 @@ a01 :: a -> Array a -> a
        ^          ^
        1          2
 
-1)  [[1, 2], [3, 4]] :: Array (Array Number)
+1)  [[1, 2], [3, 4]] :: Array (Array Number), Array (Array2 Number Number), Array2 (Array Number) (Array Number), Array2 (Array Number) (Array2 Number Number), Array2 (Array2 Number Number) (Array Number), Array2 (Array2 Number Number) (Array2 Number Number)
 
-2)  [1, 2] :: Array Number
-    [3, 4] :: Array Number
+2)  [1, 2] :: Array Number, Array2 Number Number
+    [3, 4] :: Array Number, Array2 Number Number
 
 Since there is no type of which all the above values are members, the type-variable constraint has been violated.
 `));
@@ -606,7 +606,7 @@ a02 :: a -> Array (Array a) -> a
        ^                 ^
        1                 2
 
-1)  [1, 2] :: Array Number
+1)  [1, 2] :: Array Number, Array2 Number Number
 
 2)  1 :: Number
     2 :: Number
@@ -930,16 +930,16 @@ The value at position 1 is not a member of ‘TimeUnit’.
     eq (id (42)) (42);
     eq (id (-42)) (-42);
 
-    eq (id (['foo', true])) (['foo', true]);
+    eq (id (['foo', true, 42])) (['foo', true, 42]);
 
-    throws (() => { id (['foo', false]); })
+    throws (() => { id (['foo', false, 42]); })
            (new TypeError (`Type-variable constraint violation
 
 id :: a -> a
       ^
       1
 
-1)  ["foo", false] :: Array ???
+1)  ["foo", false, 42] :: Array ???
 
 Since there is no type of which all the above values are members, the type-variable constraint has been violated.
 `));
@@ -2100,14 +2100,14 @@ See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Number for in
     eq (testBinaryType (Left ('XXX'))) (Left ('XXX'));
     eq (testBinaryType (Right ({x: 1, y: 2, z: 3}))) (Right ({x: 1, y: 2, z: 3}));
 
-    throws (() => { testBinaryType (Right ({x: ['foo', false]})); })
+    throws (() => { testBinaryType (Right ({x: ['foo', false, 42]})); })
            (new TypeError (`Type-variable constraint violation
 
 testBinaryType :: Either a (StrMap b) -> Either a (StrMap b)
                                    ^
                                    1
 
-1)  ["foo", false] :: Array ???
+1)  ["foo", false, 42] :: Array ???
 
 Since there is no type of which all the above values are members, the type-variable constraint has been violated.
 `));
@@ -2227,14 +2227,14 @@ aa :: a -> a -> Pair a a
 Since there is no type of which all the above values are members, the type-variable constraint has been violated.
 `));
 
-    throws (() => { aa ([Left ('XXX'), 42]); })
+    throws (() => { aa ([Left ('XXX'), false, 42]); })
            (new TypeError (`Type-variable constraint violation
 
 aa :: a -> a -> Pair a a
       ^
       1
 
-1)  [Left ("XXX"), 42] :: Array ???
+1)  [Left ("XXX"), false, 42] :: Array ???
 
 Since there is no type of which all the above values are members, the type-variable constraint has been violated.
 `));
@@ -2279,7 +2279,7 @@ fst :: Pair a b -> a
        ^^^^^^^^
           1
 
-1)  ["XXX", 42] :: Array ???
+1)  ["XXX", 42] :: Array ???, Array2 String Number
 
 The value at position 1 is not a member of ‘Pair a b’.
 
@@ -2543,7 +2543,7 @@ concat :: Array a -> Array a -> Array a
                 1
 
 1)  [1, 2, 3] :: Array Number
-    [Left ("XXX"), Right (42)] :: Array (Either String Number)
+    [Left ("XXX"), Right (42)] :: Array (Either String Number), Array2 (Either String b) (Either c Number)
 
 Since there is no type of which all the above values are members, the type-variable constraint has been violated.
 `));
@@ -2556,7 +2556,7 @@ concat :: Array a -> Array a -> Array a
                 1
 
 1)  [1, 2, 3] :: Array Number
-    [Right (42), Left ("XXX")] :: Array (Either String Number)
+    [Right (42), Left ("XXX")] :: Array (Either String Number), Array2 (Either b Number) (Either String c)
 
 Since there is no type of which all the above values are members, the type-variable constraint has been violated.
 `));
@@ -3446,7 +3446,7 @@ MyUnaryType :: Type -> Type
                ^^^^
                 1
 
-1)  {"x": Number, "y": Number} :: Object, StrMap ???
+1)  {"x": Number, "y": Number} :: Object, StrMap Type
 
 The value at position 1 is not a member of ‘Type’.
 
@@ -3498,7 +3498,7 @@ MyBinaryType :: Type -> Type -> Type
                         ^^^^
                          1
 
-1)  {"x": Number, "y": Number} :: Object, StrMap ???
+1)  {"x": Number, "y": Number} :: Object, StrMap Type
 
 The value at position 1 is not a member of ‘Type’.
 
