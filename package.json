@@ -21,7 +21,7 @@
   },
   "devDependencies": {
     "sanctuary-descending": "1.2.0",
-    "sanctuary-identity": "1.1.0",
+    "sanctuary-identity": "1.2.0",
     "sanctuary-maybe": "1.1.0",
     "sanctuary-pair": "1.1.0",
     "sanctuary-scripts": "3.2.x"
