@@ -20,7 +20,7 @@
     "sanctuary-type-identifiers": "2.0.x"
   },
   "devDependencies": {
-    "sanctuary-descending": "1.1.0",
+    "sanctuary-descending": "1.2.0",
     "sanctuary-identity": "1.1.0",
     "sanctuary-maybe": "1.1.0",
     "sanctuary-pair": "1.1.0",
