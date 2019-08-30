@@ -2825,6 +2825,42 @@ T :: a -> (a -> b) -> b
 
 Expected one argument but received zero arguments.
 `));
+
+    throws (() => { def ('once') ({}) ([$.Fn (a) (b), a, b]) (f => x => f (x)) (null); })
+           (new TypeError (`Invalid value
+
+once :: (a -> b) -> a -> b
+         ^^^^^^
+           1
+
+1)  null :: Null
+
+The value at position 1 is not a member of ‘a -> b’.
+`));
+
+    throws (() => { def ('twice') ({}) ([$.Fn (a) ($.Fn (a) (b)), a, b]) (f => x => f (x) (x)) (null); })
+           (new TypeError (`Invalid value
+
+twice :: (a -> a -> b) -> a -> b
+          ^^^^^^^^^^^
+               1
+
+1)  null :: Null
+
+The value at position 1 is not a member of ‘a -> a -> b’.
+`));
+
+    throws (() => { def ('thrice') ({}) ([$.Fn (a) ($.Fn (a) ($.Fn (a) (b))), a, b]) (f => x => f (x) (x) (x)) (null); })
+           (new TypeError (`Invalid value
+
+thrice :: (a -> a -> a -> b) -> a -> b
+           ^^^^^^^^^^^^^^^^
+                  1
+
+1)  null :: Null
+
+The value at position 1 is not a member of ‘a -> a -> a -> b’.
+`));
   });
 
   test ('supports type-class constraints', () => {
