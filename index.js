@@ -378,7 +378,10 @@
   }
 
   var Type$prototype = {
-    'constructor': {'@@type': 'sanctuary-def/Type@1'},
+    '@@type': 'sanctuary-def/Type@1',
+    '@@show': function() {
+      return this.format (I, K (I));
+    },
     'validate': function(env) {
       var test2 = _test (env);
       var type = this;
@@ -408,9 +411,6 @@
         Z.equals (this.keys, other.keys) &&
         Z.equals (this.types, other.types)
       );
-    },
-    '@@show': function() {
-      return this.format (I, K (I));
     }
   };
 
@@ -1604,30 +1604,30 @@
   //. const show = require ('sanctuary-show');
   //. const type = require ('sanctuary-type-identifiers');
   //.
-  //. //    MaybeTypeRep :: TypeRep Maybe
-  //. const MaybeTypeRep = {'@@type': 'my-package/Maybe'};
+  //. //    maybeTypeIdent :: String
+  //. const maybeTypeIdent = 'my-package/Maybe';
   //.
   //. //    Maybe :: Type -> Type
   //. const Maybe = $.UnaryType
   //.   ('Maybe')
   //.   ('http://example.com/my-package#Maybe')
   //.   ([])
-  //.   (x => type (x) === MaybeTypeRep['@@type'])
+  //.   (x => type (x) === maybeTypeIdent)
   //.   (maybe => maybe.isJust ? [maybe.value] : []);
   //.
   //. //    Nothing :: Maybe a
   //. const Nothing = {
-  //.   'constructor': MaybeTypeRep,
   //.   'isJust': false,
   //.   'isNothing': true,
+  //.   '@@type': maybeTypeIdent,
   //.   '@@show': () => 'Nothing',
   //. };
   //.
   //. //    Just :: a -> Maybe a
   //. const Just = x => ({
-  //.   'constructor': MaybeTypeRep,
   //.   'isJust': true,
   //.   'isNothing': false,
+  //.   '@@type': maybeTypeIdent,
   //.   '@@show': () => `Just (${show (x)})`,
   //.   'value': x,
   //. });
@@ -1720,15 +1720,15 @@
   //. ```javascript
   //. const type = require ('sanctuary-type-identifiers');
   //.
-  //. //    PairTypeRep :: TypeRep Pair
-  //. const PairTypeRep = {'@@type': 'my-package/Pair'};
+  //. //    pairTypeIdent :: String
+  //. const pairTypeIdent = 'my-package/Pair';
   //.
   //. //    $Pair :: Type -> Type -> Type
   //. const $Pair = $.BinaryType
   //.   ('Pair')
   //.   ('http://example.com/my-package#Pair')
   //.   ([])
-  //.   (x => type (x) === PairTypeRep['@@type'])
+  //.   (x => type (x) === pairTypeIdent)
   //.   (({fst}) => [fst])
   //.   (({snd}) => [snd]);
   //.
@@ -1738,9 +1738,9 @@
   //.     ({})
   //.     ([a, b, $Pair (a) (b)])
   //.     (fst => snd => ({
-  //.        'constructor': PairTypeRep,
   //.        'fst': fst,
   //.        'snd': snd,
+  //.        '@@type': pairTypeIdent,
   //.        '@@show': () => `Pair (${show (fst)}) (${show (snd)})`,
   //.      }));
   //.

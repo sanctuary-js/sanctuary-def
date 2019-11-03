@@ -14,16 +14,16 @@
     "test": "npm run lint && sanctuary-test && npm run doctest"
   },
   "dependencies": {
-    "sanctuary-either": "1.2.0",
+    "sanctuary-either": "2.0.0",
     "sanctuary-show": "2.0.0",
-    "sanctuary-type-classes": "11.0.x",
-    "sanctuary-type-identifiers": "2.0.x"
+    "sanctuary-type-classes": "12.0.0",
+    "sanctuary-type-identifiers": "3.0.0"
   },
   "devDependencies": {
-    "sanctuary-descending": "1.2.0",
-    "sanctuary-identity": "1.2.0",
-    "sanctuary-maybe": "1.2.0",
-    "sanctuary-pair": "1.2.0",
+    "sanctuary-descending": "2.0.0",
+    "sanctuary-identity": "2.0.0",
+    "sanctuary-maybe": "2.0.0",
+    "sanctuary-pair": "2.0.0",
     "sanctuary-scripts": "4.0.x"
   },
   "files": [

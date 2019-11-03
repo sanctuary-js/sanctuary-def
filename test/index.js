@@ -1431,13 +1431,10 @@ Since there is no type of which all the above values are members, the type-varia
     eq ($.AnyFunction.url) (`https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Function`);
     eq ($.AnyFunction.supertypes) ([]);
 
-    function Identity(x) { this.value = x; }
-    Identity['@@type'] = 'my-package/Identity';
-
     const isAnyFunction = $.test ([]) ($.AnyFunction);
     eq (isAnyFunction (null)) (false);
     eq (isAnyFunction (Math.abs)) (true);
-    eq (isAnyFunction (Identity)) (true);
+    eq (isAnyFunction (function Identity(x) { this.value = x; })) (true);
     eq (isAnyFunction (function* (x) { return x; })) (true);
   });
 
@@ -3084,8 +3081,8 @@ See https://github.com/sanctuary-js/sanctuary-type-classes/tree/v${Z$version}#Al
   test ('supports unary type variables', () => {
     //    Box :: a -> Box a
     const Box = x => ({
-      'constructor': {'@@type': 'my-package/Box@1'},
       'value': x,
+      '@@type': 'my-package/Box@1',
       '@@show': () => 'Box (' + show (x) + ')',
     });
 
