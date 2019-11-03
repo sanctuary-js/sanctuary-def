@@ -242,9 +242,6 @@
   //  K :: a -> b -> a
   function K(x) { return function(y) { return x; }; }
 
-  //  W :: (a -> a -> b) -> a -> b
-  function W(f) { return function(x) { return f (x) (x); }; }
-
   //  always0 :: a -> () -> a
   function always0(x) { return function() { return x; }; }
 
@@ -2359,18 +2356,14 @@
     // :: Integer -> (String -> String) -> Type -> PropPath -> String -> String
   ) {
     var st = typeInfo.types.reduce (function(st, t, index) {
-      var formatType4 = formatType5 (index);
-      function f(g) {
-        return function(type) {
-          return B (B (B (when (type.type === FUNCTION)
-                               (parenthesize (_)))))
-                   (formatType4 (g));
-        };
-      }
-      st.carets.push (_underline (t, [], W (f (r ('^')))));
-      st.numbers.push (_underline (t, [], W (f (function(s) {
+      var f = B (when (t.type === FUNCTION)
+                      (parenthesize (_)))
+                (B (function(f) { return _underline (t, [], f); })
+                   (formatType5 (index)));
+      st.carets.push (f (r ('^')));
+      st.numbers.push (f (function(s) {
         return label (show (st.counter += 1)) (s);
-      }))));
+      }));
       return st;
     }, {carets: [], numbers: [], counter: 0});
 
