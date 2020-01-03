@@ -28,6 +28,7 @@
       "files": ["*.md"],
       "rules": {
         "comma-dangle": ["error", "always-multiline"],
+        "func-style": ["error", "declaration", {"allowArrowFunctions": true}],
         "max-len": ["off"],
         "no-undef": ["off"],
         "no-unused-vars": ["off"]
