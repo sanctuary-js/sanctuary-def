@@ -1619,6 +1619,40 @@ See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Array2 for in
     eq (isIdentityString (Identity ('abc'))) (true);
   });
 
+  test ('provides the "JsMap" type constructor', () => {
+    eq (typeof $.JsMap) ('function');
+    eq ($.JsMap.length) (1);
+    eq (show ($.JsMap)) ('JsMap :: Type -> Type -> Type');
+    eq (show ($.JsMap (a) (b))) ('JsMap a b');
+    eq (($.JsMap (a) (b)).name) ('JsMap');
+    eq (($.JsMap (a) (b)).url) (`https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#JsMap`);
+    eq (($.JsMap (a) (b)).supertypes) ([]);
+
+    const isJsMapNumberString = $.test ([]) ($.JsMap ($.Number) ($.String));
+    eq (isJsMapNumberString (null)) (false);
+    eq (isJsMapNumberString ({})) (false);
+    eq (isJsMapNumberString (new Map ([]))) (true);
+    eq (isJsMapNumberString (new Map ([[1, 'a'], [2, 'b'], [3, 'c']]))) (true);
+    eq (isJsMapNumberString (new Map ([['a', 1], ['b', 2], ['c', 3]]))) (false);
+  });
+
+  test ('provides the "JsSet" type constructor', () => {
+    eq (typeof $.JsSet) ('function');
+    eq ($.JsSet.length) (1);
+    eq (show ($.JsSet)) ('JsSet :: Type -> Type');
+    eq (show ($.JsSet (a))) ('JsSet a');
+    eq (($.JsSet (a)).name) ('JsSet');
+    eq (($.JsSet (a)).url) (`https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#JsSet`);
+    eq (($.JsSet (a)).supertypes) ([]);
+
+    const isJsSetNumber = $.test ([]) ($.JsSet ($.Number));
+    eq (isJsSetNumber (null)) (false);
+    eq (isJsSetNumber ([])) (false);
+    eq (isJsSetNumber (new Set ([]))) (true);
+    eq (isJsSetNumber (new Set ([1, 2, 3]))) (true);
+    eq (isJsSetNumber (new Set (['a', 'b', 'c']))) (false);
+  });
+
   test ('provides the "Maybe" type constructor', () => {
     eq (typeof $.Maybe) ('function');
     eq ($.Maybe.length) (1);
