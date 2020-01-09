@@ -710,6 +710,21 @@
     (typeEq ('sanctuary-identity/Identity@1'))
     (I);
 
+  //# JsMap :: Type -> Type -> Type
+  var JsMap = BinaryTypeWithUrl
+    ('JsMap')
+    ([])
+    (function(x) { return toString.call (x) === '[object Map]'; })
+    (function(jsMap) { return Array.from (jsMap.keys ()); })
+    (function(jsMap) { return Array.from (jsMap.values ()); });
+
+  //# JsSet :: Type -> Type
+  var JsSet = UnaryTypeWithUrl
+    ('JsSet')
+    ([])
+    (function(x) { return toString.call (x) === '[object Set]'; })
+    (function(jsSet) { return Array.from (jsSet.values ()); });
+
   //# Maybe :: Type -> Type
   //.
   //. [Maybe][] type constructor.
@@ -1016,6 +1031,8 @@
   //.   - <code>[Fn](#Fn) ([Unknown][]) ([Unknown][])</code>
   //.   - <code>[HtmlElement](#HtmlElement)</code>
   //.   - <code>[Identity](#Identity) ([Unknown][])</code>
+  //.   - <code>[JsMap](#JsMap) ([Unknown][]) ([Unknown][])</code>
+  //.   - <code>[JsSet](#JsSet) ([Unknown][])</code>
   //.   - <code>[Maybe](#Maybe) ([Unknown][])</code>
   //.   - <code>[Null](#Null)</code>
   //.   - <code>[Number](#Number)</code>
@@ -1041,6 +1058,8 @@
     Fn (Unknown) (Unknown),
     HtmlElement,
     Identity (Unknown),
+    JsMap (Unknown) (Unknown),
+    JsSet (Unknown),
     Maybe (Unknown),
     Null,
     Number_,
@@ -2789,6 +2808,8 @@
           (Function_),
     HtmlElement: HtmlElement,
     Identity: fromUncheckedUnaryType (Identity),
+    JsMap: fromUncheckedBinaryType (JsMap),
+    JsSet: fromUncheckedUnaryType (JsSet),
     Maybe: fromUncheckedUnaryType (Maybe),
     NonEmpty: NonEmpty,
     Null: Null,
