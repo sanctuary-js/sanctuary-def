@@ -741,6 +741,14 @@
     (typeEq ('sanctuary-maybe/Maybe@1'))
     (I);
 
+  //# Module :: Type
+  //.
+  //. Type comprising every ES module.
+  var Module = NullaryTypeWithUrl
+    ('Module')
+    ([])
+    (function(x) { return toString.call (x) === '[object Module]'; });
+
   //# NonEmpty :: Type -> Type
   //.
   //. Constructor for non-empty types. `$.NonEmpty ($.String)`, for example, is
@@ -1041,6 +1049,7 @@
   //.   - <code>[JsMap](#JsMap) ([Unknown][]) ([Unknown][])</code>
   //.   - <code>[JsSet](#JsSet) ([Unknown][])</code>
   //.   - <code>[Maybe](#Maybe) ([Unknown][])</code>
+  //.   - <code>[Module](#Module)</code>
   //.   - <code>[Null](#Null)</code>
   //.   - <code>[Number](#Number)</code>
   //.   - <code>[Object](#Object)</code>
@@ -1068,6 +1077,7 @@
     JsMap (Unknown) (Unknown),
     JsSet (Unknown),
     Maybe (Unknown),
+    Module,
     Null,
     Number_,
     Object_,
@@ -2818,6 +2828,7 @@
     JsMap: fromUncheckedBinaryType (JsMap),
     JsSet: fromUncheckedUnaryType (JsSet),
     Maybe: fromUncheckedUnaryType (Maybe),
+    Module: Module,
     NonEmpty: NonEmpty,
     Null: Null,
     Nullable: fromUncheckedUnaryType (Nullable),

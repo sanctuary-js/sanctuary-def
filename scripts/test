@@ -1,0 +1,6 @@
+#!/usr/bin/env bash
+set -euf -o pipefail
+
+node_modules/.bin/sanctuary-test "$@"
+
+node --experimental-modules test/module.mjs
