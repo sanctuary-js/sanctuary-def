@@ -711,6 +711,10 @@
     (I);
 
   //# JsMap :: Type -> Type -> Type
+  //.
+  //. Constructor for native Map types. `$.JsMap ($.Number) ($.String)`,
+  //. for example, is the type comprising every native Map whose keys are
+  //. numbers and whose values are strings.
   var JsMap = BinaryTypeWithUrl
     ('JsMap')
     ([])
@@ -719,6 +723,9 @@
     (function(jsMap) { return Array.from (jsMap.values ()); });
 
   //# JsSet :: Type -> Type
+  //.
+  //. Constructor for native Set types. `$.JsSet ($.Number)`, for example,
+  //. is the type comprising every native Set whose values are numbers.
   var JsSet = UnaryTypeWithUrl
     ('JsSet')
     ([])
