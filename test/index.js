@@ -1408,6 +1408,18 @@ Since there is no type of which all the above values are members, the type-varia
 `));
   });
 
+  test ('provides the "Void" type', () => {
+    eq ($.Void.name) ('Void');
+    eq ($.Void.url) (`https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Void`);
+    eq ($.Void.supertypes) ([]);
+
+    const isVoid = $.test ([]) ($.Void);
+    eq (isVoid (undefined)) (false);
+    eq (isVoid (null)) (false);
+    eq (isVoid (NaN)) (false);
+    eq (isVoid ('')) (false);
+  });
+
   test ('provides the "Any" type', () => {
     eq ($.Any.name) ('Any');
     eq ($.Any.url) (`https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Any`);

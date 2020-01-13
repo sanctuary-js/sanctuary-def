@@ -531,6 +531,18 @@
   var Unknown =
   _Type (UNKNOWN, '', '', 0, always2 ('Unknown'), [], K (K (true)), []);
 
+  //# Void :: Type
+  //.
+  //. Uninhabited type.
+  //.
+  //. May be used to convey that a type parameter of an algebraic data type
+  //. will not be used. For example, a future of type `Future Void String`
+  //. will never be rejected.
+  var Void = NullaryTypeWithUrl
+    ('Void')
+    ([])
+    (K (false));
+
   //# Any :: Type
   //.
   //. Type comprising every JavaScript value.
@@ -2859,6 +2871,7 @@
     TypeClass: TypeClass,
     Undefined: Undefined,
     Unknown: Unknown,
+    Void: Void,
     env: env,
     create:
       def ('create')
