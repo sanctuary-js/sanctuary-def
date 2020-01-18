@@ -497,7 +497,7 @@
 
   //  functionUrl :: String -> String
   function functionUrl(name) {
-    var version = '0.20.1';  // updated programmatically
+    var version = '0.21.0';  // updated programmatically
     return 'https://github.com/sanctuary-js/sanctuary-def/tree/v' + version +
            '#' + name;
   }
