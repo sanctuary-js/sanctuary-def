@@ -88,6 +88,7 @@ suite ('env', () => {
          $.Array ($.Unknown),
          $.Array2 ($.Unknown) ($.Unknown),
          $.Boolean,
+         $.Buffer,
          $.Date,
          $.Descending ($.Unknown),
          $.Either ($.Unknown) ($.Unknown),
@@ -1550,6 +1551,27 @@ See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Array2 for in
     eq ($.Boolean.name) ('Boolean');
     eq ($.Boolean.url) (`https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Boolean`);
     eq ($.Boolean.supertypes) ([]);
+  });
+
+  test ('provides the "Buffer" type', () => {
+    eq ($.Buffer.name) ('Buffer');
+    eq ($.Buffer.url) (`https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Buffer`);
+    eq ($.Buffer.supertypes) ([]);
+
+    const isBuffer = $.test ([]) ($.Buffer);
+    eq (isBuffer (null)) (false);
+    eq (isBuffer (Buffer.from ([1, 2, 3]))) (true);
+
+    {
+      const Buffer = global.Buffer;
+      delete global.Buffer;
+      try {
+        eq (isBuffer (null)) (false);
+        eq (isBuffer (Buffer.from ([1, 2, 3]))) (false);
+      } finally {
+        global.Buffer = Buffer;
+      }
+    }
   });
 
   test ('provides the "Date" type', () => {
