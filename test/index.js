@@ -79,6 +79,41 @@ def ('$26')
        [a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p, q, r, s, t, u, v, w, x, y, z]);
 
 
+suite ('env', () => {
+
+  test ('is an array of types', () => {
+    eq ($.env)
+       ([$.AnyFunction,
+         $.Arguments,
+         $.Array ($.Unknown),
+         $.Array2 ($.Unknown) ($.Unknown),
+         $.Boolean,
+         $.Date,
+         $.Descending ($.Unknown),
+         $.Either ($.Unknown) ($.Unknown),
+         $.Error,
+         $.Fn ($.Unknown) ($.Unknown),
+         $.HtmlElement,
+         $.Identity ($.Unknown),
+         $.JsMap ($.Unknown) ($.Unknown),
+         $.JsSet ($.Unknown),
+         $.Maybe ($.Unknown),
+         $.Module,
+         $.Null,
+         $.Number,
+         $.Object,
+         $.Pair ($.Unknown) ($.Unknown),
+         $.RegExp,
+         $.StrMap ($.Unknown),
+         $.String,
+         $.Symbol,
+         $.Type,
+         $.TypeClass,
+         $.Undefined]);
+  });
+
+});
+
 suite ('create', () => {
 
   test ('is a unary function', () => {
