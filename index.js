@@ -61,9 +61,11 @@
 //. const env = $.env.concat ([List ($.Unknown)]);
 //. ```
 //.
-//. The next step is to define a `def` function for the environment:
+//. The next step is to define a `def` function for the environment using
+//. `$.create`:
 //.
 //. ```javascript
+//. //    def :: String -> StrMap (Array TypeClass) -> Array Type -> Function -> Function
 //. const def = $.create ({checkTypes: true, env});
 //. ```
 //.
@@ -72,6 +74,7 @@
 //. during development. For example:
 //.
 //. ```javascript
+//. //    def :: String -> StrMap (Array TypeClass) -> Array Type -> Function -> Function
 //. const def = $.create ({
 //.   checkTypes: process.env.NODE_ENV === 'development',
 //.   env,
@@ -83,10 +86,10 @@
 //. ```javascript
 //. //    add :: Number -> Number -> Number
 //. const add =
-//. def ('add')
-//.     ({})
-//.     ([$.Number, $.Number, $.Number])
-//.     (x => y => x + y);
+//. def ('add')                           // name
+//.     ({})                              // type-class constraints
+//.     ([$.Number, $.Number, $.Number])  // input and output types
+//.     (x => y => x + y);                // implementation
 //. ```
 //.
 //. `[$.Number, $.Number, $.Number]` specifies that `add` takes two arguments
