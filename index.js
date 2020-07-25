@@ -615,6 +615,18 @@
     ([])
     (typeofEq ('boolean'));
 
+  //# Buffer :: Type
+  //.
+  //. Type comprising every [Buffer][] object.
+  var Buffer_ = NullaryTypeWithUrl
+    ('Buffer')
+    ([])
+    (function(x) {
+       return typeof Buffer !== 'undefined' &&
+              // eslint-disable-next-line no-undef
+              Buffer.isBuffer (x);
+     });
+
   //# Date :: Type
   //.
   //. Type comprising every Date value.
@@ -1054,6 +1066,7 @@
   //.   - <code>[Array](#Array) ([Unknown][])</code>
   //.   - <code>[Array2](#Array2) ([Unknown][]) ([Unknown][])</code>
   //.   - <code>[Boolean](#Boolean)</code>
+  //.   - <code>[Buffer](#Buffer)</code>
   //.   - <code>[Date](#Date)</code>
   //.   - <code>[Descending](#Descending) ([Unknown][])</code>
   //.   - <code>[Either](#Either) ([Unknown][]) ([Unknown][])</code>
@@ -1082,6 +1095,7 @@
     Array_ (Unknown),
     Array2 (Unknown) (Unknown),
     Boolean_,
+    Buffer_,
     Date_,
     Descending (Unknown),
     Either_ (Unknown) (Unknown),
@@ -2823,6 +2837,7 @@
     Array1: fromUncheckedUnaryType (Array1),
     Array2: fromUncheckedBinaryType (Array2),
     Boolean: Boolean_,
+    Buffer: Buffer_,
     Date: Date_,
     ValidDate: ValidDate,
     Descending: fromUncheckedUnaryType (Descending),
@@ -2974,6 +2989,7 @@
 
 }));
 
+//. [Buffer]:               https://nodejs.org/api/buffer.html#buffer_buffer
 //. [Descending]:           v:sanctuary-js/sanctuary-descending
 //. [Either]:               v:sanctuary-js/sanctuary-either
 //. [FL:Semigroup]:         https://github.com/fantasyland/fantasy-land#semigroup
