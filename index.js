@@ -411,7 +411,8 @@
         Z.equals (this.name, other.name) &&
         Z.equals (this.url, other.url) &&
         Z.equals (this.supertypes, other.supertypes) &&
-        Z.equals (this.keys, other.keys) &&
+        this.keys.length === other.keys.length &&
+        this.keys.every (function(k) { return other.keys.includes (k); }) &&
         Z.equals (this.types, other.types)
       );
     }
@@ -1917,7 +1918,7 @@
   //. //   The value at position 1 is not a member of ‘{ x :: FiniteNumber, y :: FiniteNumber }’.
   //. ```
   function RecordType(fields) {
-    var keys = sortedKeys (fields);
+    var keys = Object.keys (fields);
 
     function format(outer, inner) {
       if (isEmpty (keys)) return outer ('{}');
