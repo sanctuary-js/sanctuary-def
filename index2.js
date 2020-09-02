@@ -203,7 +203,7 @@ function invalidValue(
       showValuesAndTypes (env, typeInfo, [value], 1) + '\n\n' +
       'The value at position 1 is not a member of ' +
       q (show (t)) + '.\n' +
-      see (t.types.length >= 1 ? 'type constructor' : 'type', t)
+      see (t.arity >= 1 ? 'type constructor' : 'type', t)
   ));
 }
 
@@ -215,7 +215,7 @@ function invalidValue(
 //  -> Type
 //  -> Array Type
 const expandUnknown = env => seen => value => extractor => type => (
-  type.type === UNKNOWN ?
+  type.type === 'UNKNOWN' ?
   _determineActualTypes (env, seen, extractor (value)) :
   [type]
 );
@@ -452,7 +452,6 @@ const Type$prototype = {
       if (!(test2 (x) (this))) return Left ({value: x, propPath: []});
       for (const k of this.keys) {
         const t = type.types[k];
-        console.log ('k:', k, 'type.types:', type.types);
         const ys = type.extractors[k] (x);
         for (const y of ys) {
           const result = t.validate (env) (y);
@@ -845,6 +844,16 @@ const Maybe = $1 => Object.assign (
   }
 );
 
+$.Module = Object.assign (
+  $.NullaryType ('Module')
+                ('https://github.com/sanctuary-js/sanctuary-def/tree/v0.22.0#Module')
+                ([])
+                (x => Object.prototype.toString.call (x) === '[object Module]'),
+  {
+    new: env => x => Right (TK),
+  }
+);
+
 const NonEmpty = $1 => Object.assign (
   $.UnaryType ('NonEmpty')
               ('https://github.com/sanctuary-js/sanctuary-def/tree/v0.22.0#NonEmpty')
@@ -1069,6 +1078,16 @@ $.String = Object.assign (
   }
 );
 
+$.Symbol = Object.assign (
+  $.NullaryType ('Symbol')
+                ('https://github.com/sanctuary-js/sanctuary-def/tree/v0.22.0#Symbol')
+                ([])
+                (x => typeof x === 'symbol'),
+  {
+    new: env => x => Right (TK),
+  }
+);
+
 $.RegexFlags = Object.assign (
   $.NullaryType ('RegexFlags')
                 ('https://github.com/sanctuary-js/sanctuary-def/tree/v0.22.0#RegexFlags')
@@ -1096,6 +1115,16 @@ $.Type = Object.assign (
                 ('https://github.com/sanctuary-js/sanctuary-def/tree/v0.22.0#Type')
                 ([])
                 (x => type (x) === 'sanctuary-def/Type@1'),
+  {
+    new: env => x => Right (x),
+  }
+);
+
+$.TypeClass = Object.assign (
+  $.NullaryType ('TypeClass')
+                ('https://github.com/sanctuary-js/sanctuary-def/tree/v0.22.0#TypeClass')
+                ([])
+                (x => type (x) === 'sanctuary-type-classes/TypeClass@1'),
   {
     new: env => x => Right (x),
   }
@@ -1166,7 +1195,7 @@ const Array2 = $1 => $2 => Object.assign (
                ($1)
                ($2),
   {
-    new: env => x => Right (x),
+    new: env => x => x.length === 2 ? Right (x) : Left ('TK'),
   }
 );
 
@@ -1279,7 +1308,7 @@ const def = $.def = name => constraints => types => {
                      const x = input.new (env) (_x);
                      if (x.isLeft) {
                        throw invalidValue (
-                         [$.Number, $.String, $.Null, $.Undefined],
+                         $.env,
                          typeInfo,
                          0,  // index
                          [],  // propPath

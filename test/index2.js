@@ -1533,19 +1533,19 @@ See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Number for in
     eq (fst (['foo', 42])) ('foo');
     eq (snd (['foo', 42])) (42);
 
-///     throws (() => { fst (['foo']); })
-///            (new TypeError (`Invalid value
-/// 
-/// fst :: Array2 a b -> a
-///        ^^^^^^^^^^
-///            1
-/// 
-/// 1)  ["foo"] :: Array String
-/// 
-/// The value at position 1 is not a member of ‘Array2 a b’.
-/// 
-/// See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Array2 for information about the Array2 type constructor.
-/// `));
+    throws (() => { fst (['foo']); })
+           (new TypeError (`Invalid value
+
+fst :: Array2 a b -> a
+       ^^^^^^^^^^
+           1
+
+1)  ["foo"] :: Array String
+
+The value at position 1 is not a member of ‘Array2 a b’.
+
+See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Array2 for information about the Array2 type constructor.
+`));
   });
 
   test ('provides the "Boolean" type', () => {
