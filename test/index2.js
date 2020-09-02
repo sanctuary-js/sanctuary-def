@@ -33,6 +33,7 @@ const curry3 = f => x => y => z => f (x, y, z);
 const singleton = k => v => { const m = {}; m[k] = v; return m; };
 
 
+const def = $.def;
 /// const def = $.create ({checkTypes: true, env: $.env});
 /// 
 const a = $.TypeVariable ('a');
@@ -455,17 +456,17 @@ suite ('def', () => {
 /// 
 ///     eq ($9 (1) (2) (3) (4) (5) (6) (7) (8) (9)) ([1, 2, 3, 4, 5, 6, 7, 8, 9]);
 ///   });
-/// 
-///   test ('reports type error correctly for null/undefined', () => {
-///     //    sqrt :: Number -> Number
-///     const sqrt =
-///     def ('sqrt')
-///         ({})
-///         ([$.Number, $.Number])
-///         (Math.sqrt);
-/// 
-///     eq (sqrt (25)) (5);
-/// 
+
+  test ('reports type error correctly for null/undefined', () => {
+    //    sqrt :: Number -> Number
+    const sqrt =
+    def ('sqrt')
+        ({})
+        ([$.Number, $.Number])
+        (Math.sqrt);
+
+    eq (sqrt (25)) (5);
+
 ///     throws (() => { sqrt (null); })
 ///            (new TypeError (`Invalid value
 /// 
@@ -479,7 +480,7 @@ suite ('def', () => {
 /// 
 /// See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Number for information about the Number type.
 /// `));
-/// 
+
 ///     throws (() => { sqrt (undefined); })
 ///            (new TypeError (`Invalid value
 /// 
@@ -493,8 +494,8 @@ suite ('def', () => {
 /// 
 /// See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Number for information about the Number type.
 /// `));
-///   });
-/// 
+  });
+
 ///   test ('reports type error correctly for parameterized types', () => {
 ///     //    a00 :: a -> a -> a
 ///     const a00 =
@@ -3777,16 +3778,16 @@ suite ('def', () => {
 /// 
 /// });
 /// 
-/// suite ('Predicate', () => {
-/// 
-///   test ('is a unary function', () => {
-///     eq (typeof $.Predicate) ('function');
-///     eq ($.Predicate.length) (1);
-///     eq (show ($.Predicate)) ('Predicate :: Type -> Type');
-///     eq (show ($.Predicate (a))) ('a -> Boolean');
-///     eq (show ($.Predicate ($.Predicate (a)))) ('(a -> Boolean) -> Boolean');
-///     eq (show ($.Predicate ($.Predicate ($.Predicate (a))))) ('((a -> Boolean) -> Boolean) -> Boolean');
-///   });
+suite ('Predicate', () => {
+
+  test ('is a unary function', () => {
+    eq (typeof $.Predicate) ('function');
+    eq ($.Predicate.length) (1);
+    eq (show ($.Predicate)) ('Predicate :: Type -> Type');
+    eq (show ($.Predicate (a))) ('a -> Boolean');
+    eq (show ($.Predicate ($.Predicate (a)))) ('(a -> Boolean) -> Boolean');
+    eq (show ($.Predicate ($.Predicate ($.Predicate (a))))) ('((a -> Boolean) -> Boolean) -> Boolean');
+  });
 /// 
 ///   test ('is short for `t => $.Fn (t) ($.Boolean)`', () => {
 ///     //    when :: (a -> Boolean) -> (a -> a) -> a -> a
@@ -3817,39 +3818,39 @@ suite ('def', () => {
 /// `));
 ///   });
 /// 
-/// });
-/// 
-/// suite ('interoperability', () => {
-/// 
-///   test ('Z.equals can operate on ‘Type’ values', () => {
-///     eq (Z.equals ($.Number, $.Number)) (true);
-///     eq (Z.equals ($.Number, $.String)) (false);
-///     eq (Z.equals ($.Array ($.Number), $.Array ($.Number))) (true);
-///     eq (Z.equals ($.Array ($.Number), $.Array ($.String))) (false);
-///     eq (Z.equals ($.RecordType ({x: $.Number}), $.RecordType ({x: $.Number}))) (true);
-///     eq (Z.equals ($.RecordType ({x: $.Number}), $.RecordType ({y: $.Number}))) (false);
-///     eq (Z.equals ($.RecordType ({x: $.Number}), $.RecordType ({x: $.String}))) (false);
-///     eq (Z.equals ($.NullaryType ('X') ('') ([$.Number]) (x => true),
-///                   $.NullaryType ('X') ('') ([$.Number]) (x => true)))
-///        (true);
-///     eq (Z.equals ($.NullaryType ('X') ('') ([$.Number]) (x => true),
-///                   $.NullaryType ('X') ('') ([$.String]) (x => true)))
-///        (false);
-///     eq (Z.equals ($.NullaryType ('X') ('') ([]) (x => true),
-///                   $.NullaryType ('X') ('') ([]) (x => true)))
-///        (true);
-///     eq (Z.equals ($.NullaryType ('X') ('') ([]) (x => true),
-///                   $.NullaryType ('Y') ('') ([]) (x => true)))
-///        (false);
-///     eq (Z.equals ($.NullaryType ('X') ('') ([]) (x => true),
-///                   $.NullaryType ('X') ('') ([]) (x => false)))
-///        (true);
-///     eq (Z.equals ($.Array ($.NullaryType ('X') ('http://x.com/') ([]) (x => true)),
-///                   $.Array ($.NullaryType ('X') ('http://x.com/') ([]) (x => true))))
-///        (true);
-///     eq (Z.equals ($.Array ($.NullaryType ('X') ('http://x.com/') ([]) (x => true)),
-///                   $.Array ($.NullaryType ('X') ('http://x.org/') ([]) (x => true))))
-///        (false);
-///   });
-/// 
-/// });
+});
+
+suite ('interoperability', () => {
+
+  test ('Z.equals can operate on ‘Type’ values', () => {
+    eq (Z.equals ($.Number, $.Number)) (true);
+    eq (Z.equals ($.Number, $.String)) (false);
+    eq (Z.equals ($.Array ($.Number), $.Array ($.Number))) (true);
+    eq (Z.equals ($.Array ($.Number), $.Array ($.String))) (false);
+    eq (Z.equals ($.RecordType ({x: $.Number}), $.RecordType ({x: $.Number}))) (true);
+    eq (Z.equals ($.RecordType ({x: $.Number}), $.RecordType ({y: $.Number}))) (false);
+    eq (Z.equals ($.RecordType ({x: $.Number}), $.RecordType ({x: $.String}))) (false);
+    eq (Z.equals ($.NullaryType ('X') ('') ([$.Number]) (x => true),
+                  $.NullaryType ('X') ('') ([$.Number]) (x => true)))
+       (true);
+    eq (Z.equals ($.NullaryType ('X') ('') ([$.Number]) (x => true),
+                  $.NullaryType ('X') ('') ([$.String]) (x => true)))
+       (false);
+    eq (Z.equals ($.NullaryType ('X') ('') ([]) (x => true),
+                  $.NullaryType ('X') ('') ([]) (x => true)))
+       (true);
+    eq (Z.equals ($.NullaryType ('X') ('') ([]) (x => true),
+                  $.NullaryType ('Y') ('') ([]) (x => true)))
+       (false);
+    eq (Z.equals ($.NullaryType ('X') ('') ([]) (x => true),
+                  $.NullaryType ('X') ('') ([]) (x => false)))
+       (true);
+    eq (Z.equals ($.Array ($.NullaryType ('X') ('http://x.com/') ([]) (x => true)),
+                  $.Array ($.NullaryType ('X') ('http://x.com/') ([]) (x => true))))
+       (true);
+    eq (Z.equals ($.Array ($.NullaryType ('X') ('http://x.com/') ([]) (x => true)),
+                  $.Array ($.NullaryType ('X') ('http://x.org/') ([]) (x => true))))
+       (false);
+  });
+
+});

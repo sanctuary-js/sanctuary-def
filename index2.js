@@ -20,6 +20,18 @@ const log = (...args) => {
 //    reduce :: (b -> a -> b) -> b -> Array a -> b
 const reduce = f => y => xs => xs.reduce ((y, x) => f (y) (x), y);
 
+//    joinWith :: (String, Array String) -> String
+const joinWith = (separator, ss) => ss.join (separator);
+
+//    when :: Boolean -> (a -> a) -> a -> a
+const when = bool => f => x => bool ? f (x) : x;
+
+//    wrap :: String -> String -> String -> String
+const wrap = prefix => suffix => s => prefix + s + suffix;
+
+//    parenthesize :: (String -> String) -> String -> String
+const parenthesize = f => wrap (f ('(')) (f (')'));
+
 const types_ = x => {
   switch (Object.prototype.toString.call (x)) {
     case '[object Array]':  return ['Array'];
@@ -36,34 +48,57 @@ const showEnv = env => {
   return `[${(String (env._ts)).padStart (2, '0')}]${'a' in env ? ` a = ${env['a']}` : ''}${'b' in env ? ` b = ${env['b']}` : ''}`;
 };
 
-$.Unknown = {
+const Type$prototype = {
+  '@@type': 'sanctuary-def/Type@1',
+  '@@show': function() {
+    return this.format (I, K (I));
+  },
+  'validate': function(env) {
+    return TK;
+  },
+  'fantasy-land/equals': function(other) {
+    return (
+      Z.equals (this.type, other.type) &&
+      Z.equals (this.name, other.name) &&
+      Z.equals (this.url, other.url) &&
+      Z.equals (this.supertypes, other.supertypes) &&
+      Z.equals (this.keys, other.keys) &&
+      Z.equals (this.types, other.types)
+    );
+  },
+};
+
+$.Unknown = Object.assign (Object.create (Type$prototype), {
   type: 'UNKNOWN',
   name: '',
   url: '',
   supertypes: [],
   arity: 0,
+  keys: [],
   types: {},
   _test: K (K (true)),
   format: (outer, inner) => 'Unknown',
-};
+});
 
-$.NullaryType = name => url => supertypes => test => ({
+$.NullaryType = name => url => supertypes => test => Object.assign (Object.create (Type$prototype), {
   type: 'NULLARY',
   name: name,
   url: url,
   supertypes: supertypes,
   arity: 0,
+  keys: [],
   types: {},
   _test: K (test),
   format: (outer, inner) => outer (name),
 });
 
-$.UnaryType = name => url => supertypes => test => _1 => $1 => ({
+$.UnaryType = name => url => supertypes => test => _1 => $1 => Object.assign (Object.create (Type$prototype), {
   type: 'UNARY',
   name: name,
   url: url,
   supertypes: supertypes,
   arity: 1,
+  keys: ['$1'],
   types: {$1: $1},
   _test: K (test),
   format: (outer, inner) => (
@@ -75,12 +110,13 @@ $.UnaryType = name => url => supertypes => test => _1 => $1 => ({
   ),
 });
 
-$.BinaryType = name => url => supertypes => test => _1 => _2 => $1 => $2 => ({
+$.BinaryType = name => url => supertypes => test => _1 => _2 => $1 => $2 => Object.assign (Object.create (Type$prototype), {
   type: 'BINARY',
   name: name,
   url: url,
   supertypes: supertypes,
   arity: 2,
+  keys: ['$1', '$2'],
   types: {$1: $1, $2: $2},
   _test: K (test),
   format: (outer, inner) => (
@@ -96,12 +132,13 @@ $.BinaryType = name => url => supertypes => test => _1 => _2 => $1 => $2 => ({
   ),
 });
 
-$.TypeVariable = name => ({
+$.TypeVariable = name => Object.assign (Object.create (Type$prototype), {
   type: 'VARIABLE',
   name: name,
   url: '',
   supertypes: [],
   arity: 0,
+  keys: [],
   types: {},
   _test: K (K (true)),
   format: (outer, inner) => name,
@@ -118,12 +155,13 @@ $.TypeVariable = name => ({
   },
 });
 
-$.UnaryTypeVariable = name => $1 => ({
+$.UnaryTypeVariable = name => $1 => Object.assign (Object.create (Type$prototype), {
   type: 'VARIABLE',
   name: name,
   url: '',
   supertypes: [],
   arity: 1,
+  keys: ['$1'],
   types: {$1: $1},
   _test: K (K (true)),
   format: (outer, inner) => (
@@ -135,12 +173,13 @@ $.UnaryTypeVariable = name => $1 => ({
   ),
 });
 
-$.BinaryTypeVariable = name => $1 => $2 => ({
+$.BinaryTypeVariable = name => $1 => $2 => Object.assign (Object.create (Type$prototype), {
   type: 'VARIABLE',
   name: name,
   url: '',
   supertypes: [],
   arity: 2,
+  keys: ['$1', '$2'],
   types: {$1: $1, $2: $2},
   _test: K (K (true)),
   format: (outer, inner) => (
@@ -156,22 +195,40 @@ $.BinaryTypeVariable = name => $1 => $2 => ({
   ),
 });
 
-$.Function = types => ({
+$.Function = types => Object.assign (Object.create (Type$prototype), {
   type: 'FUNCTION',
   name: '',
   url: '',
   supertypes: [],
   arity: types.length,
+  keys: ['$1', '$2'],
   types: {$1: types[0], $2: types[1]},
   _test: K (K (true)),
   format: (outer, inner) => (
     when (types.length !== 2)
          (parenthesize (outer))
-         ('TK') +
+         (when (types[0].type === 'FUNCTION')
+               (parenthesize (outer))
+               (inner ('$1') (show (types[0])))) +
     outer (' -> ') +
-    inner ('TK')
+    inner ('$2') (show (types[1]))
   ),
 });
+
+$.RecordType = fields => {
+  const keys = (Object.keys (fields)).sort ();
+  return Object.assign (Object.create (Type$prototype), {
+    type: 'RECORD',
+    name: '',
+    url: '',
+    supertypes: [],
+    arity: 0,
+    keys: [],
+    types: keys.reduce ((types, k) => (types[k] = fields[k], types), {}),
+    _test: env => x => TK,
+    format: (outer, inner) => TK,
+  });
+};
 
 const a = $.TypeVariable ('a');
 const b = $.TypeVariable ('b');
@@ -312,6 +369,16 @@ $.String = Object.assign (
   }
 );
 
+$.Type = Object.assign (
+  $.NullaryType ('Type')
+                ('https://github.com/sanctuary-js/sanctuary-def/tree/v0.22.0#Type')
+                ([])
+                (x => type (x) === 'sanctuary-def/Type@1'),
+  {
+    new: env => x => Right (x),
+  }
+);
+
 $.Array = $1 => (
   Object.assign (
     $.UnaryType ('Array')
@@ -355,15 +422,78 @@ $.Fn = $1 => $2 => (
   )
 );
 
-const def = name => constraints => types => {
+const Predicate = $1 => $.Fn ($1) ($.Boolean);
+
+//  constraintsRepr :: ... -> String
+const constraintsRepr = (
+  constraints,    // :: StrMap (Array TypeClass)
+  outer,          // :: String -> String
+  inner           // :: String -> TypeClass -> String -> String
+) => {
+  var $reprs = [];
+  Object.keys (constraints)
+  .sort ()
+  .forEach (function(k) {
+    var f = inner (k);
+    constraints[k].forEach (function(typeClass) {
+      $reprs.push (f (typeClass) (stripNamespace (typeClass) + ' ' + k));
+    });
+  });
+  return when ($reprs.length > 0)
+              (wrap ('') (outer (' => ')))
+              (when ($reprs.length > 1)
+                    (parenthesize (outer))
+                    (joinWith (outer (', '), $reprs)));
+};
+
+//    typeVarNames :: Type -> Array String
+const typeVarNames = t => (
+  Z.concat (
+    t.type === 'VARIABLE' ? [t.name] : [],
+    Z.chain (k => typeVarNames (t.types[k]), t.keys)
+  )
+);
+
+//    showTypeWith :: Array Type -> Type -> String
+const showTypeWith = types => {
+  var names = Z.chain (typeVarNames, types);
+  return t => {
+    var code = 'a'.charCodeAt (0);
+    return when (t.type === 'FUNCTION')
+                (parenthesize (I))
+                ((show (t)).replace (/\bUnknown\b/g, function() {
+                   // eslint-disable-next-line no-plusplus
+                   do var name = String.fromCharCode (code++);
+                   while (names.indexOf (name) >= 0);
+                   return name;
+                 }));
+  };
+}
+
+const typeSignature = typeInfo => (
+  typeInfo.name + ' :: ' +
+  constraintsRepr (typeInfo.constraints, I, K (K (I))) +
+  joinWith (' -> ', Z.map (showTypeWith (typeInfo.types), typeInfo.types))
+);
+
+const def = $.def = name => constraints => types => {
   const [output, ...inputs] = Z.reverse (types);
 
-  return reduce (run => input => _env => f => _x => {
-                   const env = Object.assign (Object.create (_env), {_ts: nextInt ()});
-                   const x = input.new (env) (_x);
-                   if (x.isLeft) throw new TypeError (x.value);
-                   log ('updateEnv 1', showEnv (env));
-                   return run (env) (f (x.value));
+  return reduce (run => input => _env => f => {
+                   const wrapped = _x => {
+                     const env = Object.assign (Object.create (_env), {_ts: nextInt ()});
+                     const x = input.new (env) (_x);
+                     if (x.isLeft) throw new TypeError (x.value);
+                     log ('updateEnv 1', showEnv (env));
+                     return run (env) (f (x.value));
+                   };
+                   const signature = typeSignature ({
+                     name: name,
+                     constraints: constraints,
+                     types: types,
+                   });
+                   wrapped.toString = () => signature;
+                   return wrapped;
                  })
                 (env => _x => {
                    log ('updateEnv 2', showEnv (env));
@@ -374,6 +504,8 @@ const def = name => constraints => types => {
                 (inputs)
                 (Object.assign (Object.create (null), {_ts: nextInt ()}));
 };
+
+$.Predicate = def ('Predicate') ({}) ([$.Type, $.Type]) (Predicate);
 
 /*****************************************************************************/
 
