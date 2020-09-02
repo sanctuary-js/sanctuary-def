@@ -7,7 +7,7 @@ const show = require ('sanctuary-show');
 const Z = require ('sanctuary-type-classes');
 
 
-const $ = {};
+const $ = module.exports = {};
 
 const I = x => x;
 
@@ -109,12 +109,12 @@ $.TypeVariable = name => ({
     const these = types_ (x);
     if (name in env) {
       const ts = env[name].filter (t => these.includes (t));
-      if (ts.length === 0) throw new TypeError (`Incompatible ${show (name)} types`);
+      if (ts.length === 0) return Left (`Incompatible ${show (name)} types`);
       env[name] = ts;
     } else {
       env[name] = these;
     }
-    return x;
+    return Right (x);
   },
 });
 
@@ -176,36 +176,160 @@ $.Function = types => ({
 const a = $.TypeVariable ('a');
 const b = $.TypeVariable ('b');
 
+$.Void = Object.assign (
+  $.NullaryType ('Void')
+                ('https://github.com/sanctuary-js/sanctuary-def/tree/v0.22.0#Void')
+                ([])
+                (x => false),
+  {
+    new: env => x => Right (TK),
+  }
+);
+
+$.Any = Object.assign (
+  $.NullaryType ('Any')
+                ('https://github.com/sanctuary-js/sanctuary-def/tree/v0.22.0#Any')
+                ([])
+                (x => true),
+  {
+    new: env => x => Right (TK),
+  }
+);
+
+$.AnyFunction = Object.assign (
+  $.NullaryType ('Function')
+                ('https://github.com/sanctuary-js/sanctuary-def/tree/v0.22.0#Function') // XXX
+                ([])
+                (x => typeof x === 'function'),
+  {
+    new: env => x => Right (TK),
+  }
+);
+
+$.Arguments = Object.assign (
+  $.NullaryType ('Arguments')
+                ('https://github.com/sanctuary-js/sanctuary-def/tree/v0.22.0#Arguments')
+                ([])
+                (x => Object.prototype.toString.call (x) === '[object Arguments]'),
+  {
+    new: env => x => Right (TK),
+  }
+);
+
+$.Boolean = Object.assign (
+  $.NullaryType ('Boolean')
+                ('https://github.com/sanctuary-js/sanctuary-def/tree/v0.22.0#Boolean')
+                ([])
+                (x => typeof x === 'boolean'),
+  {
+    new: env => x => Right (TK),
+  }
+);
+
+$.Buffer = Object.assign (
+  $.NullaryType ('Buffer')
+                ('https://github.com/sanctuary-js/sanctuary-def/tree/v0.22.0#Buffer')
+                ([])
+                (x => typeof Buffer !== 'undefined' && Buffer.isBuffer (x)),
+  {
+    new: env => x => Right (TK),
+  }
+);
+
+$.Date = Object.assign (
+  $.NullaryType ('Date')
+                ('https://github.com/sanctuary-js/sanctuary-def/tree/v0.22.0#Date')
+                ([])
+                (x => Object.prototype.toString.call (x) === '[object Date]'),
+  {
+    new: env => x => Right (TK),
+  }
+);
+
+$.Error = Object.assign (
+  $.NullaryType ('Error')
+                ('https://github.com/sanctuary-js/sanctuary-def/tree/v0.22.0#Error')
+                ([])
+                (x => Object.prototype.toString.call (x) === '[object Error]'),
+  {
+    new: env => x => Right (TK),
+  }
+);
+
+$.HtmlElement = Object.assign (
+  $.NullaryType ('HtmlElement')
+                ('https://github.com/sanctuary-js/sanctuary-def/tree/v0.22.0#HtmlElement')
+                ([])
+                (x => /^\[object HTML.+Element\]$/.test (Object.prototype.toString.call (x))),
+  {
+    new: env => x => Right (TK),
+  }
+);
+
+$.Null = Object.assign (
+  $.NullaryType ('Null')
+                ('https://github.com/sanctuary-js/sanctuary-def/tree/v0.22.0#Null')
+                ([])
+                (x => Object.prototype.toString.call (x) === '[object Null]'),
+  {
+    new: env => x => Right (TK),
+  }
+);
+
 $.Number = Object.assign (
-  $.NullaryType ('Number') ('url') ([]) (x => typeof x === 'number'),
+  $.NullaryType ('Number')
+                ('https://github.com/sanctuary-js/sanctuary-def/tree/v0.22.0#Number')
+                ([])
+                (x => typeof x === 'number'),
   {
     new: env => x => {
-      if (typeof x !== 'number') throw new TypeError (`Not a number: ${JSON.stringify (x)}`);
-      return x;
+      if (typeof x !== 'number') return Left (`Not a number: ${JSON.stringify (x)}`);
+      return Right (x);
     },
   }
 );
 
+$.Object = Object.assign (
+  $.NullaryType ('Object')
+                ('https://github.com/sanctuary-js/sanctuary-def/tree/v0.22.0#Object')
+                ([])
+                (x => Object.prototype.toString.call (x) === '[object Object]'),
+  {
+    new: env => x => Right (TK),
+  }
+);
+
 $.String = Object.assign (
-  $.NullaryType ('String') ('url') ([]) (x => typeof x === 'string'),
+  $.NullaryType ('String')
+                ('https://github.com/sanctuary-js/sanctuary-def/tree/v0.22.0#String')
+                ([])
+                (x => typeof x === 'string'),
   {
     new: env => x => {
-      if (typeof x !== 'string') throw new TypeError (`Not a string: ${JSON.stringify (x)}`);
-      return x;
+      if (typeof x !== 'string') return Left (`Not a string: ${JSON.stringify (x)}`);
+      return Right (x);
     },
   }
 );
 
 $.Array = $1 => (
   Object.assign (
-    $.UnaryType ('Array') ('url') ([]) (Array.isArray) (I) ($1),
+    $.UnaryType ('Array')
+                ('https://github.com/sanctuary-js/sanctuary-def/tree/v0.22.0#Array')
+                ([])
+                (Array.isArray)
+                (I)
+                ($1),
     {
       new: env => x => {
-        if (!(Array.isArray (x))) throw new TypeError ('Not an array');
+        if (!(Array.isArray (x))) return Left ('Not an array');
 
-        x.forEach (x => { $1.new (env) (x); });
+        x.forEach (x => {
+          const e = $1.new (env) (x);
+          if (e.isLeft) throw new TypeError (e.value);
+        });
 
-        return x;
+        return Right (x);
       },
     }
   )
@@ -216,31 +340,36 @@ $.Fn = $1 => $2 => (
     $.Function ([$1, $2]),
     {
       new: env => f => {
-        if (typeof f !== 'function') throw new TypeError ('Not a function');
-        return x => {
+        if (typeof f !== 'function') return Left ('Not a function');
+        return Right (x => {
           const i = $1.new (env) (x);
+          if (i.isLeft) throw new TypeError (i.value);
           log ('updateEnv 3', showEnv (env));
           const o = $2.new (env) (f (x));
+          if (o.isLeft) throw new TypeError (o.value);
           log ('updateEnv 4', showEnv (env));
-          return o;
-        };
+          return o.value;
+        });
       },
     }
   )
 );
 
 const def = name => constraints => types => {
-  const [output, ...inputs] = Z.reverse (types.map (t => t.new));
+  const [output, ...inputs] = Z.reverse (types);
 
   return reduce (run => input => _env => f => _x => {
                    const env = Object.assign (Object.create (_env), {_ts: nextInt ()});
-                   const x = input (env) (_x);
+                   const x = input.new (env) (_x);
+                   if (x.isLeft) throw new TypeError (x.value);
                    log ('updateEnv 1', showEnv (env));
-                   return run (env) (f (x));
+                   return run (env) (f (x.value));
                  })
                 (env => _x => {
                    log ('updateEnv 2', showEnv (env));
-                   return output (env) (_x);
+                   const e = output.new (env) (_x);
+                   if (e.isLeft) throw new TypeError (e.value);
+                   return e.value;
                  })
                 (inputs)
                 (Object.assign (Object.create (null), {_ts: nextInt ()}));
