@@ -867,6 +867,18 @@ $.Null = Object.assign (
   }
 );
 
+const Nullable = $1 => Object.assign (
+  $.UnaryType ('Nullable')
+              ('https://github.com/sanctuary-js/sanctuary-def/tree/v0.22.0#Nullable')
+              ([])
+              (K (true))
+              (nullable => nullable === null ? [] : [nullable])
+              ($1),
+  {
+    new: env => x => Right (TK),
+  }
+);
+
 $.Number = Object.assign (
   $.NullaryType ('Number')
                 ('https://github.com/sanctuary-js/sanctuary-def/tree/v0.22.0#Number')
@@ -1300,6 +1312,8 @@ $.StrMap = def ('StrMap') ({}) ([$.Type, $.Type]) (StrMap);
 $.Array1 = def ('Array1') ({}) ([$.Type, $.Type]) (Array1);
 
 $.Array2 = def ('Array2') ({}) ([$.Type, $.Type, $.Type]) (Array2);
+
+$.Nullable = def ('Nullable') ({}) ([$.Type, $.Type]) (Nullable);
 
 /*****************************************************************************/
 

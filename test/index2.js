@@ -1753,11 +1753,11 @@ See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Number for in
     eq ($.Null.supertypes) ([]);
   });
 
-///   test ('provides the "Nullable" type constructor', () => {
-///     eq (($.Nullable (a)).name) ('Nullable');
-///     eq (($.Nullable (a)).url) (`https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Nullable`);
-///     eq (($.Nullable (a)).supertypes) ([]);
-///   });
+  test ('provides the "Nullable" type constructor', () => {
+    eq (($.Nullable (a)).name) ('Nullable');
+    eq (($.Nullable (a)).url) (`https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Nullable`);
+    eq (($.Nullable (a)).supertypes) ([]);
+  });
 
   test ('provides the "Number" type', () => {
     eq ($.Number.name) ('Number');
