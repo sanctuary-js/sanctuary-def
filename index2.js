@@ -490,6 +490,20 @@ $.Unknown = Object.assign (Object.create (Type$prototype), {
   format: (outer, inner) => 'Unknown',
 });
 
+$.Inconsistent = Object.assign (Object.create (Type$prototype), {
+  type: 'INCONSISTENT',
+  name: '',
+  url: '',
+  supertypes: [],
+  arity: 0,
+  keys: [],
+  _extractors: {},
+  extractors: {},
+  types: {},
+  _test: K (K (false)),
+  format: (outer, inner) => '???',
+});
+
 $.NullaryType = name => url => supertypes => test => Object.assign (Object.create (Type$prototype), {
   type: 'NULLARY',
   name: name,
@@ -918,7 +932,10 @@ $.Null = Object.assign (
                 ([])
                 (x => Object.prototype.toString.call (x) === '[object Null]'),
   {
-    new: fail => env => x => TK,
+    new: fail => env => x => {
+      if (x === null) return x;
+      fail ([]) (x);
+    },
   }
 );
 

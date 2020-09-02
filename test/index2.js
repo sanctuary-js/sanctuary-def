@@ -2177,19 +2177,19 @@ See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#ValidDate for
 
     eq (testUnaryType ([{x: 1}, {y: 2}, {z: 3}])) ([{x: 1}, {y: 2}, {z: 3}]);
 
-///     throws (() => { testUnaryType ([{x: /xxx/}]); })
-///            (new TypeError (`Invalid value
-/// 
-/// testUnaryType :: Array (StrMap Number) -> Array (StrMap Number)
-///                                ^^^^^^
-///                                  1
-/// 
-/// 1)  /xxx/ :: RegExp
-/// 
-/// The value at position 1 is not a member of ‘Number’.
-/// 
-/// See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Number for information about the Number type.
-/// `));
+    throws (() => { testUnaryType ([{x: /xxx/}]); })
+           (new TypeError (`Invalid value
+
+testUnaryType :: Array (StrMap Number) -> Array (StrMap Number)
+                               ^^^^^^
+                                 1
+
+1)  /xxx/ :: RegExp
+
+The value at position 1 is not a member of ‘Number’.
+
+See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Number for information about the Number type.
+`));
 
     //    testBinaryType :: Either a (StrMap b) -> Either a (StrMap b)
     const testBinaryType =
@@ -2214,58 +2214,58 @@ See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#ValidDate for
 /// `));
   });
 
-///   test ('uses show-like string representations', () => {
-///     //    f :: Null -> Null
-///     const f =
-///     def ('f')
-///         ({})
-///         ([$.Null, $.Null])
-///         (n => n);
-/// 
-///     function Point(x, y) {
-///       this.x = x;
-///       this.y = y;
-///     }
-///     Point.prototype._private = true;
-/// 
-///     const o1 = {id: 1};
-///     const o2 = {id: 2};
-///     o1.ref = o2;
-///     o2.ref = o1;
-/// 
-///     const values = [
-///       [(function() { return arguments; } (1, 2, 3)), 'Arguments'],
-///       [new Boolean (false), ''],
-///       [new Date (0), 'Date'],
-///       [new Date ('XXX'), 'Date'],
-///       [new Number (-0), ''],
-///       [new String (''), ''],
-///       [/x/.exec ('xyz'), 'Array String'],
-///       [(() => { const xs = [1, 2, 3]; xs.z = 0; xs.a = 0; return xs; }) (), 'Array Number'],
-///       [{toString: null}, 'Object, StrMap Null'],
-///       [new Point (0, 0), 'Object, StrMap Number'],
-///       [o1, 'Object, StrMap ???'],
-///     ];
-/// 
-///     values.forEach (pair => {
-///       const x = pair[0];
-///       const types = pair[1];
-///       throws (() => { f (x); })
-///              (new TypeError (`Invalid value
-/// 
-/// f :: Null -> Null
-///      ^^^^
-///       1
-/// 
-/// 1)  ${show (x)} :: ${types.length > 0 ? `${types}` : '(no types)'}
-/// 
-/// The value at position 1 is not a member of ‘Null’.
-/// 
-/// See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Null for information about the Null type.
-/// `));
-///     });
-///   });
-/// 
+  test ('uses show-like string representations', () => {
+    //    f :: Null -> Null
+    const f =
+    def ('f')
+        ({})
+        ([$.Null, $.Null])
+        (n => n);
+
+    function Point(x, y) {
+      this.x = x;
+      this.y = y;
+    }
+    Point.prototype._private = true;
+
+    const o1 = {id: 1};
+    const o2 = {id: 2};
+    o1.ref = o2;
+    o2.ref = o1;
+
+    const values = [
+      [(function() { return arguments; } (1, 2, 3)), 'Arguments'],
+      [new Boolean (false), ''],
+      [new Date (0), 'Date'],
+      [new Date ('XXX'), 'Date'],
+      [new Number (-0), ''],
+      [new String (''), ''],
+      [/x/.exec ('xyz'), 'Array String'],
+      [(() => { const xs = [1, 2, 3]; xs.z = 0; xs.a = 0; return xs; }) (), 'Array Number'],
+      [{toString: null}, 'Object, StrMap Null'],
+      [new Point (0, 0), 'Object, StrMap Number'],
+      [o1, 'Object, StrMap ???'],
+    ];
+
+    values.forEach (pair => {
+      const x = pair[0];
+      const types = pair[1];
+      throws (() => { f (x); })
+             (new TypeError (`Invalid value
+
+f :: Null -> Null
+     ^^^^
+      1
+
+1)  ${show (x)} :: ${types.length > 0 ? `${types}` : '(no types)'}
+
+The value at position 1 is not a member of ‘Null’.
+
+See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Null for information about the Null type.
+`));
+    });
+  });
+
 ///   test ('lists the types of each value without duplicates', () => {
 ///     const env = [$.Array ($.Unknown), $.Number, $.Integer];
 ///     const def = $.create ({checkTypes: true, env});
