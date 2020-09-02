@@ -435,7 +435,7 @@ const satisfactoryTypes = (
   }
 };
 
-const test = $.test = env => t => x => {
+const test = env => t => x => {
   const typeInfo = {name: 'name', constraints: {}, types: [t]};
   return (satisfactoryTypes (env, typeInfo, {}, t, 0, [], [x])).isRight;
 };
@@ -695,7 +695,7 @@ $.Any = Object.assign (
                 ([])
                 (x => true),
   {
-    new: env => x => Right (TK),
+    new: env => x => Right (x),
   }
 );
 
@@ -725,7 +725,7 @@ $.Boolean = Object.assign (
                 ([])
                 (x => typeof x === 'boolean'),
   {
-    new: env => x => Right (TK),
+    new: env => x => Right (x),
   }
 );
 
@@ -1330,6 +1330,8 @@ $.Array2 = def ('Array2') ({}) ([$.Type, $.Type, $.Type]) (Array2);
 $.Nullable = def ('Nullable') ({}) ([$.Type, $.Type]) (Nullable);
 
 $.Pair = def ('Pair') ({}) ([$.Type, $.Type, $.Type]) (Pair);
+
+$.test = def ('test') ({}) ([$.Array ($.Type), $.Type, $.Any, $.Boolean]) (test);
 
 /*****************************************************************************/
 

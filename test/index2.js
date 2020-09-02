@@ -3464,52 +3464,52 @@ See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Number for in
 ///   });
 
 });
-/// 
-/// suite ('test', () => {
-/// 
-///   test ('is a ternary function', () => {
-///     eq (typeof $.test) ('function');
-///     eq ($.test.length) (1);
-///     eq (show ($.test)) ('test :: Array Type -> Type -> Any -> Boolean');
-///   });
-/// 
-///   test ('supports nullary types', () => {
-///     eq ($.test ([]) ($.Number) (null)) (false);
-///     eq ($.test ([]) ($.Number) ('42')) (false);
-///     eq ($.test ([]) ($.Number) (42)) (true);
-///   });
-/// 
-///   test ('supports unary types', () => {
-///     eq ($.test ([]) ($.Array ($.Number)) (null)) (false);
-///     eq ($.test ([]) ($.Array ($.Number)) ('42')) (false);
-///     eq ($.test ([]) ($.Array ($.Number)) ([1, 2, '3'])) (false);
-///     eq ($.test ([]) ($.Array ($.Number)) (['42'])) (false);
-///     eq ($.test ([]) ($.Array ($.Number)) ([])) (true);
-///     eq ($.test ([]) ($.Array ($.Number)) ([1, 2, 3])) (true);
-///   });
-/// 
-///   test ('supports binary types', () => {
-///     eq ($.test ([]) ($.Pair ($.Number) ($.String)) (Pair (42) (42))) (false);
-///     eq ($.test ([]) ($.Pair ($.Number) ($.String)) (Pair ('') (''))) (false);
-///     eq ($.test ([]) ($.Pair ($.Number) ($.String)) (Pair ('') (42))) (false);
-///     eq ($.test ([]) ($.Pair ($.Number) ($.String)) (Pair (42) (''))) (true);
-///   });
-/// 
-///   test ('supports type variables', () => {
-///     eq ($.test ($.env) ($.Array (a)) (null)) (false);
-///     eq ($.test ($.env) ($.Array (a)) ('42')) (false);
-///     eq ($.test ($.env) ($.Array (a)) ([1, 2, '3'])) (false);
-///     eq ($.test ($.env) ($.Array (a)) (['42'])) (true);
-///     eq ($.test ($.env) ($.Array (a)) ([])) (true);
-///     eq ($.test ($.env) ($.Array (a)) ([1, 2, 3])) (true);
-/// 
-///     eq ($.test ($.env) ($.Pair (a) (a)) (Pair ('foo') (42))) (false);
-///     eq ($.test ($.env) ($.Pair (a) (a)) (Pair ('foo') ('bar'))) (true);
-///     eq ($.test ($.env) ($.Pair (a) (b)) (Pair ('foo') (42))) (true);
-///   });
-/// 
-/// });
-/// 
+
+suite ('test', () => {
+
+  test ('is a ternary function', () => {
+    eq (typeof $.test) ('function');
+    eq ($.test.length) (1);
+    eq (show ($.test)) ('test :: Array Type -> Type -> Any -> Boolean');
+  });
+
+  test ('supports nullary types', () => {
+    eq ($.test ([]) ($.Number) (null)) (false);
+    eq ($.test ([]) ($.Number) ('42')) (false);
+    eq ($.test ([]) ($.Number) (42)) (true);
+  });
+
+  test ('supports unary types', () => {
+    eq ($.test ([]) ($.Array ($.Number)) (null)) (false);
+    eq ($.test ([]) ($.Array ($.Number)) ('42')) (false);
+    eq ($.test ([]) ($.Array ($.Number)) ([1, 2, '3'])) (false);
+    eq ($.test ([]) ($.Array ($.Number)) (['42'])) (false);
+    eq ($.test ([]) ($.Array ($.Number)) ([])) (true);
+    eq ($.test ([]) ($.Array ($.Number)) ([1, 2, 3])) (true);
+  });
+
+  test ('supports binary types', () => {
+    eq ($.test ([]) ($.Pair ($.Number) ($.String)) (Pair (42) (42))) (false);
+    eq ($.test ([]) ($.Pair ($.Number) ($.String)) (Pair ('') (''))) (false);
+    eq ($.test ([]) ($.Pair ($.Number) ($.String)) (Pair ('') (42))) (false);
+    eq ($.test ([]) ($.Pair ($.Number) ($.String)) (Pair (42) (''))) (true);
+  });
+
+  test ('supports type variables', () => {
+/// eq ($.test ($.env) ($.Array (a)) (null)) (false);
+/// eq ($.test ($.env) ($.Array (a)) ('42')) (false);
+/// eq ($.test ($.env) ($.Array (a)) ([1, 2, '3'])) (false);
+/// eq ($.test ($.env) ($.Array (a)) (['42'])) (true);
+/// eq ($.test ($.env) ($.Array (a)) ([])) (true);
+/// eq ($.test ($.env) ($.Array (a)) ([1, 2, 3])) (true);
+
+/// eq ($.test ($.env) ($.Pair (a) (a)) (Pair ('foo') (42))) (false);
+/// eq ($.test ($.env) ($.Pair (a) (a)) (Pair ('foo') ('bar'))) (true);
+/// eq ($.test ($.env) ($.Pair (a) (b)) (Pair ('foo') (42))) (true);
+  });
+
+});
+
 /// suite ('NullaryType', () => {
 /// 
 ///   test ('is a ternary function', () => {
@@ -3788,21 +3788,21 @@ suite ('Predicate', () => {
     eq (show ($.Predicate ($.Predicate (a)))) ('(a -> Boolean) -> Boolean');
     eq (show ($.Predicate ($.Predicate ($.Predicate (a))))) ('((a -> Boolean) -> Boolean) -> Boolean');
   });
-/// 
-///   test ('is short for `t => $.Fn (t) ($.Boolean)`', () => {
-///     //    when :: (a -> Boolean) -> (a -> a) -> a -> a
-///     const when =
-///     def ('when')
-///         ({})
-///         ([$.Predicate (a), $.Fn (a) (a), a, a])
-///         (pred => f => x => pred (x) ? f (x) : x);
-/// 
-///     //    abs :: Number -> Number
-///     const abs = when (x => x < 0) (x => -x);
-/// 
-///     eq (abs (42)) (42);
-///     eq (abs (-1)) (1);
-/// 
+
+  test ('is short for `t => $.Fn (t) ($.Boolean)`', () => {
+    //    when :: (a -> Boolean) -> (a -> a) -> a -> a
+    const when =
+    def ('when')
+        ({})
+        ([$.Predicate (a), $.Fn (a) (a), a, a])
+        (pred => f => x => pred (x) ? f (x) : x);
+
+    //    abs :: Number -> Number
+    const abs = when (x => x < 0) (x => -x);
+
+    eq (abs (42)) (42);
+    eq (abs (-1)) (1);
+
 ///     throws (() => { when (x => x) (x => x) ('foo'); })
 ///            (new TypeError (`Invalid value
 /// 
@@ -3816,8 +3816,8 @@ suite ('Predicate', () => {
 /// 
 /// See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Boolean for information about the Boolean type.
 /// `));
-///   });
-/// 
+  });
+
 });
 
 suite ('interoperability', () => {
