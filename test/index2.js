@@ -2267,29 +2267,29 @@ See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Null for info
   });
 
   test ('lists the types of each value without duplicates', () => {
-///     const env = [$.Array ($.Unknown), $.Number, $.Integer];
-///     const def = $.create ({checkTypes: true, env});
-/// 
-///     //    add :: Number -> Number -> Number
-///     const add =
-///     def ('add')
-///         ({})
-///         ([$.Number, $.Number, $.Number])
-///         (x => y => x + y);
-/// 
-///     throws (() => { add ([[1], [2]]); })
-///            (new TypeError (`Invalid value
-/// 
-/// add :: Number -> Number -> Number
-///        ^^^^^^
-///          1
-/// 
-/// 1)  [[1], [2]] :: Array (Array Number), Array (Array Integer)
-/// 
-/// The value at position 1 is not a member of ‘Number’.
-/// 
-/// See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Number for information about the Number type.
-/// `));
+    const env = [$.Array ($.Unknown), $.Number, $.Integer];
+    const def = $.create ({checkTypes: true, env});
+
+    //    add :: Number -> Number -> Number
+    const add =
+    def ('add')
+        ({})
+        ([$.Number, $.Number, $.Number])
+        (x => y => x + y);
+
+    throws (() => { add ([[1], [2]]); })
+           (new TypeError (`Invalid value
+
+add :: Number -> Number -> Number
+       ^^^^^^
+         1
+
+1)  [[1], [2]] :: Array (Array Number), Array (Array Integer)
+
+The value at position 1 is not a member of ‘Number’.
+
+See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Number for information about the Number type.
+`));
   });
 
 ///   test ('supports polymorphism via type variables', () => {

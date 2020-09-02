@@ -1425,7 +1425,7 @@ $.create = opts => name => constraints => types => {
                      const x = input.new
                        (propPath => x => {
                           throw invalidValue (
-                            $.env,
+                            opts.env,
                             typeInfo,
                             0,
                             propPath,
