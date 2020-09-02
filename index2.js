@@ -5,6 +5,7 @@ const assert = require ('assert');
 const {Left, Right} = require ('sanctuary-either');
 const show = require ('sanctuary-show');
 const Z = require ('sanctuary-type-classes');
+const type = require ('sanctuary-type-identifiers');
 
 
 const $ = module.exports = {};
@@ -49,6 +50,13 @@ const r = c => s => strRepeat (c, s.length);
 
 //    _ :: String -> String
 const _ = r (' ');
+
+//    toArray :: Foldable f => f a -> Array a
+const toArray = foldable => (
+  Array.isArray (foldable) ?
+  foldable :
+  Z.reduce ((xs, x) => { xs.push (x); return xs; }, [], foldable)
+);
 
 //    trimTrailingSpaces :: String -> String
 const trimTrailingSpaces = s => s.replace (/[ ]+$/gm, '');
@@ -471,6 +479,8 @@ $.Unknown = Object.assign (Object.create (Type$prototype), {
   supertypes: [],
   arity: 0,
   keys: [],
+  _extractors: {},
+  extractors: {},
   types: {},
   _test: K (K (true)),
   format: (outer, inner) => 'Unknown',
@@ -483,6 +493,8 @@ $.NullaryType = name => url => supertypes => test => Object.assign (Object.creat
   supertypes: supertypes,
   arity: 0,
   keys: [],
+  _extractors: {},
+  extractors: {},
   types: {},
   _test: K (test),
   format: (outer, inner) => outer (name),
@@ -495,6 +507,8 @@ $.UnaryType = name => url => supertypes => test => _1 => $1 => Object.assign (Ob
   supertypes: supertypes,
   arity: 1,
   keys: ['$1'],
+  _extractors: {$1: _1},
+  extractors: {$1: B (toArray) (_1)},
   types: {$1: $1},
   _test: K (test),
   format: (outer, inner) => (
@@ -506,6 +520,15 @@ $.UnaryType = name => url => supertypes => test => _1 => $1 => Object.assign (Ob
   ),
 });
 
+//  fromUnaryType :: Type -> Type -> Type
+const fromUnaryType = t => (
+  $.UnaryType (t.name)
+              (t.url)
+              (t.supertypes)
+              (t._test ([]))
+              (t._extractors.$1)
+);
+
 $.BinaryType = name => url => supertypes => test => _1 => _2 => $1 => $2 => Object.assign (Object.create (Type$prototype), {
   type: 'BINARY',
   name: name,
@@ -513,6 +536,8 @@ $.BinaryType = name => url => supertypes => test => _1 => _2 => $1 => $2 => Obje
   supertypes: supertypes,
   arity: 2,
   keys: ['$1', '$2'],
+  _extractors: {$1: _1, $2: _2},
+  extractors: {$1: B (toArray) (_1), $2: B (toArray) (_2)},
   types: {$1: $1, $2: $2},
   _test: K (test),
   format: (outer, inner) => (
@@ -528,6 +553,16 @@ $.BinaryType = name => url => supertypes => test => _1 => _2 => $1 => $2 => Obje
   ),
 });
 
+//    fromBinaryType :: (Type -> Type -> Type) -> Type -> Type -> Type
+const fromBinaryType = t => (
+  $.BinaryType (t.name)
+               (t.url)
+               (t.supertypes)
+               (t._test ([]))
+               (t._extractors.$1)
+               (t._extractors.$2)
+);
+
 $.TypeVariable = name => Object.assign (Object.create (Type$prototype), {
   type: 'VARIABLE',
   name: name,
@@ -535,6 +570,8 @@ $.TypeVariable = name => Object.assign (Object.create (Type$prototype), {
   supertypes: [],
   arity: 0,
   keys: [],
+  _extractors: {},
+  extractors: {},
   types: {},
   _test: K (K (true)),
   format: (outer, inner) => name,
@@ -558,6 +595,8 @@ $.UnaryTypeVariable = name => $1 => Object.assign (Object.create (Type$prototype
   supertypes: [],
   arity: 1,
   keys: ['$1'],
+  _extractors: {$1: K ([])},
+  extractors: {$1: K ([])},
   types: {$1: $1},
   _test: K (K (true)),
   format: (outer, inner) => (
@@ -576,6 +615,8 @@ $.BinaryTypeVariable = name => $1 => $2 => Object.assign (Object.create (Type$pr
   supertypes: [],
   arity: 2,
   keys: ['$1', '$2'],
+  _extractors: {$1: K ([]), $2: K ([])},
+  extractors: {$1: K ([]), $2: K ([])},
   types: {$1: $1, $2: $2},
   _test: K (K (true)),
   format: (outer, inner) => (
@@ -595,9 +636,11 @@ $.Function = types => Object.assign (Object.create (Type$prototype), {
   type: 'FUNCTION',
   name: '',
   url: '',
-  supertypes: [],
+  supertypes: [$.AnyFunction],
   arity: types.length,
   keys: ['$1', '$2'],
+  _extractors: {$1: K ([]), $2: K ([])},
+  extractors: {$1: K ([]), $2: K ([])},
   types: {$1: types[0], $2: types[1]},
   _test: K (K (true)),
   format: (outer, inner) => (
@@ -620,6 +663,8 @@ $.RecordType = fields => {
     supertypes: [],
     arity: 0,
     keys: [],
+    _extractors: keys.reduce ((extractors, k) => (extractors[k] = x => [x[k]], extractors)),
+    extractors: keys.reduce ((extractors, k) => (extractors[k] = x => [x[k]], extractors)),
     types: keys.reduce ((types, k) => (types[k] = fields[k], types), {}),
     _test: env => x => TK,
     format: (outer, inner) => TK,
@@ -699,6 +744,32 @@ $.Date = Object.assign (
   }
 );
 
+const Descending = $1 => Object.assign (
+  $.UnaryType ('Descending')
+              ('https://github.com/sanctuary-js/sanctuary-def/tree/v0.22.0#Descending')
+              ([])
+              (x => type (x) === 'sanctuary-descending/Descending@1')
+              (I)
+              ($1),
+  {
+    new: env => x => Right (TK),
+  }
+);
+
+const Either = $1 => $2 => Object.assign (
+  $.BinaryType ('Either')
+               ('https://github.com/sanctuary-js/sanctuary-def/tree/v0.22.0#Either')
+               ([])
+               (x => type (x) === 'sanctuary-either/Either@1')
+               (e => e.isLeft ? [e.value] : [])
+               (e => e.isLeft ? [] : [e.value])
+               ($1)
+               ($2),
+  {
+    new: env => x => Right (TK),
+  }
+);
+
 $.Error = Object.assign (
   $.NullaryType ('Error')
                 ('https://github.com/sanctuary-js/sanctuary-def/tree/v0.22.0#Error')
@@ -714,6 +785,18 @@ $.HtmlElement = Object.assign (
                 ('https://github.com/sanctuary-js/sanctuary-def/tree/v0.22.0#HtmlElement')
                 ([])
                 (x => /^\[object HTML.+Element\]$/.test (Object.prototype.toString.call (x))),
+  {
+    new: env => x => Right (TK),
+  }
+);
+
+const Identity_ = $1 => Object.assign (
+  $.UnaryType ('Identity')
+              ('https://github.com/sanctuary-js/sanctuary-def/tree/v0.22.0#Identity')
+              ([])
+              (x => type (x) === 'sanctuary-identity/Identity@1')
+              (I)
+              ($1),
   {
     new: env => x => Right (TK),
   }
@@ -808,7 +891,7 @@ $.Array = $1 => (
   )
 );
 
-$.Fn = $1 => $2 => (
+const Fn = $1 => $2 => (
   Object.assign (
     $.Function ([$1, $2]),
     {
@@ -940,6 +1023,14 @@ const def = $.def = name => constraints => types => {
                 (inputs)
                 (Object.assign (Object.create (null), {_ts: nextInt ()}));
 };
+
+$.Descending = def ('Descending') ({}) ([$.Type, $.Type]) (Descending);
+
+$.Either = def ('Either') ({}) ([$.Type, $.Type, $.Type]) (Either);
+
+$.Fn = def ('Fn') ({}) ([$.Type, $.Type, $.Type]) (Fn);
+
+$.Identity = def ('Identity') ({}) ([$.Type, $.Type]) (Identity_);
 
 $.Predicate = def ('Predicate') ({}) ([$.Type, $.Type]) (Predicate);
 

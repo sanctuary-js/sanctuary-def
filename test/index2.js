@@ -1581,37 +1581,37 @@ See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Number for in
     eq ($.Date.supertypes) ([]);
   });
 
-///   test ('provides the "Descending" type constructor', () => {
-///     eq (typeof $.Descending) ('function');
-///     eq ($.Descending.length) (1);
-///     eq (show ($.Descending)) ('Descending :: Type -> Type');
-///     eq (show ($.Descending (a))) ('Descending a');
-///     eq (($.Descending (a)).name) ('Descending');
-///     eq (($.Descending (a)).url) (`https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Descending`);
-///     eq (($.Descending (a)).supertypes) ([]);
-/// 
-///     const isDescendingString = $.test ([]) ($.Descending ($.String));
-///     eq (isDescendingString (null)) (false);
-///     eq (isDescendingString (Descending (12.34))) (false);
-///     eq (isDescendingString (Descending ('abc'))) (true);
-///   });
-/// 
-///   test ('provides the "Either" type constructor', () => {
-///     eq (typeof $.Either) ('function');
-///     eq ($.Either.length) (1);
-///     eq (show ($.Either)) ('Either :: Type -> Type -> Type');
-///     eq (show ($.Either (a) (b))) ('Either a b');
-///     eq (($.Either (a) (b)).name) ('Either');
-///     eq (($.Either (a) (b)).url) (`https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Either`);
-///     eq (($.Either (a) (b)).supertypes) ([]);
-/// 
-///     const isEitherStringNumber = $.test ([]) ($.Either ($.String) ($.Number));
-///     eq (isEitherStringNumber (null)) (false);
-///     eq (isEitherStringNumber (Left ('abc'))) (true);
-///     eq (isEitherStringNumber (Left (/XXX/))) (false);
-///     eq (isEitherStringNumber (Right (12.34))) (true);
-///     eq (isEitherStringNumber (Right (/XXX/))) (false);
-///   });
+  test ('provides the "Descending" type constructor', () => {
+    eq (typeof $.Descending) ('function');
+    eq ($.Descending.length) (1);
+    eq (show ($.Descending)) ('Descending :: Type -> Type');
+    eq (show ($.Descending (a))) ('Descending a');
+    eq (($.Descending (a)).name) ('Descending');
+    eq (($.Descending (a)).url) (`https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Descending`);
+    eq (($.Descending (a)).supertypes) ([]);
+
+    const isDescendingString = $.test ([]) ($.Descending ($.String));
+    eq (isDescendingString (null)) (false);
+    eq (isDescendingString (Descending (12.34))) (false);
+    eq (isDescendingString (Descending ('abc'))) (true);
+  });
+
+  test ('provides the "Either" type constructor', () => {
+    eq (typeof $.Either) ('function');
+    eq ($.Either.length) (1);
+    eq (show ($.Either)) ('Either :: Type -> Type -> Type');
+    eq (show ($.Either (a) (b))) ('Either a b');
+    eq (($.Either (a) (b)).name) ('Either');
+    eq (($.Either (a) (b)).url) (`https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Either`);
+    eq (($.Either (a) (b)).supertypes) ([]);
+
+    const isEitherStringNumber = $.test ([]) ($.Either ($.String) ($.Number));
+    eq (isEitherStringNumber (null)) (false);
+    eq (isEitherStringNumber (Left ('abc'))) (true);
+    eq (isEitherStringNumber (Left (/XXX/))) (false);
+    eq (isEitherStringNumber (Right (12.34))) (true);
+    eq (isEitherStringNumber (Right (/XXX/))) (false);
+  });
 
   test ('provides the "Error" type', () => {
     eq ($.Error.name) ('Error');
@@ -1619,16 +1619,16 @@ See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Number for in
     eq ($.Error.supertypes) ([]);
   });
 
-///   test ('provides the "Fn" type constructor', () => {
-///     eq (typeof $.Fn) ('function');
-///     eq ($.Fn.length) (1);
-///     eq (show ($.Fn)) ('Fn :: Type -> Type -> Type');
-///     eq (show ($.Fn (a) (b))) ('a -> b');
-///     eq (($.Fn (a) (b)).name) ('');
-///     eq (($.Fn (a) (b)).url) ('');
-///     eq (($.Fn (a) (b)).supertypes) ([$.AnyFunction]);
-///   });
-/// 
+  test ('provides the "Fn" type constructor', () => {
+    eq (typeof $.Fn) ('function');
+    eq ($.Fn.length) (1);
+    eq (show ($.Fn)) ('Fn :: Type -> Type -> Type');
+    eq (show ($.Fn (a) (b))) ('a -> b');
+    eq (($.Fn (a) (b)).name) ('');
+    eq (($.Fn (a) (b)).url) ('');
+    eq (($.Fn (a) (b)).supertypes) ([$.AnyFunction]);
+  });
+
 ///   test ('provides the "Function" type constructor', () => {
 ///     eq (typeof $.Function) ('function');
 ///     eq ($.Function.length) (1);
@@ -1671,21 +1671,21 @@ See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Number for in
     eq ($.HtmlElement.supertypes) ([]);
   });
 
-///   test ('provides the "Identity" type constructor', () => {
-///     eq (typeof $.Identity) ('function');
-///     eq ($.Identity.length) (1);
-///     eq (show ($.Identity)) ('Identity :: Type -> Type');
-///     eq (show ($.Identity (a))) ('Identity a');
-///     eq (($.Identity (a)).name) ('Identity');
-///     eq (($.Identity (a)).url) (`https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Identity`);
-///     eq (($.Identity (a)).supertypes) ([]);
-/// 
-///     const isIdentityString = $.test ([]) ($.Identity ($.String));
-///     eq (isIdentityString (null)) (false);
-///     eq (isIdentityString (Identity (12.34))) (false);
-///     eq (isIdentityString (Identity ('abc'))) (true);
-///   });
-/// 
+  test ('provides the "Identity" type constructor', () => {
+    eq (typeof $.Identity) ('function');
+    eq ($.Identity.length) (1);
+    eq (show ($.Identity)) ('Identity :: Type -> Type');
+    eq (show ($.Identity (a))) ('Identity a');
+    eq (($.Identity (a)).name) ('Identity');
+    eq (($.Identity (a)).url) (`https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Identity`);
+    eq (($.Identity (a)).supertypes) ([]);
+
+    const isIdentityString = $.test ([]) ($.Identity ($.String));
+    eq (isIdentityString (null)) (false);
+    eq (isIdentityString (Identity (12.34))) (false);
+    eq (isIdentityString (Identity ('abc'))) (true);
+  });
+
 ///   test ('provides the "JsMap" type constructor', () => {
 ///     eq (typeof $.JsMap) ('function');
 ///     eq ($.JsMap.length) (1);
