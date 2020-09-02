@@ -417,47 +417,6 @@
     }
   };
 
-  //  _Type :: ... -> Type
-  function _Type(
-    type,       // :: String
-    name,       // :: String
-    url,        // :: String
-    arity,      // :: NonNegativeInteger
-    format,
-    // :: Nullable ((String -> String, String -> String -> String) -> String)
-    supertypes, // :: Array Type
-    test,       // :: Any -> Boolean
-    tuples      // :: Array (Array3 String (a -> Array b) Type)
-  ) {
-    var t = Object.create (Type$prototype);
-    t._test = test;
-    t._extractors = tuples.reduce (function(_extractors, tuple) {
-      _extractors[tuple[0]] = tuple[1];
-      return _extractors;
-    }, {});
-    t.arity = arity;  // number of type parameters
-    t.extractors = Z.map (B (toArray), t._extractors);
-    t.format = format || function(outer, inner) {
-      return Z.reduce (function(s, tuple) {
-        return s +
-               outer (' ') +
-               when (tuple[2].arity > 0)
-                    (parenthesize (outer))
-                    (inner (tuple[0]) (show (tuple[2])));
-      }, outer (name), tuples);
-    };
-    t.keys = tuples.map (function(tuple) { return tuple[0]; });
-    t.name = name;
-    t.supertypes = supertypes;
-    t.type = type;
-    t.types = tuples.reduce (function(types, tuple) {
-      types[tuple[0]] = tuple[2];
-      return types;
-    }, {});
-    t.url = url;
-    return t;
-  }
-
   var BINARY        = 'BINARY';
   var FUNCTION      = 'FUNCTION';
   var INCONSISTENT  = 'INCONSISTENT';
@@ -469,12 +428,32 @@
   var VARIABLE      = 'VARIABLE';
 
   //  Inconsistent :: Type
-  var Inconsistent =
-  _Type (INCONSISTENT, '', '', 0, always2 ('???'), [], K (K (false)), []);
+  var Inconsistent = Object.create (Type$prototype);
+  Inconsistent._test = K (K (false));
+  Inconsistent._extractors = {};
+  Inconsistent.arity = 0;  // number of type parameters
+  Inconsistent.extractors = {};
+  Inconsistent.format = always2 ('???');
+  Inconsistent.keys = [];
+  Inconsistent.name = '';
+  Inconsistent.supertypes = [];
+  Inconsistent.type = INCONSISTENT;
+  Inconsistent.types = {};
+  Inconsistent.url = '';
 
   //  NoArguments :: Type
-  var NoArguments =
-  _Type (NO_ARGUMENTS, '', '', 0, always2 ('()'), [], K (K (true)), []);
+  var NoArguments = Object.create (Type$prototype);
+  NoArguments._test = K (K (true));
+  NoArguments._extractors = {};
+  NoArguments.arity = 0;  // number of type parameters
+  NoArguments.extractors = {};
+  NoArguments.format = always2 ('()');
+  NoArguments.keys = [];
+  NoArguments.name = '';
+  NoArguments.supertypes = [];
+  NoArguments.type = NO_ARGUMENTS;
+  NoArguments.types = {};
+  NoArguments.url = '';
 
   //  arityGte :: NonNegativeInteger -> Type -> Boolean
   function arityGte(n) {
@@ -531,8 +510,18 @@
   //.   - `List (List (List Number))`
   //.   - `List (List (List String))`
   //.   - `...`
-  var Unknown =
-  _Type (UNKNOWN, '', '', 0, always2 ('Unknown'), [], K (K (true)), []);
+  var Unknown = Object.create (Type$prototype);
+  Unknown._test = K (K (true));
+  Unknown._extractors = {};
+  Unknown.arity = 0;  // number of type parameters
+  Unknown.extractors = {};
+  Unknown.format = always2 ('Unknown');
+  Unknown.keys = [];
+  Unknown.name = '';
+  Unknown.supertypes = [];
+  Unknown.type = UNKNOWN;
+  Unknown.types = {};
+  Unknown.url = '';
 
   //# Void :: Type
   //.
@@ -708,14 +697,25 @@
                    (show ((last (tuples))[2]));
     }
 
-    return _Type (FUNCTION,
-                  '',
-                  '',
-                  types.length,
-                  format,
-                  [AnyFunction],
-                  K (K (true)),
-                  tuples);
+    var t = Object.create (Type$prototype);
+    t._test = K (K (true));
+    t._extractors = tuples.reduce (function(_extractors, tuple) {
+      _extractors[tuple[0]] = tuple[1];
+      return _extractors;
+    }, {});
+    t.arity = types.length;  // number of type parameters
+    t.extractors = Z.map (B (toArray), t._extractors);
+    t.format = format;
+    t.keys = tuples.map (function(tuple) { return tuple[0]; });
+    t.name = '';
+    t.supertypes = [AnyFunction];
+    t.type = FUNCTION;
+    t.types = tuples.reduce (function(types, tuple) {
+      types[tuple[0]] = tuple[2];
+      return types;
+    }, {});
+    t.url = '';
+    return t;
   }
 
   //# HtmlElement :: Type
@@ -1588,7 +1588,19 @@
     return function(url) {
       return function(supertypes) {
         return function(test) {
-          return _Type (NULLARY, name, url, 0, null, supertypes, K (test), []);
+          var t = Object.create (Type$prototype);
+          t._test = K (test);
+          t._extractors = {};
+          t.arity = 0;  // number of type parameters
+          t.extractors = {};
+          t.format = function(outer, inner) { return outer (name); };
+          t.keys = [];
+          t.name = name;
+          t.supertypes = supertypes;
+          t.type = NULLARY;
+          t.types = {};
+          t.url = url;
+          return t;
         };
       };
     };
@@ -1681,14 +1693,25 @@
         return function(test) {
           return function(_1) {
             return function($1) {
-              return _Type (UNARY,
-                            name,
-                            url,
-                            1,
-                            null,
-                            supertypes,
-                            K (test),
-                            [['$1', _1, $1]]);
+              var t = Object.create (Type$prototype);
+              t._test = K (test);
+              t._extractors = {$1: _1};
+              t.arity = 1;  // number of type parameters
+              t.extractors = Z.map (B (toArray), t._extractors);
+              t.format = function(outer, inner) {
+                return outer (name) +
+                       outer (' ') +
+                       when ($1.arity > 0)
+                            (parenthesize (outer))
+                            (inner ('$1') (show ($1)));
+              };
+              t.keys = ['$1'];
+              t.name = name;
+              t.supertypes = supertypes;
+              t.type = UNARY;
+              t.types = {$1: $1};
+              t.url = url;
+              return t;
             };
           };
         };
@@ -1809,15 +1832,29 @@
             return function(_2) {
               return function($1) {
                 return function($2) {
-                  return _Type (BINARY,
-                                name,
-                                url,
-                                2,
-                                null,
-                                supertypes,
-                                K (test),
-                                [['$1', _1, $1],
-                                 ['$2', _2, $2]]);
+                  var t = Object.create (Type$prototype);
+                  t._test = K (test);
+                  t._extractors = {$1: _1, $2: _2};
+                  t.arity = 2;  // number of type parameters
+                  t.extractors = Z.map (B (toArray), t._extractors);
+                  t.format = function(outer, inner) {
+                    return outer (name) +
+                           outer (' ') +
+                           when ($1.arity > 0)
+                                (parenthesize (outer))
+                                (inner ('$1') (show ($1))) +
+                           outer (' ') +
+                           when ($2.arity > 0)
+                                (parenthesize (outer))
+                                (inner ('$2') (show ($2)));
+                  };
+                  t.keys = ['$1', '$2'];
+                  t.name = name;
+                  t.supertypes = supertypes;
+                  t.type = BINARY;
+                  t.types = {$1: $1, $2: $2};
+                  t.url = url;
+                  return t;
                 };
               };
             };
@@ -1941,11 +1978,25 @@
       };
     }
 
-    var tuples = keys.map (function(k) {
-      return [k, function(x) { return [x[k]]; }, fields[k]];
-    });
-
-    return _Type (RECORD, '', '', 0, format, [], test, tuples);
+    var t = Object.create (Type$prototype);
+    t._test = test;
+    t._extractors = keys.reduce (function(_extractors, k) {
+      _extractors[k] = function(x) { return [x[k]]; };
+      return _extractors;
+    }, {});
+    t.arity = 0;  // number of type parameters
+    t.extractors = Z.map (B (toArray), t._extractors);
+    t.format = format;
+    t.keys = keys;
+    t.name = '';
+    t.supertypes = [];
+    t.type = RECORD;
+    t.types = keys.reduce (function(types, k) {
+      types[k] = fields[k];
+      return types;
+    }, {});
+    t.url = '';
+    return t;
   }
 
   //# NamedRecordType :: NonEmpty String -> String -> Array Type -> StrMap Type -> Type
@@ -2032,27 +2083,26 @@
             return [k, function(x) { return [x[k]]; }, fields[k]];
           });
 
-          return _Type (RECORD,
-                        name,
-                        url,
-                        0,
-                        format,
-                        supertypes,
-                        test,
-                        tuples);
+          var t = Object.create (Type$prototype);
+          t._test = test;
+          t._extractors = keys.reduce (function(_extractors, k) {
+            _extractors[k] = function(x) { return [x[k]]; };
+            return _extractors;
+          }, {});
+          t.arity = 0;  // number of type parameters
+          t.extractors = Z.map (B (toArray), t._extractors);
+          t.format = format;
+          t.keys = keys;
+          t.name = name;
+          t.supertypes = supertypes;
+          t.type = RECORD;
+          t.types = keys.reduce (function(types, k) {
+            types[k] = fields[k];
+            return types;
+          }, {});
+          t.url = url;
+          return t;
         };
-      };
-    };
-  }
-
-  //  typeVarPred :: NonNegativeInteger -> Array Type -> Any -> Boolean
-  function typeVarPred(arity) {
-    var filter = arityGte (arity);
-    return function(env) {
-      var test2 = _test (env);
-      return function(x) {
-        var test1 = test2 (x);
-        return env.some (function(t) { return filter (t) && test1 (t); });
       };
     };
   }
@@ -2114,9 +2164,25 @@
   //. //   Since there is no type of which all the above values are members, the type-variable constraint has been violated.
   //. ```
   function TypeVariable(name) {
-    var tuples = [];
-    var test = typeVarPred (tuples.length);
-    return _Type (VARIABLE, name, '', 0, always2 (name), [], test, tuples);
+    var t = Object.create (Type$prototype);
+    t._test = (function(env) {
+      var test2 = _test (env);
+      return function(x) {
+        var test1 = test2 (x);
+        return env.some (function(t) { return t.arity >= 0 && test1 (t); });
+      };
+    });
+    t._extractors = {};
+    t.arity = 0;  // number of type parameters
+    t.extractors = Z.map (B (toArray), t._extractors);
+    t.format = always2 (name);
+    t.keys = [];
+    t.name = name;
+    t.supertypes = [];
+    t.type = VARIABLE;
+    t.types = {};
+    t.url = '';
+    return t;
   }
 
   //# UnaryTypeVariable :: String -> Type -> Type
@@ -2167,9 +2233,31 @@
   //. and "inner" types independently.
   function UnaryTypeVariable(name) {
     return function($1) {
-      var tuples = [['$1', K ([]), $1]];
-      var test = typeVarPred (tuples.length);
-      return _Type (VARIABLE, name, '', 1, null, [], test, tuples);
+      var t = Object.create (Type$prototype);
+      t._test = (function(env) {
+        var test2 = _test (env);
+        return function(x) {
+          var test1 = test2 (x);
+          return env.some (function(t) { return t.arity >= 1 && test1 (t); });
+        };
+      });
+      t._extractors = {$1: K ([])};
+      t.arity = 1;  // number of type parameters
+      t.extractors = {$1: K ([])};
+      t.format = function(outer, inner) {
+        return outer (name) +
+               outer (' ') +
+               when ($1.arity > 0)
+                    (parenthesize (outer))
+                    (inner ('$1') (show ($1)));
+      };
+      t.keys = ['$1'];
+      t.name = name;
+      t.supertypes = [];
+      t.type = VARIABLE;
+      t.types = {$1: $1};
+      t.url = '';
+      return t;
     };
   }
 
@@ -2190,10 +2278,35 @@
   function BinaryTypeVariable(name) {
     return function($1) {
       return function($2) {
-        var tuples = [['$1', K ([]), $1],
-                      ['$2', K ([]), $2]];
-        var test = typeVarPred (tuples.length);
-        return _Type (VARIABLE, name, '', 2, null, [], test, tuples);
+        var t = Object.create (Type$prototype);
+        t._test = (function(env) {
+          var test2 = _test (env);
+          return function(x) {
+            var test1 = test2 (x);
+            return env.some (function(t) { return t.arity >= 2 && test1 (t); });
+          };
+        });
+        t._extractors = {$1: K ([]), $2: K ([])};
+        t.arity = 2;  // number of type parameters
+        t.extractors = {$1: K ([]), $2: K ([])};
+        t.format = function(outer, inner) {
+          return outer (name) +
+                 outer (' ') +
+                 when ($1.arity > 0)
+                      (parenthesize (outer))
+                      (inner ('$1') (show ($1))) +
+                 outer (' ') +
+                 when ($2.arity > 0)
+                      (parenthesize (outer))
+                      (inner ('$2') (show ($2)));
+        };
+        t.keys = ['$1', '$2'];
+        t.name = name;
+        t.supertypes = [];
+        t.type = VARIABLE;
+        t.types = {$1: $1, $2: $2};
+        t.url = '';
+        return t;
       };
     };
   }
