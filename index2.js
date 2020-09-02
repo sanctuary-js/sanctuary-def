@@ -1108,6 +1108,42 @@ $.Array = $1 => (
   )
 );
 
+$.Array0 = Object.assign (
+  $.NullaryType ('Array0')
+                ('https://github.com/sanctuary-js/sanctuary-def/tree/v0.22.0#Array0')
+                ([$.Array ($.Unknown)])
+                (xs => xs.length === 0),
+  {
+    new: env => x => Right (TK),
+  }
+);
+
+const Array1 = $1 => Object.assign (
+  $.UnaryType ('Array1')
+              ('https://github.com/sanctuary-js/sanctuary-def/tree/v0.22.0#Array1')
+              ([$.Array ($.Unknown)])
+              (xs => xs.length === 1)
+              (xs => [xs[0]])
+              ($1),
+  {
+    new: env => x => Right (TK),
+  }
+);
+
+const Array2 = $1 => $2 => Object.assign (
+  $.BinaryType ('Array2')
+               ('https://github.com/sanctuary-js/sanctuary-def/tree/v0.22.0#Array2')
+               ([$.Array ($.Unknown)])
+               (xs => xs.length === 2)
+               (xs => [xs[0]])
+               (xs => [xs[1]])
+               ($1)
+               ($2),
+  {
+    new: env => x => Right (x),
+  }
+);
+
 const Fn = $1 => $2 => (
   Object.assign (
     $.Function ([$1, $2]),
@@ -1260,6 +1296,10 @@ $.NonEmpty = def ('NonEmpty') ({}) ([$.Type, $.Type]) (NonEmpty);
 $.Predicate = def ('Predicate') ({}) ([$.Type, $.Type]) (Predicate);
 
 $.StrMap = def ('StrMap') ({}) ([$.Type, $.Type]) (StrMap);
+
+$.Array1 = def ('Array1') ({}) ([$.Type, $.Type]) (Array1);
+
+$.Array2 = def ('Array2') ({}) ([$.Type, $.Type, $.Type]) (Array2);
 
 /*****************************************************************************/
 

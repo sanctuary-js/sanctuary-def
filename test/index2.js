@@ -49,39 +49,39 @@ const b = $.TypeVariable ('b');
 ///     ({})
 ///     ([$.Array (a)])
 ///     (() => []);
-/// 
-/// //    $1 :: a -> Array a
-/// const $1 =
-/// def ('$1')
-///     ({})
-///     ([a, $.Array (a)])
-///     (x => [x]);
-/// 
-/// //    $2 :: a -> a -> Array a
-/// const $2 =
-/// def ('$2')
-///     ({})
-///     ([a, a, $.Array (a)])
-///     (x => y => [x, y]);
-/// 
-/// //    $3 :: a -> a -> a -> Array a
-/// const $3 =
-/// def ('$3')
-///     ({})
-///     ([a, a, a, $.Array (a)])
-///     (x => y => z => [x, y, z]);
-/// 
-/// //    $26 :: a -> a -> a -> a -> a -> a -> a -> a -> a -> a -> a -> a -> a -> a -> a -> a -> a -> a -> a -> a -> a -> a -> a -> a -> a -> a -> Array a
-/// const $26 =
-/// def ('$26')
-///     ({})
-///     ([a, a, a, a, a, a, a, a, a, a, a, a, a, a, a, a, a, a, a, a, a, a, a, a, a, a, $.Array (a)])
-///     (a => b => c => d => e => f => g => h => i => j => k => l => m => n => o => p => q => r => s => t => u => v => w => x => y => z =>
-///        [a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p, q, r, s, t, u, v, w, x, y, z]);
-/// 
-/// 
-/// suite ('env', () => {
-/// 
+
+//    $1 :: a -> Array a
+const $1 =
+def ('$1')
+    ({})
+    ([a, $.Array (a)])
+    (x => [x]);
+
+//    $2 :: a -> a -> Array a
+const $2 =
+def ('$2')
+    ({})
+    ([a, a, $.Array (a)])
+    (x => y => [x, y]);
+
+//    $3 :: a -> a -> a -> Array a
+const $3 =
+def ('$3')
+    ({})
+    ([a, a, a, $.Array (a)])
+    (x => y => z => [x, y, z]);
+
+//    $26 :: a -> a -> a -> a -> a -> a -> a -> a -> a -> a -> a -> a -> a -> a -> a -> a -> a -> a -> a -> a -> a -> a -> a -> a -> a -> a -> Array a
+const $26 =
+def ('$26')
+    ({})
+    ([a, a, a, a, a, a, a, a, a, a, a, a, a, a, a, a, a, a, a, a, a, a, a, a, a, a, $.Array (a)])
+    (a => b => c => d => e => f => g => h => i => j => k => l => m => n => o => p => q => r => s => t => u => v => w => x => y => z =>
+       [a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p, q, r, s, t, u, v, w, x, y, z]);
+
+
+suite ('env', () => {
+
 ///   test ('is an array of types', () => {
 ///     eq ($.env)
 ///        ([$.AnyFunction,
@@ -113,11 +113,11 @@ const b = $.TypeVariable ('b');
 ///          $.TypeClass,
 ///          $.Undefined]);
 ///   });
-/// 
-/// });
-/// 
-/// suite ('create', () => {
-/// 
+
+});
+
+suite ('create', () => {
+
 ///   test ('is a unary function', () => {
 ///     eq (typeof $.create) ('function');
 ///     eq ($.create.length) (1);
@@ -136,8 +136,8 @@ const b = $.TypeVariable ('b');
 /// The value at position 1 is not a member of ‘{ checkTypes :: Boolean, env :: Array Type }’.
 /// `));
 ///   });
-/// 
-/// });
+
+});
 
 suite ('def', () => {
 
@@ -1450,11 +1450,11 @@ See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Number for in
     eq ($.Void.url) (`https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Void`);
     eq ($.Void.supertypes) ([]);
 
-/// const isVoid = $.test ([]) ($.Void);
-/// eq (isVoid (undefined)) (false);
-/// eq (isVoid (null)) (false);
-/// eq (isVoid (NaN)) (false);
-/// eq (isVoid ('')) (false);
+    const isVoid = $.test ([]) ($.Void);
+    eq (isVoid (undefined)) (false);
+    eq (isVoid (null)) (false);
+    eq (isVoid (NaN)) (false);
+    eq (isVoid ('')) (false);
   });
 
   test ('provides the "Any" type', () => {
@@ -1468,11 +1468,11 @@ See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Number for in
     eq ($.AnyFunction.url) (`https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Function`);
     eq ($.AnyFunction.supertypes) ([]);
 
-/// const isAnyFunction = $.test ([]) ($.AnyFunction);
-/// eq (isAnyFunction (null)) (false);
-/// eq (isAnyFunction (Math.abs)) (true);
-/// eq (isAnyFunction (function Identity(x) { this.value = x; })) (true);
-/// eq (isAnyFunction (function* (x) { return x; })) (true);
+    const isAnyFunction = $.test ([]) ($.AnyFunction);
+    eq (isAnyFunction (null)) (false);
+    eq (isAnyFunction (Math.abs)) (true);
+    eq (isAnyFunction (function Identity(x) { this.value = x; })) (true);
+    eq (isAnyFunction (function* (x) { return x; })) (true);
   });
 
   test ('provides the "Arguments" type', () => {
@@ -1487,52 +1487,52 @@ See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Number for in
     eq (($.Array (a)).supertypes) ([]);
   });
 
-///   test ('provides the "Array0" type', () => {
-///     eq ($.Array0.name) ('Array0');
-///     eq ($.Array0.url) (`https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Array0`);
-///     eq ($.Array0.supertypes) ([$.Array ($.Unknown)]);
-/// 
-///     const isEmptyArray = $.test ([]) ($.Array0);
-///     eq (isEmptyArray (null)) (false);
-///     eq (isEmptyArray ([])) (true);
-///     eq (isEmptyArray ([0])) (false);
-///   });
-/// 
-///   test ('provides the "Array1" type constructor', () => {
-///     eq (typeof $.Array1) ('function');
-///     eq ($.Array1.length) (1);
-///     eq (show ($.Array1)) ('Array1 :: Type -> Type');
-///     eq (show ($.Array1 (a))) ('Array1 a');
-///     eq (($.Array1 (a)).name) ('Array1');
-///     eq (($.Array1 (a)).url) (`https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Array1`);
-///     eq (($.Array1 (a)).supertypes) ([$.Array ($.Unknown)]);
-/// 
-///     const isSingletonStringArray = $.test ([]) ($.Array1 ($.String));
-///     eq (isSingletonStringArray (null)) (false);
-///     eq (isSingletonStringArray ([])) (false);
-///     eq (isSingletonStringArray ([0])) (false);
-///     eq (isSingletonStringArray (['x'])) (true);
-///     eq (isSingletonStringArray (['x', 'y'])) (false);
-///   });
-/// 
-///   test ('provides the "Array2" type constructor', () => {
-///     eq (typeof $.Array2) ('function');
-///     eq ($.Array2.length) (1);
-///     eq (show ($.Array2)) ('Array2 :: Type -> Type -> Type');
-///     eq (show ($.Array2 (a) (b))) ('Array2 a b');
-///     eq (($.Array2 (a) (b)).name) ('Array2');
-///     eq (($.Array2 (a) (b)).url) (`https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Array2`);
-///     eq (($.Array2 (a) (b)).supertypes) ([$.Array ($.Unknown)]);
-/// 
-///     //    fst :: Array2 a b -> a
-///     const fst = def ('fst') ({}) ([$.Array2 (a) (b), a]) (array2 => array2[0]);
-/// 
-///     //    snd :: Array2 a b -> b
-///     const snd = def ('snd') ({}) ([$.Array2 (a) (b), b]) (array2 => array2[1]);
-/// 
-///     eq (fst (['foo', 42])) ('foo');
-///     eq (snd (['foo', 42])) (42);
-/// 
+  test ('provides the "Array0" type', () => {
+    eq ($.Array0.name) ('Array0');
+    eq ($.Array0.url) (`https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Array0`);
+    eq ($.Array0.supertypes) ([$.Array ($.Unknown)]);
+
+    const isEmptyArray = $.test ([]) ($.Array0);
+    eq (isEmptyArray (null)) (false);
+    eq (isEmptyArray ([])) (true);
+    eq (isEmptyArray ([0])) (false);
+  });
+
+  test ('provides the "Array1" type constructor', () => {
+    eq (typeof $.Array1) ('function');
+    eq ($.Array1.length) (1);
+    eq (show ($.Array1)) ('Array1 :: Type -> Type');
+    eq (show ($.Array1 (a))) ('Array1 a');
+    eq (($.Array1 (a)).name) ('Array1');
+    eq (($.Array1 (a)).url) (`https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Array1`);
+    eq (($.Array1 (a)).supertypes) ([$.Array ($.Unknown)]);
+
+    const isSingletonStringArray = $.test ([]) ($.Array1 ($.String));
+    eq (isSingletonStringArray (null)) (false);
+    eq (isSingletonStringArray ([])) (false);
+    eq (isSingletonStringArray ([0])) (false);
+    eq (isSingletonStringArray (['x'])) (true);
+    eq (isSingletonStringArray (['x', 'y'])) (false);
+  });
+
+  test ('provides the "Array2" type constructor', () => {
+    eq (typeof $.Array2) ('function');
+    eq ($.Array2.length) (1);
+    eq (show ($.Array2)) ('Array2 :: Type -> Type -> Type');
+    eq (show ($.Array2 (a) (b))) ('Array2 a b');
+    eq (($.Array2 (a) (b)).name) ('Array2');
+    eq (($.Array2 (a) (b)).url) (`https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Array2`);
+    eq (($.Array2 (a) (b)).supertypes) ([$.Array ($.Unknown)]);
+
+    //    fst :: Array2 a b -> a
+    const fst = def ('fst') ({}) ([$.Array2 (a) (b), a]) (array2 => array2[0]);
+
+    //    snd :: Array2 a b -> b
+    const snd = def ('snd') ({}) ([$.Array2 (a) (b), b]) (array2 => array2[1]);
+
+    eq (fst (['foo', 42])) ('foo');
+    eq (snd (['foo', 42])) (42);
+
 ///     throws (() => { fst (['foo']); })
 ///            (new TypeError (`Invalid value
 /// 
@@ -1546,7 +1546,7 @@ See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Number for in
 /// 
 /// See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Array2 for information about the Array2 type constructor.
 /// `));
-///   });
+  });
 
   test ('provides the "Boolean" type', () => {
     eq ($.Boolean.name) ('Boolean');
