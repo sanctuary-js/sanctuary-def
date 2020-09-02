@@ -842,7 +842,15 @@ const Either = $1 => $2 => Object.assign (
                ($1)
                ($2),
   {
-    new: fail => env => x => x,
+    new: fail => env => x => {
+      if (type (x) !== 'sanctuary-either/Either@1') fail ([]) (x);
+      if (x.isLeft) {
+        $1.new (propPath => fail (['$1', ...propPath])) (env) (x.value);
+      } else {
+        $2.new (propPath => fail (['$2', ...propPath])) (env) (x.value);
+      }
+      return x;
+    },
   }
 );
 
@@ -1065,7 +1073,10 @@ $.Integer = Object.assign (
                 ([$.ValidNumber])
                 (x => Math.floor (x) === x && x >= MIN_SAFE_INTEGER && x <= MAX_SAFE_INTEGER),
   {
-    new: fail => env => x => TK,
+    new: fail => env => x => {
+      if (Math.floor (x) === x && x >= MIN_SAFE_INTEGER && x <= MAX_SAFE_INTEGER) return x;
+      fail ([]) (x);
+    },
   }
 );
 
@@ -1173,7 +1184,7 @@ $.String = Object.assign (
                 (x => typeof x === 'string'),
   {
     new: fail => env => x => {
-      if (typeof x !== 'string') TK ([]) (x);
+      if (typeof x !== 'string') fail ([]) (x);
       return x;
     },
   }
@@ -1464,32 +1475,16 @@ const create = opts => name => constraints => types => {
       wrapped.toString = () => signature;
       return wrapped;
     },
-    types[types.length - 1].new (propPath => x => { throw new TypeError ('TK'); })
+    types[types.length - 1].new (propPath => x => {
+      throw invalidValue (
+        opts.env,
+        typeInfo,
+        types.length - 1,
+        propPath,
+        x
+      );
+    })
   ) (Object.assign (Object.create (null), {_ts: nextInt ()}));
-  return reduce (run => input => _env => f => {
-                   const wrapped = _x => {
-                     const env = Object.assign (Object.create (_env), {_ts: nextInt ()});
-                     const x = input.new
-                       (propPath => x => {
-                          throw invalidValue (
-                            opts.env,
-                            typeInfo,
-                            0,
-                            propPath,
-                            x
-                          )
-                        })
-                       (env)
-                       (_x);
-                     return run (env) (f (x));
-                   };
-                   const signature = typeSignature (typeInfo);
-                   wrapped.toString = () => signature;
-                   return wrapped;
-                 })
-                (output.new (propPath => x => { throw new TypeError ('TK'); }))
-                (inputs)
-                (Object.assign (Object.create (null), {_ts: nextInt ()}));
 };
 
 //    defTypes :: NonEmpty (Array Type)

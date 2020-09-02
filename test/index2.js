@@ -2540,44 +2540,44 @@ See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Pair for info
 /// 
 /// See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Array for information about the Array type constructor.
 /// `));
-/// 
-///     //    concatComplex :: Array (Either String Integer) -> Array (Either String Integer) -> Array (Either String Integer)
-///     const concatComplex =
-///     def ('concatComplex')
-///         ({})
-///         ([$.Array ($.Either ($.String) ($.Integer)),
-///           $.Array ($.Either ($.String) ($.Integer)),
-///           $.Array ($.Either ($.String) ($.Integer))])
-///         (xs => ys => [Left (/xxx/)]);
-/// 
-///     throws (() => { concatComplex ([Left (/xxx/), Right (0), Right (0.1), Right (0.2)]); })
-///            (new TypeError (`Invalid value
-/// 
-/// concatComplex :: Array (Either String Integer) -> Array (Either String Integer) -> Array (Either String Integer)
-///                                ^^^^^^
-///                                  1
-/// 
-/// 1)  /xxx/ :: RegExp
-/// 
-/// The value at position 1 is not a member of ‘String’.
-/// 
-/// See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#String for information about the String type.
-/// `));
-/// 
-///     throws (() => { concatComplex ([Left ('abc'), Right (0), Right (0.1), Right (0.2)]); })
-///            (new TypeError (`Invalid value
-/// 
-/// concatComplex :: Array (Either String Integer) -> Array (Either String Integer) -> Array (Either String Integer)
-///                                       ^^^^^^^
-///                                          1
-/// 
-/// 1)  0.1 :: Number
-/// 
-/// The value at position 1 is not a member of ‘Integer’.
-/// 
-/// See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Integer for information about the Integer type.
-/// `));
-/// 
+
+    //    concatComplex :: Array (Either String Integer) -> Array (Either String Integer) -> Array (Either String Integer)
+    const concatComplex =
+    def ('concatComplex')
+        ({})
+        ([$.Array ($.Either ($.String) ($.Integer)),
+          $.Array ($.Either ($.String) ($.Integer)),
+          $.Array ($.Either ($.String) ($.Integer))])
+        (xs => ys => [Left (/xxx/)]);
+
+    throws (() => { concatComplex ([Left (/xxx/), Right (0), Right (0.1), Right (0.2)]); })
+           (new TypeError (`Invalid value
+
+concatComplex :: Array (Either String Integer) -> Array (Either String Integer) -> Array (Either String Integer)
+                               ^^^^^^
+                                 1
+
+1)  /xxx/ :: RegExp
+
+The value at position 1 is not a member of ‘String’.
+
+See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#String for information about the String type.
+`));
+
+    throws (() => { concatComplex ([Left ('abc'), Right (0), Right (0.1), Right (0.2)]); })
+           (new TypeError (`Invalid value
+
+concatComplex :: Array (Either String Integer) -> Array (Either String Integer) -> Array (Either String Integer)
+                                      ^^^^^^^
+                                         1
+
+1)  0.1 :: Number
+
+The value at position 1 is not a member of ‘Integer’.
+
+See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Integer for information about the Integer type.
+`));
+
 ///     throws (() => { concatComplex ([]) ([Left (/xxx/), Right (0), Right (0.1), Right (0.2)]); })
 ///            (new TypeError (`Invalid value
 /// 
