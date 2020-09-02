@@ -486,6 +486,21 @@ $.Unknown = Object.assign (Object.create (Type$prototype), {
   format: (outer, inner) => 'Unknown',
 });
 
+const Unchecked = s => Object.assign (Object.create (Type$prototype), {
+  type: 'NULLARY',
+  name: '',
+  url: '',
+  supertypes: [],
+  arity: 0,
+  keys: [],
+  _extractors: {},
+  extractors: {},
+  types: {},
+  _test: K (K (true)),
+  format: (outer, inner) => s,
+  new: fail => env => x => x,
+});
+
 $.Inconsistent = Object.assign (Object.create (Type$prototype), {
   type: 'INCONSISTENT',
   name: '',
@@ -1415,7 +1430,7 @@ $.env = [
   $.Undefined,
 ];
 
-$.create = opts => name => constraints => types => {
+const create = opts => name => constraints => types => {
   const typeInfo = {name: name, constraints: constraints, types: types};
   const [output, ...inputs] = Z.reverse (types);
 
@@ -1445,7 +1460,18 @@ $.create = opts => name => constraints => types => {
                 (Object.assign (Object.create (null), {_ts: nextInt ()}));
 };
 
-const def = $.def = $.create ({checkTypes: true, env: $.env});
+//    defTypes :: NonEmpty (Array Type)
+const defTypes = [
+  $.String,
+  StrMap ($.Array ($.TypeClass)),
+  NonEmpty ($.Array ($.Type)),
+  $.AnyFunction,
+  $.AnyFunction,
+];
+
+const def = $.def = create ({checkTypes: true, env: $.env});
+
+$.create = def ('create') ({}) ([RecordType ({checkTypes: $.Boolean, env: $.Array ($.Type)}), Unchecked (joinWith (' -> ', Z.map (show, defTypes)))]) (create);
 
 $.Descending = def ('Descending') ({}) ([$.Type, $.Type]) (Descending);
 

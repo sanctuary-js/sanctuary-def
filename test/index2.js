@@ -33,16 +33,15 @@ const curry3 = f => x => y => z => f (x, y, z);
 const singleton = k => v => { const m = {}; m[k] = v; return m; };
 
 
-const def = $.def;
-/// const def = $.create ({checkTypes: true, env: $.env});
-/// 
+const def = $.create ({checkTypes: true, env: $.env});
+
 const a = $.TypeVariable ('a');
 const b = $.TypeVariable ('b');
-/// const c = $.TypeVariable ('c');
-/// const d = $.TypeVariable ('d');
-/// const f = $.UnaryTypeVariable ('f');
-/// const m = $.UnaryTypeVariable ('m');
-/// 
+const c = $.TypeVariable ('c');
+const d = $.TypeVariable ('d');
+const f = $.UnaryTypeVariable ('f');
+const m = $.UnaryTypeVariable ('m');
+
 /// //    $0 :: () -> Array a
 /// const $0 =
 /// def ('$0')
@@ -118,24 +117,24 @@ suite ('env', () => {
 
 suite ('create', () => {
 
-///   test ('is a unary function', () => {
-///     eq (typeof $.create) ('function');
-///     eq ($.create.length) (1);
-///   });
-/// 
-///   test ('type checks its arguments', () => {
-///     throws (() => { $.create (true); })
-///            (new TypeError (`Invalid value
-/// 
-/// create :: { checkTypes :: Boolean, env :: Array Type } -> String -> StrMap (Array TypeClass) -> NonEmpty (Array Type) -> Function -> Function
-///           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-///                                1
-/// 
-/// 1)  true :: Boolean
-/// 
-/// The value at position 1 is not a member of ‘{ checkTypes :: Boolean, env :: Array Type }’.
-/// `));
-///   });
+  test ('is a unary function', () => {
+    eq (typeof $.create) ('function');
+    eq ($.create.length) (1);
+  });
+
+  test ('type checks its arguments', () => {
+    throws (() => { $.create (true); })
+           (new TypeError (`Invalid value
+
+create :: { checkTypes :: Boolean, env :: Array Type } -> String -> StrMap (Array TypeClass) -> NonEmpty (Array Type) -> Function -> Function
+          ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                               1
+
+1)  true :: Boolean
+
+The value at position 1 is not a member of ‘{ checkTypes :: Boolean, env :: Array Type }’.
+`));
+  });
 
 });
 
