@@ -518,20 +518,20 @@ See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Number for in
         ([a, $.Array ($.Array (a)), a])
         (x => y => x);
 
-/// //    ab02e :: a -> b -> Array (Array (Either a b)) -> a
-/// const ab02e =
-/// def ('ab02e')
-///     ({})
-///     ([a, b, $.Array ($.Array ($.Either (a) (b))), a])
-///     (x => y => z => x);
+    //    ab02e :: a -> b -> Array (Array (Either a b)) -> a
+    const ab02e =
+    def ('ab02e')
+        ({})
+        ([a, b, $.Array ($.Array ($.Either (a) (b))), a])
+        (x => y => z => x);
 
-///     //    ab0e21 :: a -> b -> Either (Array (Array a)) (Array b) -> a
-///     const ab0e21 =
-///     def ('ab0e21')
-///         ({})
-///         ([a, b, $.Either ($.Array ($.Array (a))) ($.Array (b)), a])
-///         (x => y => z => x);
-/// 
+    //    ab0e21 :: a -> b -> Either (Array (Array a)) (Array b) -> a
+    const ab0e21 =
+    def ('ab0e21')
+        ({})
+        ([a, b, $.Either ($.Array ($.Array (a))) ($.Array (b)), a])
+        (x => y => z => x);
+
 ///     throws (() => { a00 (1) ('a'); })
 ///            (new TypeError (`Type-variable constraint violation
 /// 
@@ -981,87 +981,87 @@ See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Number for in
 /// Since there is no type of which all the above values are members, the type-variable constraint has been violated.
 /// `));
 ///   });
-/// 
-///   test ('supports anonymous record types', () => {
-///     eq (typeof $.RecordType) ('function');
-///     eq ($.RecordType.length) (1);
-///     eq (show ($.RecordType)) ('RecordType :: StrMap Type -> Type');
-///     eq (show ($.RecordType ({}))) ('{}');
-///     eq (show ($.RecordType ({x: $.Number}))) ('{ x :: Number }');
-///     eq (show ($.RecordType ({x: $.Number, y: $.Number}))) ('{ x :: Number, y :: Number }');
-///     eq (show ($.RecordType ({_ABC: $.Number, $123: $.Number}))) ('{ $123 :: Number, _ABC :: Number }');
-///     eq (show ($.RecordType ({0: $.Number, 1: $.Number}))) ('{ "0" :: Number, "1" :: Number }');
-///     eq (show ($.RecordType ({'foo-bar': $.Number}))) ('{ "foo-bar" :: Number }');
-///     eq (show ($.RecordType ({'foo bar': $.Number}))) ('{ "foo bar" :: Number }');
-///     eq (show ($.RecordType ({'x "y" z': $.Number}))) ('{ "x \\"y\\" z" :: Number }');
-/// 
-///     const pred = $.test ([]) ($.RecordType ({x: $.Number}));
-/// 
-///     //  Own properties:
-///     eq (pred ({x: 0})) (true);
-///     eq (pred (Object.defineProperty ({}, 'x', {value: 0, enumerable: true}))) (true);
-///     eq (pred (Object.defineProperty ({}, 'x', {value: 0, enumerable: false}))) (false);
-/// 
-///     //  Inherited properties:
-///     eq (pred (Object.create ({x: 0}))) (true);
-///     eq (pred (Object.create (Object.defineProperty ({}, 'x', {value: 0, enumerable: true})))) (true);
-///     eq (pred (Object.create (Object.defineProperty ({}, 'x', {value: 0, enumerable: false})))) (false);
-/// 
-///     //    Empty :: Type
-///     const Empty = $.RecordType ({});
-/// 
-///     eq ($.test ([]) (Empty) (null)) (false);
-///     eq ($.test ([]) (Empty) (undefined)) (false);
-///     eq ($.test ([]) (Empty) (false)) (true);
-///     eq ($.test ([]) (Empty) (12.34)) (true);
-///     eq ($.test ([]) (Empty) ('xyz')) (true);
-///     eq ($.test ([]) (Empty) (new Boolean (true))) (true);
-///     eq ($.test ([]) (Empty) (new Number (12.34))) (true);
-///     eq ($.test ([]) (Empty) (new String ('xyz'))) (true);
-///     eq ($.test ([]) (Empty) ([])) (true);
-///     eq ($.test ([]) (Empty) ({})) (true);
-/// 
-///     //    Point :: Type
-///     const Point = $.RecordType ({x: $.Number, y: $.Number});
-/// 
-///     //    Line :: Type
-///     const Line = $.RecordType ({start: Point, end: Point});
-/// 
-///     //    dist :: Point -> Point -> Number
-///     const dist =
-///     def ('dist')
-///         ({})
-///         ([Point, Point, $.Number])
-///         (p => q => Math.sqrt (Math.pow (p.x - q.x, 2) +
-///                               Math.pow (p.y - q.y, 2)));
-/// 
-///     //    length :: Line -> Number
-///     const length =
-///     def ('length')
-///         ({})
-///         ([Line, $.Number])
-///         (line => dist (line.start) (line.end));
-/// 
-///     eq (dist ({x: 0, y: 0}) ({x: 0, y: 0})) (0);
-///     eq (dist ({x: 0, y: 0}) ({x: 0, y: 0, color: 'red'})) (0);
-///     eq (dist ({x: 1, y: 1}) ({x: 4, y: 5})) (5);
-///     eq (dist ({x: 1, y: 1}) ({x: 4, y: 5, color: 'red'})) (5);
-/// 
-///     eq (length ({start: {x: 1, y: 1}, end: {x: 4, y: 5}})) (5);
-///     eq (length ({start: {x: 1, y: 1}, end: {x: 4, y: 5, color: 'red'}})) (5);
-/// 
-///     throws (() => { dist (null); })
-///            (new TypeError (`Invalid value
-/// 
-/// dist :: { x :: Number, y :: Number } -> { x :: Number, y :: Number } -> Number
-///         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-///                      1
-/// 
-/// 1)  null :: Null
-/// 
-/// The value at position 1 is not a member of ‘{ x :: Number, y :: Number }’.
-/// `));
-/// 
+
+  test ('supports anonymous record types', () => {
+    eq (typeof $.RecordType) ('function');
+    eq ($.RecordType.length) (1);
+    eq (show ($.RecordType)) ('RecordType :: StrMap Type -> Type');
+    eq (show ($.RecordType ({}))) ('{}');
+    eq (show ($.RecordType ({x: $.Number}))) ('{ x :: Number }');
+    eq (show ($.RecordType ({x: $.Number, y: $.Number}))) ('{ x :: Number, y :: Number }');
+    eq (show ($.RecordType ({_ABC: $.Number, $123: $.Number}))) ('{ $123 :: Number, _ABC :: Number }');
+    eq (show ($.RecordType ({0: $.Number, 1: $.Number}))) ('{ "0" :: Number, "1" :: Number }');
+    eq (show ($.RecordType ({'foo-bar': $.Number}))) ('{ "foo-bar" :: Number }');
+    eq (show ($.RecordType ({'foo bar': $.Number}))) ('{ "foo bar" :: Number }');
+    eq (show ($.RecordType ({'x "y" z': $.Number}))) ('{ "x \\"y\\" z" :: Number }');
+
+    const pred = $.test ([]) ($.RecordType ({x: $.Number}));
+
+    //  Own properties:
+    eq (pred ({x: 0})) (true);
+    eq (pred (Object.defineProperty ({}, 'x', {value: 0, enumerable: true}))) (true);
+    eq (pred (Object.defineProperty ({}, 'x', {value: 0, enumerable: false}))) (false);
+
+    //  Inherited properties:
+    eq (pred (Object.create ({x: 0}))) (true);
+    eq (pred (Object.create (Object.defineProperty ({}, 'x', {value: 0, enumerable: true})))) (true);
+    eq (pred (Object.create (Object.defineProperty ({}, 'x', {value: 0, enumerable: false})))) (false);
+
+    //    Empty :: Type
+    const Empty = $.RecordType ({});
+
+    eq ($.test ([]) (Empty) (null)) (false);
+    eq ($.test ([]) (Empty) (undefined)) (false);
+    eq ($.test ([]) (Empty) (false)) (true);
+    eq ($.test ([]) (Empty) (12.34)) (true);
+    eq ($.test ([]) (Empty) ('xyz')) (true);
+    eq ($.test ([]) (Empty) (new Boolean (true))) (true);
+    eq ($.test ([]) (Empty) (new Number (12.34))) (true);
+    eq ($.test ([]) (Empty) (new String ('xyz'))) (true);
+    eq ($.test ([]) (Empty) ([])) (true);
+    eq ($.test ([]) (Empty) ({})) (true);
+
+    //    Point :: Type
+    const Point = $.RecordType ({x: $.Number, y: $.Number});
+
+    //    Line :: Type
+    const Line = $.RecordType ({start: Point, end: Point});
+
+    //    dist :: Point -> Point -> Number
+    const dist =
+    def ('dist')
+        ({})
+        ([Point, Point, $.Number])
+        (p => q => Math.sqrt (Math.pow (p.x - q.x, 2) +
+                              Math.pow (p.y - q.y, 2)));
+
+    //    length :: Line -> Number
+    const length =
+    def ('length')
+        ({})
+        ([Line, $.Number])
+        (line => dist (line.start) (line.end));
+
+    eq (dist ({x: 0, y: 0}) ({x: 0, y: 0})) (0);
+    eq (dist ({x: 0, y: 0}) ({x: 0, y: 0, color: 'red'})) (0);
+    eq (dist ({x: 1, y: 1}) ({x: 4, y: 5})) (5);
+    eq (dist ({x: 1, y: 1}) ({x: 4, y: 5, color: 'red'})) (5);
+
+    eq (length ({start: {x: 1, y: 1}, end: {x: 4, y: 5}})) (5);
+    eq (length ({start: {x: 1, y: 1}, end: {x: 4, y: 5, color: 'red'}})) (5);
+
+    throws (() => { dist (null); })
+           (new TypeError (`Invalid value
+
+dist :: { x :: Number, y :: Number } -> { x :: Number, y :: Number } -> Number
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                     1
+
+1)  null :: Null
+
+The value at position 1 is not a member of ‘{ x :: Number, y :: Number }’.
+`));
+
 ///     throws (() => { dist ({}); })
 ///            (new TypeError (`Invalid value
 /// 
@@ -1256,8 +1256,8 @@ See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Number for in
 /// 
 /// The value at position 1 is not a member of ‘{ length :: a }’.
 /// `));
-///   });
-/// 
+  });
+
 ///   test ('supports named record types', () => {
 ///     eq (typeof $.NamedRecordType) ('function');
 ///     eq ($.NamedRecordType.length) (1);

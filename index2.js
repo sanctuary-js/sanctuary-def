@@ -658,7 +658,7 @@ $.Function = types => Object.assign (Object.create (Type$prototype), {
   ),
 });
 
-$.RecordType = fields => {
+const RecordType = fields => {
   const keys = (Object.keys (fields)).sort ();
   return Object.assign (Object.create (Type$prototype), {
     type: 'RECORD',
@@ -666,12 +666,35 @@ $.RecordType = fields => {
     url: '',
     supertypes: [],
     arity: 0,
-    keys: [],
-    _extractors: keys.reduce ((extractors, k) => (extractors[k] = x => [x[k]], extractors)),
-    extractors: keys.reduce ((extractors, k) => (extractors[k] = x => [x[k]], extractors)),
+    keys: keys,
+    _extractors: keys.reduce ((extractors, k) => (extractors[k] = x => [x[k]], extractors), {}),
+    extractors: keys.reduce ((extractors, k) => (extractors[k] = x => [x[k]], extractors), {}),
     types: keys.reduce ((types, k) => (types[k] = fields[k], types), {}),
-    _test: env => x => TK,
-    format: (outer, inner) => TK,
+    _test: env => x => {
+      if (x == null) return false;
+      const missing = {};
+      keys.forEach (k => { missing[k] = k; });
+      for (const k in x) delete missing[k];
+      return isEmpty (missing);
+    },
+    format: (outer, inner) => {
+      if (isEmpty (keys)) return outer ('{}');
+      const reprs = Z.map (k => {
+        const t = fields[k];
+        return outer (' ') +
+               outer (/^(?!\d)[$\w]+$/.test (k) ? k : show (k)) +
+               outer (' :: ') +
+               inner (k) (show (t));
+      }, keys);
+      return wrap (outer ('{')) (outer (' }')) (joinWith (outer (','), reprs));
+    },
+    new: fail => env => x => {
+      if (x == null) fail ([]) (x);
+      keys.forEach (k => {
+        fields[k].new (propPath => fail ([k, ...propPath])) (env) (x[k]);
+      });
+      return x;
+    },
   });
 };
 
@@ -1357,6 +1380,8 @@ $.NonEmpty = def ('NonEmpty') ({}) ([$.Type, $.Type]) (NonEmpty);
 $.Predicate = def ('Predicate') ({}) ([$.Type, $.Type]) (Predicate);
 
 $.StrMap = def ('StrMap') ({}) ([$.Type, $.Type]) (StrMap);
+
+$.RecordType = def ('RecordType') ({}) ([$.StrMap ($.Type), $.Type]) (RecordType);
 
 $.Array1 = def ('Array1') ({}) ([$.Type, $.Type]) (Array1);
 
