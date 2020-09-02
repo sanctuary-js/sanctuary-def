@@ -81,6 +81,7 @@ const types_ = x => {
     case '[object Array]':  return ['Array'];
     case '[object Number]': return ['Number'];
     case '[object String]': return ['String'];
+    case '[object Object]': return ['Object'];
     default:                throw new TypeError ('Unknown type');
   }
 };
@@ -770,7 +771,7 @@ const Either = $1 => $2 => Object.assign (
                ($1)
                ($2),
   {
-    new: env => x => Right (TK),
+    new: env => x => Right (x),
   }
 );
 
@@ -1052,6 +1053,18 @@ $.RegexFlags = Object.assign (
   }
 );
 
+const StrMap = $1 => Object.assign (
+  $.UnaryType ('StrMap')
+              ('https://github.com/sanctuary-js/sanctuary-def/tree/v0.22.0#StrMap')
+              ([$.Object])
+              (K (true))
+              (I)
+              ($1),
+  {
+    new: env => x => Right (x),
+  }
+);
+
 $.Type = Object.assign (
   $.NullaryType ('Type')
                 ('https://github.com/sanctuary-js/sanctuary-def/tree/v0.22.0#Type')
@@ -1245,6 +1258,8 @@ $.Maybe = def ('Maybe') ({}) ([$.Type, $.Type]) (Maybe);
 $.NonEmpty = def ('NonEmpty') ({}) ([$.Type, $.Type]) (NonEmpty);
 
 $.Predicate = def ('Predicate') ({}) ([$.Type, $.Type]) (Predicate);
+
+$.StrMap = def ('StrMap') ({}) ([$.Type, $.Type]) (StrMap);
 
 /*****************************************************************************/
 

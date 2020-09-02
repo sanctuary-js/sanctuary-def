@@ -2094,50 +2094,50 @@ See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Number for in
     eq (isRegexFlags ('y')) (false);
   });
 
-///   test ('provides the "StrMap" type constructor', () => {
-///     eq (typeof $.StrMap) ('function');
-///     eq ($.StrMap.length) (1);
-///     eq (show ($.StrMap)) ('StrMap :: Type -> Type');
-///     eq (show ($.StrMap (a))) ('StrMap a');
-///     eq (($.StrMap (a)).name) ('StrMap');
-///     eq (($.StrMap (a)).url) (`https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#StrMap`);
-///     eq (($.StrMap (a)).supertypes) ([$.Object]);
-/// 
-///     //    id :: a -> a
-///     const id =
-///     def ('id')
-///         ({})
-///         ([a, a])
-///         (x => x);
-/// 
-///     //    keys :: StrMap a -> Array String
-///     const keys =
-///     def ('keys')
-///         ({})
-///         ([$.StrMap (a), $.Array ($.String)])
-///         (m => (Object.keys (m)).sort ());
-/// 
-///     //    values :: StrMap a -> Array a
-///     const values =
-///     def ('values')
-///         ({})
-///         ([$.StrMap (a), $.Array (a)])
-///         (m => Z.map (k => m[k], keys (m)));
-/// 
-///     const o = Object.create (null);
-///     o.x = 1;
-///     o.y = 2;
-///     o.z = 3;
-/// 
-///     eq (id ({})) ({});
-///     eq (id ({x: 1, y: 2, z: 3})) ({x: 1, y: 2, z: 3});
-///     eq (id (o)) ({x: 1, y: 2, z: 3});
-///     eq (id ({a: 1, b: 'XXX'})) ({a: 1, b: 'XXX'});
-/// 
-///     eq (keys ({})) ([]);
-///     eq (keys ({x: 1, y: 2, z: 3})) (['x', 'y', 'z']);
-///     eq (keys (o)) (['x', 'y', 'z']);
-/// 
+  test ('provides the "StrMap" type constructor', () => {
+    eq (typeof $.StrMap) ('function');
+    eq ($.StrMap.length) (1);
+    eq (show ($.StrMap)) ('StrMap :: Type -> Type');
+    eq (show ($.StrMap (a))) ('StrMap a');
+    eq (($.StrMap (a)).name) ('StrMap');
+    eq (($.StrMap (a)).url) (`https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#StrMap`);
+    eq (($.StrMap (a)).supertypes) ([$.Object]);
+
+    //    id :: a -> a
+    const id =
+    def ('id')
+        ({})
+        ([a, a])
+        (x => x);
+
+    //    keys :: StrMap a -> Array String
+    const keys =
+    def ('keys')
+        ({})
+        ([$.StrMap (a), $.Array ($.String)])
+        (m => (Object.keys (m)).sort ());
+
+    //    values :: StrMap a -> Array a
+    const values =
+    def ('values')
+        ({})
+        ([$.StrMap (a), $.Array (a)])
+        (m => Z.map (k => m[k], keys (m)));
+
+    const o = Object.create (null);
+    o.x = 1;
+    o.y = 2;
+    o.z = 3;
+
+    eq (id ({})) ({});
+    eq (id ({x: 1, y: 2, z: 3})) ({x: 1, y: 2, z: 3});
+    eq (id (o)) ({x: 1, y: 2, z: 3});
+    eq (id ({a: 1, b: 'XXX'})) ({a: 1, b: 'XXX'});
+
+    eq (keys ({})) ([]);
+    eq (keys ({x: 1, y: 2, z: 3})) (['x', 'y', 'z']);
+    eq (keys (o)) (['x', 'y', 'z']);
+
 ///     throws (() => { keys ({a: 1, b: 'XXX'}); })
 ///            (new TypeError (`Type-variable constraint violation
 /// 
@@ -2150,11 +2150,11 @@ See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Number for in
 /// 
 /// Since there is no type of which all the above values are members, the type-variable constraint has been violated.
 /// `));
-/// 
-///     eq (values ({})) ([]);
-///     eq (values ({x: 1, y: 2, z: 3})) ([1, 2, 3]);
-///     eq (values (o)) ([1, 2, 3]);
-/// 
+
+    eq (values ({})) ([]);
+    eq (values ({x: 1, y: 2, z: 3})) ([1, 2, 3]);
+    eq (values (o)) ([1, 2, 3]);
+
 ///     throws (() => { values ({a: 1, b: 'XXX'}); })
 ///            (new TypeError (`Type-variable constraint violation
 /// 
@@ -2167,16 +2167,16 @@ See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Number for in
 /// 
 /// Since there is no type of which all the above values are members, the type-variable constraint has been violated.
 /// `));
-/// 
-///     //    testUnaryType :: Array (StrMap Number) -> Array (StrMap Number)
-///     const testUnaryType =
-///     def ('testUnaryType')
-///         ({})
-///         ([$.Array ($.StrMap ($.Number)), $.Array ($.StrMap ($.Number))])
-///         (xs => xs);
-/// 
-///     eq (testUnaryType ([{x: 1}, {y: 2}, {z: 3}])) ([{x: 1}, {y: 2}, {z: 3}]);
-/// 
+
+    //    testUnaryType :: Array (StrMap Number) -> Array (StrMap Number)
+    const testUnaryType =
+    def ('testUnaryType')
+        ({})
+        ([$.Array ($.StrMap ($.Number)), $.Array ($.StrMap ($.Number))])
+        (xs => xs);
+
+    eq (testUnaryType ([{x: 1}, {y: 2}, {z: 3}])) ([{x: 1}, {y: 2}, {z: 3}]);
+
 ///     throws (() => { testUnaryType ([{x: /xxx/}]); })
 ///            (new TypeError (`Invalid value
 /// 
@@ -2190,17 +2190,17 @@ See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Number for in
 /// 
 /// See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Number for information about the Number type.
 /// `));
-/// 
-///     //    testBinaryType :: Either a (StrMap b) -> Either a (StrMap b)
-///     const testBinaryType =
-///     def ('testBinaryType')
-///         ({})
-///         ([$.Either (a) ($.StrMap (b)), $.Either (a) ($.StrMap (b))])
-///         (e => e);
-/// 
-///     eq (testBinaryType (Left ('XXX'))) (Left ('XXX'));
-///     eq (testBinaryType (Right ({x: 1, y: 2, z: 3}))) (Right ({x: 1, y: 2, z: 3}));
-/// 
+
+    //    testBinaryType :: Either a (StrMap b) -> Either a (StrMap b)
+    const testBinaryType =
+    def ('testBinaryType')
+        ({})
+        ([$.Either (a) ($.StrMap (b)), $.Either (a) ($.StrMap (b))])
+        (e => e);
+
+    eq (testBinaryType (Left ('XXX'))) (Left ('XXX'));
+    eq (testBinaryType (Right ({x: 1, y: 2, z: 3}))) (Right ({x: 1, y: 2, z: 3}));
+
 ///     throws (() => { testBinaryType (Right ({x: ['foo', false, 42]})); })
 ///            (new TypeError (`Type-variable constraint violation
 /// 
@@ -2212,8 +2212,8 @@ See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Number for in
 /// 
 /// Since there is no type of which all the above values are members, the type-variable constraint has been violated.
 /// `));
-///   });
-/// 
+  });
+
 ///   test ('uses show-like string representations', () => {
 ///     //    f :: Null -> Null
 ///     const f =
