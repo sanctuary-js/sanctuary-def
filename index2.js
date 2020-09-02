@@ -802,6 +802,44 @@ const Identity_ = $1 => Object.assign (
   }
 );
 
+const JsMap = $1 => $2 => Object.assign (
+  $.BinaryType ('JsMap')
+               ('https://github.com/sanctuary-js/sanctuary-def/tree/v0.22.0#JsMap')
+               ([])
+               (x => Object.prototype.toString.call (x) === '[object Map]')
+               (jsMap => Array.from (jsMap.keys ()))
+               (jsMap => Array.from (jsMap.values ()))
+               ($1)
+               ($2),
+  {
+    new: env => x => Right (TK),
+  }
+);
+
+const JsSet = $1 => Object.assign (
+  $.UnaryType ('JsSet')
+              ('https://github.com/sanctuary-js/sanctuary-def/tree/v0.22.0#JsSet')
+              ([])
+              (x => Object.prototype.toString.call (x) === '[object Set]')
+              (jsSet => Array.from (jsSet.values ()))
+              ($1),
+  {
+    new: env => x => Right (TK),
+  }
+);
+
+const Maybe = $1 => Object.assign (
+  $.UnaryType ('Maybe')
+              ('https://github.com/sanctuary-js/sanctuary-def/tree/v0.22.0#Maybe')
+              ([])
+              (x => type (x) === 'sanctuary-maybe/Maybe@1')
+              (I)
+              ($1),
+  {
+    new: env => x => Right (TK),
+  }
+);
+
 $.Null = Object.assign (
   $.NullaryType ('Null')
                 ('https://github.com/sanctuary-js/sanctuary-def/tree/v0.22.0#Null')
@@ -1031,6 +1069,12 @@ $.Either = def ('Either') ({}) ([$.Type, $.Type, $.Type]) (Either);
 $.Fn = def ('Fn') ({}) ([$.Type, $.Type, $.Type]) (Fn);
 
 $.Identity = def ('Identity') ({}) ([$.Type, $.Type]) (Identity_);
+
+$.JsMap = def ('JsMap') ({}) ([$.Type, $.Type, $.Type]) (JsMap);
+
+$.JsSet = def ('JsSet') ({}) ([$.Type, $.Type]) (JsSet);
+
+$.Maybe = def ('Maybe') ({}) ([$.Type, $.Type]) (Maybe);
 
 $.Predicate = def ('Predicate') ({}) ([$.Type, $.Type]) (Predicate);
 
