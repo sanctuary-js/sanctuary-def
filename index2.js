@@ -20,10 +20,6 @@ const I = x => x;
 
 const K = x => y => x;
 
-const log = (...args) => {
-  console.log (...args);
-};
-
 //    reduce :: (b -> a -> b) -> b -> Array a -> b
 const reduce = f => y => xs => xs.reduce ((y, x) => f (y) (x), y);
 
@@ -1301,9 +1297,7 @@ const Fn = $1 => $2 => (
         if (typeof f !== 'function') fail ([]) (f);
         return x => {
           const i = $1.new (propPath => fail (['$1', ...propPath])) (env) (x);
-          log ('updateEnv 3', showEnv (env));
           const o = $2.new (propPath => fail (['$2', ...propPath])) (env) (f (x));
-          log ('updateEnv 4', showEnv (env));
           return o;
         };
       },
@@ -1409,20 +1403,13 @@ const def = $.def = name => constraints => types => {
                         })
                        (env)
                        (_x);
-                     log ('updateEnv 1', showEnv (env));
                      return run (env) (f (x));
                    };
                    const signature = typeSignature (typeInfo);
                    wrapped.toString = () => signature;
                    return wrapped;
                  })
-                (env => _x => {
-                   log ('updateEnv 2', showEnv (env));
-                   return output.new
-                     (propPath => x => { throw new TypeError ('TK'); })
-                     (env)
-                     (_x);
-                 })
+                (output.new (propPath => x => { throw new TypeError ('TK'); }))
                 (inputs)
                 (Object.assign (Object.create (null), {_ts: nextInt ()}));
 };
