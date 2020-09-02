@@ -260,6 +260,174 @@ const _test = env => x => function recur(t) {
   return t.supertypes.every (recur) && t._test (env) (x);
 };
 
+//  satisfactoryTypes :: ... -> Either (() -> Error)
+//                                     { typeVarMap :: TypeVarMap
+//                                     , types :: Array Type }
+const satisfactoryTypes = (
+  env,            // :: Array Type
+  typeInfo,       // :: TypeInfo
+  typeVarMap,     // :: TypeVarMap
+  expType,        // :: Type
+  index,          // :: Integer
+  propPath,       // :: PropPath
+  values          // :: Array Any
+) => {
+  var recur = satisfactoryTypes;
+
+  for (var idx = 0; idx < values.length; idx += 1) {
+    var result = expType.validate (env) (values[idx]);
+    if (result.isLeft) {
+      return Left (function() {
+        return invalidValue (env,
+                             typeInfo,
+                             index,
+                             Z.concat (propPath, result.value.propPath),
+                             result.value.value);
+      });
+    }
+  }
+
+  switch (expType.type) {
+
+    case 'VARIABLE':
+      var typeVarName = expType.name;
+      var constraints = typeInfo.constraints;
+      if (hasOwnProperty.call (constraints, typeVarName)) {
+        var typeClasses = constraints[typeVarName];
+        for (idx = 0; idx < values.length; idx += 1) {
+          for (var idx2 = 0; idx2 < typeClasses.length; idx2 += 1) {
+            if (!(typeClasses[idx2].test (values[idx]))) {
+              return Left (function() {
+                return typeClassConstraintViolation (
+                  env,
+                  typeInfo,
+                  typeClasses[idx2],
+                  index,
+                  propPath,
+                  values[idx],
+                  typeVarMap
+                );
+              });
+            }
+          }
+        }
+      }
+
+      var typeVarMap$ = updateTypeVarMap (env,
+                                          typeVarMap,
+                                          expType,
+                                          index,
+                                          propPath,
+                                          values);
+
+      var okTypes = typeVarMap$[typeVarName].types;
+      return isEmpty (okTypes) ?
+        Left (function() {
+          return typeVarConstraintViolation (
+            env,
+            typeInfo,
+            index,
+            propPath,
+            typeVarMap$[typeVarName].valuesByPath
+          );
+        }) :
+        Z.reduce (function(e, t) {
+          return Z.chain (function(r) {
+            //  The `a` in `Functor f => f a` corresponds to the `a`
+            //  in `Maybe a` but to the `b` in `Either a b`. A type
+            //  variable's $1 will correspond to either $1 or $2 of
+            //  the actual type depending on the actual type's arity.
+            var offset = t.arity - expType.arity;
+            return expType.keys.reduce (function(e, k, idx) {
+              var extractor = t.extractors[t.keys[offset + idx]];
+              return Z.reduce (function(e, x) {
+                return Z.chain (function(r) {
+                  return recur (env,
+                                typeInfo,
+                                r.typeVarMap,
+                                expType.types[k],
+                                index,
+                                Z.concat (propPath, [k]),
+                                [x]);
+                }, e);
+              }, e, Z.chain (extractor, values));
+            }, Right (r));
+          }, e);
+        }, Right ({typeVarMap: typeVarMap$, types: okTypes}), okTypes);
+
+    case 'UNARY':
+      return Z.map (
+        function(result) {
+          return {
+            typeVarMap: result.typeVarMap,
+            types: Z.map (fromUnaryType (expType),
+                          or (result.types, [expType.types.$1]))
+          };
+        },
+        recur (env,
+               typeInfo,
+               typeVarMap,
+               expType.types.$1,
+               index,
+               Z.concat (propPath, ['$1']),
+               Z.chain (expType.extractors.$1, values))
+      );
+
+    case 'BINARY':
+      return Z.chain (
+        function(result) {
+          var $1s = result.types;
+          return Z.map (
+            function(result) {
+              var $2s = result.types;
+              return {
+                typeVarMap: result.typeVarMap,
+                types: Z.lift2 (fromBinaryType (expType),
+                                or ($1s, [expType.types.$1]),
+                                or ($2s, [expType.types.$2]))
+              };
+            },
+            recur (env,
+                   typeInfo,
+                   result.typeVarMap,
+                   expType.types.$2,
+                   index,
+                   Z.concat (propPath, ['$2']),
+                   Z.chain (expType.extractors.$2, values))
+          );
+        },
+        recur (env,
+               typeInfo,
+               typeVarMap,
+               expType.types.$1,
+               index,
+               Z.concat (propPath, ['$1']),
+               Z.chain (expType.extractors.$1, values))
+      );
+
+    case 'RECORD':
+      return Z.reduce (function(e, k) {
+        return Z.chain (function(r) {
+          return recur (env,
+                        typeInfo,
+                        r.typeVarMap,
+                        expType.types[k],
+                        index,
+                        Z.concat (propPath, [k]),
+                        Z.chain (expType.extractors[k], values));
+        }, e);
+      }, Right ({typeVarMap: typeVarMap, types: [expType]}), expType.keys);
+
+    default:
+      return Right ({typeVarMap: typeVarMap, types: [expType]});
+  }
+};
+
+const test = $.test = env => t => x => {
+  const typeInfo = {name: 'name', constraints: {}, types: [t]};
+  return (satisfactoryTypes (env, typeInfo, {}, t, 0, [], [x])).isRight;
+};
+
 const Type$prototype = {
   '@@type': 'sanctuary-def/Type@1',
   '@@show': function() {

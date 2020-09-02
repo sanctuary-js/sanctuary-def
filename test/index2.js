@@ -37,7 +37,7 @@ const def = $.def;
 /// const def = $.create ({checkTypes: true, env: $.env});
 /// 
 const a = $.TypeVariable ('a');
-/// const b = $.TypeVariable ('b');
+const b = $.TypeVariable ('b');
 /// const c = $.TypeVariable ('c');
 /// const d = $.TypeVariable ('d');
 /// const f = $.UnaryTypeVariable ('f');
@@ -496,35 +496,35 @@ See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Number for in
 `));
   });
 
-///   test ('reports type error correctly for parameterized types', () => {
-///     //    a00 :: a -> a -> a
-///     const a00 =
-///     def ('a00')
-///         ({})
-///         ([a, a, a])
-///         (x => y => x);
-/// 
-///     //    a01 :: a -> Array a -> a
-///     const a01 =
-///     def ('a01')
-///         ({})
-///         ([a, $.Array (a), a])
-///         (x => y => x);
-/// 
-///     //    a02 :: a -> Array (Array a) -> a
-///     const a02 =
-///     def ('a02')
-///         ({})
-///         ([a, $.Array ($.Array (a)), a])
-///         (x => y => x);
-/// 
-///     //    ab02e :: a -> b -> Array (Array (Either a b)) -> a
-///     const ab02e =
-///     def ('ab02e')
-///         ({})
-///         ([a, b, $.Array ($.Array ($.Either (a) (b))), a])
-///         (x => y => z => x);
-/// 
+  test ('reports type error correctly for parameterized types', () => {
+    //    a00 :: a -> a -> a
+    const a00 =
+    def ('a00')
+        ({})
+        ([a, a, a])
+        (x => y => x);
+
+    //    a01 :: a -> Array a -> a
+    const a01 =
+    def ('a01')
+        ({})
+        ([a, $.Array (a), a])
+        (x => y => x);
+
+    //    a02 :: a -> Array (Array a) -> a
+    const a02 =
+    def ('a02')
+        ({})
+        ([a, $.Array ($.Array (a)), a])
+        (x => y => x);
+
+/// //    ab02e :: a -> b -> Array (Array (Either a b)) -> a
+/// const ab02e =
+/// def ('ab02e')
+///     ({})
+///     ([a, b, $.Array ($.Array ($.Either (a) (b))), a])
+///     (x => y => z => x);
+
 ///     //    ab0e21 :: a -> b -> Either (Array (Array a)) (Array b) -> a
 ///     const ab0e21 =
 ///     def ('ab0e21')
@@ -798,7 +798,7 @@ See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Number for in
 /// 
 /// See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Number for information about the Number type.
 /// `));
-///   });
+  });
 /// 
 ///   test ('performs type checking when a "returned" function is applied', () => {
 ///     //    lt :: Ord a => a -> (a -> Boolean)
@@ -1559,20 +1559,20 @@ See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Number for in
     eq ($.Buffer.url) (`https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Buffer`);
     eq ($.Buffer.supertypes) ([]);
 
-/// const isBuffer = $.test ([]) ($.Buffer);
-/// eq (isBuffer (null)) (false);
-/// eq (isBuffer (Buffer.from ([1, 2, 3]))) (true);
+    const isBuffer = $.test ([]) ($.Buffer);
+    eq (isBuffer (null)) (false);
+    eq (isBuffer (Buffer.from ([1, 2, 3]))) (true);
 
-/// {
-///   const Buffer = global.Buffer;
-///   delete global.Buffer;
-///   try {
-///     eq (isBuffer (null)) (false);
-///     eq (isBuffer (Buffer.from ([1, 2, 3]))) (false);
-///   } finally {
-///     global.Buffer = Buffer;
-///   }
-/// }
+    {
+      const Buffer = global.Buffer;
+      delete global.Buffer;
+      try {
+        eq (isBuffer (null)) (false);
+        eq (isBuffer (Buffer.from ([1, 2, 3]))) (false);
+      } finally {
+        global.Buffer = Buffer;
+      }
+    }
   });
 
   test ('provides the "Date" type', () => {
