@@ -850,7 +850,7 @@ $.HtmlElement = Object.assign (
   }
 );
 
-const Identity_ = $1 => Object.assign (
+const Identity = $1 => Object.assign (
   $.UnaryType ('Identity')
               ('https://github.com/sanctuary-js/sanctuary-def/tree/v0.22.0#Identity')
               ([])
@@ -1384,7 +1384,38 @@ const typeSignature = typeInfo => (
   joinWith (' -> ', Z.map (showTypeWith (typeInfo.types), typeInfo.types))
 );
 
-const def = $.def = name => constraints => types => {
+$.env = [
+  $.AnyFunction,
+  $.Arguments,
+  $.Array ($.Unknown),
+  Array2 ($.Unknown) ($.Unknown),
+  $.Boolean,
+  $.Buffer,
+  $.Date,
+  Descending ($.Unknown),
+  Either ($.Unknown) ($.Unknown),
+  $.Error,
+  Fn ($.Unknown) ($.Unknown),
+  $.HtmlElement,
+  Identity ($.Unknown),
+  JsMap ($.Unknown) ($.Unknown),
+  JsSet ($.Unknown),
+  Maybe ($.Unknown),
+  $.Module,
+  $.Null,
+  $.Number,
+  $.Object,
+  Pair ($.Unknown) ($.Unknown),
+  $.RegExp,
+  StrMap ($.Unknown),
+  $.String,
+  $.Symbol,
+  $.Type,
+  $.TypeClass,
+  $.Undefined,
+];
+
+$.create = opts => name => constraints => types => {
   const typeInfo = {name: name, constraints: constraints, types: types};
   const [output, ...inputs] = Z.reverse (types);
 
@@ -1414,13 +1445,15 @@ const def = $.def = name => constraints => types => {
                 (Object.assign (Object.create (null), {_ts: nextInt ()}));
 };
 
+const def = $.def = $.create ({checkTypes: true, env: $.env});
+
 $.Descending = def ('Descending') ({}) ([$.Type, $.Type]) (Descending);
 
 $.Either = def ('Either') ({}) ([$.Type, $.Type, $.Type]) (Either);
 
 $.Fn = def ('Fn') ({}) ([$.Type, $.Type, $.Type]) (Fn);
 
-$.Identity = def ('Identity') ({}) ([$.Type, $.Type]) (Identity_);
+$.Identity = def ('Identity') ({}) ([$.Type, $.Type]) (Identity);
 
 $.JsMap = def ('JsMap') ({}) ([$.Type, $.Type, $.Type]) (JsMap);
 
@@ -1445,34 +1478,3 @@ $.Nullable = def ('Nullable') ({}) ([$.Type, $.Type]) (Nullable);
 $.Pair = def ('Pair') ({}) ([$.Type, $.Type, $.Type]) (Pair);
 
 $.test = def ('test') ({}) ([$.Array ($.Type), $.Type, $.Any, $.Boolean]) (test);
-
-$.env = [
-  $.AnyFunction,
-  $.Arguments,
-  $.Array ($.Unknown),
-  $.Array2 ($.Unknown) ($.Unknown),
-  $.Boolean,
-  $.Buffer,
-  $.Date,
-  $.Descending ($.Unknown),
-  $.Either ($.Unknown) ($.Unknown),
-  $.Error,
-  $.Fn ($.Unknown) ($.Unknown),
-  $.HtmlElement,
-  $.Identity ($.Unknown),
-  $.JsMap ($.Unknown) ($.Unknown),
-  $.JsSet ($.Unknown),
-  $.Maybe ($.Unknown),
-  $.Module,
-  $.Null,
-  $.Number,
-  $.Object,
-  $.Pair ($.Unknown) ($.Unknown),
-  $.RegExp,
-  $.StrMap ($.Unknown),
-  $.String,
-  $.Symbol,
-  $.Type,
-  $.TypeClass,
-  $.Undefined,
-];

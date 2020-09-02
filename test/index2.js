@@ -2266,7 +2266,7 @@ See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Null for info
     });
   });
 
-///   test ('lists the types of each value without duplicates', () => {
+  test ('lists the types of each value without duplicates', () => {
 ///     const env = [$.Array ($.Unknown), $.Number, $.Integer];
 ///     const def = $.create ({checkTypes: true, env});
 /// 
@@ -2290,8 +2290,8 @@ See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Null for info
 /// 
 /// See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Number for information about the Number type.
 /// `));
-///   });
-/// 
+  });
+
 ///   test ('supports polymorphism via type variables', () => {
 ///     //    aa :: a -> a -> Pair a a
 ///     const aa =
