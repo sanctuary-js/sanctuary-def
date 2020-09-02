@@ -3803,19 +3803,19 @@ suite ('Predicate', () => {
     eq (abs (42)) (42);
     eq (abs (-1)) (1);
 
-///     throws (() => { when (x => x) (x => x) ('foo'); })
-///            (new TypeError (`Invalid value
-/// 
-/// when :: (a -> Boolean) -> (a -> a) -> a -> a
-///               ^^^^^^^
-///                  1
-/// 
-/// 1)  "foo" :: String
-/// 
-/// The value at position 1 is not a member of ‘Boolean’.
-/// 
-/// See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Boolean for information about the Boolean type.
-/// `));
+    throws (() => { when (x => x) (x => x) ('foo'); })
+           (new TypeError (`Invalid value
+
+when :: (a -> Boolean) -> (a -> a) -> a -> a
+              ^^^^^^^
+                 1
+
+1)  "foo" :: String
+
+The value at position 1 is not a member of ‘Boolean’.
+
+See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Boolean for information about the Boolean type.
+`));
   });
 
 });

@@ -258,7 +258,7 @@ const _determineActualTypes = (
   }
 
   return isEmpty (values) ?
-    [Unknown] :
+    [$.Unknown] :
     or (Z.reduce (refine, env, values), [$.Inconsistent]);
 };
 
@@ -579,16 +579,16 @@ $.TypeVariable = name => Object.assign (Object.create (Type$prototype), {
   types: {},
   _test: K (K (true)),
   format: (outer, inner) => name,
-  new: env => x => {
+  new: fail => env => x => {
     const these = types_ (x);
     if (name in env) {
       const ts = env[name].filter (t => these.includes (t));
-      if (ts.length === 0) return Left (`Incompatible ${show (name)} types`);
+      if (ts.length === 0) fail ([]) (x);
       env[name] = ts;
     } else {
       env[name] = these;
     }
-    return Right (x);
+    return x;
   },
 });
 
@@ -684,7 +684,7 @@ $.Void = Object.assign (
                 ([])
                 (x => false),
   {
-    new: env => x => Right (TK),
+    new: fail => env => x => TK,
   }
 );
 
@@ -694,7 +694,7 @@ $.Any = Object.assign (
                 ([])
                 (x => true),
   {
-    new: env => x => Right (x),
+    new: fail => env => x => x,
   }
 );
 
@@ -704,7 +704,7 @@ $.AnyFunction = Object.assign (
                 ([])
                 (x => typeof x === 'function'),
   {
-    new: env => x => Right (TK),
+    new: fail => env => x => TK,
   }
 );
 
@@ -714,7 +714,7 @@ $.Arguments = Object.assign (
                 ([])
                 (x => Object.prototype.toString.call (x) === '[object Arguments]'),
   {
-    new: env => x => Right (TK),
+    new: fail => env => x => TK,
   }
 );
 
@@ -724,7 +724,10 @@ $.Boolean = Object.assign (
                 ([])
                 (x => typeof x === 'boolean'),
   {
-    new: env => x => Right (x),
+    new: fail => env => x => {
+      if (typeof x === 'boolean') return x;
+      fail ([]) (x);
+    },
   }
 );
 
@@ -734,7 +737,7 @@ $.Buffer = Object.assign (
                 ([])
                 (x => typeof Buffer !== 'undefined' && Buffer.isBuffer (x)),
   {
-    new: env => x => Right (TK),
+    new: fail => env => x => TK,
   }
 );
 
@@ -744,7 +747,7 @@ $.Date = Object.assign (
                 ([])
                 (x => Object.prototype.toString.call (x) === '[object Date]'),
   {
-    new: env => x => Right (TK),
+    new: fail => env => x => TK,
   }
 );
 
@@ -756,7 +759,7 @@ const Descending = $1 => Object.assign (
               (I)
               ($1),
   {
-    new: env => x => Right (TK),
+    new: fail => env => x => TK,
   }
 );
 
@@ -770,7 +773,7 @@ const Either = $1 => $2 => Object.assign (
                ($1)
                ($2),
   {
-    new: env => x => Right (x),
+    new: fail => env => x => x,
   }
 );
 
@@ -780,7 +783,7 @@ $.Error = Object.assign (
                 ([])
                 (x => Object.prototype.toString.call (x) === '[object Error]'),
   {
-    new: env => x => Right (TK),
+    new: fail => env => x => TK,
   }
 );
 
@@ -790,7 +793,7 @@ $.HtmlElement = Object.assign (
                 ([])
                 (x => /^\[object HTML.+Element\]$/.test (Object.prototype.toString.call (x))),
   {
-    new: env => x => Right (TK),
+    new: fail => env => x => TK,
   }
 );
 
@@ -802,7 +805,7 @@ const Identity_ = $1 => Object.assign (
               (I)
               ($1),
   {
-    new: env => x => Right (TK),
+    new: fail => env => x => TK,
   }
 );
 
@@ -816,7 +819,7 @@ const JsMap = $1 => $2 => Object.assign (
                ($1)
                ($2),
   {
-    new: env => x => Right (TK),
+    new: fail => env => x => TK,
   }
 );
 
@@ -828,7 +831,7 @@ const JsSet = $1 => Object.assign (
               (jsSet => Array.from (jsSet.values ()))
               ($1),
   {
-    new: env => x => Right (TK),
+    new: fail => env => x => TK,
   }
 );
 
@@ -840,7 +843,7 @@ const Maybe = $1 => Object.assign (
               (I)
               ($1),
   {
-    new: env => x => Right (TK),
+    new: fail => env => x => TK,
   }
 );
 
@@ -850,7 +853,7 @@ $.Module = Object.assign (
                 ([])
                 (x => Object.prototype.toString.call (x) === '[object Module]'),
   {
-    new: env => x => Right (TK),
+    new: fail => env => x => TK,
   }
 );
 
@@ -862,7 +865,7 @@ const NonEmpty = $1 => Object.assign (
               (monoid => [monoid])
               ($1),
   {
-    new: env => x => Right (TK),
+    new: fail => env => x => TK,
   }
 );
 
@@ -872,7 +875,7 @@ $.Null = Object.assign (
                 ([])
                 (x => Object.prototype.toString.call (x) === '[object Null]'),
   {
-    new: env => x => Right (TK),
+    new: fail => env => x => TK,
   }
 );
 
@@ -884,7 +887,7 @@ const Nullable = $1 => Object.assign (
               (nullable => nullable === null ? [] : [nullable])
               ($1),
   {
-    new: env => x => Right (TK),
+    new: fail => env => x => TK,
   }
 );
 
@@ -894,9 +897,9 @@ $.Number = Object.assign (
                 ([])
                 (x => typeof x === 'number'),
   {
-    new: env => x => {
-      if (typeof x !== 'number') return Left (`Not a number: ${JSON.stringify (x)}`);
-      return Right (x);
+    new: fail => env => x => {
+      if (typeof x === 'number') return x;
+      fail ([]) (x);
     },
   }
 );
@@ -907,7 +910,7 @@ $.ValidNumber = Object.assign (
                 ([$.Number])
                 (x => !(isNaN (x))),
   {
-    new: env => x => Right (TK),
+    new: fail => env => x => TK,
   }
 );
 
@@ -917,7 +920,7 @@ $.NonZeroValidNumber = Object.assign (
                 ([$.ValidNumber])
                 (x => x !== 0),
   {
-    new: env => x => Right (TK),
+    new: fail => env => x => TK,
   }
 );
 
@@ -927,7 +930,7 @@ $.FiniteNumber = Object.assign (
                 ([$.ValidNumber])
                 (isFinite),
   {
-    new: env => x => Right (TK),
+    new: fail => env => x => TK,
   }
 );
 
@@ -937,7 +940,7 @@ $.PositiveFiniteNumber = Object.assign (
                 ([$.FiniteNumber])
                 (x => x > 0),
   {
-    new: env => x => Right (TK),
+    new: fail => env => x => TK,
   }
 );
 
@@ -947,7 +950,7 @@ $.NegativeFiniteNumber = Object.assign (
                 ([$.FiniteNumber])
                 (x => x < 0),
   {
-    new: env => x => Right (TK),
+    new: fail => env => x => TK,
   }
 );
 
@@ -957,7 +960,7 @@ $.NonZeroFiniteNumber = Object.assign (
                 ([$.FiniteNumber])
                 (x => x !== 0),
   {
-    new: env => x => Right (TK),
+    new: fail => env => x => TK,
   }
 );
 
@@ -967,7 +970,7 @@ $.Integer = Object.assign (
                 ([$.ValidNumber])
                 (x => Math.floor (x) === x && x >= MIN_SAFE_INTEGER && x <= MAX_SAFE_INTEGER),
   {
-    new: env => x => Right (TK),
+    new: fail => env => x => TK,
   }
 );
 
@@ -977,7 +980,7 @@ $.NonZeroInteger = Object.assign (
                 ([$.Integer])
                 (x => x !== 0),
   {
-    new: env => x => Right (TK),
+    new: fail => env => x => TK,
   }
 );
 
@@ -987,7 +990,7 @@ $.NonNegativeInteger = Object.assign (
                 ([$.Integer])
                 (x => x >= 0),
   {
-    new: env => x => Right (TK),
+    new: fail => env => x => TK,
   }
 );
 
@@ -997,7 +1000,7 @@ $.PositiveInteger = Object.assign (
                 ([$.Integer])
                 (x => x > 0),
   {
-    new: env => x => Right (TK),
+    new: fail => env => x => TK,
   }
 );
 
@@ -1007,7 +1010,7 @@ $.NegativeInteger = Object.assign (
                 ([$.Integer])
                 (x => x < 0),
   {
-    new: env => x => Right (TK),
+    new: fail => env => x => TK,
   }
 );
 
@@ -1017,7 +1020,7 @@ $.Object = Object.assign (
                 ([])
                 (x => Object.prototype.toString.call (x) === '[object Object]'),
   {
-    new: env => x => Right (TK),
+    new: fail => env => x => TK,
   }
 );
 
@@ -1031,7 +1034,7 @@ const Pair = $1 => $2 => Object.assign (
                ($1)
                ($2),
   {
-    new: env => x => Right (TK),
+    new: fail => env => x => TK,
   }
 );
 
@@ -1041,7 +1044,7 @@ $.RegExp = Object.assign (
                 ([])
                 (x => Object.prototype.toString.call (x) === '[object RegExp]'),
   {
-    new: env => x => Right (TK),
+    new: fail => env => x => TK,
   }
 );
 
@@ -1051,7 +1054,7 @@ $.GlobalRegExp = Object.assign (
                 ([$.RegExp])
                 (regex => regex.global),
   {
-    new: env => x => Right (TK),
+    new: fail => env => x => TK,
   }
 );
 
@@ -1061,7 +1064,7 @@ $.NonGlobalRegExp = Object.assign (
                 ([$.RegExp])
                 (regex => !regex.global),
   {
-    new: env => x => Right (TK),
+    new: fail => env => x => TK,
   }
 );
 
@@ -1071,9 +1074,9 @@ $.String = Object.assign (
                 ([])
                 (x => typeof x === 'string'),
   {
-    new: env => x => {
-      if (typeof x !== 'string') return Left (`Not a string: ${JSON.stringify (x)}`);
-      return Right (x);
+    new: fail => env => x => {
+      if (typeof x !== 'string') TK ([]) (x);
+      return x;
     },
   }
 );
@@ -1084,7 +1087,7 @@ $.Symbol = Object.assign (
                 ([])
                 (x => typeof x === 'symbol'),
   {
-    new: env => x => Right (TK),
+    new: fail => env => x => TK,
   }
 );
 
@@ -1094,7 +1097,7 @@ $.RegexFlags = Object.assign (
                 ([$.String])
                 (s => /^g?i?m?$/.test (s)),
   {
-    new: env => x => Right (TK),
+    new: fail => env => x => TK,
   }
 );
 
@@ -1106,7 +1109,7 @@ const StrMap = $1 => Object.assign (
               (I)
               ($1),
   {
-    new: env => x => Right (x),
+    new: fail => env => x => x,
   }
 );
 
@@ -1116,7 +1119,7 @@ $.Type = Object.assign (
                 ([])
                 (x => type (x) === 'sanctuary-def/Type@1'),
   {
-    new: env => x => Right (x),
+    new: fail => env => x => x,
   }
 );
 
@@ -1126,7 +1129,7 @@ $.TypeClass = Object.assign (
                 ([])
                 (x => type (x) === 'sanctuary-type-classes/TypeClass@1'),
   {
-    new: env => x => Right (x),
+    new: fail => env => x => x,
   }
 );
 
@@ -1136,7 +1139,7 @@ $.Undefined = Object.assign (
                 ([])
                 (x => Object.prototype.toString.call (x) === '[object Undefined]'),
   {
-    new: env => x => Right (TK),
+    new: fail => env => x => TK,
   }
 );
 
@@ -1149,15 +1152,14 @@ $.Array = $1 => (
                 (I)
                 ($1),
     {
-      new: env => xs => {
-        if (!(Array.isArray (xs))) return Left ('Not an array');
+      new: fail => env => xs => {
+        if (!(Array.isArray (xs))) fail (['$1']) (xs);
 
         for (const x of xs) {
-          const e = $1.new (env) (x);
-          if (e.isLeft) return e;
+          $1.new (propPath => x => fail (['$1', ...propPath]) (x)) (env) (x);
         }
 
-        return Right (xs);
+        return xs;
       },
     }
   )
@@ -1169,7 +1171,7 @@ $.Array0 = Object.assign (
                 ([$.Array ($.Unknown)])
                 (xs => xs.length === 0),
   {
-    new: env => x => Right (TK),
+    new: fail => env => x => TK,
   }
 );
 
@@ -1181,7 +1183,7 @@ const Array1 = $1 => Object.assign (
               (xs => [xs[0]])
               ($1),
   {
-    new: env => x => Right (TK),
+    new: fail => env => x => TK,
   }
 );
 
@@ -1195,7 +1197,10 @@ const Array2 = $1 => $2 => Object.assign (
                ($1)
                ($2),
   {
-    new: env => x => x.length === 2 ? Right (x) : Left ('TK'),
+    new: fail => env => x => {
+      if (x.length === 2) return x;
+      fail ([]) (x);
+    },
   }
 );
 
@@ -1203,17 +1208,15 @@ const Fn = $1 => $2 => (
   Object.assign (
     $.Function ([$1, $2]),
     {
-      new: env => f => {
-        if (typeof f !== 'function') return Left ('Not a function');
-        return Right (x => {
-          const i = $1.new (env) (x);
-          if (i.isLeft) throw new TypeError (i.value);
+      new: fail => env => f => {
+        if (typeof f !== 'function') fail ([]) (f);
+        return x => {
+          const i = $1.new (propPath => fail (['$1', ...propPath])) (env) (x);
           log ('updateEnv 3', showEnv (env));
-          const o = $2.new (env) (f (x));
-          if (o.isLeft) throw new TypeError (o.value);
+          const o = $2.new (propPath => fail (['$2', ...propPath])) (env) (f (x));
           log ('updateEnv 4', showEnv (env));
-          return o.value;
-        });
+          return o;
+        };
       },
     }
   )
@@ -1305,18 +1308,20 @@ const def = $.def = name => constraints => types => {
   return reduce (run => input => _env => f => {
                    const wrapped = _x => {
                      const env = Object.assign (Object.create (_env), {_ts: nextInt ()});
-                     const x = input.new (env) (_x);
-                     if (x.isLeft) {
-                       throw invalidValue (
-                         $.env,
-                         typeInfo,
-                         0,  // index
-                         [],  // propPath
-                         _x  // value
-                       );
-                     }
+                     const x = input.new
+                       (propPath => x => {
+                          throw invalidValue (
+                            $.env,
+                            typeInfo,
+                            0,
+                            propPath,
+                            x
+                          )
+                        })
+                       (env)
+                       (_x);
                      log ('updateEnv 1', showEnv (env));
-                     return run (env) (f (x.value));
+                     return run (env) (f (x));
                    };
                    const signature = typeSignature (typeInfo);
                    wrapped.toString = () => signature;
@@ -1324,9 +1329,10 @@ const def = $.def = name => constraints => types => {
                  })
                 (env => _x => {
                    log ('updateEnv 2', showEnv (env));
-                   const e = output.new (env) (_x);
-                   if (e.isLeft) throw new TypeError (e.value);
-                   return e.value;
+                   return output.new
+                     (propPath => x => { throw new TypeError ('TK'); })
+                     (env)
+                     (_x);
                  })
                 (inputs)
                 (Object.assign (Object.create (null), {_ts: nextInt ()}));
