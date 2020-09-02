@@ -1062,105 +1062,105 @@ dist :: { x :: Number, y :: Number } -> { x :: Number, y :: Number } -> Number
 The value at position 1 is not a member of ‘{ x :: Number, y :: Number }’.
 `));
 
-///     throws (() => { dist ({}); })
-///            (new TypeError (`Invalid value
-/// 
-/// dist :: { x :: Number, y :: Number } -> { x :: Number, y :: Number } -> Number
-///         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-///                      1
-/// 
-/// 1)  {} :: Object, StrMap a
-/// 
-/// The value at position 1 is not a member of ‘{ x :: Number, y :: Number }’.
-/// `));
-/// 
-///     throws (() => { dist ({x: 0}); })
-///            (new TypeError (`Invalid value
-/// 
-/// dist :: { x :: Number, y :: Number } -> { x :: Number, y :: Number } -> Number
-///         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-///                      1
-/// 
-/// 1)  {"x": 0} :: Object, StrMap Number
-/// 
-/// The value at position 1 is not a member of ‘{ x :: Number, y :: Number }’.
-/// `));
-/// 
-///     throws (() => { dist ({x: 0, y: null}); })
-///            (new TypeError (`Invalid value
-/// 
-/// dist :: { x :: Number, y :: Number } -> { x :: Number, y :: Number } -> Number
-///                             ^^^^^^
-///                               1
-/// 
-/// 1)  null :: Null
-/// 
-/// The value at position 1 is not a member of ‘Number’.
-/// 
-/// See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Number for information about the Number type.
-/// `));
-/// 
-///     throws (() => { length ({start: 0, end: 0}); })
-///            (new TypeError (`Invalid value
-/// 
-/// length :: { end :: { x :: Number, y :: Number }, start :: { x :: Number, y :: Number } } -> Number
-///                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-///                                 1
-/// 
-/// 1)  0 :: Number
-/// 
-/// The value at position 1 is not a member of ‘{ x :: Number, y :: Number }’.
-/// `));
-/// 
-///     throws (() => { length ({start: {x: 0, y: 0}, end: {x: null, y: null}}); })
-///            (new TypeError (`Invalid value
-/// 
-/// length :: { end :: { x :: Number, y :: Number }, start :: { x :: Number, y :: Number } } -> Number
-///                           ^^^^^^
-///                             1
-/// 
-/// 1)  null :: Null
-/// 
-/// The value at position 1 is not a member of ‘Number’.
-/// 
-/// See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Number for information about the Number type.
-/// `));
-/// 
-///     //    id :: a -> a
-///     const id =
-///     def ('id')
-///         ({})
-///         ([a, a])
-///         (x => x);
-/// 
-///     eq (id ([{x: 0, y: 0}, {x: 1, y: 1}])) ([{x: 0, y: 0}, {x: 1, y: 1}]);
-/// 
-///     throws (() => { $.RecordType ({x: /XXX/, y: /XXX/, z: $.Any}); })
-///            (new TypeError (`Invalid value
-/// 
-/// RecordType :: StrMap Type -> Type
-///                      ^^^^
-///                       1
-/// 
-/// 1)  /XXX/ :: RegExp
-/// 
-/// The value at position 1 is not a member of ‘Type’.
-/// 
-/// See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Type for information about the Type type.
-/// `));
-/// 
-///     //    Foo :: Type
-///     const Foo = $.RecordType ({x: a, y: a});
-/// 
-///     //    foo :: Foo -> Foo
-///     const foo =
-///     def ('foo')
-///         ({})
-///         ([Foo, Foo])
-///         (foo => foo);
-/// 
-///     eq (foo ({x: 1, y: 2, z: 3})) ({x: 1, y: 2, z: 3});
-/// 
+    throws (() => { dist ({}); })
+           (new TypeError (`Invalid value
+
+dist :: { x :: Number, y :: Number } -> { x :: Number, y :: Number } -> Number
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                     1
+
+1)  {} :: Object, StrMap a
+
+The value at position 1 is not a member of ‘{ x :: Number, y :: Number }’.
+`));
+
+    throws (() => { dist ({x: 0}); })
+           (new TypeError (`Invalid value
+
+dist :: { x :: Number, y :: Number } -> { x :: Number, y :: Number } -> Number
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                     1
+
+1)  {"x": 0} :: Object, StrMap Number
+
+The value at position 1 is not a member of ‘{ x :: Number, y :: Number }’.
+`));
+
+    throws (() => { dist ({x: 0, y: null}); })
+           (new TypeError (`Invalid value
+
+dist :: { x :: Number, y :: Number } -> { x :: Number, y :: Number } -> Number
+                            ^^^^^^
+                              1
+
+1)  null :: Null
+
+The value at position 1 is not a member of ‘Number’.
+
+See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Number for information about the Number type.
+`));
+
+    throws (() => { length ({start: 0, end: 0}); })
+           (new TypeError (`Invalid value
+
+length :: { end :: { x :: Number, y :: Number }, start :: { x :: Number, y :: Number } } -> Number
+                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                                1
+
+1)  0 :: Number
+
+The value at position 1 is not a member of ‘{ x :: Number, y :: Number }’.
+`));
+
+    throws (() => { length ({start: {x: 0, y: 0}, end: {x: null, y: null}}); })
+           (new TypeError (`Invalid value
+
+length :: { end :: { x :: Number, y :: Number }, start :: { x :: Number, y :: Number } } -> Number
+                          ^^^^^^
+                            1
+
+1)  null :: Null
+
+The value at position 1 is not a member of ‘Number’.
+
+See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Number for information about the Number type.
+`));
+
+    //    id :: a -> a
+    const id =
+    def ('id')
+        ({})
+        ([a, a])
+        (x => x);
+
+    eq (id ([{x: 0, y: 0}, {x: 1, y: 1}])) ([{x: 0, y: 0}, {x: 1, y: 1}]);
+
+    throws (() => { $.RecordType ({x: /XXX/, y: /XXX/, z: $.Any}); })
+           (new TypeError (`Invalid value
+
+RecordType :: StrMap Type -> Type
+                     ^^^^
+                      1
+
+1)  /XXX/ :: RegExp
+
+The value at position 1 is not a member of ‘Type’.
+
+See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Type for information about the Type type.
+`));
+
+    //    Foo :: Type
+    const Foo = $.RecordType ({x: a, y: a});
+
+    //    foo :: Foo -> Foo
+    const foo =
+    def ('foo')
+        ({})
+        ([Foo, Foo])
+        (foo => foo);
+
+    eq (foo ({x: 1, y: 2, z: 3})) ({x: 1, y: 2, z: 3});
+
 ///     throws (() => { foo ({x: 'abc', y: 123}); })
 ///            (new TypeError (`Type-variable constraint violation
 /// 
@@ -1174,88 +1174,88 @@ The value at position 1 is not a member of ‘{ x :: Number, y :: Number }’.
 /// 
 /// Since there is no type of which all the above values are members, the type-variable constraint has been violated.
 /// `));
-/// 
-///     //    fooBarBaz :: { 'foo "bar" baz' :: Number } -> Number
-///     const fooBarBaz =
-///     def ('fooBarBaz')
-///         ({})
-///         ([$.RecordType ({'foo "bar" baz': $.Number}), $.Number])
-///         (r => r['foo "bar" baz']);
-/// 
-///     eq (fooBarBaz ({'foo "bar" baz': 42})) (42);
-/// 
-///     throws (() => { fooBarBaz ({'foo "bar" baz': null}); })
-///            (new TypeError (`Invalid value
-/// 
-/// fooBarBaz :: { "foo \\"bar\\" baz" :: Number } -> Number
-///                                     ^^^^^^
-///                                       1
-/// 
-/// 1)  null :: Null
-/// 
-/// The value at position 1 is not a member of ‘Number’.
-/// 
-/// See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Number for information about the Number type.
-/// `));
-/// 
-///     //    prop :: String -> Function
-///     const prop =
-///     def ('prop')
-///         ({})
-///         ([$.String, $.AnyFunction])
-///         (name => def ('prop (' + show (name) + ')')
-///                      ({})
-///                      ([$.RecordType (singleton (name) (a)), a])
-///                      (r => r[name]));
-/// 
-///     eq (prop ('x') ({x: 1, y: 2})) (1);
-///     eq (prop ('y') ({x: 1, y: 2})) (2);
-/// 
-///     throws (() => { prop ('z') ({x: 1, y: 2}); })
-///            (new TypeError (`Invalid value
-/// 
-/// prop ("z") :: { z :: a } -> a
-///               ^^^^^^^^^^
-///                   1
-/// 
-/// 1)  {"x": 1, "y": 2} :: Object, StrMap Number
-/// 
-/// The value at position 1 is not a member of ‘{ z :: a }’.
-/// `));
-/// 
-///     const point = Object.create ({x: 0, y: 0});
-///     eq (prop ('x') (point)) (0);
-///     eq (prop ('y') (point)) (0);
-/// 
-///     eq (/x/g.global) (true);
-///     eq ('global' in /x/g) (true);
-/// 
-///     throws (() => { prop ('global') (/x/g); })
-///            (new TypeError (`Invalid value
-/// 
-/// prop ("global") :: { global :: a } -> a
-///                    ^^^^^^^^^^^^^^^
-///                           1
-/// 
-/// 1)  /x/g :: RegExp
-/// 
-/// The value at position 1 is not a member of ‘{ global :: a }’.
-/// `));
-/// 
-///     eq (['x'].length) (1);
-///     eq ('length' in ['x']) (true);
-/// 
-///     throws (() => { prop ('length') (['x']); })
-///            (new TypeError (`Invalid value
-/// 
-/// prop ("length") :: { length :: a } -> a
-///                    ^^^^^^^^^^^^^^^
-///                           1
-/// 
-/// 1)  ["x"] :: Array String
-/// 
-/// The value at position 1 is not a member of ‘{ length :: a }’.
-/// `));
+
+    //    fooBarBaz :: { 'foo "bar" baz' :: Number } -> Number
+    const fooBarBaz =
+    def ('fooBarBaz')
+        ({})
+        ([$.RecordType ({'foo "bar" baz': $.Number}), $.Number])
+        (r => r['foo "bar" baz']);
+
+    eq (fooBarBaz ({'foo "bar" baz': 42})) (42);
+
+    throws (() => { fooBarBaz ({'foo "bar" baz': null}); })
+           (new TypeError (`Invalid value
+
+fooBarBaz :: { "foo \\"bar\\" baz" :: Number } -> Number
+                                    ^^^^^^
+                                      1
+
+1)  null :: Null
+
+The value at position 1 is not a member of ‘Number’.
+
+See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Number for information about the Number type.
+`));
+
+    //    prop :: String -> Function
+    const prop =
+    def ('prop')
+        ({})
+        ([$.String, $.AnyFunction])
+        (name => def ('prop (' + show (name) + ')')
+                     ({})
+                     ([$.RecordType (singleton (name) (a)), a])
+                     (r => r[name]));
+
+    eq (prop ('x') ({x: 1, y: 2})) (1);
+    eq (prop ('y') ({x: 1, y: 2})) (2);
+
+    throws (() => { prop ('z') ({x: 1, y: 2}); })
+           (new TypeError (`Invalid value
+
+prop ("z") :: { z :: a } -> a
+              ^^^^^^^^^^
+                  1
+
+1)  {"x": 1, "y": 2} :: Object, StrMap Number
+
+The value at position 1 is not a member of ‘{ z :: a }’.
+`));
+
+    const point = Object.create ({x: 0, y: 0});
+    eq (prop ('x') (point)) (0);
+    eq (prop ('y') (point)) (0);
+
+    eq (/x/g.global) (true);
+    eq ('global' in /x/g) (true);
+
+    throws (() => { prop ('global') (/x/g); })
+           (new TypeError (`Invalid value
+
+prop ("global") :: { global :: a } -> a
+                   ^^^^^^^^^^^^^^^
+                          1
+
+1)  /x/g :: RegExp
+
+The value at position 1 is not a member of ‘{ global :: a }’.
+`));
+
+    eq (['x'].length) (1);
+    eq ('length' in ['x']) (true);
+
+    throws (() => { prop ('length') (['x']); })
+           (new TypeError (`Invalid value
+
+prop ("length") :: { length :: a } -> a
+                   ^^^^^^^^^^^^^^^
+                          1
+
+1)  ["x"] :: Array String
+
+The value at position 1 is not a member of ‘{ length :: a }’.
+`));
   });
 
 ///   test ('supports named record types', () => {

@@ -690,6 +690,10 @@ const RecordType = fields => {
     },
     new: fail => env => x => {
       if (x == null) fail ([]) (x);
+      const missing = {};
+      keys.forEach (k => { missing[k] = k; });
+      for (const k in x) delete missing[k];
+      if (!(isEmpty (missing))) fail ([]) (x);
       keys.forEach (k => {
         fields[k].new (propPath => fail ([k, ...propPath])) (env) (x[k]);
       });
@@ -727,7 +731,10 @@ $.AnyFunction = Object.assign (
                 ([])
                 (x => typeof x === 'function'),
   {
-    new: fail => env => x => TK,
+    new: fail => env => x => {
+      if (typeof x === 'function') return x;
+      fail ([]) (x);
+    },
   }
 );
 
@@ -1132,7 +1139,13 @@ const StrMap = $1 => Object.assign (
               (I)
               ($1),
   {
-    new: fail => env => x => x,
+    new: fail => env => x => {
+      const keys = Object.keys (x);
+      for (const k of keys) {
+        $1.new (propPath => fail (['$1', ...propPath])) (env) (x[k]);
+      }
+      return x;
+    },
   }
 );
 
@@ -1142,7 +1155,10 @@ $.Type = Object.assign (
                 ([])
                 (x => type (x) === 'sanctuary-def/Type@1'),
   {
-    new: fail => env => x => x,
+    new: fail => env => x => {
+      if (type (x) === 'sanctuary-def/Type@1') return x;
+      fail ([]) (x);
+    },
   }
 );
 
