@@ -999,6 +999,36 @@ $.Object = Object.assign (
   }
 );
 
+$.RegExp = Object.assign (
+  $.NullaryType ('RegExp')
+                ('https://github.com/sanctuary-js/sanctuary-def/tree/v0.22.0#RegExp')
+                ([])
+                (x => Object.prototype.toString.call (x) === '[object RegExp]'),
+  {
+    new: env => x => Right (TK),
+  }
+);
+
+$.GlobalRegExp = Object.assign (
+  $.NullaryType ('GlobalRegExp')
+                ('https://github.com/sanctuary-js/sanctuary-def/tree/v0.22.0#GlobalRegExp')
+                ([$.RegExp])
+                (regex => regex.global),
+  {
+    new: env => x => Right (TK),
+  }
+);
+
+$.NonGlobalRegExp = Object.assign (
+  $.NullaryType ('NonGlobalRegExp')
+                ('https://github.com/sanctuary-js/sanctuary-def/tree/v0.22.0#NonGlobalRegExp')
+                ([$.RegExp])
+                (regex => !regex.global),
+  {
+    new: env => x => Right (TK),
+  }
+);
+
 $.String = Object.assign (
   $.NullaryType ('String')
                 ('https://github.com/sanctuary-js/sanctuary-def/tree/v0.22.0#String')
@@ -1009,6 +1039,16 @@ $.String = Object.assign (
       if (typeof x !== 'string') return Left (`Not a string: ${JSON.stringify (x)}`);
       return Right (x);
     },
+  }
+);
+
+$.RegexFlags = Object.assign (
+  $.NullaryType ('RegexFlags')
+                ('https://github.com/sanctuary-js/sanctuary-def/tree/v0.22.0#RegexFlags')
+                ([$.String])
+                (s => /^g?i?m?$/.test (s)),
+  {
+    new: env => x => Right (TK),
   }
 );
 

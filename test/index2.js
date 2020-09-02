@@ -2036,64 +2036,64 @@ See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Number for in
     eq (isNegativeInteger (new Number (-1))) (false);
   });
 
-///   test ('provides the "GlobalRegExp" type', () => {
-///     eq ($.GlobalRegExp.name) ('GlobalRegExp');
-///     eq ($.GlobalRegExp.url) (`https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#GlobalRegExp`);
-///     eq ($.GlobalRegExp.supertypes) ([$.RegExp]);
-/// 
-///     const isGlobalRegExp = $.test ([]) ($.GlobalRegExp);
-///     eq (isGlobalRegExp (null)) (false);
-///     eq (isGlobalRegExp ({global: true})) (false);
-///     eq (isGlobalRegExp (/x/)) (false);
-///     eq (isGlobalRegExp (/x/i)) (false);
-///     eq (isGlobalRegExp (/x/m)) (false);
-///     eq (isGlobalRegExp (/x/im)) (false);
-///     eq (isGlobalRegExp (/x/g)) (true);
-///     eq (isGlobalRegExp (/x/gi)) (true);
-///     eq (isGlobalRegExp (/x/gm)) (true);
-///     eq (isGlobalRegExp (/x/gim)) (true);
-///   });
-/// 
-///   test ('provides the "NonGlobalRegExp" type', () => {
-///     eq ($.NonGlobalRegExp.name) ('NonGlobalRegExp');
-///     eq ($.NonGlobalRegExp.url) (`https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#NonGlobalRegExp`);
-///     eq ($.NonGlobalRegExp.supertypes) ([$.RegExp]);
-/// 
-///     const isNonGlobalRegExp = $.test ([]) ($.NonGlobalRegExp);
-///     eq (isNonGlobalRegExp (null)) (false);
-///     eq (isNonGlobalRegExp ({global: false})) (false);
-///     eq (isNonGlobalRegExp (/x/g)) (false);
-///     eq (isNonGlobalRegExp (/x/gi)) (false);
-///     eq (isNonGlobalRegExp (/x/gm)) (false);
-///     eq (isNonGlobalRegExp (/x/gim)) (false);
-///     eq (isNonGlobalRegExp (/x/)) (true);
-///     eq (isNonGlobalRegExp (/x/i)) (true);
-///     eq (isNonGlobalRegExp (/x/m)) (true);
-///     eq (isNonGlobalRegExp (/x/im)) (true);
-///   });
-/// 
-///   test ('provides the "RegexFlags" type', () => {
-///     eq ($.RegexFlags.name) ('RegexFlags');
-///     eq ($.RegexFlags.url) (`https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#RegexFlags`);
-///     eq ($.RegexFlags.supertypes) ([$.String]);
-/// 
-///     const isRegexFlags = $.test ([]) ($.RegexFlags);
-///     eq (isRegexFlags ('')) (true);
-///     eq (isRegexFlags ('g')) (true);
-///     eq (isRegexFlags ('i')) (true);
-///     eq (isRegexFlags ('m')) (true);
-///     eq (isRegexFlags ('gi')) (true);
-///     eq (isRegexFlags ('gm')) (true);
-///     eq (isRegexFlags ('im')) (true);
-///     eq (isRegexFlags ('gim')) (true);
-///     //  String objects are not acceptable.
-///     eq (isRegexFlags (new String (''))) (false);
-///     //  Flags must be alphabetically ordered.
-///     eq (isRegexFlags ('mg')) (false);
-///     //  "Sticky" flag is not acceptable.
-///     eq (isRegexFlags ('y')) (false);
-///   });
-/// 
+  test ('provides the "GlobalRegExp" type', () => {
+    eq ($.GlobalRegExp.name) ('GlobalRegExp');
+    eq ($.GlobalRegExp.url) (`https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#GlobalRegExp`);
+    eq ($.GlobalRegExp.supertypes) ([$.RegExp]);
+
+    const isGlobalRegExp = $.test ([]) ($.GlobalRegExp);
+    eq (isGlobalRegExp (null)) (false);
+    eq (isGlobalRegExp ({global: true})) (false);
+    eq (isGlobalRegExp (/x/)) (false);
+    eq (isGlobalRegExp (/x/i)) (false);
+    eq (isGlobalRegExp (/x/m)) (false);
+    eq (isGlobalRegExp (/x/im)) (false);
+    eq (isGlobalRegExp (/x/g)) (true);
+    eq (isGlobalRegExp (/x/gi)) (true);
+    eq (isGlobalRegExp (/x/gm)) (true);
+    eq (isGlobalRegExp (/x/gim)) (true);
+  });
+
+  test ('provides the "NonGlobalRegExp" type', () => {
+    eq ($.NonGlobalRegExp.name) ('NonGlobalRegExp');
+    eq ($.NonGlobalRegExp.url) (`https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#NonGlobalRegExp`);
+    eq ($.NonGlobalRegExp.supertypes) ([$.RegExp]);
+
+    const isNonGlobalRegExp = $.test ([]) ($.NonGlobalRegExp);
+    eq (isNonGlobalRegExp (null)) (false);
+    eq (isNonGlobalRegExp ({global: false})) (false);
+    eq (isNonGlobalRegExp (/x/g)) (false);
+    eq (isNonGlobalRegExp (/x/gi)) (false);
+    eq (isNonGlobalRegExp (/x/gm)) (false);
+    eq (isNonGlobalRegExp (/x/gim)) (false);
+    eq (isNonGlobalRegExp (/x/)) (true);
+    eq (isNonGlobalRegExp (/x/i)) (true);
+    eq (isNonGlobalRegExp (/x/m)) (true);
+    eq (isNonGlobalRegExp (/x/im)) (true);
+  });
+
+  test ('provides the "RegexFlags" type', () => {
+    eq ($.RegexFlags.name) ('RegexFlags');
+    eq ($.RegexFlags.url) (`https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#RegexFlags`);
+    eq ($.RegexFlags.supertypes) ([$.String]);
+
+    const isRegexFlags = $.test ([]) ($.RegexFlags);
+    eq (isRegexFlags ('')) (true);
+    eq (isRegexFlags ('g')) (true);
+    eq (isRegexFlags ('i')) (true);
+    eq (isRegexFlags ('m')) (true);
+    eq (isRegexFlags ('gi')) (true);
+    eq (isRegexFlags ('gm')) (true);
+    eq (isRegexFlags ('im')) (true);
+    eq (isRegexFlags ('gim')) (true);
+    //  String objects are not acceptable.
+    eq (isRegexFlags (new String (''))) (false);
+    //  Flags must be alphabetically ordered.
+    eq (isRegexFlags ('mg')) (false);
+    //  "Sticky" flag is not acceptable.
+    eq (isRegexFlags ('y')) (false);
+  });
+
 ///   test ('provides the "StrMap" type constructor', () => {
 ///     eq (typeof $.StrMap) ('function');
 ///     eq ($.StrMap.length) (1);
