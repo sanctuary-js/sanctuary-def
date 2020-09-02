@@ -1333,6 +1333,37 @@ $.Pair = def ('Pair') ({}) ([$.Type, $.Type, $.Type]) (Pair);
 
 $.test = def ('test') ({}) ([$.Array ($.Type), $.Type, $.Any, $.Boolean]) (test);
 
+$.env = [
+  $.AnyFunction,
+  $.Arguments,
+  $.Array ($.Unknown),
+  $.Array2 ($.Unknown) ($.Unknown),
+  $.Boolean,
+  $.Buffer,
+  $.Date,
+  $.Descending ($.Unknown),
+  $.Either ($.Unknown) ($.Unknown),
+  $.Error,
+  $.Fn ($.Unknown) ($.Unknown),
+  $.HtmlElement,
+  $.Identity ($.Unknown),
+  $.JsMap ($.Unknown) ($.Unknown),
+  $.JsSet ($.Unknown),
+  $.Maybe ($.Unknown),
+  $.Module,
+  $.Null,
+  $.Number,
+  $.Object,
+  $.Pair ($.Unknown) ($.Unknown),
+  $.RegExp,
+  $.StrMap ($.Unknown),
+  $.String,
+  $.Symbol,
+  $.Type,
+  $.TypeClass,
+  $.Undefined,
+];
+
 /*****************************************************************************/
 
 return;
