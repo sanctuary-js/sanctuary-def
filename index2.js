@@ -1012,6 +1012,20 @@ $.Object = Object.assign (
   }
 );
 
+const Pair = $1 => $2 => Object.assign (
+  $.BinaryType ('Pair')
+               ('https://github.com/sanctuary-js/sanctuary-def/tree/v0.22.0#Pair')
+               ([])
+               (x => type (x) === 'sanctuary-pair/Pair@1')
+               (pair => [pair.fst])
+               (pair => [pair.snd])
+               ($1)
+               ($2),
+  {
+    new: env => x => Right (TK),
+  }
+);
+
 $.RegExp = Object.assign (
   $.NullaryType ('RegExp')
                 ('https://github.com/sanctuary-js/sanctuary-def/tree/v0.22.0#RegExp')
@@ -1314,6 +1328,8 @@ $.Array1 = def ('Array1') ({}) ([$.Type, $.Type]) (Array1);
 $.Array2 = def ('Array2') ({}) ([$.Type, $.Type, $.Type]) (Array2);
 
 $.Nullable = def ('Nullable') ({}) ([$.Type, $.Type]) (Nullable);
+
+$.Pair = def ('Pair') ({}) ([$.Type, $.Type, $.Type]) (Pair);
 
 /*****************************************************************************/
 

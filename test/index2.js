@@ -1771,28 +1771,28 @@ See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Number for in
     eq ($.Object.supertypes) ([]);
   });
 
-///   test ('provides the "Pair" type constructor', () => {
-///     eq (typeof $.Pair) ('function');
-///     eq ($.Pair.length) (1);
-///     eq (show ($.Pair)) ('Pair :: Type -> Type -> Type');
-///     eq (show ($.Pair (a) (b))) ('Pair a b');
-///     eq (($.Pair (a) (b)).name) ('Pair');
-///     eq (($.Pair (a) (b)).url) (`https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Pair`);
-///     eq (($.Pair (a) (b)).supertypes) ([]);
-/// 
-///     const isPairStringNumber = $.test ([]) ($.Pair ($.String) ($.Number));
-///     eq (isPairStringNumber (null)) (false);
-///     eq (isPairStringNumber (Pair ('abc') ('xyz'))) (false);
-///     eq (isPairStringNumber (Pair ('abc') (67.89))) (true);
-///     eq (isPairStringNumber (Pair (12.34) ('xyz'))) (false);
-///     eq (isPairStringNumber (Pair (12.34) (67.89))) (false);
-///   });
-/// 
-///   test ('provides the "RegExp" type', () => {
-///     eq ($.RegExp.name) ('RegExp');
-///     eq ($.RegExp.url) (`https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#RegExp`);
-///     eq ($.RegExp.supertypes) ([]);
-///   });
+  test ('provides the "Pair" type constructor', () => {
+    eq (typeof $.Pair) ('function');
+    eq ($.Pair.length) (1);
+    eq (show ($.Pair)) ('Pair :: Type -> Type -> Type');
+    eq (show ($.Pair (a) (b))) ('Pair a b');
+    eq (($.Pair (a) (b)).name) ('Pair');
+    eq (($.Pair (a) (b)).url) (`https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Pair`);
+    eq (($.Pair (a) (b)).supertypes) ([]);
+
+    const isPairStringNumber = $.test ([]) ($.Pair ($.String) ($.Number));
+    eq (isPairStringNumber (null)) (false);
+    eq (isPairStringNumber (Pair ('abc') ('xyz'))) (false);
+    eq (isPairStringNumber (Pair ('abc') (67.89))) (true);
+    eq (isPairStringNumber (Pair (12.34) ('xyz'))) (false);
+    eq (isPairStringNumber (Pair (12.34) (67.89))) (false);
+  });
+
+  test ('provides the "RegExp" type', () => {
+    eq ($.RegExp.name) ('RegExp');
+    eq ($.RegExp.url) (`https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#RegExp`);
+    eq ($.RegExp.supertypes) ([]);
+  });
 
   test ('provides the "String" type', () => {
     eq ($.String.name) ('String');
