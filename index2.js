@@ -9,6 +9,9 @@ const Z = require ('sanctuary-type-classes');
 
 const $ = module.exports = {};
 
+//    B :: (b -> c) -> (a -> b) -> a -> c
+const B = f => g => x => f (g (x));
+
 const I = x => x;
 
 const K = x => y => x;
@@ -20,8 +23,35 @@ const log = (...args) => {
 //    reduce :: (b -> a -> b) -> b -> Array a -> b
 const reduce = f => y => xs => xs.reduce ((y, x) => f (y) (x), y);
 
+//    isEmpty :: Foldable f => f a -> Boolean
+const isEmpty = xs => Z.size (xs) === 0;
+
+//    isPrefix :: Array a -> Array a -> Boolean
+const isPrefix = candidate => xs => {
+  if (candidate.length > xs.length) return false;
+  for (var idx = 0; idx < candidate.length; idx += 1) {
+    if (candidate[idx] !== xs[idx]) return false;
+  }
+  return true;
+};
+
 //    joinWith :: (String, Array String) -> String
 const joinWith = (separator, ss) => ss.join (separator);
+
+//    or :: (Array a, Array a) -> Array a
+const or = (xs, ys) => isEmpty (xs) ? ys : xs;
+
+//    strRepeat :: (String, Integer) -> String
+const strRepeat = (s, times) => joinWith (s, Array (times + 1));
+
+//    r :: Char -> String -> String
+const r = c => s => strRepeat (c, s.length);
+
+//    _ :: String -> String
+const _ = r (' ');
+
+//    trimTrailingSpaces :: String -> String
+const trimTrailingSpaces = s => s.replace (/[ ]+$/gm, '');
 
 //    when :: Boolean -> (a -> a) -> a -> a
 const when = bool => f => x => bool ? f (x) : x;
@@ -31,6 +61,9 @@ const wrap = prefix => suffix => s => prefix + s + suffix;
 
 //    parenthesize :: (String -> String) -> String -> String
 const parenthesize = f => wrap (f ('(')) (f (')'));
+
+//    q :: String -> String
+const q = wrap ('\u2018') ('\u2019');
 
 const types_ = x => {
   switch (Object.prototype.toString.call (x)) {
@@ -48,13 +81,208 @@ const showEnv = env => {
   return `[${(String (env._ts)).padStart (2, '0')}]${'a' in env ? ` a = ${env['a']}` : ''}${'b' in env ? ` b = ${env['b']}` : ''}`;
 };
 
+//  _underline :: ... -> String
+function _underline(
+  t,              // :: Type
+  propPath,       // :: PropPath
+  formatType3     // :: Type -> Array String -> String -> String
+) {
+  return formatType3 (t) (propPath) (t.format (_, function(k) {
+    return K (_underline (t.types[k],
+                          Z.concat (propPath, [k]),
+                          formatType3));
+  }));
+}
+
+//  underline :: ... -> String
+function underline(
+  typeInfo,               // :: TypeInfo
+  underlineConstraint,    // :: String -> TypeClass -> String -> String
+  formatType5
+  // :: Integer -> (String -> String) -> Type -> PropPath -> String -> String
+) {
+  var st = typeInfo.types.reduce (function(st, t, index) {
+    var f = B (when (t.type === 'FUNCTION')
+                    (parenthesize (_)))
+              (B (function(f) { return _underline (t, [], f); })
+                 (formatType5 (index)));
+    st.carets.push (f (r ('^')));
+    st.numbers.push (f (function(s) {
+      return label (show (st.counter += 1)) (s);
+    }));
+    return st;
+  }, {carets: [], numbers: [], counter: 0});
+
+  return typeSignature (typeInfo) + '\n' +
+         _ (typeInfo.name + ' :: ') +
+            constraintsRepr (typeInfo.constraints, _, underlineConstraint) +
+            joinWith (_ (' -> '), st.carets) + '\n' +
+         _ (typeInfo.name + ' :: ') +
+            constraintsRepr (typeInfo.constraints, _, K (K (_))) +
+            joinWith (_ (' -> '), st.numbers) + '\n';
+}
+
+//  resolvePropPath :: (Type, Array String) -> Type
+function resolvePropPath(t, propPath) {
+  return Z.reduce (function(t, prop) { return t.types[prop]; },
+                   t,
+                   propPath);
+}
+
+//  formatType6 ::
+//    PropPath -> Integer -> (String -> String) ->
+//      Type -> PropPath -> String -> String
+function formatType6(indexedPropPath) {
+  return function(index_) {
+    return function(f) {
+      return function(t) {
+        return function(propPath_) {
+          var indexedPropPath_ = Z.concat ([index_], propPath_);
+          var p = isPrefix (indexedPropPath_) (indexedPropPath);
+          var q = isPrefix (indexedPropPath) (indexedPropPath_);
+          return p && q ? f : p ? I : _;
+        };
+      };
+    };
+  };
+}
+
+//    see :: (String, { name :: String, url :: String? }) -> String
+const see = (label, record) => (
+  record.url == null || record.url === '' ?
+  '' :
+  '\nSee ' + record.url +
+  ' for information about the ' + record.name + ' ' + label + '.\n'
+);
+
+//  invalidValue :: ... -> Error
+function invalidValue(
+  env,            // :: Array Type
+  typeInfo,       // :: TypeInfo
+  index,          // :: Integer
+  propPath,       // :: PropPath
+  value           // :: Any
+) {
+  var t = resolvePropPath (typeInfo.types[index], propPath);
+
+  var underlinedTypeVars =
+  underline (typeInfo,
+             K (K (_)),
+             formatType6 (Z.concat ([index], propPath)));
+
+  return new TypeError (trimTrailingSpaces (
+    t.type === 'VARIABLE' &&
+    isEmpty (determineActualTypesLoose (env, [value])) ?
+      'Unrecognized value\n\n' +
+      underlinedTypeVars + '\n' +
+      showValuesAndTypes (env, typeInfo, [value], 1) + '\n\n' +
+      toMarkdownList (
+        'The environment is empty! ' +
+        'Polymorphic functions require a non-empty environment.\n',
+        'The value at position 1 is not a member of any type in ' +
+        'the environment.\n\n' +
+        'The environment contains the following types:\n\n',
+        showTypeWith (typeInfo.types),
+        env
+      ) :
+    // else
+      'Invalid value\n\n' +
+      underlinedTypeVars + '\n' +
+      showValuesAndTypes (env, typeInfo, [value], 1) + '\n\n' +
+      'The value at position 1 is not a member of ' +
+      q (show (t)) + '.\n' +
+      see (t.types.length >= 1 ? 'type constructor' : 'type', t)
+  ));
+}
+
+//  expandUnknown
+//  :: Array Type
+//  -> Array Object
+//  -> Any
+//  -> (a -> Array b)
+//  -> Type
+//  -> Array Type
+const expandUnknown = env => seen => value => extractor => type => (
+  type.type === UNKNOWN ?
+  _determineActualTypes (env, seen, extractor (value)) :
+  [type]
+);
+
+//    _determineActualTypes :: ... -> Array Type
+const _determineActualTypes = (
+  env,            // :: Array Type
+  seen,           // :: Array Object
+  values          // :: Array Any
+) => {
+  const expandUnknown4 = expandUnknown (env);
+
+  function refine(types, value) {
+    var seen$;
+    if (typeof value === 'object' && value != null ||
+        typeof value === 'function') {
+      //  Abort if a circular reference is encountered; add the current
+      //  object to the array of seen objects otherwise.
+      if (seen.indexOf (value) >= 0) return [];
+      seen$ = Z.concat (seen, [value]);
+    } else {
+      seen$ = seen;
+    }
+    var expandUnknown2 = expandUnknown4 (seen$) (value);
+    return Z.chain (function(t) {
+      return (
+        (t.validate (env) (value)).isLeft ?
+          [] :
+        t.type === 'UNARY' ?
+          Z.map (fromUnaryType (t),
+                 expandUnknown2 (t.extractors.$1) (t.types.$1)) :
+        t.type === 'BINARY' ?
+          Z.lift2 (fromBinaryType (t),
+                   expandUnknown2 (t.extractors.$1) (t.types.$1),
+                   expandUnknown2 (t.extractors.$2) (t.types.$2)) :
+        // else
+          [t]
+      );
+    }, types);
+  }
+
+  return isEmpty (values) ?
+    [Unknown] :
+    or (Z.reduce (refine, env, values), [$.Inconsistent]);
+};
+
+//    determineActualTypesLoose :: (Array Type, Array Any) -> Array Type
+const determineActualTypesLoose = (env, values) => (
+  Z.reject (function(t) { return t.type === 'INCONSISTENT'; },
+            _determineActualTypes (env, [], values))
+);
+
+const _test = env => x => function recur(t) {
+  return t.supertypes.every (recur) && t._test (env) (x);
+};
+
 const Type$prototype = {
   '@@type': 'sanctuary-def/Type@1',
   '@@show': function() {
     return this.format (I, K (I));
   },
   'validate': function(env) {
-    return TK;
+    const test2 = _test (env);
+    const type = this;
+    return x => {
+      if (!(test2 (x) (this))) return Left ({value: x, propPath: []});
+      for (const k of this.keys) {
+        const t = type.types[k];
+        const ys = type.extractors[k] (x);
+        for (const y of ys) {
+          const result = t.validate (env) (y);
+          if (result.isLeft) {
+            return Left ({value: result.value.value,
+                          propPath: Z.prepend (k, result.value.propPath)});
+          }
+        }
+      }
+      return Right (x);
+    };
   },
   'fantasy-land/equals': function(other) {
     return (
@@ -379,6 +607,16 @@ $.Type = Object.assign (
   }
 );
 
+$.Undefined = Object.assign (
+  $.NullaryType ('Undefined')
+                ('https://github.com/sanctuary-js/sanctuary-def/tree/v0.22.0#Undefined')
+                ([])
+                (x => Object.prototype.toString.call (x) === '[object Undefined]'),
+  {
+    new: env => x => Right (TK),
+  }
+);
+
 $.Array = $1 => (
   Object.assign (
     $.UnaryType ('Array')
@@ -446,6 +684,13 @@ const constraintsRepr = (
                     (joinWith (outer (', '), $reprs)));
 };
 
+//    label :: String -> String -> String
+const label = label => s => {
+  const delta = s.length - label.length;
+  return strRepeat (' ', Math.floor (delta / 2)) + label +
+         strRepeat (' ', Math.ceil (delta / 2));
+};
+
 //    typeVarNames :: Type -> Array String
 const typeVarNames = t => (
   Z.concat (
@@ -470,6 +715,24 @@ const showTypeWith = types => {
   };
 }
 
+//    showValuesAndTypes :: ... -> String
+const showValuesAndTypes = (
+  env,            // :: Array Type
+  typeInfo,       // :: TypeInfo
+  values,         // :: Array Any
+  pos             // :: Integer
+) => {
+  const showType = showTypeWith (typeInfo.types);
+  return show (pos) + ')  ' + joinWith ('\n    ', Z.map (x => (
+    show (x) +
+    ' :: ' +
+    joinWith (', ',
+              or (Z.map (showType,
+                         determineActualTypesLoose (env, [x])),
+                  ['(no types)']))
+  ), values));
+};
+
 const typeSignature = typeInfo => (
   typeInfo.name + ' :: ' +
   constraintsRepr (typeInfo.constraints, I, K (K (I))) +
@@ -477,21 +740,26 @@ const typeSignature = typeInfo => (
 );
 
 const def = $.def = name => constraints => types => {
+  const typeInfo = {name: name, constraints: constraints, types: types};
   const [output, ...inputs] = Z.reverse (types);
 
   return reduce (run => input => _env => f => {
                    const wrapped = _x => {
                      const env = Object.assign (Object.create (_env), {_ts: nextInt ()});
                      const x = input.new (env) (_x);
-                     if (x.isLeft) throw new TypeError (x.value);
+                     if (x.isLeft) {
+                       throw invalidValue (
+                         [$.Number, $.String, $.Null, $.Undefined],
+                         typeInfo,
+                         0,  // index
+                         [],  // propPath
+                         _x  // value
+                       );
+                     }
                      log ('updateEnv 1', showEnv (env));
                      return run (env) (f (x.value));
                    };
-                   const signature = typeSignature ({
-                     name: name,
-                     constraints: constraints,
-                     types: types,
-                   });
+                   const signature = typeSignature (typeInfo);
                    wrapped.toString = () => signature;
                    return wrapped;
                  })
@@ -508,6 +776,8 @@ const def = $.def = name => constraints => types => {
 $.Predicate = def ('Predicate') ({}) ([$.Type, $.Type]) (Predicate);
 
 /*****************************************************************************/
+
+return;
 
 const length =
 def ('length')

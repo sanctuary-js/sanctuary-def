@@ -467,33 +467,33 @@ suite ('def', () => {
 
     eq (sqrt (25)) (5);
 
-///     throws (() => { sqrt (null); })
-///            (new TypeError (`Invalid value
-/// 
-/// sqrt :: Number -> Number
-///         ^^^^^^
-///           1
-/// 
-/// 1)  null :: Null
-/// 
-/// The value at position 1 is not a member of ‘Number’.
-/// 
-/// See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Number for information about the Number type.
-/// `));
+    throws (() => { sqrt (null); })
+           (new TypeError (`Invalid value
 
-///     throws (() => { sqrt (undefined); })
-///            (new TypeError (`Invalid value
-/// 
-/// sqrt :: Number -> Number
-///         ^^^^^^
-///           1
-/// 
-/// 1)  undefined :: Undefined
-/// 
-/// The value at position 1 is not a member of ‘Number’.
-/// 
-/// See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Number for information about the Number type.
-/// `));
+sqrt :: Number -> Number
+        ^^^^^^
+          1
+
+1)  null :: Null
+
+The value at position 1 is not a member of ‘Number’.
+
+See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Number for information about the Number type.
+`));
+
+        throws (() => { sqrt (undefined); })
+               (new TypeError (`Invalid value
+
+sqrt :: Number -> Number
+        ^^^^^^
+          1
+
+1)  undefined :: Undefined
+
+The value at position 1 is not a member of ‘Number’.
+
+See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Number for information about the Number type.
+`));
   });
 
 ///   test ('reports type error correctly for parameterized types', () => {
