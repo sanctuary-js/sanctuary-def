@@ -321,15 +321,15 @@ $.Array = $1 => (
                 (I)
                 ($1),
     {
-      new: env => x => {
-        if (!(Array.isArray (x))) return Left ('Not an array');
+      new: env => xs => {
+        if (!(Array.isArray (xs))) return Left ('Not an array');
 
-        x.forEach (x => {
+        for (const x of xs) {
           const e = $1.new (env) (x);
-          if (e.isLeft) throw new TypeError (e.value);
-        });
+          if (e.isLeft) return e;
+        }
 
-        return Right (x);
+        return Right (xs);
       },
     }
   )
