@@ -1366,51 +1366,53 @@ $.env = [
 
 /*****************************************************************************/
 
-return;
+const main = () => {
 
-const length =
-def ('length')
-    ({})
-    ([$.String, $.Number])
-    (s => s.length);
-
-assert.deepStrictEqual (length (''), 0);
-assert.deepStrictEqual (length ('foo'), 3);
-assert.deepStrictEqual (length ('foobar'), 6);
-
-const concat3 =
-def ('concat3')
-    ({})
-    ([$.Array (a),
-      $.Array (a),
-      $.Array (a),
-      $.Array (a)])
-    ($1 => $2 => $3 => [].concat ($1, $2, $3));
-
-assert.deepStrictEqual (concat3 ([1, 2, 3]) ([4, 5, 6]) ([7, 8, 9]), [1, 2, 3, 4, 5, 6, 7, 8, 9]);
-assert.deepStrictEqual (concat3 (['1', '2', '3']) (['4', '5', '6']) (['7', '8', '9']), ['1', '2', '3', '4', '5', '6', '7', '8', '9']);
-assert.throws (() => concat3 (['1', '2', '3']) ([4, 5, 6]), new TypeError ('Incompatible "a" types'));
-
-assert.deepStrictEqual (
-  def ('map')
+  const length =
+  def ('length')
       ({})
-      ([$.Fn (a) (b),
-        $.Array (a),
-        $.Array (b)])
-      (f => xs => xs.map (x => f (x)))
-      (length)
-      (['foo', 'bar', 'baz', 'quux']),
-  [3, 3, 3, 4]
-);
+      ([$.String, $.Number])
+      (s => s.length);
 
-assert.throws (
-  () => def ('map')
-            ({})
-            ([$.Fn (a) (b),
-              $.Array (a),
-              $.Array (b)])
-            (f => xs => xs.map (x => { f (x); return x; }))
-            (length)
-            (['foo', 'bar', 'baz', 'quux']),
-  new TypeError ('Incompatible "b" types')
-);
+  assert.deepStrictEqual (length (''), 0);
+  assert.deepStrictEqual (length ('foo'), 3);
+  assert.deepStrictEqual (length ('foobar'), 6);
+
+  const concat3 =
+  def ('concat3')
+      ({})
+      ([$.Array (a),
+        $.Array (a),
+        $.Array (a),
+        $.Array (a)])
+      ($1 => $2 => $3 => [].concat ($1, $2, $3));
+
+  assert.deepStrictEqual (concat3 ([1, 2, 3]) ([4, 5, 6]) ([7, 8, 9]), [1, 2, 3, 4, 5, 6, 7, 8, 9]);
+  assert.deepStrictEqual (concat3 (['1', '2', '3']) (['4', '5', '6']) (['7', '8', '9']), ['1', '2', '3', '4', '5', '6', '7', '8', '9']);
+  assert.throws (() => concat3 (['1', '2', '3']) ([4, 5, 6]), new TypeError ('Incompatible "a" types'));
+
+  assert.deepStrictEqual (
+    def ('map')
+        ({})
+        ([$.Fn (a) (b),
+          $.Array (a),
+          $.Array (b)])
+        (f => xs => xs.map (x => f (x)))
+        (length)
+        (['foo', 'bar', 'baz', 'quux']),
+    [3, 3, 3, 4]
+  );
+
+  assert.throws (
+    () => def ('map')
+              ({})
+              ([$.Fn (a) (b),
+                $.Array (a),
+                $.Array (b)])
+              (f => xs => xs.map (x => { f (x); return x; }))
+              (length)
+              (['foo', 'bar', 'baz', 'quux']),
+    new TypeError ('Incompatible "b" types')
+  );
+
+};
