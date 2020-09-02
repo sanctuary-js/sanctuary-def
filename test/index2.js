@@ -1736,16 +1736,16 @@ See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Number for in
     eq (isMaybeNumber (Just (/XXX/))) (false);
   });
 
-///   test ('provides the "NonEmpty" type constructor', () => {
-///     eq (($.NonEmpty ($.String)).name) ('NonEmpty');
-///     eq (($.NonEmpty ($.String)).url) (`https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#NonEmpty`);
-///     eq (($.NonEmpty ($.String)).supertypes) ([]);
-/// 
-///     const isNonEmptyIntegerArray = $.test ([]) ($.NonEmpty ($.Array ($.Integer)));
-///     eq (isNonEmptyIntegerArray ([])) (false);
-///     eq (isNonEmptyIntegerArray ([0])) (true);
-///     eq (isNonEmptyIntegerArray ([0.5])) (false);
-///   });
+  test ('provides the "NonEmpty" type constructor', () => {
+    eq (($.NonEmpty ($.String)).name) ('NonEmpty');
+    eq (($.NonEmpty ($.String)).url) (`https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#NonEmpty`);
+    eq (($.NonEmpty ($.String)).supertypes) ([]);
+
+    const isNonEmptyIntegerArray = $.test ([]) ($.NonEmpty ($.Array ($.Integer)));
+    eq (isNonEmptyIntegerArray ([])) (false);
+    eq (isNonEmptyIntegerArray ([0])) (true);
+    eq (isNonEmptyIntegerArray ([0.5])) (false);
+  });
 
   test ('provides the "Null" type', () => {
     eq ($.Null.name) ('Null');
@@ -1890,152 +1890,152 @@ See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Number for in
 ///     eq (isNegativeNumber (-Infinity)) (true);
 ///     eq (isNegativeNumber (new Number (-Infinity))) (false);
 ///   });
-/// 
-///   test ('provides the "ValidNumber" type', () => {
-///     eq ($.ValidNumber.name) ('ValidNumber');
-///     eq ($.ValidNumber.url) (`https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#ValidNumber`);
-///     eq ($.ValidNumber.supertypes) ([$.Number]);
-/// 
-///     const isValidNumber = $.test ([]) ($.ValidNumber);
-///     eq (isValidNumber (NaN)) (false);
-///     eq (isValidNumber (1)) (true);
-///     eq (isValidNumber (new Number (1))) (false);
-///   });
-/// 
-///   test ('provides the "NonZeroValidNumber" type', () => {
-///     eq ($.NonZeroValidNumber.name) ('NonZeroValidNumber');
-///     eq ($.NonZeroValidNumber.url) (`https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#NonZeroValidNumber`);
-///     eq ($.NonZeroValidNumber.supertypes) ([$.ValidNumber]);
-/// 
-///     const isNonZeroValidNumber = $.test ([]) ($.NonZeroValidNumber);
-///     eq (isNonZeroValidNumber (0)) (false);
-///     eq (isNonZeroValidNumber (-0)) (false);
-///     eq (isNonZeroValidNumber (1)) (true);
-///     eq (isNonZeroValidNumber (new Number (1))) (false);
-///   });
-/// 
-///   test ('provides the "FiniteNumber" type', () => {
-///     eq ($.FiniteNumber.name) ('FiniteNumber');
-///     eq ($.FiniteNumber.url) (`https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#FiniteNumber`);
-///     eq ($.FiniteNumber.supertypes) ([$.ValidNumber]);
-/// 
-///     const isFiniteNumber = $.test ([]) ($.FiniteNumber);
-///     eq (isFiniteNumber (Infinity)) (false);
-///     eq (isFiniteNumber (-Infinity)) (false);
-///     eq (isFiniteNumber (1)) (true);
-///     eq (isFiniteNumber (new Number (1))) (false);
-///   });
-/// 
-///   test ('provides the "PositiveFiniteNumber" type', () => {
-///     eq ($.PositiveFiniteNumber.name) ('PositiveFiniteNumber');
-///     eq ($.PositiveFiniteNumber.url) (`https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#PositiveFiniteNumber`);
-///     eq ($.PositiveFiniteNumber.supertypes) ([$.FiniteNumber]);
-/// 
-///     const isPositiveFiniteNumber = $.test ([]) ($.PositiveFiniteNumber);
-///     eq (isPositiveFiniteNumber (null)) (false);
-///     eq (isPositiveFiniteNumber (NaN)) (false);
-///     eq (isPositiveFiniteNumber (Infinity)) (false);
-///     eq (isPositiveFiniteNumber (-1)) (false);
-///     eq (isPositiveFiniteNumber (0)) (false);
-///     eq (isPositiveFiniteNumber (-0)) (false);
-///     eq (isPositiveFiniteNumber (0.5)) (true);
-///     eq (isPositiveFiniteNumber (new Number (0.5))) (false);
-///   });
-/// 
-///   test ('provides the "NegativeFiniteNumber" type', () => {
-///     eq ($.NegativeFiniteNumber.name) ('NegativeFiniteNumber');
-///     eq ($.NegativeFiniteNumber.url) (`https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#NegativeFiniteNumber`);
-///     eq ($.NegativeFiniteNumber.supertypes) ([$.FiniteNumber]);
-/// 
-///     const isNegativeFiniteNumber = $.test ([]) ($.NegativeFiniteNumber);
-///     eq (isNegativeFiniteNumber (null)) (false);
-///     eq (isNegativeFiniteNumber (NaN)) (false);
-///     eq (isNegativeFiniteNumber (-Infinity)) (false);
-///     eq (isNegativeFiniteNumber (1)) (false);
-///     eq (isNegativeFiniteNumber (0)) (false);
-///     eq (isNegativeFiniteNumber (-0)) (false);
-///     eq (isNegativeFiniteNumber (-0.5)) (true);
-///     eq (isNegativeFiniteNumber (new Number (-0.5))) (false);
-///   });
-/// 
-///   test ('provides the "NonZeroFiniteNumber" type', () => {
-///     eq ($.NonZeroFiniteNumber.name) ('NonZeroFiniteNumber');
-///     eq ($.NonZeroFiniteNumber.url) (`https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#NonZeroFiniteNumber`);
-///     eq ($.NonZeroFiniteNumber.supertypes) ([$.FiniteNumber]);
-/// 
-///     const isNonZeroFiniteNumber = $.test ([]) ($.NonZeroFiniteNumber);
-///     eq (isNonZeroFiniteNumber (0)) (false);
-///     eq (isNonZeroFiniteNumber (-0)) (false);
-///     eq (isNonZeroFiniteNumber (Infinity)) (false);
-///     eq (isNonZeroFiniteNumber (-Infinity)) (false);
-///     eq (isNonZeroFiniteNumber (1)) (true);
-///     eq (isNonZeroFiniteNumber (new Number (1))) (false);
-///   });
-/// 
-///   test ('provides the "Integer" type', () => {
-///     eq ($.Integer.name) ('Integer');
-///     eq ($.Integer.url) (`https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Integer`);
-///     eq ($.Integer.supertypes) ([$.ValidNumber]);
-/// 
-///     const isInteger = $.test ([]) ($.Integer);
-///     eq (isInteger (3.14)) (false);
-///     eq (isInteger (9007199254740992)) (false);
-///     eq (isInteger (-9007199254740992)) (false);
-///     eq (isInteger (1)) (true);
-///     eq (isInteger (new Number (1))) (false);
-///   });
-/// 
-///   test ('provides the "NonZeroInteger" type', () => {
-///     eq ($.NonZeroInteger.name) ('NonZeroInteger');
-///     eq ($.NonZeroInteger.url) (`https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#NonZeroInteger`);
-///     eq ($.NonZeroInteger.supertypes) ([$.Integer]);
-/// 
-///     const isNonZeroInteger = $.test ([]) ($.NonZeroInteger);
-///     eq (isNonZeroInteger (0)) (false);
-///     eq (isNonZeroInteger (-0)) (false);
-///     eq (isNonZeroInteger (3.14)) (false);
-///     eq (isNonZeroInteger (1)) (true);
-///     eq (isNonZeroInteger (new Number (1))) (false);
-///   });
-/// 
-///   test ('provides the "NonNegativeInteger" type', () => {
-///     eq ($.NonNegativeInteger.name) ('NonNegativeInteger');
-///     eq ($.NonNegativeInteger.url) (`https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#NonNegativeInteger`);
-///     eq ($.NonNegativeInteger.supertypes) ([$.Integer]);
-/// 
-///     const isNonNegativeInteger = $.test ([]) ($.NonNegativeInteger);
-///     eq (isNonNegativeInteger (0)) (true);
-///     eq (isNonNegativeInteger (-0)) (true);
-///     eq (isNonNegativeInteger (1)) (true);
-///     eq (isNonNegativeInteger (-1)) (false);
-///     eq (isNonNegativeInteger (3.14)) (false);
-///     eq (isNonNegativeInteger (new Number (1))) (false);
-///   });
-/// 
-///   test ('provides the "PositiveInteger" type', () => {
-///     eq ($.PositiveInteger.name) ('PositiveInteger');
-///     eq ($.PositiveInteger.url) (`https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#PositiveInteger`);
-///     eq ($.PositiveInteger.supertypes) ([$.Integer]);
-/// 
-///     const isPositiveInteger = $.test ([]) ($.PositiveInteger);
-///     eq (isPositiveInteger (1.5)) (false);
-///     eq (isPositiveInteger (-1)) (false);
-///     eq (isPositiveInteger (1)) (true);
-///     eq (isPositiveInteger (new Number (1))) (false);
-///   });
-/// 
-///   test ('provides the "NegativeInteger" type', () => {
-///     eq ($.NegativeInteger.name) ('NegativeInteger');
-///     eq ($.NegativeInteger.url) (`https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#NegativeInteger`);
-///     eq ($.NegativeInteger.supertypes) ([$.Integer]);
-/// 
-///     const isNegativeInteger = $.test ([]) ($.NegativeInteger);
-///     eq (isNegativeInteger (-1.5)) (false);
-///     eq (isNegativeInteger (1)) (false);
-///     eq (isNegativeInteger (-1)) (true);
-///     eq (isNegativeInteger (new Number (-1))) (false);
-///   });
-/// 
+
+  test ('provides the "ValidNumber" type', () => {
+    eq ($.ValidNumber.name) ('ValidNumber');
+    eq ($.ValidNumber.url) (`https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#ValidNumber`);
+    eq ($.ValidNumber.supertypes) ([$.Number]);
+
+    const isValidNumber = $.test ([]) ($.ValidNumber);
+    eq (isValidNumber (NaN)) (false);
+    eq (isValidNumber (1)) (true);
+    eq (isValidNumber (new Number (1))) (false);
+  });
+
+  test ('provides the "NonZeroValidNumber" type', () => {
+    eq ($.NonZeroValidNumber.name) ('NonZeroValidNumber');
+    eq ($.NonZeroValidNumber.url) (`https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#NonZeroValidNumber`);
+    eq ($.NonZeroValidNumber.supertypes) ([$.ValidNumber]);
+
+    const isNonZeroValidNumber = $.test ([]) ($.NonZeroValidNumber);
+    eq (isNonZeroValidNumber (0)) (false);
+    eq (isNonZeroValidNumber (-0)) (false);
+    eq (isNonZeroValidNumber (1)) (true);
+    eq (isNonZeroValidNumber (new Number (1))) (false);
+  });
+
+  test ('provides the "FiniteNumber" type', () => {
+    eq ($.FiniteNumber.name) ('FiniteNumber');
+    eq ($.FiniteNumber.url) (`https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#FiniteNumber`);
+    eq ($.FiniteNumber.supertypes) ([$.ValidNumber]);
+
+    const isFiniteNumber = $.test ([]) ($.FiniteNumber);
+    eq (isFiniteNumber (Infinity)) (false);
+    eq (isFiniteNumber (-Infinity)) (false);
+    eq (isFiniteNumber (1)) (true);
+    eq (isFiniteNumber (new Number (1))) (false);
+  });
+
+  test ('provides the "PositiveFiniteNumber" type', () => {
+    eq ($.PositiveFiniteNumber.name) ('PositiveFiniteNumber');
+    eq ($.PositiveFiniteNumber.url) (`https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#PositiveFiniteNumber`);
+    eq ($.PositiveFiniteNumber.supertypes) ([$.FiniteNumber]);
+
+    const isPositiveFiniteNumber = $.test ([]) ($.PositiveFiniteNumber);
+    eq (isPositiveFiniteNumber (null)) (false);
+    eq (isPositiveFiniteNumber (NaN)) (false);
+    eq (isPositiveFiniteNumber (Infinity)) (false);
+    eq (isPositiveFiniteNumber (-1)) (false);
+    eq (isPositiveFiniteNumber (0)) (false);
+    eq (isPositiveFiniteNumber (-0)) (false);
+    eq (isPositiveFiniteNumber (0.5)) (true);
+    eq (isPositiveFiniteNumber (new Number (0.5))) (false);
+  });
+
+  test ('provides the "NegativeFiniteNumber" type', () => {
+    eq ($.NegativeFiniteNumber.name) ('NegativeFiniteNumber');
+    eq ($.NegativeFiniteNumber.url) (`https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#NegativeFiniteNumber`);
+    eq ($.NegativeFiniteNumber.supertypes) ([$.FiniteNumber]);
+
+    const isNegativeFiniteNumber = $.test ([]) ($.NegativeFiniteNumber);
+    eq (isNegativeFiniteNumber (null)) (false);
+    eq (isNegativeFiniteNumber (NaN)) (false);
+    eq (isNegativeFiniteNumber (-Infinity)) (false);
+    eq (isNegativeFiniteNumber (1)) (false);
+    eq (isNegativeFiniteNumber (0)) (false);
+    eq (isNegativeFiniteNumber (-0)) (false);
+    eq (isNegativeFiniteNumber (-0.5)) (true);
+    eq (isNegativeFiniteNumber (new Number (-0.5))) (false);
+  });
+
+  test ('provides the "NonZeroFiniteNumber" type', () => {
+    eq ($.NonZeroFiniteNumber.name) ('NonZeroFiniteNumber');
+    eq ($.NonZeroFiniteNumber.url) (`https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#NonZeroFiniteNumber`);
+    eq ($.NonZeroFiniteNumber.supertypes) ([$.FiniteNumber]);
+
+    const isNonZeroFiniteNumber = $.test ([]) ($.NonZeroFiniteNumber);
+    eq (isNonZeroFiniteNumber (0)) (false);
+    eq (isNonZeroFiniteNumber (-0)) (false);
+    eq (isNonZeroFiniteNumber (Infinity)) (false);
+    eq (isNonZeroFiniteNumber (-Infinity)) (false);
+    eq (isNonZeroFiniteNumber (1)) (true);
+    eq (isNonZeroFiniteNumber (new Number (1))) (false);
+  });
+
+  test ('provides the "Integer" type', () => {
+    eq ($.Integer.name) ('Integer');
+    eq ($.Integer.url) (`https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Integer`);
+    eq ($.Integer.supertypes) ([$.ValidNumber]);
+
+    const isInteger = $.test ([]) ($.Integer);
+    eq (isInteger (3.14)) (false);
+    eq (isInteger (9007199254740992)) (false);
+    eq (isInteger (-9007199254740992)) (false);
+    eq (isInteger (1)) (true);
+    eq (isInteger (new Number (1))) (false);
+  });
+
+  test ('provides the "NonZeroInteger" type', () => {
+    eq ($.NonZeroInteger.name) ('NonZeroInteger');
+    eq ($.NonZeroInteger.url) (`https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#NonZeroInteger`);
+    eq ($.NonZeroInteger.supertypes) ([$.Integer]);
+
+    const isNonZeroInteger = $.test ([]) ($.NonZeroInteger);
+    eq (isNonZeroInteger (0)) (false);
+    eq (isNonZeroInteger (-0)) (false);
+    eq (isNonZeroInteger (3.14)) (false);
+    eq (isNonZeroInteger (1)) (true);
+    eq (isNonZeroInteger (new Number (1))) (false);
+  });
+
+  test ('provides the "NonNegativeInteger" type', () => {
+    eq ($.NonNegativeInteger.name) ('NonNegativeInteger');
+    eq ($.NonNegativeInteger.url) (`https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#NonNegativeInteger`);
+    eq ($.NonNegativeInteger.supertypes) ([$.Integer]);
+
+    const isNonNegativeInteger = $.test ([]) ($.NonNegativeInteger);
+    eq (isNonNegativeInteger (0)) (true);
+    eq (isNonNegativeInteger (-0)) (true);
+    eq (isNonNegativeInteger (1)) (true);
+    eq (isNonNegativeInteger (-1)) (false);
+    eq (isNonNegativeInteger (3.14)) (false);
+    eq (isNonNegativeInteger (new Number (1))) (false);
+  });
+
+  test ('provides the "PositiveInteger" type', () => {
+    eq ($.PositiveInteger.name) ('PositiveInteger');
+    eq ($.PositiveInteger.url) (`https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#PositiveInteger`);
+    eq ($.PositiveInteger.supertypes) ([$.Integer]);
+
+    const isPositiveInteger = $.test ([]) ($.PositiveInteger);
+    eq (isPositiveInteger (1.5)) (false);
+    eq (isPositiveInteger (-1)) (false);
+    eq (isPositiveInteger (1)) (true);
+    eq (isPositiveInteger (new Number (1))) (false);
+  });
+
+  test ('provides the "NegativeInteger" type', () => {
+    eq ($.NegativeInteger.name) ('NegativeInteger');
+    eq ($.NegativeInteger.url) (`https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#NegativeInteger`);
+    eq ($.NegativeInteger.supertypes) ([$.Integer]);
+
+    const isNegativeInteger = $.test ([]) ($.NegativeInteger);
+    eq (isNegativeInteger (-1.5)) (false);
+    eq (isNegativeInteger (1)) (false);
+    eq (isNegativeInteger (-1)) (true);
+    eq (isNegativeInteger (new Number (-1))) (false);
+  });
+
 ///   test ('provides the "GlobalRegExp" type', () => {
 ///     eq ($.GlobalRegExp.name) ('GlobalRegExp');
 ///     eq ($.GlobalRegExp.url) (`https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#GlobalRegExp`);

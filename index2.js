@@ -8,6 +8,9 @@ const Z = require ('sanctuary-type-classes');
 const type = require ('sanctuary-type-identifiers');
 
 
+const MAX_SAFE_INTEGER = Math.pow (2, 53) - 1;
+const MIN_SAFE_INTEGER = -MAX_SAFE_INTEGER;
+
 const $ = module.exports = {};
 
 //    B :: (b -> c) -> (a -> b) -> a -> c
@@ -448,6 +451,7 @@ const Type$prototype = {
       if (!(test2 (x) (this))) return Left ({value: x, propPath: []});
       for (const k of this.keys) {
         const t = type.types[k];
+        console.log ('k:', k, 'type.types:', type.types);
         const ys = type.extractors[k] (x);
         for (const y of ys) {
           const result = t.validate (env) (y);
@@ -840,6 +844,18 @@ const Maybe = $1 => Object.assign (
   }
 );
 
+const NonEmpty = $1 => Object.assign (
+  $.UnaryType ('NonEmpty')
+              ('https://github.com/sanctuary-js/sanctuary-def/tree/v0.22.0#NonEmpty')
+              ([])
+              (x => Z.Monoid.test (x) && Z.Setoid.test (x) && !(Z.equals (x, Z.empty (x.constructor))))
+              (monoid => [monoid])
+              ($1),
+  {
+    new: env => x => Right (TK),
+  }
+);
+
 $.Null = Object.assign (
   $.NullaryType ('Null')
                 ('https://github.com/sanctuary-js/sanctuary-def/tree/v0.22.0#Null')
@@ -860,6 +876,116 @@ $.Number = Object.assign (
       if (typeof x !== 'number') return Left (`Not a number: ${JSON.stringify (x)}`);
       return Right (x);
     },
+  }
+);
+
+$.ValidNumber = Object.assign (
+  $.NullaryType ('ValidNumber')
+                ('https://github.com/sanctuary-js/sanctuary-def/tree/v0.22.0#ValidNumber')
+                ([$.Number])
+                (x => !(isNaN (x))),
+  {
+    new: env => x => Right (TK),
+  }
+);
+
+$.NonZeroValidNumber = Object.assign (
+  $.NullaryType ('NonZeroValidNumber')
+                ('https://github.com/sanctuary-js/sanctuary-def/tree/v0.22.0#NonZeroValidNumber')
+                ([$.ValidNumber])
+                (x => x !== 0),
+  {
+    new: env => x => Right (TK),
+  }
+);
+
+$.FiniteNumber = Object.assign (
+  $.NullaryType ('FiniteNumber')
+                ('https://github.com/sanctuary-js/sanctuary-def/tree/v0.22.0#FiniteNumber')
+                ([$.ValidNumber])
+                (isFinite),
+  {
+    new: env => x => Right (TK),
+  }
+);
+
+$.PositiveFiniteNumber = Object.assign (
+  $.NullaryType ('PositiveFiniteNumber')
+                ('https://github.com/sanctuary-js/sanctuary-def/tree/v0.22.0#PositiveFiniteNumber')
+                ([$.FiniteNumber])
+                (x => x > 0),
+  {
+    new: env => x => Right (TK),
+  }
+);
+
+$.NegativeFiniteNumber = Object.assign (
+  $.NullaryType ('NegativeFiniteNumber')
+                ('https://github.com/sanctuary-js/sanctuary-def/tree/v0.22.0#NegativeFiniteNumber')
+                ([$.FiniteNumber])
+                (x => x < 0),
+  {
+    new: env => x => Right (TK),
+  }
+);
+
+$.NonZeroFiniteNumber = Object.assign (
+  $.NullaryType ('NonZeroFiniteNumber')
+                ('https://github.com/sanctuary-js/sanctuary-def/tree/v0.22.0#NonZeroFiniteNumber')
+                ([$.FiniteNumber])
+                (x => x !== 0),
+  {
+    new: env => x => Right (TK),
+  }
+);
+
+$.Integer = Object.assign (
+  $.NullaryType ('Integer')
+                ('https://github.com/sanctuary-js/sanctuary-def/tree/v0.22.0#Integer')
+                ([$.ValidNumber])
+                (x => Math.floor (x) === x && x >= MIN_SAFE_INTEGER && x <= MAX_SAFE_INTEGER),
+  {
+    new: env => x => Right (TK),
+  }
+);
+
+$.NonZeroInteger = Object.assign (
+  $.NullaryType ('NonZeroInteger')
+                ('https://github.com/sanctuary-js/sanctuary-def/tree/v0.22.0#NonZeroInteger')
+                ([$.Integer])
+                (x => x !== 0),
+  {
+    new: env => x => Right (TK),
+  }
+);
+
+$.NonNegativeInteger = Object.assign (
+  $.NullaryType ('NonNegativeInteger')
+                ('https://github.com/sanctuary-js/sanctuary-def/tree/v0.22.0#NonNegativeInteger')
+                ([$.Integer])
+                (x => x >= 0),
+  {
+    new: env => x => Right (TK),
+  }
+);
+
+$.PositiveInteger = Object.assign (
+  $.NullaryType ('PositiveInteger')
+                ('https://github.com/sanctuary-js/sanctuary-def/tree/v0.22.0#PositiveInteger')
+                ([$.Integer])
+                (x => x > 0),
+  {
+    new: env => x => Right (TK),
+  }
+);
+
+$.NegativeInteger = Object.assign (
+  $.NullaryType ('NegativeInteger')
+                ('https://github.com/sanctuary-js/sanctuary-def/tree/v0.22.0#NegativeInteger')
+                ([$.Integer])
+                (x => x < 0),
+  {
+    new: env => x => Right (TK),
   }
 );
 
@@ -1075,6 +1201,8 @@ $.JsMap = def ('JsMap') ({}) ([$.Type, $.Type, $.Type]) (JsMap);
 $.JsSet = def ('JsSet') ({}) ([$.Type, $.Type]) (JsSet);
 
 $.Maybe = def ('Maybe') ({}) ([$.Type, $.Type]) (Maybe);
+
+$.NonEmpty = def ('NonEmpty') ({}) ([$.Type, $.Type]) (NonEmpty);
 
 $.Predicate = def ('Predicate') ({}) ([$.Type, $.Type]) (Predicate);
 
