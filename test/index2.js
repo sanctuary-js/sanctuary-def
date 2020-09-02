@@ -2291,28 +2291,28 @@ See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Number for in
 `));
   });
 
-///   test ('supports polymorphism via type variables', () => {
-///     //    aa :: a -> a -> Pair a a
-///     const aa =
-///     def ('aa')
-///         ({})
-///         ([a, a, $.Pair (a) (a)])
-///         (Pair);
-/// 
-///     //    ab :: a -> b -> Pair a b
-///     const ab =
-///     def ('ab')
-///         ({})
-///         ([a, b, $.Pair (a) (b)])
-///         (Pair);
-/// 
-///     eq (aa (0) (1)) (Pair (0) (1));
-///     eq (aa (1) (0)) (Pair (1) (0));
-///     eq (ab (0) (1)) (Pair (0) (1));
-///     eq (ab (1) (0)) (Pair (1) (0));
-///     eq (ab (0) (false)) (Pair (0) (false));
-///     eq (ab (false) (0)) (Pair (false) (0));
-/// 
+  test ('supports polymorphism via type variables', () => {
+    //    aa :: a -> a -> Pair a a
+    const aa =
+    def ('aa')
+        ({})
+        ([a, a, $.Pair (a) (a)])
+        (Pair);
+
+    //    ab :: a -> b -> Pair a b
+    const ab =
+    def ('ab')
+        ({})
+        ([a, b, $.Pair (a) (b)])
+        (Pair);
+
+    eq (aa (0) (1)) (Pair (0) (1));
+    eq (aa (1) (0)) (Pair (1) (0));
+    eq (ab (0) (1)) (Pair (0) (1));
+    eq (ab (1) (0)) (Pair (1) (0));
+    eq (ab (0) (false)) (Pair (0) (false));
+    eq (ab (false) (0)) (Pair (false) (0));
+
 ///     throws (() => { aa (0) (/x/); })
 ///            (new TypeError (`Type-variable constraint violation
 /// 
@@ -2338,64 +2338,64 @@ See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Number for in
 /// 
 /// Since there is no type of which all the above values are members, the type-variable constraint has been violated.
 /// `));
-/// 
-///     //    fromMaybe :: a -> Maybe a -> a
-///     const fromMaybe =
-///     def ('fromMaybe')
-///         ({})
-///         ([a, $.Maybe (a), a])
-///         (x => maybe => maybe.isJust ? maybe.value : x);
-/// 
-///     eq (fromMaybe (0) (Nothing)) (0);
-///     eq (fromMaybe (0) (Just (42))) (42);
-/// 
-///     throws (() => { fromMaybe (0) ([1, 2, 3]); })
-///            (new TypeError (`Invalid value
-/// 
-/// fromMaybe :: a -> Maybe a -> a
-///                   ^^^^^^^
-///                      1
-/// 
-/// 1)  [1, 2, 3] :: Array Number
-/// 
-/// The value at position 1 is not a member of ‘Maybe a’.
-/// 
-/// See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Maybe for information about the Maybe type constructor.
-/// `));
-/// 
-///     //    fst :: Pair a b -> a
-///     const fst =
-///     def ('fst')
-///         ({})
-///         ([$.Pair (a) (b), a])
-///         (pair => pair.fst);
-/// 
-///     eq (fst (Pair ('XXX') (42))) ('XXX');
-/// 
-///     throws (() => { fst (['XXX', 42]); })
-///            (new TypeError (`Invalid value
-/// 
-/// fst :: Pair a b -> a
-///        ^^^^^^^^
-///           1
-/// 
-/// 1)  ["XXX", 42] :: Array ???, Array2 String Number
-/// 
-/// The value at position 1 is not a member of ‘Pair a b’.
-/// 
-/// See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Pair for information about the Pair type constructor.
-/// `));
-/// 
-///     //    twin :: Pair a a -> Boolean
-///     const twin =
-///     def ('twin')
-///         ({})
-///         ([$.Pair (a) (a), $.Boolean])
-///         (pair => Z.equals (pair.fst, pair.snd));
-/// 
-///     eq (twin (Pair (42) (42))) (true);
-///     eq (twin (Pair (42) (99))) (false);
-/// 
+
+    //    fromMaybe :: a -> Maybe a -> a
+    const fromMaybe =
+    def ('fromMaybe')
+        ({})
+        ([a, $.Maybe (a), a])
+        (x => maybe => maybe.isJust ? maybe.value : x);
+
+    eq (fromMaybe (0) (Nothing)) (0);
+    eq (fromMaybe (0) (Just (42))) (42);
+
+    throws (() => { fromMaybe (0) ([1, 2, 3]); })
+           (new TypeError (`Invalid value
+
+fromMaybe :: a -> Maybe a -> a
+                  ^^^^^^^
+                     1
+
+1)  [1, 2, 3] :: Array Number
+
+The value at position 1 is not a member of ‘Maybe a’.
+
+See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Maybe for information about the Maybe type constructor.
+`));
+
+    //    fst :: Pair a b -> a
+    const fst =
+    def ('fst')
+        ({})
+        ([$.Pair (a) (b), a])
+        (pair => pair.fst);
+
+    eq (fst (Pair ('XXX') (42))) ('XXX');
+
+    throws (() => { fst (['XXX', 42]); })
+           (new TypeError (`Invalid value
+
+fst :: Pair a b -> a
+       ^^^^^^^^
+          1
+
+1)  ["XXX", 42] :: Array ???, Array2 String Number
+
+The value at position 1 is not a member of ‘Pair a b’.
+
+See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Pair for information about the Pair type constructor.
+`));
+
+    //    twin :: Pair a a -> Boolean
+    const twin =
+    def ('twin')
+        ({})
+        ([$.Pair (a) (a), $.Boolean])
+        (pair => Z.equals (pair.fst, pair.snd));
+
+    eq (twin (Pair (42) (42))) (true);
+    eq (twin (Pair (42) (99))) (false);
+
 ///     throws (() => { twin (Pair (42) ('XXX')); })
 ///            (new TypeError (`Type-variable constraint violation
 /// 
@@ -2409,19 +2409,19 @@ See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Number for in
 /// 
 /// Since there is no type of which all the above values are members, the type-variable constraint has been violated.
 /// `));
-/// 
-///     //    concat :: Either a b -> Either a b -> Either a b
-///     const concat =
-///     def ('concat')
-///         ({})
-///         ([$.Either (a) (b), $.Either (a) (b), $.Either (a) (b)])
-///         (curry2 (Z.concat));
-/// 
-///     eq (concat (Left ('abc')) (Left ('def'))) (Left ('abcdef'));
-///     eq (concat (Left ('abc')) (Right ('ABC'))) (Right ('ABC'));
-///     eq (concat (Right ('ABC')) (Left ('abc'))) (Right ('ABC'));
-///     eq (concat (Right ('ABC')) (Right ('DEF'))) (Right ('ABCDEF'));
-/// 
+
+    //    concat :: Either a b -> Either a b -> Either a b
+    const concat =
+    def ('concat')
+        ({})
+        ([$.Either (a) (b), $.Either (a) (b), $.Either (a) (b)])
+        (curry2 (Z.concat));
+
+    eq (concat (Left ('abc')) (Left ('def'))) (Left ('abcdef'));
+    eq (concat (Left ('abc')) (Right ('ABC'))) (Right ('ABC'));
+    eq (concat (Right ('ABC')) (Left ('abc'))) (Right ('ABC'));
+    eq (concat (Right ('ABC')) (Right ('DEF'))) (Right ('ABCDEF'));
+
 ///     throws (() => { concat (Left ('abc')) (Left ([1, 2, 3])); })
 ///            (new TypeError (`Type-variable constraint violation
 /// 
@@ -2449,16 +2449,16 @@ See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Number for in
 /// 
 /// Since there is no type of which all the above values are members, the type-variable constraint has been violated.
 /// `));
-/// 
-///     //    f :: a -> a -> a -> a
-///     const f =
-///     def ('f')
-///         ({})
-///         ([a, a, a, a])
-///         (x => y => z => x);
-/// 
-///     eq (f (1) (2) (3)) (1);
-/// 
+
+    //    f :: a -> a -> a -> a
+    const f =
+    def ('f')
+        ({})
+        ([a, a, a, a])
+        (x => y => z => x);
+
+    eq (f (1) (2) (3)) (1);
+
 ///     throws (() => { f (Left ('abc')) (Left (/XXX/)); })
 ///            (new TypeError (`Type-variable constraint violation
 /// 
@@ -2514,19 +2514,19 @@ See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Number for in
 /// 
 /// Since there is no type of which all the above values are members, the type-variable constraint has been violated.
 /// `));
-///   });
-/// 
-///   test ('supports arbitrary nesting of types', () => {
-///     //    unnest :: Array (Array a) -> Array a
-///     const unnest =
-///     def ('unnest')
-///         ({})
-///         ([$.Array ($.Array (a)), $.Array (a)])
-///         (xss => Z.chain (xs => xs, xss));
-/// 
-///     eq (unnest ([[1, 2], [3, 4], [5, 6]])) ([1, 2, 3, 4, 5, 6]);
-///     eq (unnest ([[null], [null], [null]])) ([null, null, null]);
-/// 
+  });
+
+  test ('supports arbitrary nesting of types', () => {
+    //    unnest :: Array (Array a) -> Array a
+    const unnest =
+    def ('unnest')
+        ({})
+        ([$.Array ($.Array (a)), $.Array (a)])
+        (xss => Z.chain (xs => xs, xss));
+
+    eq (unnest ([[1, 2], [3, 4], [5, 6]])) ([1, 2, 3, 4, 5, 6]);
+    eq (unnest ([[null], [null], [null]])) ([null, null, null]);
+
 ///     throws (() => { unnest ([1, 2, 3]); })
 ///            (new TypeError (`Invalid value
 /// 
@@ -2619,8 +2619,8 @@ See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Number for in
 /// 
 /// See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#String for information about the String type.
 /// `));
-///   });
-/// 
+  });
+
 ///   test ('does not allow heterogeneous arrays', () => {
 ///     //    concat :: Array a -> Array a -> Array a
 ///     const concat =

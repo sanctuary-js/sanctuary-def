@@ -78,7 +78,8 @@ const types_ = x => {
     case '[object Number]': return ['Number'];
     case '[object String]': return ['String'];
     case '[object Object]': return ['Object'];
-    default:                throw new TypeError ('Unknown type');
+    case '[object Null]':   return ['Null'];
+    default:                return [];
   }
 };
 
@@ -911,7 +912,10 @@ const Maybe = $1 => Object.assign (
               (I)
               ($1),
   {
-    new: fail => env => x => TK,
+    new: fail => env => x => {
+      if (type (x) === 'sanctuary-maybe/Maybe@1') return x;
+      fail ([]) (x);
+    },
   }
 );
 
@@ -1125,7 +1129,10 @@ const Pair = $1 => $2 => Object.assign (
                ($1)
                ($2),
   {
-    new: fail => env => x => TK,
+    new: fail => env => x => {
+      if (type (x) === 'sanctuary-pair/Pair@1') return x;
+      fail ([]) (x);
+    },
   }
 );
 
@@ -1256,7 +1263,7 @@ $.Array = $1 => (
         if (!(Array.isArray (xs))) fail (['$1']) (xs);
 
         for (const x of xs) {
-          $1.new (propPath => x => fail (['$1', ...propPath]) (x)) (env) (x);
+          $1.new (propPath => fail (['$1', ...propPath])) (env) (x);
         }
 
         return xs;
@@ -1432,8 +1439,33 @@ $.env = [
 
 const create = opts => name => constraints => types => {
   const typeInfo = {name: name, constraints: constraints, types: types};
-  const [output, ...inputs] = Z.reverse (types);
 
+  return types
+  .slice (0, -1)
+  .reduceRight (
+    (run, input, index) => _env => f => {
+      const wrapped = _x => {
+        const env = Object.assign (Object.create (_env), {_ts: nextInt ()});
+        const x = input.new
+          (propPath => x => {
+             throw invalidValue (
+               opts.env,
+               typeInfo,
+               index,
+               propPath,
+               x
+             )
+           })
+          (env)
+          (_x);
+        return run (env) (f (x));
+      };
+      const signature = typeSignature (typeInfo);
+      wrapped.toString = () => signature;
+      return wrapped;
+    },
+    types[types.length - 1].new (propPath => x => { throw new TypeError ('TK'); })
+  ) (Object.assign (Object.create (null), {_ts: nextInt ()}));
   return reduce (run => input => _env => f => {
                    const wrapped = _x => {
                      const env = Object.assign (Object.create (_env), {_ts: nextInt ()});
