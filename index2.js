@@ -781,6 +781,19 @@ $.Date = Object.assign (
   }
 );
 
+$.ValidDate = Object.assign (
+  $.NullaryType ('ValidDate')
+                ('https://github.com/sanctuary-js/sanctuary-def/tree/v0.22.0#ValidDate')
+                ([$.Date])
+                (x => !(isNaN (Number (x)))),
+  {
+    new: fail => env => x => {
+      if (!(isNaN (Number (x)))) return x;
+      fail ([]) (x);
+    },
+  }
+);
+
 const Descending = $1 => Object.assign (
   $.UnaryType ('Descending')
               ('https://github.com/sanctuary-js/sanctuary-def/tree/v0.22.0#Descending')
@@ -917,7 +930,7 @@ const Nullable = $1 => Object.assign (
               (nullable => nullable === null ? [] : [nullable])
               ($1),
   {
-    new: fail => env => x => TK,
+    new: fail => env => x => x,
   }
 );
 
@@ -939,6 +952,26 @@ $.ValidNumber = Object.assign (
                 ('https://github.com/sanctuary-js/sanctuary-def/tree/v0.22.0#ValidNumber')
                 ([$.Number])
                 (x => !(isNaN (x))),
+  {
+    new: fail => env => x => TK,
+  }
+);
+
+$.PositiveNumber = Object.assign (
+  $.NullaryType ('PositiveNumber')
+                ('https://github.com/sanctuary-js/sanctuary-def/tree/v0.22.0#PositiveNumber')
+                ([$.Number])
+                (x => x > 0),
+  {
+    new: fail => env => x => TK,
+  }
+);
+
+$.NegativeNumber = Object.assign (
+  $.NullaryType ('NegativeNumber')
+                ('https://github.com/sanctuary-js/sanctuary-def/tree/v0.22.0#NegativeNumber')
+                ([$.Number])
+                (x => x < 0),
   {
     new: fail => env => x => TK,
   }

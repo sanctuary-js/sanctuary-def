@@ -1352,26 +1352,26 @@ The value at position 1 is not a member of ‘{ length :: a }’.
 /// See http://example.com/my-package#Circle for information about the Circle type.
 /// `));
 ///   });
-/// 
-///   test ('supports "nullable" types', () => {
-///     eq (typeof $.Nullable) ('function');
-///     eq ($.Nullable.length) (1);
-///     eq (show ($.Nullable)) ('Nullable :: Type -> Type');
-/// 
-///     throws (() => { $.Nullable (null); })
-///            (new TypeError (`Invalid value
-/// 
-/// Nullable :: Type -> Type
-///             ^^^^
-///              1
-/// 
-/// 1)  null :: Null
-/// 
-/// The value at position 1 is not a member of ‘Type’.
-/// 
-/// See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Type for information about the Type type.
-/// `));
-/// 
+
+  test ('supports "nullable" types', () => {
+    eq (typeof $.Nullable) ('function');
+    eq ($.Nullable.length) (1);
+    eq (show ($.Nullable)) ('Nullable :: Type -> Type');
+
+    throws (() => { $.Nullable (null); })
+           (new TypeError (`Invalid value
+
+Nullable :: Type -> Type
+            ^^^^
+             1
+
+1)  null :: Null
+
+The value at position 1 is not a member of ‘Type’.
+
+See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Type for information about the Type type.
+`));
+
 ///     //    toUpper :: Nullable String -> Nullable String
 ///     const toUpper =
 ///     def ('toUpper')
@@ -1443,7 +1443,7 @@ The value at position 1 is not a member of ‘{ length :: a }’.
 /// 
 /// Since there is no type of which all the above values are members, the type-variable constraint has been violated.
 /// `));
-///   });
+  });
 
   test ('provides the "Void" type', () => {
     eq ($.Void.name) ('Void');
@@ -1800,96 +1800,96 @@ See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Array2 for in
     eq ($.String.supertypes) ([]);
   });
 
-///   test ('provides the "Symbol" type', () => {
-///     eq ($.Symbol.name) ('Symbol');
-///     eq ($.Symbol.url) (`https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Symbol`);
-///     eq ($.Symbol.supertypes) ([]);
-///   });
-/// 
-///   test ('provides the "Type" type', () => {
-///     eq ($.Type.name) ('Type');
-///     eq ($.Type.url) (`https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Type`);
-///     eq ($.Type.supertypes) ([]);
-///   });
-/// 
-///   test ('provides the "TypeClass" type', () => {
-///     eq ($.TypeClass.name) ('TypeClass');
-///     eq ($.TypeClass.url) (`https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#TypeClass`);
-///     eq ($.TypeClass.supertypes) ([]);
-///   });
-/// 
-///   test ('provides the "Undefined" type', () => {
-///     eq ($.Undefined.name) ('Undefined');
-///     eq ($.Undefined.url) (`https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Undefined`);
-///     eq ($.Undefined.supertypes) ([]);
-///   });
-/// 
-///   test ('provides the "Unknown" type', () => {
-///     eq ($.Unknown.name) ('');
-///     eq ($.Unknown.url) ('');
-///     eq ($.Unknown.supertypes) ([]);
-///   });
-/// 
-///   test ('provides the "ValidDate" type', () => {
-///     eq ($.ValidDate.name) ('ValidDate');
-///     eq ($.ValidDate.url) (`https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#ValidDate`);
-///     eq ($.ValidDate.supertypes) ([$.Date]);
-/// 
-///     //    sinceEpoch :: ValidDate -> Number
-///     const sinceEpoch =
-///     def ('sinceEpoch')
-///         ({})
-///         ([$.ValidDate, $.Number])
-///         (date => date.valueOf () / 1000);
-/// 
-///     throws (() => { sinceEpoch (new Date ('foo')); })
-///            (new TypeError (`Invalid value
-/// 
-/// sinceEpoch :: ValidDate -> Number
-///               ^^^^^^^^^
-///                   1
-/// 
-/// 1)  new Date (NaN) :: Date
-/// 
-/// The value at position 1 is not a member of ‘ValidDate’.
-/// 
-/// See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#ValidDate for information about the ValidDate type.
-/// `));
-/// 
-///     eq (sinceEpoch (new Date (123456))) (123.456);
-///   });
-/// 
-///   test ('provides the "PositiveNumber" type', () => {
-///     eq ($.PositiveNumber.name) ('PositiveNumber');
-///     eq ($.PositiveNumber.url) (`https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#PositiveNumber`);
-///     eq ($.PositiveNumber.supertypes) ([$.Number]);
-/// 
-///     const isPositiveNumber = $.test ([]) ($.PositiveNumber);
-///     eq (isPositiveNumber (null)) (false);
-///     eq (isPositiveNumber (NaN)) (false);
-///     eq (isPositiveNumber (-1)) (false);
-///     eq (isPositiveNumber (0)) (false);
-///     eq (isPositiveNumber (-0)) (false);
-///     eq (isPositiveNumber (0.5)) (true);
-///     eq (isPositiveNumber (Infinity)) (true);
-///     eq (isPositiveNumber (new Number (Infinity))) (false);
-///   });
-/// 
-///   test ('provides the "NegativeNumber" type', () => {
-///     eq ($.NegativeNumber.name) ('NegativeNumber');
-///     eq ($.NegativeNumber.url) (`https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#NegativeNumber`);
-///     eq ($.NegativeNumber.supertypes) ([$.Number]);
-/// 
-///     const isNegativeNumber = $.test ([]) ($.NegativeNumber);
-///     eq (isNegativeNumber (null)) (false);
-///     eq (isNegativeNumber (NaN)) (false);
-///     eq (isNegativeNumber (1)) (false);
-///     eq (isNegativeNumber (0)) (false);
-///     eq (isNegativeNumber (-0)) (false);
-///     eq (isNegativeNumber (-0.5)) (true);
-///     eq (isNegativeNumber (-Infinity)) (true);
-///     eq (isNegativeNumber (new Number (-Infinity))) (false);
-///   });
+  test ('provides the "Symbol" type', () => {
+    eq ($.Symbol.name) ('Symbol');
+    eq ($.Symbol.url) (`https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Symbol`);
+    eq ($.Symbol.supertypes) ([]);
+  });
+
+  test ('provides the "Type" type', () => {
+    eq ($.Type.name) ('Type');
+    eq ($.Type.url) (`https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Type`);
+    eq ($.Type.supertypes) ([]);
+  });
+
+  test ('provides the "TypeClass" type', () => {
+    eq ($.TypeClass.name) ('TypeClass');
+    eq ($.TypeClass.url) (`https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#TypeClass`);
+    eq ($.TypeClass.supertypes) ([]);
+  });
+
+  test ('provides the "Undefined" type', () => {
+    eq ($.Undefined.name) ('Undefined');
+    eq ($.Undefined.url) (`https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Undefined`);
+    eq ($.Undefined.supertypes) ([]);
+  });
+
+  test ('provides the "Unknown" type', () => {
+    eq ($.Unknown.name) ('');
+    eq ($.Unknown.url) ('');
+    eq ($.Unknown.supertypes) ([]);
+  });
+
+  test ('provides the "ValidDate" type', () => {
+    eq ($.ValidDate.name) ('ValidDate');
+    eq ($.ValidDate.url) (`https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#ValidDate`);
+    eq ($.ValidDate.supertypes) ([$.Date]);
+
+    //    sinceEpoch :: ValidDate -> Number
+    const sinceEpoch =
+    def ('sinceEpoch')
+        ({})
+        ([$.ValidDate, $.Number])
+        (date => date.valueOf () / 1000);
+
+    throws (() => { sinceEpoch (new Date ('foo')); })
+           (new TypeError (`Invalid value
+
+sinceEpoch :: ValidDate -> Number
+              ^^^^^^^^^
+                  1
+
+1)  new Date (NaN) :: Date
+
+The value at position 1 is not a member of ‘ValidDate’.
+
+See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#ValidDate for information about the ValidDate type.
+`));
+
+    eq (sinceEpoch (new Date (123456))) (123.456);
+  });
+
+  test ('provides the "PositiveNumber" type', () => {
+    eq ($.PositiveNumber.name) ('PositiveNumber');
+    eq ($.PositiveNumber.url) (`https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#PositiveNumber`);
+    eq ($.PositiveNumber.supertypes) ([$.Number]);
+
+    const isPositiveNumber = $.test ([]) ($.PositiveNumber);
+    eq (isPositiveNumber (null)) (false);
+    eq (isPositiveNumber (NaN)) (false);
+    eq (isPositiveNumber (-1)) (false);
+    eq (isPositiveNumber (0)) (false);
+    eq (isPositiveNumber (-0)) (false);
+    eq (isPositiveNumber (0.5)) (true);
+    eq (isPositiveNumber (Infinity)) (true);
+    eq (isPositiveNumber (new Number (Infinity))) (false);
+  });
+
+  test ('provides the "NegativeNumber" type', () => {
+    eq ($.NegativeNumber.name) ('NegativeNumber');
+    eq ($.NegativeNumber.url) (`https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#NegativeNumber`);
+    eq ($.NegativeNumber.supertypes) ([$.Number]);
+
+    const isNegativeNumber = $.test ([]) ($.NegativeNumber);
+    eq (isNegativeNumber (null)) (false);
+    eq (isNegativeNumber (NaN)) (false);
+    eq (isNegativeNumber (1)) (false);
+    eq (isNegativeNumber (0)) (false);
+    eq (isNegativeNumber (-0)) (false);
+    eq (isNegativeNumber (-0.5)) (true);
+    eq (isNegativeNumber (-Infinity)) (true);
+    eq (isNegativeNumber (new Number (-Infinity))) (false);
+  });
 
   test ('provides the "ValidNumber" type', () => {
     eq ($.ValidNumber.name) ('ValidNumber');
