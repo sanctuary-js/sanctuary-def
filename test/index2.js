@@ -480,8 +480,8 @@ The value at position 1 is not a member of ‘Number’.
 See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Number for information about the Number type.
 `));
 
-        throws (() => { sqrt (undefined); })
-               (new TypeError (`Invalid value
+    throws (() => { sqrt (undefined); })
+           (new TypeError (`Invalid value
 
 sqrt :: Number -> Number
         ^^^^^^
