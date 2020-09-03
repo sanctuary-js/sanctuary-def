@@ -1257,100 +1257,100 @@ The value at position 1 is not a member of ‘{ length :: a }’.
 `));
   });
 
-///   test ('supports named record types', () => {
-///     eq (typeof $.NamedRecordType) ('function');
-///     eq ($.NamedRecordType.length) (1);
-///     eq (show ($.NamedRecordType)) ('NamedRecordType :: NonEmpty String -> String -> Array Type -> StrMap Type -> Type');
-///     eq (show ($.NamedRecordType ('Circle') ('') ([]) ({radius: $.PositiveFiniteNumber}))) ('Circle');
-/// 
-///     //    Empty :: Type
-///     const Empty = $.NamedRecordType ('Empty') ('') ([]) ({});
-/// 
-///     eq ($.test ([]) (Empty) (null)) (false);
-///     eq ($.test ([]) (Empty) (undefined)) (false);
-///     eq ($.test ([]) (Empty) (false)) (true);
-///     eq ($.test ([]) (Empty) (12.34)) (true);
-///     eq ($.test ([]) (Empty) ('xyz')) (true);
-///     eq ($.test ([]) (Empty) (new Boolean (true))) (true);
-///     eq ($.test ([]) (Empty) (new Number (12.34))) (true);
-///     eq ($.test ([]) (Empty) (new String ('xyz'))) (true);
-///     eq ($.test ([]) (Empty) ([])) (true);
-///     eq ($.test ([]) (Empty) ({})) (true);
-/// 
-///     throws (() => { $.NamedRecordType ('Circle') ('') ([]) ({radius: Number}); })
-///            (new TypeError (`Invalid value
-/// 
-/// NamedRecordType :: NonEmpty String -> String -> Array Type -> StrMap Type -> Type
-///                                                                      ^^^^
-///                                                                       1
-/// 
-/// 1)  ${Number} :: Function, (a -> b)
-/// 
-/// The value at position 1 is not a member of ‘Type’.
-/// 
-/// See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Type for information about the Type type.
-/// `));
-/// 
-///     //    Circle :: Type
-///     const Circle = $.NamedRecordType
-///       ('Circle')
-///       ('http://example.com/my-package#Circle')
-///       ([])
-///       ({radius: $.PositiveFiniteNumber});
-/// 
-///     //    Cylinder :: Type
-///     const Cylinder = $.NamedRecordType
-///       ('Cylinder')
-///       ('http://example.com/my-package#Cylinder')
-///       ([Circle])
-///       ({height: $.PositiveFiniteNumber});
-/// 
-///     const isCircle = $.test ([]) (Circle);
-///     eq (isCircle (null)) (false);
-///     eq (isCircle ({})) (false);
-///     eq (isCircle ({radius: null})) (false);
-///     eq (isCircle ({radius: 0})) (false);
-///     eq (isCircle ({radius: 1})) (true);
-///     eq (isCircle ({radius: 1, height: 1})) (true);
-/// 
-///     const isCylinder = $.test ([]) (Cylinder);
-///     eq (isCylinder (null)) (false);
-///     eq (isCylinder ({})) (false);
-///     eq (isCylinder ({radius: null})) (false);
-///     eq (isCylinder ({height: null})) (false);
-///     eq (isCylinder ({radius: 0})) (false);
-///     eq (isCylinder ({height: 0})) (false);
-///     eq (isCylinder ({radius: 1})) (false);
-///     eq (isCylinder ({height: 1})) (false);
-///     eq (isCylinder ({radius: 0, height: 0})) (false);
-///     eq (isCylinder ({radius: 0, height: 1})) (false);
-///     eq (isCylinder ({radius: 1, height: 0})) (false);
-///     eq (isCylinder ({radius: 1, height: 1})) (true);
-/// 
-///     //    area :: Circle -> PositiveFiniteNumber
-///     const area =
-///     def ('area')
-///         ({})
-///         ([Circle, $.PositiveFiniteNumber])
-///         (circle => Math.PI * circle.radius * circle.radius);
-/// 
-///     eq (area ({radius: 1})) (3.141592653589793);
-///     eq (area ({radius: 2})) (12.566370614359172);
-/// 
-///     throws (() => { area ({radius: 0}); })
-///            (new TypeError (`Invalid value
-/// 
-/// area :: Circle -> PositiveFiniteNumber
-///         ^^^^^^
-///           1
-/// 
-/// 1)  {"radius": 0} :: Object, StrMap Number
-/// 
-/// The value at position 1 is not a member of ‘Circle’.
-/// 
-/// See http://example.com/my-package#Circle for information about the Circle type.
-/// `));
-///   });
+  test ('supports named record types', () => {
+    eq (typeof $.NamedRecordType) ('function');
+    eq ($.NamedRecordType.length) (1);
+    eq (show ($.NamedRecordType)) ('NamedRecordType :: NonEmpty String -> String -> Array Type -> StrMap Type -> Type');
+    eq (show ($.NamedRecordType ('Circle') ('') ([]) ({radius: $.PositiveFiniteNumber}))) ('Circle');
+
+    //    Empty :: Type
+    const Empty = $.NamedRecordType ('Empty') ('') ([]) ({});
+
+    eq ($.test ([]) (Empty) (null)) (false);
+    eq ($.test ([]) (Empty) (undefined)) (false);
+    eq ($.test ([]) (Empty) (false)) (true);
+    eq ($.test ([]) (Empty) (12.34)) (true);
+    eq ($.test ([]) (Empty) ('xyz')) (true);
+    eq ($.test ([]) (Empty) (new Boolean (true))) (true);
+    eq ($.test ([]) (Empty) (new Number (12.34))) (true);
+    eq ($.test ([]) (Empty) (new String ('xyz'))) (true);
+    eq ($.test ([]) (Empty) ([])) (true);
+    eq ($.test ([]) (Empty) ({})) (true);
+
+    throws (() => { $.NamedRecordType ('Circle') ('') ([]) ({radius: Number}); })
+           (new TypeError (`Invalid value
+
+NamedRecordType :: NonEmpty String -> String -> Array Type -> StrMap Type -> Type
+                                                                     ^^^^
+                                                                      1
+
+1)  ${Number} :: Function, (a -> b)
+
+The value at position 1 is not a member of ‘Type’.
+
+See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Type for information about the Type type.
+`));
+
+    //    Circle :: Type
+    const Circle = $.NamedRecordType
+      ('Circle')
+      ('http://example.com/my-package#Circle')
+      ([])
+      ({radius: $.PositiveFiniteNumber});
+
+    //    Cylinder :: Type
+    const Cylinder = $.NamedRecordType
+      ('Cylinder')
+      ('http://example.com/my-package#Cylinder')
+      ([Circle])
+      ({height: $.PositiveFiniteNumber});
+
+    const isCircle = $.test ([]) (Circle);
+    eq (isCircle (null)) (false);
+    eq (isCircle ({})) (false);
+    eq (isCircle ({radius: null})) (false);
+    eq (isCircle ({radius: 0})) (false);
+    eq (isCircle ({radius: 1})) (true);
+    eq (isCircle ({radius: 1, height: 1})) (true);
+
+    const isCylinder = $.test ([]) (Cylinder);
+    eq (isCylinder (null)) (false);
+    eq (isCylinder ({})) (false);
+    eq (isCylinder ({radius: null})) (false);
+    eq (isCylinder ({height: null})) (false);
+    eq (isCylinder ({radius: 0})) (false);
+    eq (isCylinder ({height: 0})) (false);
+    eq (isCylinder ({radius: 1})) (false);
+    eq (isCylinder ({height: 1})) (false);
+    eq (isCylinder ({radius: 0, height: 0})) (false);
+    eq (isCylinder ({radius: 0, height: 1})) (false);
+    eq (isCylinder ({radius: 1, height: 0})) (false);
+    eq (isCylinder ({radius: 1, height: 1})) (true);
+
+    //    area :: Circle -> PositiveFiniteNumber
+    const area =
+    def ('area')
+        ({})
+        ([Circle, $.PositiveFiniteNumber])
+        (circle => Math.PI * circle.radius * circle.radius);
+
+    eq (area ({radius: 1})) (3.141592653589793);
+    eq (area ({radius: 2})) (12.566370614359172);
+
+    throws (() => { area ({radius: 0}); })
+           (new TypeError (`Invalid value
+
+area :: Circle -> PositiveFiniteNumber
+        ^^^^^^
+          1
+
+1)  {"radius": 0} :: Object, StrMap Number
+
+The value at position 1 is not a member of ‘Circle’.
+
+See http://example.com/my-package#Circle for information about the Circle type.
+`));
+  });
 
   test ('supports "nullable" types', () => {
     eq (typeof $.Nullable) ('function');

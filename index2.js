@@ -526,7 +526,7 @@ $.NullaryType = name => url => supertypes => test => Object.assign (Object.creat
   _extractors: {},
   extractors: {},
   types: {},
-  _test: K (test),
+  _test: env => test,
   format: (outer, inner) => outer (name),
 });
 
@@ -722,6 +722,41 @@ const RecordType = fields => {
       if (!(isEmpty (missing))) fail ([]) (x);
       keys.forEach (k => {
         fields[k].new (propPath => fail ([k, ...propPath])) (env) (x[k]);
+      });
+      return x;
+    },
+  });
+};
+
+const NamedRecordType = name => url => supertypes => fields => {
+  const keys = (Object.keys (fields)).sort ();
+  return Object.assign (Object.create (Type$prototype), {
+    type: 'RECORD',
+    name: name,
+    url: url,
+    supertypes: supertypes,
+    arity: 0,
+    keys: keys,
+    _extractors: keys.reduce ((extractors, k) => (extractors[k] = x => [x[k]], extractors), {}),
+    extractors: keys.reduce ((extractors, k) => (extractors[k] = x => [x[k]], extractors), {}),
+    types: keys.reduce ((types, k) => (types[k] = fields[k], types), {}),
+    _test: env => x => {
+      if (x == null) return false;
+      const missing = {};
+      keys.forEach (k => { missing[k] = k; });
+      for (const k in x) delete missing[k];
+      if (!(isEmpty (missing))) return false;
+      return keys.every (k => fields[k]._test (env) (x[k]));
+    },
+    format: (outer, inner) => outer (name),
+    new: fail => env => x => {
+      if (x == null) fail ([]) (x);
+      const missing = {};
+      keys.forEach (k => { missing[k] = k; });
+      for (const k in x) delete missing[k];
+      if (!(isEmpty (missing))) fail ([]) (x);
+      keys.forEach (k => {
+        fields[k].new (_ => _ => fail ([]) (x)) (env) (x[k]);
       });
       return x;
     },
@@ -945,7 +980,7 @@ const NonEmpty = $1 => Object.assign (
               (monoid => [monoid])
               ($1),
   {
-    new: fail => env => x => TK,
+    new: fail => env => x => x,
   }
 );
 
@@ -1043,7 +1078,10 @@ $.PositiveFiniteNumber = Object.assign (
                 ([$.FiniteNumber])
                 (x => x > 0),
   {
-    new: fail => env => x => TK,
+    new: fail => env => x => {
+      if (x > 0) return x;
+      fail ([]) (x);
+    },
   }
 );
 
@@ -1521,6 +1559,8 @@ $.Predicate = def ('Predicate') ({}) ([$.Type, $.Type]) (Predicate);
 $.StrMap = def ('StrMap') ({}) ([$.Type, $.Type]) (StrMap);
 
 $.RecordType = def ('RecordType') ({}) ([$.StrMap ($.Type), $.Type]) (RecordType);
+
+$.NamedRecordType = def ('NamedRecordType') ({}) ([$.NonEmpty ($.String), $.String, $.Array ($.Type), $.StrMap ($.Type), $.Type]) (NamedRecordType);
 
 $.Array1 = def ('Array1') ({}) ([$.Type, $.Type]) (Array1);
 
