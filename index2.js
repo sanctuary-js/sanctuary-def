@@ -1592,3 +1592,5 @@ $.test = def ('test') ({}) ([$.Array ($.Type), $.Type, $.Any, $.Boolean]) (test)
 $.EnumType = def ('EnumType') ({}) ([$.String, $.String, $.Array ($.Any), $.Type]) (EnumType);
 
 $.Function = def ('Function') ({}) ([$.NonEmpty ($.Array ($.Type)), $.Type]) (Function_);
+
+$.Thunk = def ('Thunk') ({}) ([$.Type, $.Type]) ($1 => Function_ ([$1]));

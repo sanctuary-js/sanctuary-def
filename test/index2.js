@@ -3741,15 +3741,15 @@ suite ('test', () => {
 
 suite ('Thunk', () => {
 
-///   test ('is a unary function', () => {
-///     eq (typeof $.Thunk) ('function');
-///     eq ($.Thunk.length) (1);
-///     eq (show ($.Thunk)) ('Thunk :: Type -> Type');
-///     eq (show ($.Thunk (a))) ('() -> a');
-///     eq (show ($.Thunk ($.Thunk (a)))) ('() -> () -> a');
-///     eq (show ($.Thunk ($.Thunk ($.Thunk (a))))) ('() -> () -> () -> a');
-///   });
-/// 
+  test ('is a unary function', () => {
+    eq (typeof $.Thunk) ('function');
+    eq ($.Thunk.length) (1);
+    eq (show ($.Thunk)) ('Thunk :: Type -> Type');
+/// eq (show ($.Thunk (a))) ('() -> a');
+/// eq (show ($.Thunk ($.Thunk (a)))) ('() -> () -> a');
+/// eq (show ($.Thunk ($.Thunk ($.Thunk (a))))) ('() -> () -> () -> a');
+  });
+
 ///   test ('is short for `t => $.Function ([t])`', () => {
 ///     //    why :: (() -> Integer) -> Integer
 ///     const why =
