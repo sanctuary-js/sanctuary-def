@@ -276,39 +276,39 @@ See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Function for 
 ///   - 1
 /// `));
 
-///     throws (() => { $1 (1, 2); })
-///            (new TypeError (`‘$1’ applied to the wrong number of arguments
-/// 
-/// $1 :: a -> Array a
-///       ^
-///       1
-/// 
-/// Expected one argument but received two arguments:
-/// 
-///   - 1
-///   - 2
-/// `));
+    throws (() => { $1 (1, 2); })
+           (new TypeError (`‘$1’ applied to the wrong number of arguments
 
-///     throws (() => { $2 (1, 2, 3, 4, 5, 6, 7, 8, 9, 10); })
-///            (new TypeError (`‘$2’ applied to the wrong number of arguments
-/// 
-/// $2 :: a -> a -> Array a
-///       ^
-///       1
-/// 
-/// Expected one argument but received 10 arguments:
-/// 
-///   - 1
-///   - 2
-///   - 3
-///   - 4
-///   - 5
-///   - 6
-///   - 7
-///   - 8
-///   - 9
-///   - 10
-/// `));
+$1 :: a -> Array a
+      ^
+      1
+
+Expected one argument but received two arguments:
+
+  - 1
+  - 2
+`));
+
+    throws (() => { $2 (1, 2, 3, 4, 5, 6, 7, 8, 9, 10); })
+           (new TypeError (`‘$2’ applied to the wrong number of arguments
+
+$2 :: a -> a -> Array a
+      ^
+      1
+
+Expected one argument but received 10 arguments:
+
+  - 1
+  - 2
+  - 3
+  - 4
+  - 5
+  - 6
+  - 7
+  - 8
+  - 9
+  - 10
+`));
   });
 
   test ('returns a function which type checks its arguments', () => {

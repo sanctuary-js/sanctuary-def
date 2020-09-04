@@ -18,6 +18,33 @@ const inspect = typeof util.inspect.custom === 'symbol' ?
 
 const $ = module.exports = {};
 
+//    toMarkdownList :: (String, String, a -> String, Array a) -> String
+const toMarkdownList = (empty, s, f, xs) => {
+  return isEmpty (xs) ?
+    empty :
+    Z.reduce (function(s, x) { return s + '  - ' + f (x) + '\n'; }, s, xs);
+};
+
+//  numbers :: Array String
+var numbers = [
+  'zero',
+  'one',
+  'two',
+  'three',
+  'four',
+  'five',
+  'six',
+  'seven',
+  'eight',
+  'nine'
+];
+
+//  numArgs :: Integer -> String
+function numArgs(n) {
+  return (n < numbers.length ? numbers[n] : show (n)) + ' ' +
+         (n === 1 ? 'argument' : 'arguments');
+}
+
 //    B :: (b -> c) -> (a -> b) -> a -> c
 const B = f => g => x => f (g (x));
 
@@ -153,6 +180,14 @@ const see = (label, record) => (
   '\nSee ' + record.url +
   ' for information about the ' + record.name + ' ' + label + '.\n'
 );
+
+//    InvalidArgumentsCount :: PropPath -> Integer -> Array Any -> MyError
+const InvalidArgumentsCount = propPath => count => args => ({
+  tagName: 'InvalidArgumentsCount',
+  propPath,
+  count,
+  args,
+});
 
 //    InvalidValue :: PropPath -> Any -> MyError
 const InvalidValue = propPath => value => ({
@@ -1401,9 +1436,9 @@ const Fn = $1 => $2 => (
       new: typeVarMap => env => fail => f => {
         if (typeof f !== 'function') fail (InvalidValue ([]) (f));
         return (...args) => {
-          //if (args.length !== 1) {
-          //  throw invalidArgumentsCount (typeInfo, index, 1, args);
-          //}
+          if (args.length !== 1) {
+            fail (InvalidArgumentsCount ([]) (1) (args));
+          }
           const [x] = args;
           const i = $1.new (typeVarMap) (env) (myError => fail (prepend ('$1') (myError))) (x);
           const o = $2.new (typeVarMap) (env) (myError => fail (prepend ('$2') (myError))) (f (x));
@@ -1415,6 +1450,24 @@ const Fn = $1 => $2 => (
 );
 
 const Predicate = $1 => $.Fn ($1) ($.Boolean);
+
+const invalidArgumentsCount = (typeInfo, index, numArgsExpected, args) => {
+  return new TypeError (trimTrailingSpaces (
+    q (typeInfo.name) + ' applied to the wrong number of arguments\n\n' +
+    underline (
+      typeInfo,
+      K (K (_)),
+      function(index_) {
+        return function(f) {
+          return K (K (index_ === index ? f : _));
+        };
+      }
+    ) + '\n' +
+    'Expected ' + numArgs (numArgsExpected) +
+    ' but received ' + numArgs (args.length) +
+    toMarkdownList ('.\n', ':\n\n', show, args)
+  ));
+};
 
 //  constraintsRepr :: ... -> String
 const constraintsRepr = (
@@ -1534,7 +1587,11 @@ const create = opts => {
     .slice (0, -1)
     .reduceRight (
       (run, input, index) => _typeVarMap => f => {
-        const wrapped = _x => {
+        const wrapped = (_x, ...rest) => {
+          if (rest.length > 0) {
+            throw invalidArgumentsCount (typeInfo, index, 1, [_x, ...rest]);
+          }
+
           const typeVarMap = Object.create (_typeVarMap);
           const x = input.new
             (typeVarMap)
