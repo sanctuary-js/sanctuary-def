@@ -38,6 +38,9 @@ const isPrefix = candidate => xs => {
 //    joinWith :: (String, Array String) -> String
 const joinWith = (separator, ss) => ss.join (separator);
 
+//    memberOf :: Array a -> a -> Boolean
+const memberOf = xs => y => xs.some (x => Z.equals (x, y));
+
 //    or :: (Array a, Array a) -> Array a
 const or = (xs, ys) => isEmpty (xs) ? ys : xs;
 
@@ -79,6 +82,7 @@ const types_ = x => {
     case '[object String]': return ['String'];
     case '[object Object]': return ['Object'];
     case '[object Null]':   return ['Null'];
+    case '[object Boolean]': return ['Boolean'];
     default:                return [];
   }
 };
@@ -593,6 +597,24 @@ const fromBinaryType = t => (
                (t._extractors.$2)
 );
 
+const EnumType = name => url => members => Object.assign (Object.create (Type$prototype), {
+  type: 'NULLARY',
+  name: name,
+  url: url,
+  supertypes: [],
+  arity: 0,
+  keys: [],
+  _extractors: {},
+  extractors: {},
+  types: {},
+  _test: env => x => memberOf (members) (x),
+  format: (outer, inner) => outer (name),
+  new: fail => env => x => {
+    if (memberOf (members) (x)) return x;
+    fail ([]) (x);
+  },
+});
+
 $.TypeVariable = name => Object.assign (Object.create (Type$prototype), {
   type: 'VARIABLE',
   name: name,
@@ -838,7 +860,7 @@ $.Date = Object.assign (
                 ([])
                 (x => Object.prototype.toString.call (x) === '[object Date]'),
   {
-    new: fail => env => x => TK,
+    new: fail => env => x => x,
   }
 );
 
@@ -1028,7 +1050,10 @@ $.ValidNumber = Object.assign (
                 ([$.Number])
                 (x => !(isNaN (x))),
   {
-    new: fail => env => x => TK,
+    new: fail => env => x => {
+      if (!(isNaN (x))) return x;
+      fail ([]) (x);
+    },
   }
 );
 
@@ -1571,3 +1596,5 @@ $.Nullable = def ('Nullable') ({}) ([$.Type, $.Type]) (Nullable);
 $.Pair = def ('Pair') ({}) ([$.Type, $.Type, $.Type]) (Pair);
 
 $.test = def ('test') ({}) ([$.Array ($.Type), $.Type, $.Any, $.Boolean]) (test);
+
+$.EnumType = def ('EnumType') ({}) ([$.String, $.String, $.Array ($.Any), $.Type]) (EnumType);

@@ -775,30 +775,30 @@ See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Number for in
 ///   - String
 /// `));
 ///   });
-/// 
-///   test ('returns a function which type checks its return value', () => {
-///     //    add :: Number -> Number -> Number
-///     const add =
-///     def ('add')
-///         ({})
-///         ([$.Number, $.Number, $.Number])
-///         (x => y => 'XXX');
-/// 
-///     throws (() => { add (2) (2); })
-///            (new TypeError (`Invalid value
-/// 
-/// add :: Number -> Number -> Number
-///                            ^^^^^^
-///                              1
-/// 
-/// 1)  "XXX" :: String
-/// 
-/// The value at position 1 is not a member of ‘Number’.
-/// 
-/// See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Number for information about the Number type.
-/// `));
+
+  test ('returns a function which type checks its return value', () => {
+    //    add :: Number -> Number -> Number
+    const add =
+    def ('add')
+        ({})
+        ([$.Number, $.Number, $.Number])
+        (x => y => 'XXX');
+
+    throws (() => { add (2) (2); })
+           (new TypeError (`Invalid value
+
+add :: Number -> Number -> Number
+                           ^^^^^^
+                             1
+
+1)  "XXX" :: String
+
+The value at position 1 is not a member of ‘Number’.
+
+See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Number for information about the Number type.
+`));
   });
-/// 
+
 ///   test ('performs type checking when a "returned" function is applied', () => {
 ///     //    lt :: Ord a => a -> (a -> Boolean)
 ///     const lt =
@@ -824,30 +824,30 @@ See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Number for in
 /// 
 /// Since there is no type of which all the above values are members, the type-variable constraint has been violated.
 /// `));
-///   });
-/// 
-///   test ('does not rely on constructor identity', () => {
-///     //    inc :: Date -> Date
-///     const inc =
-///     def ('inc')
-///         ({})
-///         ([$.Date, $.Date])
-///         (date => new Date (date.valueOf () + 1));
-/// 
-///     eq (inc (new Date (42))) (new Date (43));
-///     eq (inc (vm.runInNewContext ('new Date(42)'))) (new Date (43));
-/// 
-///     //    length :: Array String -> Number
-///     const length =
-///     def ('length')
-///         ({})
-///         ([$.Array ($.String), $.Number])
-///         (xs => xs.length);
-/// 
-///     eq (length (['foo', 'bar', 'baz'])) (3);
-///     eq (length (vm.runInNewContext ('["foo", "bar", "baz"]'))) (3);
-///   });
-/// 
+  });
+
+  test ('does not rely on constructor identity', () => {
+    //    inc :: Date -> Date
+    const inc =
+    def ('inc')
+        ({})
+        ([$.Date, $.Date])
+        (date => new Date (date.valueOf () + 1));
+
+    eq (inc (new Date (42))) (new Date (43));
+    eq (inc (vm.runInNewContext ('new Date(42)'))) (new Date (43));
+
+    //    length :: Array String -> Number
+    const length =
+    def ('length')
+        ({})
+        ([$.Array ($.String), $.Number])
+        (xs => xs.length);
+
+    eq (length (['foo', 'bar', 'baz'])) (3);
+    eq (length (vm.runInNewContext ('["foo", "bar", "baz"]'))) (3);
+  });
+
 ///   test ('accommodates circular references', () => {
 ///     //    id :: a -> a
 ///     const id =
@@ -901,73 +901,73 @@ See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Number for in
 /// Since there is no type of which all the above values are members, the type-variable constraint has been violated.
 /// `));
 ///   });
-/// 
-///   test ('supports enumerated types', () => {
-///     eq (typeof $.EnumType) ('function');
-///     eq ($.EnumType.length) (1);
-///     eq (show ($.EnumType)) ('EnumType :: String -> String -> Array Any -> Type');
-/// 
-///     //    TimeUnit :: Type
-///     const TimeUnit = $.EnumType
-///       ('TimeUnit')
-///       ('')
-///       (['milliseconds', 'seconds', 'minutes', 'hours']);
-/// 
-///     //    convertTo :: TimeUnit -> ValidDate -> ValidNumber
-///     const convertTo =
-///     def ('convertTo')
-///         ({})
-///         ([TimeUnit, $.ValidDate, $.ValidNumber])
-///         (function recur(unit) {
-///            return function(date) {
-///              switch (unit) {
-///                case 'milliseconds': return date.valueOf ();
-///                case 'seconds':      return recur ('milliseconds') (date) / 1000;
-///                case 'minutes':      return recur ('seconds') (date) / 60;
-///                case 'hours':        return recur ('minutes') (date) / 60;
-///              }
-///            };
-///          });
-/// 
-///     throws (() => { convertTo ('days') (new Date (0)); })
-///            (new TypeError (`Invalid value
-/// 
-/// convertTo :: TimeUnit -> ValidDate -> ValidNumber
-///              ^^^^^^^^
-///                 1
-/// 
-/// 1)  "days" :: String
-/// 
-/// The value at position 1 is not a member of ‘TimeUnit’.
-/// `));
-/// 
-///     eq (convertTo ('seconds') (new Date (1000))) (1);
-/// 
-///     //    SillyType :: Type
-///     const SillyType = $.EnumType
-///       ('SillyType')
-///       ('')
-///       (['foo', true, 42]);
-/// 
-///     const _env = Z.concat ($.env, [SillyType]);
-///     const _def = $.create ({checkTypes: true, env: _env});
-/// 
-///     //    id :: a -> a
-///     const id =
-///     _def ('id')
-///          ({})
-///          ([a, a])
-///          (x => x);
-/// 
-///     eq (id ('foo')) ('foo');
-///     eq (id ('bar')) ('bar');
-///     eq (id (true)) (true);
-///     eq (id (false)) (false);
-///     eq (id (42)) (42);
-///     eq (id (-42)) (-42);
-/// 
-///     eq (id (['foo', true, 42])) (['foo', true, 42]);
-/// 
+
+  test ('supports enumerated types', () => {
+    eq (typeof $.EnumType) ('function');
+    eq ($.EnumType.length) (1);
+    eq (show ($.EnumType)) ('EnumType :: String -> String -> Array Any -> Type');
+
+    //    TimeUnit :: Type
+    const TimeUnit = $.EnumType
+      ('TimeUnit')
+      ('')
+      (['milliseconds', 'seconds', 'minutes', 'hours']);
+
+    //    convertTo :: TimeUnit -> ValidDate -> ValidNumber
+    const convertTo =
+    def ('convertTo')
+        ({})
+        ([TimeUnit, $.ValidDate, $.ValidNumber])
+        (function recur(unit) {
+           return function(date) {
+             switch (unit) {
+               case 'milliseconds': return date.valueOf ();
+               case 'seconds':      return recur ('milliseconds') (date) / 1000;
+               case 'minutes':      return recur ('seconds') (date) / 60;
+               case 'hours':        return recur ('minutes') (date) / 60;
+             }
+           };
+         });
+
+    throws (() => { convertTo ('days') (new Date (0)); })
+           (new TypeError (`Invalid value
+
+convertTo :: TimeUnit -> ValidDate -> ValidNumber
+             ^^^^^^^^
+                1
+
+1)  "days" :: String
+
+The value at position 1 is not a member of ‘TimeUnit’.
+`));
+
+    eq (convertTo ('seconds') (new Date (1000))) (1);
+
+    //    SillyType :: Type
+    const SillyType = $.EnumType
+      ('SillyType')
+      ('')
+      (['foo', true, 42]);
+
+    const _env = Z.concat ($.env, [SillyType]);
+    const _def = $.create ({checkTypes: true, env: _env});
+
+    //    id :: a -> a
+    const id =
+    _def ('id')
+         ({})
+         ([a, a])
+         (x => x);
+
+    eq (id ('foo')) ('foo');
+    eq (id ('bar')) ('bar');
+    eq (id (true)) (true);
+    eq (id (false)) (false);
+    eq (id (42)) (42);
+    eq (id (-42)) (-42);
+
+    eq (id (['foo', true, 42])) (['foo', true, 42]);
+
 ///     throws (() => { id (['foo', false, 42]); })
 ///            (new TypeError (`Type-variable constraint violation
 /// 
@@ -979,7 +979,7 @@ See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Number for in
 /// 
 /// Since there is no type of which all the above values are members, the type-variable constraint has been violated.
 /// `));
-///   });
+  });
 
   test ('supports anonymous record types', () => {
     eq (typeof $.RecordType) ('function');
