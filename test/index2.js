@@ -263,7 +263,7 @@ See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Function for 
        ([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26]);
   });
 
-///   test ('returns a function which throws if given too many args', () => {
+  test ('returns a function which throws if given too many args', () => {
 ///     throws (() => { $0 (1); })
 ///            (new TypeError (`‘$0’ applied to the wrong number of arguments
 /// 
@@ -275,7 +275,7 @@ See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Function for 
 /// 
 ///   - 1
 /// `));
-/// 
+
 ///     throws (() => { $1 (1, 2); })
 ///            (new TypeError (`‘$1’ applied to the wrong number of arguments
 /// 
@@ -288,7 +288,7 @@ See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Function for 
 ///   - 1
 ///   - 2
 /// `));
-/// 
+
 ///     throws (() => { $2 (1, 2, 3, 4, 5, 6, 7, 8, 9, 10); })
 ///            (new TypeError (`‘$2’ applied to the wrong number of arguments
 /// 
@@ -309,7 +309,7 @@ See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Function for 
 ///   - 9
 ///   - 10
 /// `));
-///   });
+  });
 
   test ('returns a function which type checks its arguments', () => {
     const $9 =
