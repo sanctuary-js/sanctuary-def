@@ -1,6 +1,7 @@
 'use strict';
 
 const assert = require ('assert');
+const util = require ('util');
 
 const {Left, Right} = require ('sanctuary-either');
 const show = require ('sanctuary-show');
@@ -10,6 +11,10 @@ const type = require ('sanctuary-type-identifiers');
 
 const MAX_SAFE_INTEGER = Math.pow (2, 53) - 1;
 const MIN_SAFE_INTEGER = -MAX_SAFE_INTEGER;
+
+const inspect = typeof util.inspect.custom === 'symbol' ?
+                util.inspect.custom :
+                /* istanbul ignore next */ 'inspect';
 
 const $ = module.exports = {};
 
@@ -596,7 +601,7 @@ const EnumType = name => url => members => Object.assign (Object.create (Type$pr
   }),
 });
 
-$.TypeVariable = name => Object.assign (Object.create (Type$prototype), {
+const TypeVariable = name => Object.assign (Object.create (Type$prototype), {
   type: 'VARIABLE',
   name: name,
   url: '',
@@ -627,7 +632,7 @@ $.TypeVariable = name => Object.assign (Object.create (Type$prototype), {
   },
 });
 
-$.UnaryTypeVariable = name => $1 => Object.assign (Object.create (Type$prototype), {
+const UnaryTypeVariable = name => $1 => Object.assign (Object.create (Type$prototype), {
   type: 'VARIABLE',
   name: name,
   url: '',
@@ -647,7 +652,7 @@ $.UnaryTypeVariable = name => $1 => Object.assign (Object.create (Type$prototype
   ),
 });
 
-$.BinaryTypeVariable = name => $1 => $2 => Object.assign (Object.create (Type$prototype), {
+const BinaryTypeVariable = name => $1 => $2 => Object.assign (Object.create (Type$prototype), {
   type: 'VARIABLE',
   name: name,
   url: '',
@@ -772,8 +777,8 @@ const NamedRecordType = name => url => supertypes => fields => {
   });
 };
 
-const a = $.TypeVariable ('a');
-const b = $.TypeVariable ('b');
+const a = TypeVariable ('a');
+const b = TypeVariable ('b');
 
 $.Void = Object.assign (
   $.NullaryType ('Void')
@@ -989,7 +994,13 @@ const NonEmpty = $1 => Object.assign (
               (monoid => [monoid])
               ($1),
   {
-    new: K (env => fail => x => x),
+    new: typeVarMap => env => fail => x => {
+      if (!(Z.Monoid.test (x) && Z.Setoid.test (x) && !(Z.equals (x, Z.empty (x.constructor))))) {
+        fail ([]) (x);
+      }
+      $1.new (typeVarMap) (env) (propPath => fail (['$1', ...propPath])) (x);
+      return x;
+    },
   }
 );
 
@@ -1269,6 +1280,7 @@ const StrMap = $1 => Object.assign (
               ($1),
   {
     new: typeVarMap => env => fail => x => {
+      if (x == null) fail ([]) (x);
       const keys = Object.keys (x);
       for (const k of keys) {
         $1.new (typeVarMap) (env) (propPath => fail (['$1', ...propPath])) (x[k]);
@@ -1498,48 +1510,53 @@ $.env = [
   $.Undefined,
 ];
 
-const create = opts => name => constraints => types => {
-  const typeInfo = {name: name, constraints: constraints, types: types};
+const create = opts => {
+  const def = name => constraints => types => impl => {
+    if (!opts.checkTypes) return impl;
 
-  return types
-  .slice (0, -1)
-  .reduceRight (
-    (run, input, index) => _typeVarMap => f => {
-      const wrapped = _x => {
-        const typeVarMap = Object.create (_typeVarMap);
-        const x = input.new
-          (typeVarMap)
-          (opts.env)
-          (propPath => x => {
-             throw invalidValue (
-               opts.env,
-               typeInfo,
-               index,
-               propPath,
-               x
-             )
-           })
-          (_x);
-        return run (typeVarMap) (f (x));
-      };
-      const signature = typeSignature (typeInfo);
-      wrapped.toString = () => signature;
-      return wrapped;
-    },
-    typeVarMap => (
-      types[types.length - 1].new (typeVarMap)
-                                  (opts.env)
-                                  (propPath => x => {
-                                     throw invalidValue (
-                                       opts.env,
-                                       typeInfo,
-                                       types.length - 1,
-                                       propPath,
-                                       x
-                                     );
-                                   })
-    )
-  ) (Object.create (null));
+    const typeInfo = {name: name, constraints: constraints, types: types};
+
+    return types
+    .slice (0, -1)
+    .reduceRight (
+      (run, input, index) => _typeVarMap => f => {
+        const wrapped = _x => {
+          const typeVarMap = Object.create (_typeVarMap);
+          const x = input.new
+            (typeVarMap)
+            (opts.env)
+            (propPath => x => {
+               throw invalidValue (
+                 opts.env,
+                 typeInfo,
+                 index,
+                 propPath,
+                 x
+               )
+             })
+            (_x);
+          return run (typeVarMap) (f (x));
+        };
+        const signature = typeSignature (typeInfo);
+        wrapped[inspect] = wrapped.toString = () => signature;
+        return wrapped;
+      },
+      typeVarMap => (
+        types[types.length - 1].new (typeVarMap)
+                                    (opts.env)
+                                    (propPath => x => {
+                                       throw invalidValue (
+                                         opts.env,
+                                         typeInfo,
+                                         types.length - 1,
+                                         propPath,
+                                         x
+                                       );
+                                     })
+      )
+    ) (Object.create (null)) (impl);
+  };
+  return def ('def') ({}) (defTypes) (def);
 };
 
 //    defTypes :: NonEmpty (Array Type)
@@ -1551,7 +1568,7 @@ const defTypes = [
   $.AnyFunction,
 ];
 
-const def = $.def = create ({checkTypes: true, env: $.env});
+const def = create ({checkTypes: true, env: $.env});
 
 $.create = def ('create') ({}) ([RecordType ({checkTypes: $.Boolean, env: $.Array ($.Type)}), Unchecked (joinWith (' -> ', Z.map (show, defTypes)))]) (create);
 
@@ -1594,3 +1611,9 @@ $.EnumType = def ('EnumType') ({}) ([$.String, $.String, $.Array ($.Any), $.Type
 $.Function = def ('Function') ({}) ([$.NonEmpty ($.Array ($.Type)), $.Type]) (Function_);
 
 $.Thunk = def ('Thunk') ({}) ([$.Type, $.Type]) ($1 => Function_ ([$1]));
+
+$.TypeVariable = def ('TypeVariable') ({}) ([$.String, $.Type]) (TypeVariable);
+
+$.UnaryTypeVariable = def ('UnaryTypeVariable') ({}) ([$.String, Unchecked ('Type -> Type')]) (name => def (name) ({}) ([$.Type, $.Type]) (UnaryTypeVariable (name)));
+
+$.BinaryTypeVariable = def ('BinaryTypeVariable') ({}) ([$.String, Unchecked ('Type -> Type -> Type')]) (name => def (name) ({}) ([$.Type, $.Type, $.Type]) (BinaryTypeVariable (name)));

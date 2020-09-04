@@ -140,129 +140,129 @@ The value at position 1 is not a member of ‘{ checkTypes :: Boolean, env :: Ar
 
 suite ('def', () => {
 
-///   test ('type checks its arguments when checkTypes is true', () => {
-///     throws (() => { def (null); })
-///            (new TypeError (`Invalid value
-/// 
-/// def :: String -> StrMap (Array TypeClass) -> NonEmpty (Array Type) -> Function -> Function
-///        ^^^^^^
-///          1
-/// 
-/// 1)  null :: Null
-/// 
-/// The value at position 1 is not a member of ‘String’.
-/// 
-/// See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#String for information about the String type.
-/// `));
-/// 
-///     throws (() => { def ('') (null); })
-///            (new TypeError (`Invalid value
-/// 
-/// def :: String -> StrMap (Array TypeClass) -> NonEmpty (Array Type) -> Function -> Function
-///                  ^^^^^^^^^^^^^^^^^^^^^^^^
-///                             1
-/// 
-/// 1)  null :: Null
-/// 
-/// The value at position 1 is not a member of ‘StrMap (Array TypeClass)’.
-/// 
-/// See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#StrMap for information about the StrMap type constructor.
-/// `));
-/// 
-///     throws (() => { def ('') ({}) ([]); })
-///            (new TypeError (`Invalid value
-/// 
-/// def :: String -> StrMap (Array TypeClass) -> NonEmpty (Array Type) -> Function -> Function
-///                                              ^^^^^^^^^^^^^^^^^^^^^
-///                                                        1
-/// 
-/// 1)  [] :: Array a
-/// 
-/// The value at position 1 is not a member of ‘NonEmpty (Array Type)’.
-/// 
-/// See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#NonEmpty for information about the NonEmpty type constructor.
-/// `));
-/// 
-///     throws (() => { def ('') ({}) ([1, 2, 3]); })
-///            (new TypeError (`Invalid value
-/// 
-/// def :: String -> StrMap (Array TypeClass) -> NonEmpty (Array Type) -> Function -> Function
-///                                                              ^^^^
-///                                                               1
-/// 
-/// 1)  1 :: Number
-/// 
-/// The value at position 1 is not a member of ‘Type’.
-/// 
-/// See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Type for information about the Type type.
-/// `));
-/// 
-///     throws (() => { def ('') ({}) ([$.Null]) (null); })
-///            (new TypeError (`Invalid value
-/// 
-/// def :: String -> StrMap (Array TypeClass) -> NonEmpty (Array Type) -> Function -> Function
-///                                                                       ^^^^^^^^
-///                                                                          1
-/// 
-/// 1)  null :: Null
-/// 
-/// The value at position 1 is not a member of ‘Function’.
-/// 
-/// See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Function for information about the Function type.
-/// `));
-///   });
-/// 
-///   test ('does not type check its arguments when checkTypes is false', () => {
-///     const def = $.create ({checkTypes: false, env: $.env});
-/// 
-///     //    add :: Number -> Number -> Number
-///     const add =
-///     def ('add')
-///         ({})
-///         ([$.Number, $.Number, $.Number])
-///         (x => y => x + y);
-/// 
-///     eq (add (42) (1)) (43);
-///     eq (add (1) (2, 3, 4)) (3);
-///     eq (add ('XXX') ({foo: 42})) ('XXX[object Object]');
-///     eq (add ({foo: 42}) ('XXX')) ('[object Object]XXX');
-///   });
-/// 
-///   test ('returns a function whose length is zero or one', () => {
+  test ('type checks its arguments when checkTypes is true', () => {
+    throws (() => { def (null); })
+           (new TypeError (`Invalid value
+
+def :: String -> StrMap (Array TypeClass) -> NonEmpty (Array Type) -> Function -> Function
+       ^^^^^^
+         1
+
+1)  null :: Null
+
+The value at position 1 is not a member of ‘String’.
+
+See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#String for information about the String type.
+`));
+
+    throws (() => { def ('') (null); })
+           (new TypeError (`Invalid value
+
+def :: String -> StrMap (Array TypeClass) -> NonEmpty (Array Type) -> Function -> Function
+                 ^^^^^^^^^^^^^^^^^^^^^^^^
+                            1
+
+1)  null :: Null
+
+The value at position 1 is not a member of ‘StrMap (Array TypeClass)’.
+
+See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#StrMap for information about the StrMap type constructor.
+`));
+
+    throws (() => { def ('') ({}) ([]); })
+           (new TypeError (`Invalid value
+
+def :: String -> StrMap (Array TypeClass) -> NonEmpty (Array Type) -> Function -> Function
+                                             ^^^^^^^^^^^^^^^^^^^^^
+                                                       1
+
+1)  [] :: Array a
+
+The value at position 1 is not a member of ‘NonEmpty (Array Type)’.
+
+See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#NonEmpty for information about the NonEmpty type constructor.
+`));
+
+    throws (() => { def ('') ({}) ([1, 2, 3]); })
+           (new TypeError (`Invalid value
+
+def :: String -> StrMap (Array TypeClass) -> NonEmpty (Array Type) -> Function -> Function
+                                                             ^^^^
+                                                              1
+
+1)  1 :: Number
+
+The value at position 1 is not a member of ‘Type’.
+
+See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Type for information about the Type type.
+`));
+
+    throws (() => { def ('') ({}) ([$.Null]) (null); })
+           (new TypeError (`Invalid value
+
+def :: String -> StrMap (Array TypeClass) -> NonEmpty (Array Type) -> Function -> Function
+                                                                      ^^^^^^^^
+                                                                         1
+
+1)  null :: Null
+
+The value at position 1 is not a member of ‘Function’.
+
+See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Function for information about the Function type.
+`));
+  });
+
+  test ('does not type check its arguments when checkTypes is false', () => {
+    const def = $.create ({checkTypes: false, env: $.env});
+
+    //    add :: Number -> Number -> Number
+    const add =
+    def ('add')
+        ({})
+        ([$.Number, $.Number, $.Number])
+        (x => y => x + y);
+
+    eq (add (42) (1)) (43);
+    eq (add (1) (2, 3, 4)) (3);
+    eq (add ('XXX') ({foo: 42})) ('XXX[object Object]');
+    eq (add ({foo: 42}) ('XXX')) ('[object Object]XXX');
+  });
+
+  test ('returns a function whose length is zero or one', () => {
 ///     eq ($0.length) (0);
-///     eq ($1.length) (1);
-///     eq ($2.length) (1);
-///     eq ($3.length) (1);
-///     eq ($26.length) (1);
-///   });
-/// 
-///   test ('returns a function with "inspect" and "@@show" methods', () => {
-///     //    add :: Number -> Number -> Number
-///     const add =
-///     def ('add')
-///         ({})
-///         ([$.Number, $.Number, $.Number])
-///         (x => y => x + y);
-/// 
-///     eq (util.inspect (add)) ('add :: Number -> Number -> Number');
-///     eq (show (add)) ('add :: Number -> Number -> Number');
-/// 
-///     eq (show ($0)) ('$0 :: () -> Array a');
-///     eq (show ($1)) ('$1 :: a -> Array a');
-///     eq (show ($2)) ('$2 :: a -> a -> Array a');
-///     eq (show ($3)) ('$3 :: a -> a -> a -> Array a');
-///     eq (show ($26)) ('$26 :: a -> a -> a -> a -> a -> a -> a -> a -> a -> a -> a -> a -> a -> a -> a -> a -> a -> a -> a -> a -> a -> a -> a -> a -> a -> a -> Array a');
-///   });
-/// 
-///   test ('returns a curried function', () => {
-///     eq ($0 ()) ([]);
-///     eq ($1 (1)) ([1]);
-///     eq ($2 (1) (2)) ([1, 2]);
-///     eq ($3 (1) (2) (3)) ([1, 2, 3]);
-///     eq ($26 (1) (2) (3) (4) (5) (6) (7) (8) (9) (10) (11) (12) (13) (14) (15) (16) (17) (18) (19) (20) (21) (22) (23) (24) (25) (26))
-///        ([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26]);
-///   });
-/// 
+    eq ($1.length) (1);
+    eq ($2.length) (1);
+    eq ($3.length) (1);
+    eq ($26.length) (1);
+  });
+
+  test ('returns a function with "inspect" and "@@show" methods', () => {
+    //    add :: Number -> Number -> Number
+    const add =
+    def ('add')
+        ({})
+        ([$.Number, $.Number, $.Number])
+        (x => y => x + y);
+
+    eq (util.inspect (add)) ('add :: Number -> Number -> Number');
+    eq (show (add)) ('add :: Number -> Number -> Number');
+
+/// eq (show ($0)) ('$0 :: () -> Array a');
+    eq (show ($1)) ('$1 :: a -> Array a');
+    eq (show ($2)) ('$2 :: a -> a -> Array a');
+    eq (show ($3)) ('$3 :: a -> a -> a -> Array a');
+    eq (show ($26)) ('$26 :: a -> a -> a -> a -> a -> a -> a -> a -> a -> a -> a -> a -> a -> a -> a -> a -> a -> a -> a -> a -> a -> a -> a -> a -> a -> a -> Array a');
+  });
+
+  test ('returns a curried function', () => {
+/// eq ($0 ()) ([]);
+    eq ($1 (1)) ([1]);
+    eq ($2 (1) (2)) ([1, 2]);
+    eq ($3 (1) (2) (3)) ([1, 2, 3]);
+    eq ($26 (1) (2) (3) (4) (5) (6) (7) (8) (9) (10) (11) (12) (13) (14) (15) (16) (17) (18) (19) (20) (21) (22) (23) (24) (25) (26))
+       ([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26]);
+  });
+
 ///   test ('returns a function which throws if given too many args', () => {
 ///     throws (() => { $0 (1); })
 ///            (new TypeError (`‘$0’ applied to the wrong number of arguments
@@ -310,151 +310,151 @@ suite ('def', () => {
 ///   - 10
 /// `));
 ///   });
-/// 
-///   test ('returns a function which type checks its arguments', () => {
-///     const $9 =
-///     def ('$9')
-///         ({})
-///         ([$.Number,
-///           $.Number,
-///           $.Number,
-///           $.Number,
-///           $.Number,
-///           $.Number,
-///           $.Number,
-///           $.Number,
-///           $.Number,
-///           $.Array ($.Number)])
-///         (_1 => _2 => _3 => _4 => _5 => _6 => _7 => _8 => _9 => [_1, _2, _3, _4, _5, _6, _7, _8, _9]);
-/// 
-///     throws (() => { $9 ('X'); })
-///            (new TypeError (`Invalid value
-/// 
-/// $9 :: Number -> Number -> Number -> Number -> Number -> Number -> Number -> Number -> Number -> Array Number
-///       ^^^^^^
-///         1
-/// 
-/// 1)  "X" :: String
-/// 
-/// The value at position 1 is not a member of ‘Number’.
-/// 
-/// See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Number for information about the Number type.
-/// `));
-/// 
-///     throws (() => { $9 (1) ('X'); })
-///            (new TypeError (`Invalid value
-/// 
-/// $9 :: Number -> Number -> Number -> Number -> Number -> Number -> Number -> Number -> Number -> Array Number
-///                 ^^^^^^
-///                   1
-/// 
-/// 1)  "X" :: String
-/// 
-/// The value at position 1 is not a member of ‘Number’.
-/// 
-/// See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Number for information about the Number type.
-/// `));
-/// 
-///     throws (() => { $9 (1) (2) ('X'); })
-///            (new TypeError (`Invalid value
-/// 
-/// $9 :: Number -> Number -> Number -> Number -> Number -> Number -> Number -> Number -> Number -> Array Number
-///                           ^^^^^^
-///                             1
-/// 
-/// 1)  "X" :: String
-/// 
-/// The value at position 1 is not a member of ‘Number’.
-/// 
-/// See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Number for information about the Number type.
-/// `));
-/// 
-///     throws (() => { $9 (1) (2) (3) ('X'); })
-///            (new TypeError (`Invalid value
-/// 
-/// $9 :: Number -> Number -> Number -> Number -> Number -> Number -> Number -> Number -> Number -> Array Number
-///                                     ^^^^^^
-///                                       1
-/// 
-/// 1)  "X" :: String
-/// 
-/// The value at position 1 is not a member of ‘Number’.
-/// 
-/// See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Number for information about the Number type.
-/// `));
-/// 
-///     throws (() => { $9 (1) (2) (3) (4) ('X'); })
-///            (new TypeError (`Invalid value
-/// 
-/// $9 :: Number -> Number -> Number -> Number -> Number -> Number -> Number -> Number -> Number -> Array Number
-///                                               ^^^^^^
-///                                                 1
-/// 
-/// 1)  "X" :: String
-/// 
-/// The value at position 1 is not a member of ‘Number’.
-/// 
-/// See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Number for information about the Number type.
-/// `));
-/// 
-///     throws (() => { $9 (1) (2) (3) (4) (5) ('X'); })
-///            (new TypeError (`Invalid value
-/// 
-/// $9 :: Number -> Number -> Number -> Number -> Number -> Number -> Number -> Number -> Number -> Array Number
-///                                                         ^^^^^^
-///                                                           1
-/// 
-/// 1)  "X" :: String
-/// 
-/// The value at position 1 is not a member of ‘Number’.
-/// 
-/// See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Number for information about the Number type.
-/// `));
-/// 
-///     throws (() => { $9 (1) (2) (3) (4) (5) (6) ('X'); })
-///            (new TypeError (`Invalid value
-/// 
-/// $9 :: Number -> Number -> Number -> Number -> Number -> Number -> Number -> Number -> Number -> Array Number
-///                                                                   ^^^^^^
-///                                                                     1
-/// 
-/// 1)  "X" :: String
-/// 
-/// The value at position 1 is not a member of ‘Number’.
-/// 
-/// See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Number for information about the Number type.
-/// `));
-/// 
-///     throws (() => { $9 (1) (2) (3) (4) (5) (6) (7) ('X'); })
-///            (new TypeError (`Invalid value
-/// 
-/// $9 :: Number -> Number -> Number -> Number -> Number -> Number -> Number -> Number -> Number -> Array Number
-///                                                                             ^^^^^^
-///                                                                               1
-/// 
-/// 1)  "X" :: String
-/// 
-/// The value at position 1 is not a member of ‘Number’.
-/// 
-/// See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Number for information about the Number type.
-/// `));
-/// 
-///     throws (() => { $9 (1) (2) (3) (4) (5) (6) (7) (8) ('X'); })
-///            (new TypeError (`Invalid value
-/// 
-/// $9 :: Number -> Number -> Number -> Number -> Number -> Number -> Number -> Number -> Number -> Array Number
-///                                                                                       ^^^^^^
-///                                                                                         1
-/// 
-/// 1)  "X" :: String
-/// 
-/// The value at position 1 is not a member of ‘Number’.
-/// 
-/// See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Number for information about the Number type.
-/// `));
-/// 
-///     eq ($9 (1) (2) (3) (4) (5) (6) (7) (8) (9)) ([1, 2, 3, 4, 5, 6, 7, 8, 9]);
-///   });
+
+  test ('returns a function which type checks its arguments', () => {
+    const $9 =
+    def ('$9')
+        ({})
+        ([$.Number,
+          $.Number,
+          $.Number,
+          $.Number,
+          $.Number,
+          $.Number,
+          $.Number,
+          $.Number,
+          $.Number,
+          $.Array ($.Number)])
+        (_1 => _2 => _3 => _4 => _5 => _6 => _7 => _8 => _9 => [_1, _2, _3, _4, _5, _6, _7, _8, _9]);
+
+    throws (() => { $9 ('X'); })
+           (new TypeError (`Invalid value
+
+$9 :: Number -> Number -> Number -> Number -> Number -> Number -> Number -> Number -> Number -> Array Number
+      ^^^^^^
+        1
+
+1)  "X" :: String
+
+The value at position 1 is not a member of ‘Number’.
+
+See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Number for information about the Number type.
+`));
+
+    throws (() => { $9 (1) ('X'); })
+           (new TypeError (`Invalid value
+
+$9 :: Number -> Number -> Number -> Number -> Number -> Number -> Number -> Number -> Number -> Array Number
+                ^^^^^^
+                  1
+
+1)  "X" :: String
+
+The value at position 1 is not a member of ‘Number’.
+
+See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Number for information about the Number type.
+`));
+
+    throws (() => { $9 (1) (2) ('X'); })
+           (new TypeError (`Invalid value
+
+$9 :: Number -> Number -> Number -> Number -> Number -> Number -> Number -> Number -> Number -> Array Number
+                          ^^^^^^
+                            1
+
+1)  "X" :: String
+
+The value at position 1 is not a member of ‘Number’.
+
+See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Number for information about the Number type.
+`));
+
+    throws (() => { $9 (1) (2) (3) ('X'); })
+           (new TypeError (`Invalid value
+
+$9 :: Number -> Number -> Number -> Number -> Number -> Number -> Number -> Number -> Number -> Array Number
+                                    ^^^^^^
+                                      1
+
+1)  "X" :: String
+
+The value at position 1 is not a member of ‘Number’.
+
+See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Number for information about the Number type.
+`));
+
+    throws (() => { $9 (1) (2) (3) (4) ('X'); })
+           (new TypeError (`Invalid value
+
+$9 :: Number -> Number -> Number -> Number -> Number -> Number -> Number -> Number -> Number -> Array Number
+                                              ^^^^^^
+                                                1
+
+1)  "X" :: String
+
+The value at position 1 is not a member of ‘Number’.
+
+See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Number for information about the Number type.
+`));
+
+    throws (() => { $9 (1) (2) (3) (4) (5) ('X'); })
+           (new TypeError (`Invalid value
+
+$9 :: Number -> Number -> Number -> Number -> Number -> Number -> Number -> Number -> Number -> Array Number
+                                                        ^^^^^^
+                                                          1
+
+1)  "X" :: String
+
+The value at position 1 is not a member of ‘Number’.
+
+See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Number for information about the Number type.
+`));
+
+    throws (() => { $9 (1) (2) (3) (4) (5) (6) ('X'); })
+           (new TypeError (`Invalid value
+
+$9 :: Number -> Number -> Number -> Number -> Number -> Number -> Number -> Number -> Number -> Array Number
+                                                                  ^^^^^^
+                                                                    1
+
+1)  "X" :: String
+
+The value at position 1 is not a member of ‘Number’.
+
+See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Number for information about the Number type.
+`));
+
+    throws (() => { $9 (1) (2) (3) (4) (5) (6) (7) ('X'); })
+           (new TypeError (`Invalid value
+
+$9 :: Number -> Number -> Number -> Number -> Number -> Number -> Number -> Number -> Number -> Array Number
+                                                                            ^^^^^^
+                                                                              1
+
+1)  "X" :: String
+
+The value at position 1 is not a member of ‘Number’.
+
+See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Number for information about the Number type.
+`));
+
+    throws (() => { $9 (1) (2) (3) (4) (5) (6) (7) (8) ('X'); })
+           (new TypeError (`Invalid value
+
+$9 :: Number -> Number -> Number -> Number -> Number -> Number -> Number -> Number -> Number -> Array Number
+                                                                                      ^^^^^^
+                                                                                        1
+
+1)  "X" :: String
+
+The value at position 1 is not a member of ‘Number’.
+
+See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Number for information about the Number type.
+`));
+
+    eq ($9 (1) (2) (3) (4) (5) (6) (7) (8) (9)) ([1, 2, 3, 4, 5, 6, 7, 8, 9]);
+  });
 
   test ('reports type error correctly for null/undefined', () => {
     //    sqrt :: Number -> Number
@@ -3660,84 +3660,84 @@ suite ('test', () => {
 ///   });
 /// 
 /// });
-/// 
-/// suite ('TypeVariable', () => {
-/// 
-///   test ('is a unary function', () => {
-///     eq (typeof $.TypeVariable) ('function');
-///     eq ($.TypeVariable.length) (1);
-///     eq (show ($.TypeVariable)) ('TypeVariable :: String -> Type');
-///   });
-/// 
-/// });
-/// 
-/// suite ('UnaryTypeVariable', () => {
-/// 
-///   test ('is a unary function', () => {
-///     eq (typeof $.UnaryTypeVariable) ('function');
-///     eq ($.UnaryTypeVariable.length) (1);
-///     eq (show ($.UnaryTypeVariable)) ('UnaryTypeVariable :: String -> Type -> Type');
-///   });
-/// 
-///   test ('returns a function which type checks its arguments', () => {
-///     //    f :: Type -> Type
-///     const f = $.UnaryTypeVariable ('f');
-/// 
-///     eq (typeof f) ('function');
-///     eq (f.length) (1);
-///     eq (show (f)) ('f :: Type -> Type');
-///     eq (show (f (a))) ('f a');
-/// 
-///     throws (() => { f (Number); })
-///            (new TypeError (`Invalid value
-/// 
-/// f :: Type -> Type
-///      ^^^^
-///       1
-/// 
-/// 1)  function Number() { [native code] } :: Function, (a -> b)
-/// 
-/// The value at position 1 is not a member of ‘Type’.
-/// 
-/// See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Type for information about the Type type.
-/// `));
-///   });
-/// 
-/// });
-/// 
-/// suite ('BinaryTypeVariable', () => {
-/// 
-///   test ('is a unary function', () => {
-///     eq (typeof $.BinaryTypeVariable) ('function');
-///     eq ($.BinaryTypeVariable.length) (1);
-///     eq (show ($.BinaryTypeVariable)) ('BinaryTypeVariable :: String -> Type -> Type -> Type');
-///   });
-/// 
-///   test ('returns a function which type checks its arguments', () => {
-///     //    p :: Type -> Type -> Type
-///     const p = $.BinaryTypeVariable ('p');
-/// 
-///     eq (typeof p) ('function');
-///     eq (p.length) (1);
-///     eq (show (p)) ('p :: Type -> Type -> Type');
-///     eq (show (p (a) (b))) ('p a b');
-/// 
-///     throws (() => { p (Number); })
-///            (new TypeError (`Invalid value
-/// 
-/// p :: Type -> Type -> Type
-///      ^^^^
-///       1
-/// 
-/// 1)  function Number() { [native code] } :: Function, (a -> b)
-/// 
-/// The value at position 1 is not a member of ‘Type’.
-/// 
-/// See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Type for information about the Type type.
-/// `));
-///   });
-/// 
-/// });
+
+suite ('TypeVariable', () => {
+
+  test ('is a unary function', () => {
+    eq (typeof $.TypeVariable) ('function');
+    eq ($.TypeVariable.length) (1);
+    eq (show ($.TypeVariable)) ('TypeVariable :: String -> Type');
+  });
+
+});
+
+suite ('UnaryTypeVariable', () => {
+
+  test ('is a unary function', () => {
+    eq (typeof $.UnaryTypeVariable) ('function');
+    eq ($.UnaryTypeVariable.length) (1);
+    eq (show ($.UnaryTypeVariable)) ('UnaryTypeVariable :: String -> Type -> Type');
+  });
+
+  test ('returns a function which type checks its arguments', () => {
+    //    f :: Type -> Type
+    const f = $.UnaryTypeVariable ('f');
+
+    eq (typeof f) ('function');
+    eq (f.length) (1);
+    eq (show (f)) ('f :: Type -> Type');
+    eq (show (f (a))) ('f a');
+
+    throws (() => { f (Number); })
+           (new TypeError (`Invalid value
+
+f :: Type -> Type
+     ^^^^
+      1
+
+1)  function Number() { [native code] } :: Function, (a -> b)
+
+The value at position 1 is not a member of ‘Type’.
+
+See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Type for information about the Type type.
+`));
+  });
+
+});
+
+suite ('BinaryTypeVariable', () => {
+
+  test ('is a unary function', () => {
+    eq (typeof $.BinaryTypeVariable) ('function');
+    eq ($.BinaryTypeVariable.length) (1);
+    eq (show ($.BinaryTypeVariable)) ('BinaryTypeVariable :: String -> Type -> Type -> Type');
+  });
+
+  test ('returns a function which type checks its arguments', () => {
+    //    p :: Type -> Type -> Type
+    const p = $.BinaryTypeVariable ('p');
+
+    eq (typeof p) ('function');
+    eq (p.length) (1);
+    eq (show (p)) ('p :: Type -> Type -> Type');
+    eq (show (p (a) (b))) ('p a b');
+
+    throws (() => { p (Number); })
+           (new TypeError (`Invalid value
+
+p :: Type -> Type -> Type
+     ^^^^
+      1
+
+1)  function Number() { [native code] } :: Function, (a -> b)
+
+The value at position 1 is not a member of ‘Type’.
+
+See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Type for information about the Type type.
+`));
+  });
+
+});
 
 suite ('Thunk', () => {
 
