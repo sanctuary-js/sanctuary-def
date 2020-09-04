@@ -87,13 +87,6 @@ const types_ = x => {
   }
 };
 
-let _nextInt = 0
-const nextInt = () => (_nextInt += 1);
-
-const showEnv = typeVarMap => {
-  return `[${(String (typeVarMap._ts)).padStart (2, '0')}]${'a' in typeVarMap ? ` a = ${typeVarMap['a']}` : ''}${'b' in typeVarMap ? ` b = ${typeVarMap['b']}` : ''}`;
-};
-
 //  _underline :: ... -> String
 function _underline(
   t,              // :: Type
@@ -503,7 +496,7 @@ const Unchecked = s => Object.assign (Object.create (Type$prototype), {
   types: {},
   _test: K (K (true)),
   format: (outer, inner) => s,
-  new: typeVarMap => fail => x => x,
+  new: K (fail => x => x),
 });
 
 $.Inconsistent = Object.assign (Object.create (Type$prototype), {
@@ -609,10 +602,10 @@ const EnumType = name => url => members => Object.assign (Object.create (Type$pr
   types: {},
   _test: env => x => memberOf (members) (x),
   format: (outer, inner) => outer (name),
-  new: typeVarMap => fail => x => {
+  new: K (fail => x => {
     if (memberOf (members) (x)) return x;
     fail ([]) (x);
-  },
+  }),
 });
 
 $.TypeVariable = name => Object.assign (Object.create (Type$prototype), {
@@ -794,7 +787,7 @@ $.Void = Object.assign (
                 ([])
                 (x => false),
   {
-    new: typeVarMap => fail => x => TK,
+    new: K (fail => x => TK),
   }
 );
 
@@ -804,7 +797,7 @@ $.Any = Object.assign (
                 ([])
                 (x => true),
   {
-    new: typeVarMap => fail => x => x,
+    new: K (fail => x => x),
   }
 );
 
@@ -814,10 +807,10 @@ $.AnyFunction = Object.assign (
                 ([])
                 (x => typeof x === 'function'),
   {
-    new: typeVarMap => fail => x => {
+    new: K (fail => x => {
       if (typeof x === 'function') return x;
       fail ([]) (x);
-    },
+    }),
   }
 );
 
@@ -827,7 +820,7 @@ $.Arguments = Object.assign (
                 ([])
                 (x => Object.prototype.toString.call (x) === '[object Arguments]'),
   {
-    new: typeVarMap => fail => x => TK,
+    new: K (fail => x => TK),
   }
 );
 
@@ -837,10 +830,10 @@ $.Boolean = Object.assign (
                 ([])
                 (x => typeof x === 'boolean'),
   {
-    new: typeVarMap => fail => x => {
+    new: K (fail => x => {
       if (typeof x === 'boolean') return x;
       fail ([]) (x);
-    },
+    }),
   }
 );
 
@@ -850,7 +843,7 @@ $.Buffer = Object.assign (
                 ([])
                 (x => typeof Buffer !== 'undefined' && Buffer.isBuffer (x)),
   {
-    new: typeVarMap => fail => x => TK,
+    new: K (fail => x => TK),
   }
 );
 
@@ -860,7 +853,7 @@ $.Date = Object.assign (
                 ([])
                 (x => Object.prototype.toString.call (x) === '[object Date]'),
   {
-    new: typeVarMap => fail => x => x,
+    new: K (fail => x => x),
   }
 );
 
@@ -870,10 +863,10 @@ $.ValidDate = Object.assign (
                 ([$.Date])
                 (x => !(isNaN (Number (x)))),
   {
-    new: typeVarMap => fail => x => {
+    new: K (fail => x => {
       if (!(isNaN (Number (x)))) return x;
       fail ([]) (x);
-    },
+    }),
   }
 );
 
@@ -885,7 +878,7 @@ const Descending = $1 => Object.assign (
               (I)
               ($1),
   {
-    new: typeVarMap => fail => x => TK,
+    new: K (fail => x => TK),
   }
 );
 
@@ -917,7 +910,7 @@ $.Error = Object.assign (
                 ([])
                 (x => Object.prototype.toString.call (x) === '[object Error]'),
   {
-    new: typeVarMap => fail => x => TK,
+    new: K (fail => x => TK),
   }
 );
 
@@ -927,7 +920,7 @@ $.HtmlElement = Object.assign (
                 ([])
                 (x => /^\[object HTML.+Element\]$/.test (Object.prototype.toString.call (x))),
   {
-    new: typeVarMap => fail => x => TK,
+    new: K (fail => x => TK),
   }
 );
 
@@ -939,7 +932,7 @@ const Identity = $1 => Object.assign (
               (I)
               ($1),
   {
-    new: typeVarMap => fail => x => TK,
+    new: K (fail => x => TK),
   }
 );
 
@@ -953,7 +946,7 @@ const JsMap = $1 => $2 => Object.assign (
                ($1)
                ($2),
   {
-    new: typeVarMap => fail => x => TK,
+    new: K (fail => x => TK),
   }
 );
 
@@ -965,7 +958,7 @@ const JsSet = $1 => Object.assign (
               (jsSet => Array.from (jsSet.values ()))
               ($1),
   {
-    new: typeVarMap => fail => x => TK,
+    new: K (fail => x => TK),
   }
 );
 
@@ -977,10 +970,10 @@ const Maybe = $1 => Object.assign (
               (I)
               ($1),
   {
-    new: typeVarMap => fail => x => {
+    new: K (fail => x => {
       if (type (x) === 'sanctuary-maybe/Maybe@1') return x;
       fail ([]) (x);
-    },
+    }),
   }
 );
 
@@ -990,7 +983,7 @@ $.Module = Object.assign (
                 ([])
                 (x => Object.prototype.toString.call (x) === '[object Module]'),
   {
-    new: typeVarMap => fail => x => TK,
+    new: K (fail => x => TK),
   }
 );
 
@@ -1002,7 +995,7 @@ const NonEmpty = $1 => Object.assign (
               (monoid => [monoid])
               ($1),
   {
-    new: typeVarMap => fail => x => x,
+    new: K (fail => x => x),
   }
 );
 
@@ -1012,10 +1005,10 @@ $.Null = Object.assign (
                 ([])
                 (x => Object.prototype.toString.call (x) === '[object Null]'),
   {
-    new: typeVarMap => fail => x => {
+    new: K (fail => x => {
       if (x === null) return x;
       fail ([]) (x);
-    },
+    }),
   }
 );
 
@@ -1027,7 +1020,7 @@ const Nullable = $1 => Object.assign (
               (nullable => nullable === null ? [] : [nullable])
               ($1),
   {
-    new: typeVarMap => fail => x => x,
+    new: K (fail => x => x),
   }
 );
 
@@ -1037,10 +1030,10 @@ $.Number = Object.assign (
                 ([])
                 (x => typeof x === 'number'),
   {
-    new: typeVarMap => fail => x => {
+    new: K (fail => x => {
       if (typeof x === 'number') return x;
       fail ([]) (x);
-    },
+    }),
   }
 );
 
@@ -1050,10 +1043,10 @@ $.ValidNumber = Object.assign (
                 ([$.Number])
                 (x => !(isNaN (x))),
   {
-    new: typeVarMap => fail => x => {
+    new: K (fail => x => {
       if (!(isNaN (x))) return x;
       fail ([]) (x);
-    },
+    }),
   }
 );
 
@@ -1063,7 +1056,7 @@ $.PositiveNumber = Object.assign (
                 ([$.Number])
                 (x => x > 0),
   {
-    new: typeVarMap => fail => x => TK,
+    new: K (fail => x => TK),
   }
 );
 
@@ -1073,7 +1066,7 @@ $.NegativeNumber = Object.assign (
                 ([$.Number])
                 (x => x < 0),
   {
-    new: typeVarMap => fail => x => TK,
+    new: K (fail => x => TK),
   }
 );
 
@@ -1083,7 +1076,7 @@ $.NonZeroValidNumber = Object.assign (
                 ([$.ValidNumber])
                 (x => x !== 0),
   {
-    new: typeVarMap => fail => x => TK,
+    new: K (fail => x => TK),
   }
 );
 
@@ -1093,7 +1086,7 @@ $.FiniteNumber = Object.assign (
                 ([$.ValidNumber])
                 (isFinite),
   {
-    new: typeVarMap => fail => x => TK,
+    new: K (fail => x => TK),
   }
 );
 
@@ -1103,10 +1096,10 @@ $.PositiveFiniteNumber = Object.assign (
                 ([$.FiniteNumber])
                 (x => x > 0),
   {
-    new: typeVarMap => fail => x => {
+    new: K (fail => x => {
       if (x > 0) return x;
       fail ([]) (x);
-    },
+    }),
   }
 );
 
@@ -1116,7 +1109,7 @@ $.NegativeFiniteNumber = Object.assign (
                 ([$.FiniteNumber])
                 (x => x < 0),
   {
-    new: typeVarMap => fail => x => TK,
+    new: K (fail => x => TK),
   }
 );
 
@@ -1126,7 +1119,7 @@ $.NonZeroFiniteNumber = Object.assign (
                 ([$.FiniteNumber])
                 (x => x !== 0),
   {
-    new: typeVarMap => fail => x => TK,
+    new: K (fail => x => TK),
   }
 );
 
@@ -1136,10 +1129,10 @@ $.Integer = Object.assign (
                 ([$.ValidNumber])
                 (x => Math.floor (x) === x && x >= MIN_SAFE_INTEGER && x <= MAX_SAFE_INTEGER),
   {
-    new: typeVarMap => fail => x => {
+    new: K (fail => x => {
       if (Math.floor (x) === x && x >= MIN_SAFE_INTEGER && x <= MAX_SAFE_INTEGER) return x;
       fail ([]) (x);
-    },
+    }),
   }
 );
 
@@ -1149,7 +1142,7 @@ $.NonZeroInteger = Object.assign (
                 ([$.Integer])
                 (x => x !== 0),
   {
-    new: typeVarMap => fail => x => TK,
+    new: K (fail => x => TK),
   }
 );
 
@@ -1159,7 +1152,7 @@ $.NonNegativeInteger = Object.assign (
                 ([$.Integer])
                 (x => x >= 0),
   {
-    new: typeVarMap => fail => x => TK,
+    new: K (fail => x => TK),
   }
 );
 
@@ -1169,7 +1162,7 @@ $.PositiveInteger = Object.assign (
                 ([$.Integer])
                 (x => x > 0),
   {
-    new: typeVarMap => fail => x => TK,
+    new: K (fail => x => TK),
   }
 );
 
@@ -1179,7 +1172,7 @@ $.NegativeInteger = Object.assign (
                 ([$.Integer])
                 (x => x < 0),
   {
-    new: typeVarMap => fail => x => TK,
+    new: K (fail => x => TK),
   }
 );
 
@@ -1189,7 +1182,7 @@ $.Object = Object.assign (
                 ([])
                 (x => Object.prototype.toString.call (x) === '[object Object]'),
   {
-    new: typeVarMap => fail => x => TK,
+    new: K (fail => x => TK),
   }
 );
 
@@ -1203,10 +1196,10 @@ const Pair = $1 => $2 => Object.assign (
                ($1)
                ($2),
   {
-    new: typeVarMap => fail => x => {
+    new: K (fail => x => {
       if (type (x) === 'sanctuary-pair/Pair@1') return x;
       fail ([]) (x);
-    },
+    }),
   }
 );
 
@@ -1216,7 +1209,7 @@ $.RegExp = Object.assign (
                 ([])
                 (x => Object.prototype.toString.call (x) === '[object RegExp]'),
   {
-    new: typeVarMap => fail => x => TK,
+    new: K (fail => x => TK),
   }
 );
 
@@ -1226,7 +1219,7 @@ $.GlobalRegExp = Object.assign (
                 ([$.RegExp])
                 (regex => regex.global),
   {
-    new: typeVarMap => fail => x => TK,
+    new: K (fail => x => TK),
   }
 );
 
@@ -1236,7 +1229,7 @@ $.NonGlobalRegExp = Object.assign (
                 ([$.RegExp])
                 (regex => !regex.global),
   {
-    new: typeVarMap => fail => x => TK,
+    new: K (fail => x => TK),
   }
 );
 
@@ -1246,10 +1239,10 @@ $.String = Object.assign (
                 ([])
                 (x => typeof x === 'string'),
   {
-    new: typeVarMap => fail => x => {
+    new: K (fail => x => {
       if (typeof x !== 'string') fail ([]) (x);
       return x;
-    },
+    }),
   }
 );
 
@@ -1259,7 +1252,7 @@ $.Symbol = Object.assign (
                 ([])
                 (x => typeof x === 'symbol'),
   {
-    new: typeVarMap => fail => x => TK,
+    new: K (fail => x => TK),
   }
 );
 
@@ -1269,7 +1262,7 @@ $.RegexFlags = Object.assign (
                 ([$.String])
                 (s => /^g?i?m?$/.test (s)),
   {
-    new: typeVarMap => fail => x => TK,
+    new: K (fail => x => TK),
   }
 );
 
@@ -1297,10 +1290,10 @@ $.Type = Object.assign (
                 ([])
                 (x => type (x) === 'sanctuary-def/Type@1'),
   {
-    new: typeVarMap => fail => x => {
+    new: K (fail => x => {
       if (type (x) === 'sanctuary-def/Type@1') return x;
       fail ([]) (x);
-    },
+    }),
   }
 );
 
@@ -1310,7 +1303,7 @@ $.TypeClass = Object.assign (
                 ([])
                 (x => type (x) === 'sanctuary-type-classes/TypeClass@1'),
   {
-    new: typeVarMap => fail => x => x,
+    new: K (fail => x => x),
   }
 );
 
@@ -1320,7 +1313,7 @@ $.Undefined = Object.assign (
                 ([])
                 (x => Object.prototype.toString.call (x) === '[object Undefined]'),
   {
-    new: typeVarMap => fail => x => TK,
+    new: K (fail => x => TK),
   }
 );
 
@@ -1352,7 +1345,7 @@ $.Array0 = Object.assign (
                 ([$.Array ($.Unknown)])
                 (xs => xs.length === 0),
   {
-    new: typeVarMap => fail => x => TK,
+    new: K (fail => x => TK),
   }
 );
 
@@ -1364,7 +1357,7 @@ const Array1 = $1 => Object.assign (
               (xs => [xs[0]])
               ($1),
   {
-    new: typeVarMap => fail => x => TK,
+    new: K (fail => x => TK),
   }
 );
 
@@ -1378,10 +1371,10 @@ const Array2 = $1 => $2 => Object.assign (
                ($1)
                ($2),
   {
-    new: typeVarMap => fail => x => {
+    new: K (fail => x => {
       if (x.length === 2) return x;
       fail ([]) (x);
-    },
+    }),
   }
 );
 
@@ -1519,7 +1512,7 @@ const create = opts => name => constraints => types => {
   .reduceRight (
     (run, input, index) => _env => f => {
       const wrapped = _x => {
-        const typeVarMap = Object.assign (Object.create (_env), {_ts: nextInt ()});
+        const typeVarMap = Object.create (_env);
         const x = input.new
           (typeVarMap)
           (propPath => x => {
@@ -1550,7 +1543,7 @@ const create = opts => name => constraints => types => {
                                      );
                                    })
     )
-  ) (Object.assign (Object.create (null), {_ts: nextInt ()}));
+  ) (Object.create (null));
 };
 
 //    defTypes :: NonEmpty (Array Type)
