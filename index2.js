@@ -75,18 +75,6 @@ const parenthesize = f => wrap (f ('(')) (f (')'));
 //    q :: String -> String
 const q = wrap ('\u2018') ('\u2019');
 
-const types_ = x => {
-  switch (Object.prototype.toString.call (x)) {
-    case '[object Array]':  return ['Array'];
-    case '[object Number]': return ['Number'];
-    case '[object String]': return ['String'];
-    case '[object Object]': return ['Object'];
-    case '[object Null]':   return ['Null'];
-    case '[object Boolean]': return ['Boolean'];
-    default:                return [];
-  }
-};
-
 //  _underline :: ... -> String
 function _underline(
   t,              // :: Type
@@ -621,13 +609,19 @@ $.TypeVariable = name => Object.assign (Object.create (Type$prototype), {
   _test: K (K (true)),
   format: (outer, inner) => name,
   new: typeVarMap => env => fail => x => {
-    const these = types_ (x);
     if (name in typeVarMap) {
-      const ts = typeVarMap[name].types.filter (t => these.includes (t));
-      if (ts.length === 0) fail ([]) (x);
-      typeVarMap[name] = {types: ts, valuesByPath: {}};
+      const $types = typeVarMap[name].types;
+      for (let idx = $types.length - 1; idx >= 0; idx -= 1) {
+        if (!(test (env) ($types[idx]) (x))) {
+          $types.splice (idx, 1);
+        }
+      }
+      if ($types.length === 0) fail ([]) (x);
     } else {
-      typeVarMap[name] = {types: these, valuesByPath: {}};
+      typeVarMap[name] = {
+        types: Z.filter (t => t.arity >= 0 && test (env) (t) (x), env),
+        valuesByPath: {},
+      };
     }
     return x;
   },

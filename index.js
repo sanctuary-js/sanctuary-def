@@ -1275,8 +1275,10 @@
 
     var isValid = test (env);
 
-    var expandUnknownStrict = B (B (B (filter (isConsistent))))
-                                (expandUnknown (env) ([]));
+    var expandUnknownStrict = value => extractor => type => (
+      filter (isConsistent)
+             (expandUnknown (env) ([]) (value) (extractor) (type))
+    );
 
     values.forEach (function(value) {
       var expandUnknownStrict2 = expandUnknownStrict (value);
