@@ -161,6 +161,9 @@ const InvalidValue = propPath => value => ({
   value,
 });
 
+//    prepend :: String -> MyError -> MyError
+const prepend = prop => myError => InvalidValue ([prop, ...myError.propPath]) (myError.value);
+
 //  invalidValue :: ... -> Error
 function invalidValue(
   env,            // :: Array Type
@@ -742,7 +745,7 @@ const RecordType = fields => {
       for (const k in x) delete missing[k];
       if (!(isEmpty (missing))) fail (InvalidValue ([]) (x));
       keys.forEach (k => {
-        fields[k].new (typeVarMap) (env) (myError => fail (InvalidValue ([k, ...myError.propPath]) (myError.value))) (x[k]);
+        fields[k].new (typeVarMap) (env) (myError => fail (prepend (k) (myError))) (x[k]);
       });
       return x;
     },
@@ -901,9 +904,9 @@ const Either = $1 => $2 => Object.assign (
     new: typeVarMap => env => fail => x => {
       if (type (x) !== 'sanctuary-either/Either@1') fail (InvalidValue ([]) (x));
       if (x.isLeft) {
-        $1.new (typeVarMap) (env) (myError => fail (InvalidValue (['$1', ...myError.propPath]) (myError.value))) (x.value);
+        $1.new (typeVarMap) (env) (myError => fail (prepend ('$1') (myError))) (x.value);
       } else {
-        $2.new (typeVarMap) (env) (myError => fail (InvalidValue (['$2', ...myError.propPath]) (myError.value))) (x.value);
+        $2.new (typeVarMap) (env) (myError => fail (prepend ('$2') (myError))) (x.value);
       }
       return x;
     },
@@ -1005,7 +1008,7 @@ const NonEmpty = $1 => Object.assign (
       if (!(Z.Monoid.test (x) && Z.Setoid.test (x) && !(Z.equals (x, Z.empty (x.constructor))))) {
         fail (InvalidValue ([]) (x));
       }
-      $1.new (typeVarMap) (env) (myError => fail (InvalidValue (['$1', ...myError.propPath]) (myError.value))) (x);
+      $1.new (typeVarMap) (env) (myError => fail (prepend ('$1') (myError))) (x);
       return x;
     },
   }
@@ -1290,7 +1293,7 @@ const StrMap = $1 => Object.assign (
       if (x == null) fail (InvalidValue ([]) (x));
       const keys = Object.keys (x);
       for (const k of keys) {
-        $1.new (typeVarMap) (env) (myError => fail (InvalidValue (['$1', ...myError.propPath]) (myError.value))) (x[k]);
+        $1.new (typeVarMap) (env) (myError => fail (prepend ('$1') (myError))) (x[k]);
       }
       return x;
     },
@@ -1343,7 +1346,7 @@ $.Array = $1 => (
         if (!(Array.isArray (xs))) fail (InvalidValue (['$1']) (xs));
 
         for (const x of xs) {
-          $1.new (typeVarMap) (env) (myError => fail (InvalidValue (['$1', ...myError.propPath]) (myError.value))) (x);
+          $1.new (typeVarMap) (env) (myError => fail (prepend ('$1') (myError))) (x);
         }
 
         return xs;
@@ -1402,8 +1405,8 @@ const Fn = $1 => $2 => (
           //  throw invalidArgumentsCount (typeInfo, index, 1, args);
           //}
           const [x] = args;
-          const i = $1.new (typeVarMap) (env) (myError => fail (InvalidValue (['$1', ...myError.propPath]) (myError.value))) (x);
-          const o = $2.new (typeVarMap) (env) (myError => fail (InvalidValue (['$2', ...myError.propPath]) (myError.value))) (f (x));
+          const i = $1.new (typeVarMap) (env) (myError => fail (prepend ('$1') (myError))) (x);
+          const o = $2.new (typeVarMap) (env) (myError => fail (prepend ('$2') (myError))) (f (x));
           return o;
         };
       },
