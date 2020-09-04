@@ -671,7 +671,7 @@ $.BinaryTypeVariable = name => $1 => $2 => Object.assign (Object.create (Type$pr
   ),
 });
 
-$.Function = types => Object.assign (Object.create (Type$prototype), {
+const Function_ = types => Object.assign (Object.create (Type$prototype), {
   type: 'FUNCTION',
   name: '',
   url: '',
@@ -1374,7 +1374,7 @@ const Array2 = $1 => $2 => Object.assign (
 
 const Fn = $1 => $2 => (
   Object.assign (
-    $.Function ([$1, $2]),
+    Function_ ([$1, $2]),
     {
       new: typeVarMap => env => fail => f => {
         if (typeof f !== 'function') fail ([]) (f);
@@ -1590,3 +1590,5 @@ $.Pair = def ('Pair') ({}) ([$.Type, $.Type, $.Type]) (Pair);
 $.test = def ('test') ({}) ([$.Array ($.Type), $.Type, $.Any, $.Boolean]) (test);
 
 $.EnumType = def ('EnumType') ({}) ([$.String, $.String, $.Array ($.Any), $.Type]) (EnumType);
+
+$.Function = def ('Function') ({}) ([$.NonEmpty ($.Array ($.Type)), $.Type]) (Function_);

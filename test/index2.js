@@ -1371,16 +1371,16 @@ The value at position 1 is not a member of ‘Type’.
 See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Type for information about the Type type.
 `));
 
-///     //    toUpper :: Nullable String -> Nullable String
-///     const toUpper =
-///     def ('toUpper')
-///         ({})
-///         ([$.Nullable ($.String), $.Nullable ($.String)])
-///         (ns => ns === null ? null : ns.toUpperCase ());  // eslint-disable-line eqeqeq
-/// 
-///     eq (toUpper (null)) (null);
-///     eq (toUpper ('abc')) ('ABC');
-/// 
+    //    toUpper :: Nullable String -> Nullable String
+    const toUpper =
+    def ('toUpper')
+        ({})
+        ([$.Nullable ($.String), $.Nullable ($.String)])
+        (ns => ns === null ? null : ns.toUpperCase ());  // eslint-disable-line eqeqeq
+
+    eq (toUpper (null)) (null);
+    eq (toUpper ('abc')) ('ABC');
+
 ///     throws (() => { toUpper (['abc']); })
 ///            (new TypeError (`Invalid value
 /// 
@@ -1394,17 +1394,17 @@ See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Type for info
 /// 
 /// See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#String for information about the String type.
 /// `));
-/// 
-///     //    defaultTo :: a -> Nullable a -> a
-///     const defaultTo =
-///     def ('defaultTo')
-///         ({})
-///         ([a, $.Nullable (a), a])
-///         (x => nullable => nullable === null ? x : nullable);  // eslint-disable-line eqeqeq
-/// 
-///     eq (defaultTo (0) (null)) (0);
-///     eq (defaultTo (0) (42)) (42);
-/// 
+
+    //    defaultTo :: a -> Nullable a -> a
+    const defaultTo =
+    def ('defaultTo')
+        ({})
+        ([a, $.Nullable (a), a])
+        (x => nullable => nullable === null ? x : nullable);  // eslint-disable-line eqeqeq
+
+    eq (defaultTo (0) (null)) (0);
+    eq (defaultTo (0) (42)) (42);
+
 ///     throws (() => { defaultTo (0) ('XXX'); })
 ///            (new TypeError (`Type-variable constraint violation
 /// 
@@ -1418,17 +1418,17 @@ See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Type for info
 /// 
 /// Since there is no type of which all the above values are members, the type-variable constraint has been violated.
 /// `));
-/// 
-///     //    f :: Nullable a -> Nullable a
-///     const f =
-///     def ('f')
-///         ({})
-///         ([$.Nullable (a), $.Nullable (a)])
-///         (x => 42);
-/// 
-///     eq (f (null)) (42);
-///     eq (f (0)) (42);
-/// 
+
+    //    f :: Nullable a -> Nullable a
+    const f =
+    def ('f')
+        ({})
+        ([$.Nullable (a), $.Nullable (a)])
+        (x => 42);
+
+    eq (f (null)) (42);
+    eq (f (0)) (42);
+
 ///     throws (() => { f ('XXX'); })
 ///            (new TypeError (`Type-variable constraint violation
 /// 
@@ -1628,41 +1628,41 @@ See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Array2 for in
     eq (($.Fn (a) (b)).supertypes) ([$.AnyFunction]);
   });
 
-///   test ('provides the "Function" type constructor', () => {
-///     eq (typeof $.Function) ('function');
-///     eq ($.Function.length) (1);
-///     eq (show ($.Function)) ('Function :: NonEmpty (Array Type) -> Type');
-///     eq (show ($.Function ([a, b]))) ('a -> b');
-///     eq (($.Function ([a, b])).name) ('');
-///     eq (($.Function ([a, b])).url) ('');
-///     eq (($.Function ([a, b])).supertypes) ([$.AnyFunction]);
-/// 
-///     //  Fn :: Type -> Type -> Type
-///     function Fn($1) { return function($2) { return $.Function ([$1, $2]); }; }
-/// 
-///     //  https://gist.github.com/Avaq/1f0636ec5c8d6aed2e45
-///     var I = Fn (a) (a);
-///     var K = Fn (a) (Fn (b) (a));
-///     var A = Fn (Fn (a) (b)) (Fn (a) (b));
-///     var T = Fn (a) (Fn (Fn (a) (b)) (b));
-///     var W = Fn (Fn (a) (Fn (a) (b))) (Fn (a) (b));
-///     var C = Fn (Fn (a) (Fn (b) (c))) (Fn (b) (Fn (a) (c)));
-///     var B = Fn (Fn (b) (c)) (Fn (Fn (a) (b)) (Fn (a) (c)));
-///     var S = Fn (Fn (a) (Fn (b) (c))) (Fn (Fn (a) (b)) (Fn (a) (c)));
-///     var P = Fn (Fn (b) (Fn (b) (c))) (Fn (Fn (a) (b)) (Fn (a) (Fn (a) (c))));
-///     var Y = Fn (Fn (a) (a)) (a);
-/// 
-///     eq (show (I)) ('a -> a');
-///     eq (show (K)) ('a -> b -> a');
-///     eq (show (A)) ('(a -> b) -> a -> b');
-///     eq (show (T)) ('a -> (a -> b) -> b');
-///     eq (show (W)) ('(a -> a -> b) -> a -> b');
-///     eq (show (C)) ('(a -> b -> c) -> b -> a -> c');
-///     eq (show (B)) ('(b -> c) -> (a -> b) -> a -> c');
-///     eq (show (S)) ('(a -> b -> c) -> (a -> b) -> a -> c');
-///     eq (show (P)) ('(b -> b -> c) -> (a -> b) -> a -> a -> c');
-///     eq (show (Y)) ('(a -> a) -> a');
-///   });
+  test ('provides the "Function" type constructor', () => {
+    eq (typeof $.Function) ('function');
+    eq ($.Function.length) (1);
+    eq (show ($.Function)) ('Function :: NonEmpty (Array Type) -> Type');
+    eq (show ($.Function ([a, b]))) ('a -> b');
+    eq (($.Function ([a, b])).name) ('');
+    eq (($.Function ([a, b])).url) ('');
+    eq (($.Function ([a, b])).supertypes) ([$.AnyFunction]);
+
+    //  Fn :: Type -> Type -> Type
+    function Fn($1) { return function($2) { return $.Function ([$1, $2]); }; }
+
+    //  https://gist.github.com/Avaq/1f0636ec5c8d6aed2e45
+    var I = Fn (a) (a);
+    var K = Fn (a) (Fn (b) (a));
+    var A = Fn (Fn (a) (b)) (Fn (a) (b));
+    var T = Fn (a) (Fn (Fn (a) (b)) (b));
+    var W = Fn (Fn (a) (Fn (a) (b))) (Fn (a) (b));
+    var C = Fn (Fn (a) (Fn (b) (c))) (Fn (b) (Fn (a) (c)));
+    var B = Fn (Fn (b) (c)) (Fn (Fn (a) (b)) (Fn (a) (c)));
+    var S = Fn (Fn (a) (Fn (b) (c))) (Fn (Fn (a) (b)) (Fn (a) (c)));
+    var P = Fn (Fn (b) (Fn (b) (c))) (Fn (Fn (a) (b)) (Fn (a) (Fn (a) (c))));
+    var Y = Fn (Fn (a) (a)) (a);
+
+    eq (show (I)) ('a -> a');
+    eq (show (K)) ('a -> b -> a');
+    eq (show (A)) ('(a -> b) -> a -> b');
+    eq (show (T)) ('a -> (a -> b) -> b');
+    eq (show (W)) ('(a -> a -> b) -> a -> b');
+    eq (show (C)) ('(a -> b -> c) -> b -> a -> c');
+    eq (show (B)) ('(b -> c) -> (a -> b) -> a -> c');
+    eq (show (S)) ('(a -> b -> c) -> (a -> b) -> a -> c');
+    eq (show (P)) ('(b -> b -> c) -> (a -> b) -> a -> a -> c');
+    eq (show (Y)) ('(a -> a) -> a');
+  });
 
   test ('provides the "HtmlElement" type', () => {
     eq ($.HtmlElement.name) ('HtmlElement');
@@ -3738,9 +3738,9 @@ suite ('test', () => {
 ///   });
 /// 
 /// });
-/// 
-/// suite ('Thunk', () => {
-/// 
+
+suite ('Thunk', () => {
+
 ///   test ('is a unary function', () => {
 ///     eq (typeof $.Thunk) ('function');
 ///     eq ($.Thunk.length) (1);
@@ -3774,9 +3774,9 @@ suite ('test', () => {
 /// See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Integer for information about the Integer type.
 /// `));
 ///   });
-/// 
-/// });
-/// 
+
+});
+
 suite ('Predicate', () => {
 
   test ('is a unary function', () => {
