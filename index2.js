@@ -623,11 +623,11 @@ $.TypeVariable = name => Object.assign (Object.create (Type$prototype), {
   new: typeVarMap => fail => x => {
     const these = types_ (x);
     if (name in typeVarMap) {
-      const ts = typeVarMap[name].filter (t => these.includes (t));
+      const ts = typeVarMap[name].types.filter (t => these.includes (t));
       if (ts.length === 0) fail ([]) (x);
-      typeVarMap[name] = ts;
+      typeVarMap[name] = {types: ts, valuesByPath: {}};
     } else {
-      typeVarMap[name] = these;
+      typeVarMap[name] = {types: these, valuesByPath: {}};
     }
     return x;
   },
