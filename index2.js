@@ -484,7 +484,7 @@ const Type$prototype = {
 
 //    extract :: String -> Type -> Any -> Array Any
 const extract = key => type => x => {
-  const foldable = type.extractors[key] (x);
+  const foldable = type.blah[key].extract (x);
   return (
     Array.isArray (foldable)
     ? foldable
@@ -517,8 +517,8 @@ $.Unknown = Object.assign (Object.create (Type$prototype), {
   url: '',
   supertypes: [],
   arity: 0,
+  blah: {},
   keys: [],
-  extractors: {},
   types: {},
   _test: K (K (true)),
   format: outer => K (outer ('Unknown')),
@@ -530,8 +530,8 @@ const Unchecked = s => Object.assign (Object.create (Type$prototype), {
   url: '',
   supertypes: [],
   arity: 0,
+  blah: {},
   keys: [],
-  extractors: {},
   types: {},
   _test: K (K (true)),
   format: outer => K (outer (s)),
@@ -544,8 +544,8 @@ $.Inconsistent = Object.assign (Object.create (Type$prototype), {
   url: '',
   supertypes: [],
   arity: 0,
+  blah: {},
   keys: [],
-  extractors: {},
   types: {},
   _test: K (K (false)),
   format: outer => K (outer ('???')),
@@ -557,8 +557,8 @@ $.NoArguments = Object.assign (Object.create (Type$prototype), {
   url: '',
   supertypes: [],
   arity: 0,
+  blah: {},
   keys: [],
-  extractors: {},
   types: {},
   _test: K (K (true)),
   format: outer => K (outer ('()')),
@@ -570,8 +570,8 @@ $.NullaryType = name => url => supertypes => test => Object.assign (Object.creat
   url: url,
   supertypes: supertypes,
   arity: 0,
+  blah: {},
   keys: [],
-  extractors: {},
   types: {},
   _test: env => test,
   format: outer => K (outer (name)),
@@ -583,8 +583,10 @@ $.UnaryType = name => url => supertypes => test => _1 => $1 => Object.assign (Ob
   url: url,
   supertypes: supertypes,
   arity: 1,
+  blah: {
+    $1: {type: $1, extract: _1},
+  },
   keys: ['$1'],
-  extractors: {$1: _1},
   types: {$1: $1},
   _test: K (test),
   format: outer => inner => (
@@ -602,7 +604,7 @@ const fromUnaryType = t => (
               (t.url)
               (t.supertypes)
               (t._test ([]))
-              (t.extractors.$1)
+              (t.blah.$1.extract)
 );
 
 $.BinaryType = name => url => supertypes => test => _1 => _2 => $1 => $2 => Object.assign (Object.create (Type$prototype), {
@@ -611,8 +613,11 @@ $.BinaryType = name => url => supertypes => test => _1 => _2 => $1 => $2 => Obje
   url: url,
   supertypes: supertypes,
   arity: 2,
+  blah: {
+    $1: {type: $1, extract: _1},
+    $2: {type: $2, extract: _2},
+  },
   keys: ['$1', '$2'],
-  extractors: {$1: _1, $2: _2},
   types: {$1: $1, $2: $2},
   _test: K (test),
   format: outer => inner => (
@@ -634,8 +639,8 @@ const fromBinaryType = t => (
                (t.url)
                (t.supertypes)
                (t._test ([]))
-               (t.extractors.$1)
-               (t.extractors.$2)
+               (t.blah.$1.extract)
+               (t.blah.$2.extract)
 );
 
 const EnumType = name => url => members => Object.assign (Object.create (Type$prototype), {
@@ -644,8 +649,8 @@ const EnumType = name => url => members => Object.assign (Object.create (Type$pr
   url: url,
   supertypes: [],
   arity: 0,
+  blah: {},
   keys: [],
-  extractors: {},
   types: {},
   _test: env => x => memberOf (members) (x),
   format: outer => K (outer (name)),
@@ -661,8 +666,8 @@ const TypeVariable = name => Object.assign (Object.create (Type$prototype), {
   url: '',
   supertypes: [],
   arity: 0,
+  blah: {},
   keys: [],
-  extractors: {},
   types: {},
   _test: K (K (true)),
   format: outer => K (outer (name)),
@@ -691,8 +696,10 @@ const UnaryTypeVariable = name => $1 => Object.assign (Object.create (Type$proto
   url: '',
   supertypes: [],
   arity: 1,
+  blah: {
+    $1: {type: $1, extract: K ([])},
+  },
   keys: ['$1'],
-  extractors: {$1: K ([])},
   types: {$1: $1},
   _test: K (K (true)),
   format: outer => inner => (
@@ -710,8 +717,11 @@ const BinaryTypeVariable = name => $1 => $2 => Object.assign (Object.create (Typ
   url: '',
   supertypes: [],
   arity: 2,
+  blah: {
+    $1: {type: $1, extract: K ([])},
+    $2: {type: $2, extract: K ([])},
+  },
   keys: ['$1', '$2'],
-  extractors: {$1: K ([]), $2: K ([])},
   types: {$1: $1, $2: $2},
   _test: K (K (true)),
   format: outer => inner => (
@@ -733,8 +743,11 @@ const Function_ = types => Object.assign (Object.create (Type$prototype), {
   url: '',
   supertypes: [$.AnyFunction],
   arity: types.length,
+  blah: {
+    $1: {type: types[0], extract: K ([])},
+    $2: {type: types[1], extract: K ([])},
+  },
   keys: ['$1', '$2'],
-  extractors: {$1: K ([]), $2: K ([])},
   types: {$1: types[0], $2: types[1]},
   _test: K (K (true)),
   format: outer => inner => (
@@ -756,8 +769,11 @@ const RecordType = fields => {
     url: '',
     supertypes: [],
     arity: 0,
+    blah: keys.reduce (
+      (blah, k) => (blah[k] = {type: fields[k], extract: x => [x[k]]}, blah),
+      {}
+    ),
     keys: keys,
-    extractors: keys.reduce ((extractors, k) => (extractors[k] = x => [x[k]], extractors), {}),
     types: keys.reduce ((types, k) => (types[k] = fields[k], types), {}),
     _test: env => x => {
       if (x == null) return false;
@@ -799,8 +815,11 @@ const NamedRecordType = name => url => supertypes => fields => {
     url: url,
     supertypes: supertypes,
     arity: 0,
+    blah: keys.reduce (
+      (blah, k) => (blah[k] = {type: fields[k], extract: x => [x[k]]}, blah),
+      {}
+    ),
     keys: keys,
-    extractors: keys.reduce ((extractors, k) => (extractors[k] = x => [x[k]], extractors), {}),
     types: keys.reduce ((types, k) => (types[k] = fields[k], types), {}),
     _test: env => x => {
       if (x == null) return false;
