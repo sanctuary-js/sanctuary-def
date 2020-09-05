@@ -42,12 +42,12 @@ const d = $.TypeVariable ('d');
 const f = $.UnaryTypeVariable ('f');
 const m = $.UnaryTypeVariable ('m');
 
-/// //    $0 :: () -> Array a
-/// const $0 =
-/// def ('$0')
-///     ({})
-///     ([$.Array (a)])
-///     (() => []);
+//    $0 :: () -> Array a
+const $0 =
+def ('$0')
+    ({})
+    ([$.Array (a)])
+    (() => []);
 
 //    $1 :: a -> Array a
 const $1 =
@@ -264,17 +264,17 @@ See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Function for 
   });
 
   test ('returns a function which throws if given too many args', () => {
-///     throws (() => { $0 (1); })
-///            (new TypeError (`‘$0’ applied to the wrong number of arguments
-/// 
-/// $0 :: () -> Array a
-///       ^^
-///       1
-/// 
-/// Expected zero arguments but received one argument:
-/// 
-///   - 1
-/// `));
+    throws (() => { $0 (1); })
+           (new TypeError (`‘$0’ applied to the wrong number of arguments
+
+$0 :: () -> Array a
+      ^^
+      1
+
+Expected zero arguments but received one argument:
+
+  - 1
+`));
 
     throws (() => { $1 (1, 2); })
            (new TypeError (`‘$1’ applied to the wrong number of arguments

@@ -551,6 +551,20 @@ $.Inconsistent = Object.assign (Object.create (Type$prototype), {
   format: (outer, inner) => '???',
 });
 
+$.NoArguments = Object.assign (Object.create (Type$prototype), {
+  type: 'NO_ARGUMENTS',
+  name: '',
+  url: '',
+  supertypes: [],
+  arity: 0,
+  keys: [],
+  _extractors: {},
+  extractors: {},
+  types: {},
+  _test: K (K (true)),
+  format: (outer, inner) => '()',
+});
+
 $.NullaryType = name => url => supertypes => test => Object.assign (Object.create (Type$prototype), {
   type: 'NULLARY',
   name: name,
@@ -1581,7 +1595,26 @@ const create = opts => {
   const def = name => constraints => types => impl => {
     if (!opts.checkTypes) return impl;
 
-    const typeInfo = {name: name, constraints: constraints, types: types};
+    const typeInfo = {
+      name: name,
+      constraints: constraints,
+      types: types.length === 1 ? [$.NoArguments, ...types] : types,
+    };
+
+    if (types.length === 1) {
+      const wrapped = (...args) => {
+        if (args.length > 0) {
+          throw invalidArgumentsCount (typeInfo, 0, 0, args);
+        }
+
+        const x = impl ();
+        types[0].new (Object.create (null))
+                     (opts.env)
+                     (myError => TK);
+        return x;
+      };
+      return wrapped;
+    }
 
     return types
     .slice (0, -1)
