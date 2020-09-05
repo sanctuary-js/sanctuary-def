@@ -684,6 +684,7 @@ $.NullaryType = name => url => supertypes => test => Object.assign (Object.creat
   blah: {},
   _test: env => test,
   format: outer => K (outer (name)),
+  new: ctx => ctx.value,
 });
 
 $.UnaryType = name => url => supertypes => test => _1 => $1 => Object.assign (Object.create (Type$prototype), {
@@ -949,84 +950,60 @@ const NamedRecordType = name => url => supertypes => fields => {
 const a = TypeVariable ('a');
 const b = TypeVariable ('b');
 
-$.Void = Object.assign (
+$.Void = (
   $.NullaryType ('Void')
                 ('https://github.com/sanctuary-js/sanctuary-def/tree/v0.22.0#Void')
                 ([])
-                (x => false),
-  {
-    new: ctx => ctx.value,
-  }
+                (x => false)
 );
 
-$.Any = Object.assign (
+$.Any = (
   $.NullaryType ('Any')
                 ('https://github.com/sanctuary-js/sanctuary-def/tree/v0.22.0#Any')
                 ([])
-                (x => true),
-  {
-    new: ctx => ctx.value,
-  }
+                (x => true)
 );
 
-$.AnyFunction = Object.assign (
+$.AnyFunction = (
   $.NullaryType ('Function')
                 ('https://github.com/sanctuary-js/sanctuary-def/tree/v0.22.0#Function') // XXX
                 ([])
-                (x => typeof x === 'function'),
-  {
-    new: ctx => ctx.value,
-  }
+                (x => typeof x === 'function')
 );
 
-$.Arguments = Object.assign (
+$.Arguments = (
   $.NullaryType ('Arguments')
                 ('https://github.com/sanctuary-js/sanctuary-def/tree/v0.22.0#Arguments')
                 ([])
-                (x => Object.prototype.toString.call (x) === '[object Arguments]'),
-  {
-    new: ctx => ctx.value,
-  }
+                (x => Object.prototype.toString.call (x) === '[object Arguments]')
 );
 
-$.Boolean = Object.assign (
+$.Boolean = (
   $.NullaryType ('Boolean')
                 ('https://github.com/sanctuary-js/sanctuary-def/tree/v0.22.0#Boolean')
                 ([])
-                (x => typeof x === 'boolean'),
-  {
-    new: ctx => ctx.value,
-  }
+                (x => typeof x === 'boolean')
 );
 
-$.Buffer = Object.assign (
+$.Buffer = (
   $.NullaryType ('Buffer')
                 ('https://github.com/sanctuary-js/sanctuary-def/tree/v0.22.0#Buffer')
                 ([])
-                (x => typeof Buffer !== 'undefined' && Buffer.isBuffer (x)),
-  {
-    new: ctx => ctx.value,
-  }
+                (x => typeof Buffer !== 'undefined' && Buffer.isBuffer (x))
 );
 
-$.Date = Object.assign (
+$.Date = (
   $.NullaryType ('Date')
                 ('https://github.com/sanctuary-js/sanctuary-def/tree/v0.22.0#Date')
                 ([])
-                (x => Object.prototype.toString.call (x) === '[object Date]'),
-  {
-    new: ctx => ctx.value,
-  }
+                (x => Object.prototype.toString.call (x) === '[object Date]')
 );
 
-$.ValidDate = Object.assign (
+$.ValidDate = (
   $.NullaryType ('ValidDate')
                 ('https://github.com/sanctuary-js/sanctuary-def/tree/v0.22.0#ValidDate')
                 ([$.Date])
-                (x => !(isNaN (Number (x)))),
-  {
-    new: ctx => ctx.value,
-  }
+                (x => !(isNaN (Number (x))))
 );
 
 const Descending = $1 => Object.assign (
@@ -1076,24 +1053,18 @@ const Either = $1 => $2 => Object.assign (
   }
 );
 
-$.Error = Object.assign (
+$.Error = (
   $.NullaryType ('Error')
                 ('https://github.com/sanctuary-js/sanctuary-def/tree/v0.22.0#Error')
                 ([])
-                (x => Object.prototype.toString.call (x) === '[object Error]'),
-  {
-    new: ctx => ctx.value,
-  }
+                (x => Object.prototype.toString.call (x) === '[object Error]')
 );
 
-$.HtmlElement = Object.assign (
+$.HtmlElement = (
   $.NullaryType ('HtmlElement')
                 ('https://github.com/sanctuary-js/sanctuary-def/tree/v0.22.0#HtmlElement')
                 ([])
-                (x => /^\[object HTML.+Element\]$/.test (Object.prototype.toString.call (x))),
-  {
-    new: ctx => ctx.value,
-  }
+                (x => /^\[object HTML.+Element\]$/.test (Object.prototype.toString.call (x)))
 );
 
 const Identity = $1 => Object.assign (
@@ -1146,14 +1117,11 @@ const Maybe = $1 => Object.assign (
   }
 );
 
-$.Module = Object.assign (
+$.Module = (
   $.NullaryType ('Module')
                 ('https://github.com/sanctuary-js/sanctuary-def/tree/v0.22.0#Module')
                 ([])
-                (x => Object.prototype.toString.call (x) === '[object Module]'),
-  {
-    new: ctx => ctx.value,
-  }
+                (x => Object.prototype.toString.call (x) === '[object Module]')
 );
 
 const NonEmpty = $1 => Object.assign (
@@ -1178,14 +1146,11 @@ const NonEmpty = $1 => Object.assign (
   }
 );
 
-$.Null = Object.assign (
+$.Null = (
   $.NullaryType ('Null')
                 ('https://github.com/sanctuary-js/sanctuary-def/tree/v0.22.0#Null')
                 ([])
-                (x => Object.prototype.toString.call (x) === '[object Null]'),
-  {
-    new: ctx => ctx.value,
-  }
+                (x => Object.prototype.toString.call (x) === '[object Null]')
 );
 
 const Nullable = $1 => Object.assign (
@@ -1200,154 +1165,109 @@ const Nullable = $1 => Object.assign (
   }
 );
 
-$.Number = Object.assign (
+$.Number = (
   $.NullaryType ('Number')
                 ('https://github.com/sanctuary-js/sanctuary-def/tree/v0.22.0#Number')
                 ([])
-                (x => typeof x === 'number'),
-  {
-    new: ctx => ctx.value,
-  }
+                (x => typeof x === 'number')
 );
 
-$.ValidNumber = Object.assign (
+$.ValidNumber = (
   $.NullaryType ('ValidNumber')
                 ('https://github.com/sanctuary-js/sanctuary-def/tree/v0.22.0#ValidNumber')
                 ([$.Number])
-                (x => !(isNaN (x))),
-  {
-    new: ctx => ctx.value,
-  }
+                (x => !(isNaN (x)))
 );
 
-$.PositiveNumber = Object.assign (
+$.PositiveNumber = (
   $.NullaryType ('PositiveNumber')
                 ('https://github.com/sanctuary-js/sanctuary-def/tree/v0.22.0#PositiveNumber')
                 ([$.Number])
-                (x => x > 0),
-  {
-    new: ctx => ctx.value,
-  }
+                (x => x > 0)
 );
 
-$.NegativeNumber = Object.assign (
+$.NegativeNumber = (
   $.NullaryType ('NegativeNumber')
                 ('https://github.com/sanctuary-js/sanctuary-def/tree/v0.22.0#NegativeNumber')
                 ([$.Number])
-                (x => x < 0),
-  {
-    new: ctx => ctx.value,
-  }
+                (x => x < 0)
 );
 
-$.NonZeroValidNumber = Object.assign (
+$.NonZeroValidNumber = (
   $.NullaryType ('NonZeroValidNumber')
                 ('https://github.com/sanctuary-js/sanctuary-def/tree/v0.22.0#NonZeroValidNumber')
                 ([$.ValidNumber])
-                (x => x !== 0),
-  {
-    new: ctx => ctx.value,
-  }
+                (x => x !== 0)
 );
 
-$.FiniteNumber = Object.assign (
+$.FiniteNumber = (
   $.NullaryType ('FiniteNumber')
                 ('https://github.com/sanctuary-js/sanctuary-def/tree/v0.22.0#FiniteNumber')
                 ([$.ValidNumber])
-                (isFinite),
-  {
-    new: ctx => ctx.value,
-  }
+                (isFinite)
 );
 
-$.PositiveFiniteNumber = Object.assign (
+$.PositiveFiniteNumber = (
   $.NullaryType ('PositiveFiniteNumber')
                 ('https://github.com/sanctuary-js/sanctuary-def/tree/v0.22.0#PositiveFiniteNumber')
                 ([$.FiniteNumber])
-                (x => x > 0),
-  {
-    new: ctx => ctx.value,
-  }
+                (x => x > 0)
 );
 
-$.NegativeFiniteNumber = Object.assign (
+$.NegativeFiniteNumber = (
   $.NullaryType ('NegativeFiniteNumber')
                 ('https://github.com/sanctuary-js/sanctuary-def/tree/v0.22.0#NegativeFiniteNumber')
                 ([$.FiniteNumber])
-                (x => x < 0),
-  {
-    new: ctx => ctx.value,
-  }
+                (x => x < 0)
 );
 
-$.NonZeroFiniteNumber = Object.assign (
+$.NonZeroFiniteNumber = (
   $.NullaryType ('NonZeroFiniteNumber')
                 ('https://github.com/sanctuary-js/sanctuary-def/tree/v0.22.0#NonZeroFiniteNumber')
                 ([$.FiniteNumber])
-                (x => x !== 0),
-  {
-    new: ctx => ctx.value,
-  }
+                (x => x !== 0)
 );
 
-$.Integer = Object.assign (
+$.Integer = (
   $.NullaryType ('Integer')
                 ('https://github.com/sanctuary-js/sanctuary-def/tree/v0.22.0#Integer')
                 ([$.ValidNumber])
-                (x => Math.floor (x) === x && x >= MIN_SAFE_INTEGER && x <= MAX_SAFE_INTEGER),
-  {
-    new: ctx => ctx.value,
-  }
+                (x => Math.floor (x) === x && x >= MIN_SAFE_INTEGER && x <= MAX_SAFE_INTEGER)
 );
 
-$.NonZeroInteger = Object.assign (
+$.NonZeroInteger = (
   $.NullaryType ('NonZeroInteger')
                 ('https://github.com/sanctuary-js/sanctuary-def/tree/v0.22.0#NonZeroInteger')
                 ([$.Integer])
-                (x => x !== 0),
-  {
-    new: ctx => ctx.value,
-  }
+                (x => x !== 0)
 );
 
-$.NonNegativeInteger = Object.assign (
+$.NonNegativeInteger = (
   $.NullaryType ('NonNegativeInteger')
                 ('https://github.com/sanctuary-js/sanctuary-def/tree/v0.22.0#NonNegativeInteger')
                 ([$.Integer])
-                (x => x >= 0),
-  {
-    new: ctx => ctx.value,
-  }
+                (x => x >= 0)
 );
 
-$.PositiveInteger = Object.assign (
+$.PositiveInteger = (
   $.NullaryType ('PositiveInteger')
                 ('https://github.com/sanctuary-js/sanctuary-def/tree/v0.22.0#PositiveInteger')
                 ([$.Integer])
-                (x => x > 0),
-  {
-    new: ctx => ctx.value,
-  }
+                (x => x > 0)
 );
 
-$.NegativeInteger = Object.assign (
+$.NegativeInteger = (
   $.NullaryType ('NegativeInteger')
                 ('https://github.com/sanctuary-js/sanctuary-def/tree/v0.22.0#NegativeInteger')
                 ([$.Integer])
-                (x => x < 0),
-  {
-    new: ctx => ctx.value,
-  }
+                (x => x < 0)
 );
 
-$.Object = Object.assign (
+$.Object = (
   $.NullaryType ('Object')
                 ('https://github.com/sanctuary-js/sanctuary-def/tree/v0.22.0#Object')
                 ([])
-                (x => type (x) === 'Object'),
-  {
-    new: ctx => ctx.value,
-  }
+                (x => type (x) === 'Object')
 );
 
 const Pair = $1 => $2 => Object.assign (
@@ -1364,64 +1284,46 @@ const Pair = $1 => $2 => Object.assign (
   }
 );
 
-$.RegExp = Object.assign (
+$.RegExp = (
   $.NullaryType ('RegExp')
                 ('https://github.com/sanctuary-js/sanctuary-def/tree/v0.22.0#RegExp')
                 ([])
-                (x => Object.prototype.toString.call (x) === '[object RegExp]'),
-  {
-    new: ctx => ctx.value,
-  }
+                (x => Object.prototype.toString.call (x) === '[object RegExp]')
 );
 
-$.GlobalRegExp = Object.assign (
+$.GlobalRegExp = (
   $.NullaryType ('GlobalRegExp')
                 ('https://github.com/sanctuary-js/sanctuary-def/tree/v0.22.0#GlobalRegExp')
                 ([$.RegExp])
-                (regex => regex.global),
-  {
-    new: ctx => ctx.value,
-  }
+                (regex => regex.global)
 );
 
-$.NonGlobalRegExp = Object.assign (
+$.NonGlobalRegExp = (
   $.NullaryType ('NonGlobalRegExp')
                 ('https://github.com/sanctuary-js/sanctuary-def/tree/v0.22.0#NonGlobalRegExp')
                 ([$.RegExp])
-                (regex => !regex.global),
-  {
-    new: ctx => ctx.value,
-  }
+                (regex => !regex.global)
 );
 
-$.String = Object.assign (
+$.String = (
   $.NullaryType ('String')
                 ('https://github.com/sanctuary-js/sanctuary-def/tree/v0.22.0#String')
                 ([])
-                (x => typeof x === 'string'),
-  {
-    new: ctx => ctx.value,
-  }
+                (x => typeof x === 'string')
 );
 
-$.Symbol = Object.assign (
+$.Symbol = (
   $.NullaryType ('Symbol')
                 ('https://github.com/sanctuary-js/sanctuary-def/tree/v0.22.0#Symbol')
                 ([])
-                (x => typeof x === 'symbol'),
-  {
-    new: ctx => ctx.value,
-  }
+                (x => typeof x === 'symbol')
 );
 
-$.RegexFlags = Object.assign (
+$.RegexFlags = (
   $.NullaryType ('RegexFlags')
                 ('https://github.com/sanctuary-js/sanctuary-def/tree/v0.22.0#RegexFlags')
                 ([$.String])
-                (s => /^g?i?m?$/.test (s)),
-  {
-    new: ctx => ctx.value,
-  }
+                (s => /^g?i?m?$/.test (s))
 );
 
 const StrMap = $1 => Object.assign (
@@ -1449,34 +1351,25 @@ const StrMap = $1 => Object.assign (
   }
 );
 
-$.Type = Object.assign (
+$.Type = (
   $.NullaryType ('Type')
                 ('https://github.com/sanctuary-js/sanctuary-def/tree/v0.22.0#Type')
                 ([])
-                (x => type (x) === 'sanctuary-def/Type@1'),
-  {
-    new: ctx => ctx.value,
-  }
+                (x => type (x) === 'sanctuary-def/Type@1')
 );
 
-$.TypeClass = Object.assign (
+$.TypeClass = (
   $.NullaryType ('TypeClass')
                 ('https://github.com/sanctuary-js/sanctuary-def/tree/v0.22.0#TypeClass')
                 ([])
-                (x => type (x) === 'sanctuary-type-classes/TypeClass@1'),
-  {
-    new: ctx => ctx.value,
-  }
+                (x => type (x) === 'sanctuary-type-classes/TypeClass@1')
 );
 
-$.Undefined = Object.assign (
+$.Undefined = (
   $.NullaryType ('Undefined')
                 ('https://github.com/sanctuary-js/sanctuary-def/tree/v0.22.0#Undefined')
                 ([])
-                (x => Object.prototype.toString.call (x) === '[object Undefined]'),
-  {
-    new: ctx => ctx.value,
-  }
+                (x => Object.prototype.toString.call (x) === '[object Undefined]')
 );
 
 $.Array = $1 => (
@@ -1505,26 +1398,20 @@ $.Array = $1 => (
   )
 );
 
-$.Array0 = Object.assign (
+$.Array0 = (
   $.NullaryType ('Array0')
                 ('https://github.com/sanctuary-js/sanctuary-def/tree/v0.22.0#Array0')
                 ([$.Array ($.Unknown)])
-                (xs => xs.length === 0),
-  {
-    new: ctx => ctx.value,
-  }
+                (xs => xs.length === 0)
 );
 
-const Array1 = $1 => Object.assign (
+const Array1 = $1 => (
   $.UnaryType ('Array1')
               ('https://github.com/sanctuary-js/sanctuary-def/tree/v0.22.0#Array1')
               ([$.Array ($.Unknown)])
               (xs => xs.length === 1)
               (xs => [xs[0]])
-              ($1),
-  {
-    new: ctx => ctx.value,
-  }
+              ($1)
 );
 
 const Array2 = $1 => $2 => Object.assign (
