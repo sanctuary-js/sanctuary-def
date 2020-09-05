@@ -2313,20 +2313,20 @@ See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Number for in
     eq (ab (0) (false)) (Pair (0) (false));
     eq (ab (false) (0)) (Pair (false) (0));
 
-///     throws (() => { aa (0) (/x/); })
-///            (new TypeError (`Type-variable constraint violation
-/// 
-/// aa :: a -> a -> Pair a a
-///       ^    ^
-///       1    2
-/// 
-/// 1)  0 :: Number
-/// 
-/// 2)  /x/ :: RegExp
-/// 
-/// Since there is no type of which all the above values are members, the type-variable constraint has been violated.
-/// `));
-/// 
+    throws (() => { aa (0) (/x/); })
+           (new TypeError (`Type-variable constraint violation
+
+aa :: a -> a -> Pair a a
+      ^    ^
+      1    2
+
+1)  0 :: Number
+
+2)  /x/ :: RegExp
+
+Since there is no type of which all the above values are members, the type-variable constraint has been violated.
+`));
+
 ///     throws (() => { aa ([Left ('XXX'), false, 42]); })
 ///            (new TypeError (`Type-variable constraint violation
 /// 
@@ -2422,33 +2422,33 @@ See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Pair for info
     eq (concat (Right ('ABC')) (Left ('abc'))) (Right ('ABC'));
     eq (concat (Right ('ABC')) (Right ('DEF'))) (Right ('ABCDEF'));
 
-///     throws (() => { concat (Left ('abc')) (Left ([1, 2, 3])); })
-///            (new TypeError (`Type-variable constraint violation
-/// 
-/// concat :: Either a b -> Either a b -> Either a b
-///                  ^             ^
-///                  1             2
-/// 
-/// 1)  "abc" :: String
-/// 
-/// 2)  [1, 2, 3] :: Array Number
-/// 
-/// Since there is no type of which all the above values are members, the type-variable constraint has been violated.
-/// `));
-/// 
-///     throws (() => { concat (Right ('abc')) (Right ([1, 2, 3])); })
-///            (new TypeError (`Type-variable constraint violation
-/// 
-/// concat :: Either a b -> Either a b -> Either a b
-///                    ^             ^
-///                    1             2
-/// 
-/// 1)  "abc" :: String
-/// 
-/// 2)  [1, 2, 3] :: Array Number
-/// 
-/// Since there is no type of which all the above values are members, the type-variable constraint has been violated.
-/// `));
+    throws (() => { concat (Left ('abc')) (Left ([1, 2, 3])); })
+           (new TypeError (`Type-variable constraint violation
+
+concat :: Either a b -> Either a b -> Either a b
+                 ^             ^
+                 1             2
+
+1)  "abc" :: String
+
+2)  [1, 2, 3] :: Array Number
+
+Since there is no type of which all the above values are members, the type-variable constraint has been violated.
+`));
+
+    throws (() => { concat (Right ('abc')) (Right ([1, 2, 3])); })
+           (new TypeError (`Type-variable constraint violation
+
+concat :: Either a b -> Either a b -> Either a b
+                   ^             ^
+                   1             2
+
+1)  "abc" :: String
+
+2)  [1, 2, 3] :: Array Number
+
+Since there is no type of which all the above values are members, the type-variable constraint has been violated.
+`));
 
     //    f :: a -> a -> a -> a
     const f =
@@ -2527,19 +2527,19 @@ See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Pair for info
     eq (unnest ([[1, 2], [3, 4], [5, 6]])) ([1, 2, 3, 4, 5, 6]);
     eq (unnest ([[null], [null], [null]])) ([null, null, null]);
 
-///     throws (() => { unnest ([1, 2, 3]); })
-///            (new TypeError (`Invalid value
-/// 
-/// unnest :: Array (Array a) -> Array a
-///                  ^^^^^^^
-///                     1
-/// 
-/// 1)  1 :: Number
-/// 
-/// The value at position 1 is not a member of ‘Array a’.
-/// 
-/// See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Array for information about the Array type constructor.
-/// `));
+    throws (() => { unnest ([1, 2, 3]); })
+           (new TypeError (`Invalid value
+
+unnest :: Array (Array a) -> Array a
+                 ^^^^^^^
+                    1
+
+1)  1 :: Number
+
+The value at position 1 is not a member of ‘Array a’.
+
+See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Array for information about the Array type constructor.
+`));
 
     //    concatComplex :: Array (Either String Integer) -> Array (Either String Integer) -> Array (Either String Integer)
     const concatComplex =
@@ -2578,63 +2578,63 @@ The value at position 1 is not a member of ‘Integer’.
 See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Integer for information about the Integer type.
 `));
 
-///     throws (() => { concatComplex ([]) ([Left (/xxx/), Right (0), Right (0.1), Right (0.2)]); })
-///            (new TypeError (`Invalid value
-/// 
-/// concatComplex :: Array (Either String Integer) -> Array (Either String Integer) -> Array (Either String Integer)
-///                                                                 ^^^^^^
-///                                                                   1
-/// 
-/// 1)  /xxx/ :: RegExp
-/// 
-/// The value at position 1 is not a member of ‘String’.
-/// 
-/// See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#String for information about the String type.
-/// `));
-/// 
-///     throws (() => { concatComplex ([]) ([Left ('abc'), Right (0), Right (0.1), Right (0.2)]); })
-///            (new TypeError (`Invalid value
-/// 
-/// concatComplex :: Array (Either String Integer) -> Array (Either String Integer) -> Array (Either String Integer)
-///                                                                        ^^^^^^^
-///                                                                           1
-/// 
-/// 1)  0.1 :: Number
-/// 
-/// The value at position 1 is not a member of ‘Integer’.
-/// 
-/// See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Integer for information about the Integer type.
-/// `));
-/// 
-///     throws (() => { concatComplex ([]) ([]); })
-///            (new TypeError (`Invalid value
-/// 
-/// concatComplex :: Array (Either String Integer) -> Array (Either String Integer) -> Array (Either String Integer)
-///                                                                                                  ^^^^^^
-///                                                                                                    1
-/// 
-/// 1)  /xxx/ :: RegExp
-/// 
-/// The value at position 1 is not a member of ‘String’.
-/// 
-/// See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#String for information about the String type.
-/// `));
+    throws (() => { concatComplex ([]) ([Left (/xxx/), Right (0), Right (0.1), Right (0.2)]); })
+           (new TypeError (`Invalid value
+
+concatComplex :: Array (Either String Integer) -> Array (Either String Integer) -> Array (Either String Integer)
+                                                                ^^^^^^
+                                                                  1
+
+1)  /xxx/ :: RegExp
+
+The value at position 1 is not a member of ‘String’.
+
+See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#String for information about the String type.
+`));
+
+    throws (() => { concatComplex ([]) ([Left ('abc'), Right (0), Right (0.1), Right (0.2)]); })
+           (new TypeError (`Invalid value
+
+concatComplex :: Array (Either String Integer) -> Array (Either String Integer) -> Array (Either String Integer)
+                                                                       ^^^^^^^
+                                                                          1
+
+1)  0.1 :: Number
+
+The value at position 1 is not a member of ‘Integer’.
+
+See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Integer for information about the Integer type.
+`));
+
+    throws (() => { concatComplex ([]) ([]); })
+           (new TypeError (`Invalid value
+
+concatComplex :: Array (Either String Integer) -> Array (Either String Integer) -> Array (Either String Integer)
+                                                                                                 ^^^^^^
+                                                                                                   1
+
+1)  /xxx/ :: RegExp
+
+The value at position 1 is not a member of ‘String’.
+
+See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#String for information about the String type.
+`));
   });
 
-///   test ('does not allow heterogeneous arrays', () => {
-///     //    concat :: Array a -> Array a -> Array a
-///     const concat =
-///     def ('concat')
-///         ({})
-///         ([$.Array (a), $.Array (a), $.Array (a)])
-///         (curry2 (Z.concat));
-/// 
-///     eq (concat ([]) ([])) ([]);
-///     eq (concat ([]) ([1, 2, 3])) ([1, 2, 3]);
-///     eq (concat ([1, 2, 3]) ([])) ([1, 2, 3]);
-///     eq (concat ([1, 2, 3]) ([4, 5, 6])) ([1, 2, 3, 4, 5, 6]);
-///     eq (concat ([Left ('XXX')]) ([Right (42)])) ([Left ('XXX'), Right (42)]);
-/// 
+  test ('does not allow heterogeneous arrays', () => {
+    //    concat :: Array a -> Array a -> Array a
+    const concat =
+    def ('concat')
+        ({})
+        ([$.Array (a), $.Array (a), $.Array (a)])
+        (curry2 (Z.concat));
+
+    eq (concat ([]) ([])) ([]);
+    eq (concat ([]) ([1, 2, 3])) ([1, 2, 3]);
+    eq (concat ([1, 2, 3]) ([])) ([1, 2, 3]);
+    eq (concat ([1, 2, 3]) ([4, 5, 6])) ([1, 2, 3, 4, 5, 6]);
+    eq (concat ([Left ('XXX')]) ([Right (42)])) ([Left ('XXX'), Right (42)]);
+
 ///     throws (() => { concat ([[1, 2, 3], [Left ('XXX'), Right (42)]]); })
 ///            (new TypeError (`Type-variable constraint violation
 /// 
@@ -2660,48 +2660,44 @@ See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Integer for i
 /// 
 /// Since there is no type of which all the above values are members, the type-variable constraint has been violated.
 /// `));
-/// 
-///     //    concatNested :: Array (Array a) -> Array (Array a) -> Array (Array a)
-///     const concatNested =
-///     def ('concatNested')
-///         ({})
-///         ([$.Array ($.Array (a)), $.Array ($.Array (a)), $.Array ($.Array (a))])
-///         (xss => yss => [['a', 'b', 'c'], [1, 2, 3]]);
-/// 
-///     throws (() => { concatNested ([['a', 'b', 'c'], [1, 2, 3]]); })
-///            (new TypeError (`Type-variable constraint violation
-/// 
-/// concatNested :: Array (Array a) -> Array (Array a) -> Array (Array a)
-///                              ^
-///                              1
-/// 
-/// 1)  "a" :: String
-///     "b" :: String
-///     "c" :: String
-///     1 :: Number
-///     2 :: Number
-///     3 :: Number
-/// 
-/// Since there is no type of which all the above values are members, the type-variable constraint has been violated.
-/// `));
-/// 
-///     throws (() => { concatNested ([]) ([['a', 'b', 'c'], [1, 2, 3]]); })
-///            (new TypeError (`Type-variable constraint violation
-/// 
-/// concatNested :: Array (Array a) -> Array (Array a) -> Array (Array a)
-///                                                 ^
-///                                                 1
-/// 
-/// 1)  "a" :: String
-///     "b" :: String
-///     "c" :: String
-///     1 :: Number
-///     2 :: Number
-///     3 :: Number
-/// 
-/// Since there is no type of which all the above values are members, the type-variable constraint has been violated.
-/// `));
-/// 
+
+    //    concatNested :: Array (Array a) -> Array (Array a) -> Array (Array a)
+    const concatNested =
+    def ('concatNested')
+        ({})
+        ([$.Array ($.Array (a)), $.Array ($.Array (a)), $.Array ($.Array (a))])
+        (xss => yss => [['a', 'b', 'c'], [1, 2, 3]]);
+
+    throws (() => { concatNested ([['a', 'b', 'c'], [1, 2, 3]]); })
+           (new TypeError (`Type-variable constraint violation
+
+concatNested :: Array (Array a) -> Array (Array a) -> Array (Array a)
+                             ^
+                             1
+
+1)  "a" :: String
+    "b" :: String
+    "c" :: String
+    1 :: Number
+
+Since there is no type of which all the above values are members, the type-variable constraint has been violated.
+`));
+
+    throws (() => { concatNested ([]) ([['a', 'b', 'c'], [1, 2, 3]]); })
+           (new TypeError (`Type-variable constraint violation
+
+concatNested :: Array (Array a) -> Array (Array a) -> Array (Array a)
+                                                ^
+                                                1
+
+1)  "a" :: String
+    "b" :: String
+    "c" :: String
+    1 :: Number
+
+Since there is no type of which all the above values are members, the type-variable constraint has been violated.
+`));
+
 ///     throws (() => { concatNested ([]) ([]); })
 ///            (new TypeError (`Type-variable constraint violation
 /// 
@@ -2718,80 +2714,80 @@ See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Integer for i
 /// 
 /// Since there is no type of which all the above values are members, the type-variable constraint has been violated.
 /// `));
-///   });
-/// 
-///   test ('supports higher-order functions', () => {
-///     //    f :: (String -> Number) -> Array String -> Array Number
-///     const f =
-///     def ('f')
-///         ({})
-///         ([$.Fn ($.String) ($.Number), $.Array ($.String), $.Array ($.Number)])
-///         (curry2 (Z.map));
-/// 
-///     //    g :: (String -> Number) -> Array String -> Array Number
-///     const g =
-///     def ('g')
-///         ({})
-///         ([$.Fn ($.String) ($.Number), $.Array ($.String), $.Array ($.Number)])
-///         (f => xs => f (xs));
-/// 
-///     eq (f (s => s.length) (['foo', 'bar', 'baz', 'quux'])) ([3, 3, 3, 4]);
-/// 
-///     throws (() => { g (/xxx/); })
-///            (new TypeError (`Invalid value
-/// 
-/// g :: (String -> Number) -> Array String -> Array Number
-///       ^^^^^^^^^^^^^^^^
-///              1
-/// 
-/// 1)  /xxx/ :: RegExp
-/// 
-/// The value at position 1 is not a member of ‘String -> Number’.
-/// `));
-/// 
-///     throws (() => { g (s => s.length) (['a', 'b', 'c']); })
-///            (new TypeError (`Invalid value
-/// 
-/// g :: (String -> Number) -> Array String -> Array Number
-///       ^^^^^^
-///         1
-/// 
-/// 1)  ["a", "b", "c"] :: Array String
-/// 
-/// The value at position 1 is not a member of ‘String’.
-/// 
-/// See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#String for information about the String type.
-/// `));
-/// 
-///     throws (() => { f (x => x) (['a', 'b', 'c']); })
-///            (new TypeError (`Invalid value
-/// 
-/// f :: (String -> Number) -> Array String -> Array Number
-///                 ^^^^^^
-///                   1
-/// 
-/// 1)  "a" :: String
-/// 
-/// The value at position 1 is not a member of ‘Number’.
-/// 
-/// See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Number for information about the Number type.
-/// `));
-/// 
-///     //    map :: (a -> b) -> Array a -> Array b
-///     const map =
-///     def ('map')
-///         ({})
-///         ([$.Fn (a) (b), $.Array (a), $.Array (b)])
-///         (f => xs => {
-///            const result = [];
-///            for (let idx = 0; idx < xs.length; idx += 1) {
-///              result.push (f (idx === 3 ? null : xs[idx]));
-///            }
-///            return result;
-///          });
-/// 
-///     eq (map (s => s.length) (['foo', 'bar'])) ([3, 3]);
-/// 
+  });
+
+  test ('supports higher-order functions', () => {
+    //    f :: (String -> Number) -> Array String -> Array Number
+    const f =
+    def ('f')
+        ({})
+        ([$.Fn ($.String) ($.Number), $.Array ($.String), $.Array ($.Number)])
+        (curry2 (Z.map));
+
+    //    g :: (String -> Number) -> Array String -> Array Number
+    const g =
+    def ('g')
+        ({})
+        ([$.Fn ($.String) ($.Number), $.Array ($.String), $.Array ($.Number)])
+        (f => xs => f (xs));
+
+    eq (f (s => s.length) (['foo', 'bar', 'baz', 'quux'])) ([3, 3, 3, 4]);
+
+    throws (() => { g (/xxx/); })
+           (new TypeError (`Invalid value
+
+g :: (String -> Number) -> Array String -> Array Number
+      ^^^^^^^^^^^^^^^^
+             1
+
+1)  /xxx/ :: RegExp
+
+The value at position 1 is not a member of ‘String -> Number’.
+`));
+
+    throws (() => { g (s => s.length) (['a', 'b', 'c']); })
+           (new TypeError (`Invalid value
+
+g :: (String -> Number) -> Array String -> Array Number
+      ^^^^^^
+        1
+
+1)  ["a", "b", "c"] :: Array String
+
+The value at position 1 is not a member of ‘String’.
+
+See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#String for information about the String type.
+`));
+
+    throws (() => { f (x => x) (['a', 'b', 'c']); })
+           (new TypeError (`Invalid value
+
+f :: (String -> Number) -> Array String -> Array Number
+                ^^^^^^
+                  1
+
+1)  "a" :: String
+
+The value at position 1 is not a member of ‘Number’.
+
+See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Number for information about the Number type.
+`));
+
+    //    map :: (a -> b) -> Array a -> Array b
+    const map =
+    def ('map')
+        ({})
+        ([$.Fn (a) (b), $.Array (a), $.Array (b)])
+        (f => xs => {
+           const result = [];
+           for (let idx = 0; idx < xs.length; idx += 1) {
+             result.push (f (idx === 3 ? null : xs[idx]));
+           }
+           return result;
+         });
+
+    eq (map (s => s.length) (['foo', 'bar'])) ([3, 3]);
+
 ///     throws (() => { map (s => s.length) (['foo', 'bar', 'baz', 'quux']); })
 ///            (new TypeError (`Type-variable constraint violation
 /// 
@@ -2811,21 +2807,21 @@ See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Integer for i
 /// 
 /// Since there is no type of which all the above values are members, the type-variable constraint has been violated.
 /// `));
-/// 
-///     throws (() => { map (s => s === 'baz' ? null : s.length) (['foo', 'bar', 'baz']); })
-///            (new TypeError (`Type-variable constraint violation
-/// 
-/// map :: (a -> b) -> Array a -> Array b
-///              ^
-///              1
-/// 
-/// 1)  3 :: Number
-///     3 :: Number
-///     null :: Null
-/// 
-/// Since there is no type of which all the above values are members, the type-variable constraint has been violated.
-/// `));
-/// 
+
+    throws (() => { map (s => s === 'baz' ? null : s.length) (['foo', 'bar', 'baz']); })
+           (new TypeError (`Type-variable constraint violation
+
+map :: (a -> b) -> Array a -> Array b
+             ^
+             1
+
+1)  3 :: Number
+    3 :: Number
+    null :: Null
+
+Since there is no type of which all the above values are members, the type-variable constraint has been violated.
+`));
+
 ///     //    reduce_ :: ((a, b) -> a) -> a -> Array b -> a
 ///     const reduce_ =
 ///     def ('reduce_')
@@ -2846,39 +2842,39 @@ See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Integer for i
 /// 
 /// The value at position 1 is not a member of ‘(a, b) -> a’.
 /// `));
-/// 
-///     //    unfoldr :: (b -> Maybe (Array2 a b)) -> b -> Array a
-///     const unfoldr =
-///     def ('unfoldr')
-///         ({})
-///         ([$.Fn (b) ($.Maybe ($.Array2 (a) (b))), b, $.Array (a)])
-///         (f => x => {
-///            const result = [];
-///            for (let m = f (x); m.isJust; m = f (m.value[1])) {
-///              result.push (m.value[0]);
-///            }
-///            return result;
-///          });
-/// 
-///     //    h :: Integer -> Maybe (Array2 Integer Integer)
-///     const h = n => n >= 5 ? Nothing : Just ([n, n + 1]);
-/// 
-///     eq (unfoldr (h) (5)) ([]);
-///     eq (unfoldr (h) (4)) ([4]);
-///     eq (unfoldr (h) (1)) ([1, 2, 3, 4]);
-/// 
-///     throws (() => { unfoldr (null); })
-///            (new TypeError (`Invalid value
-/// 
-/// unfoldr :: (b -> Maybe (Array2 a b)) -> b -> Array a
-///             ^^^^^^^^^^^^^^^^^^^^^^^
-///                        1
-/// 
-/// 1)  null :: Null
-/// 
-/// The value at position 1 is not a member of ‘b -> Maybe (Array2 a b)’.
-/// `));
-/// 
+
+    //    unfoldr :: (b -> Maybe (Array2 a b)) -> b -> Array a
+    const unfoldr =
+    def ('unfoldr')
+        ({})
+        ([$.Fn (b) ($.Maybe ($.Array2 (a) (b))), b, $.Array (a)])
+        (f => x => {
+           const result = [];
+           for (let m = f (x); m.isJust; m = f (m.value[1])) {
+             result.push (m.value[0]);
+           }
+           return result;
+         });
+
+    //    h :: Integer -> Maybe (Array2 Integer Integer)
+    const h = n => n >= 5 ? Nothing : Just ([n, n + 1]);
+
+    eq (unfoldr (h) (5)) ([]);
+    eq (unfoldr (h) (4)) ([4]);
+    eq (unfoldr (h) (1)) ([1, 2, 3, 4]);
+
+    throws (() => { unfoldr (null); })
+           (new TypeError (`Invalid value
+
+unfoldr :: (b -> Maybe (Array2 a b)) -> b -> Array a
+            ^^^^^^^^^^^^^^^^^^^^^^^
+                       1
+
+1)  null :: Null
+
+The value at position 1 is not a member of ‘b -> Maybe (Array2 a b)’.
+`));
+
 ///     throws (() => { unfoldr (n => n >= 5 ? Nothing : Just (n)) (1); })
 ///            (new TypeError (`Invalid value
 /// 
@@ -2908,14 +2904,14 @@ See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Integer for i
 /// 
 /// Since there is no type of which all the above values are members, the type-variable constraint has been violated.
 /// `));
-/// 
-///     //    T :: a -> (a -> b) -> b
-///     const T =
-///     def ('T')
-///         ({})
-///         ([a, $.Fn (a) (b), b])
-///         (x => f => f (/* x */));
-/// 
+
+    //    T :: a -> (a -> b) -> b
+    const T =
+    def ('T')
+        ({})
+        ([a, $.Fn (a) (b), b])
+        (x => f => f (/* x */));
+
 ///     throws (() => { T (100) (Math.sqrt); })
 ///            (new TypeError (`‘T’ applied ‘a -> b’ to the wrong number of arguments
 /// 
@@ -2961,8 +2957,8 @@ See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Integer for i
 /// 
 /// The value at position 1 is not a member of ‘a -> a -> a -> b’.
 /// `));
-///   });
-/// 
+  });
+
 ///   test ('supports type-class constraints', () => {
 ///     //    alt :: Alt f => f a -> f a -> f a
 ///     const alt =
@@ -3134,41 +3130,41 @@ See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Integer for i
 /// See https://github.com/sanctuary-js/sanctuary-type-classes/tree/v${Z$version}#Alternative for information about the sanctuary-type-classes/Alternative type class.
 /// `));
 ///   });
-/// 
-///   test ('supports unary type variables', () => {
-///     //    Box :: a -> Box a
-///     const Box = x => ({
-///       'value': x,
-///       '@@type': 'my-package/Box@1',
-///       '@@show': () => 'Box (' + show (x) + ')',
-///     });
-/// 
-///     //    $Box :: Type -> Type
-///     const $Box = $.UnaryType
-///       ('Box')
-///       ('http://example.com/my-package#Box')
-///       ([])
-///       (x => type (x) === 'my-package/Box@1')
-///       (box => [box.value]);
-/// 
-///     const env = Z.concat ($.env, [$Box ($.Unknown)]);
-///     const def = $.create ({checkTypes: true, env});
-/// 
-///     //    map :: Functor f => (a -> b) -> f a -> f b
-///     const map =
-///     def ('map')
-///         ({f: [Z.Functor]})
-///         ([$.Fn (a) (b), f (a), f (b)])
-///         (curry2 (Z.map));
-/// 
-///     eq (map (Math.sqrt) (Nothing)) (Nothing);
-///     eq (map (Math.sqrt) (Just (9))) (Just (3));
-/// 
-///     eq (map (Math.sqrt) (Math.sqrt) (625)) (5);
-/// 
-///     const xs = [1, 4, 9];
-///     xs['fantasy-land/map'] = xs.map;
-/// 
+
+  test ('supports unary type variables', () => {
+    //    Box :: a -> Box a
+    const Box = x => ({
+      'value': x,
+      '@@type': 'my-package/Box@1',
+      '@@show': () => 'Box (' + show (x) + ')',
+    });
+
+    //    $Box :: Type -> Type
+    const $Box = $.UnaryType
+      ('Box')
+      ('http://example.com/my-package#Box')
+      ([])
+      (x => type (x) === 'my-package/Box@1')
+      (box => [box.value]);
+
+    const env = Z.concat ($.env, [$Box ($.Unknown)]);
+    const def = $.create ({checkTypes: true, env});
+
+    //    map :: Functor f => (a -> b) -> f a -> f b
+    const map =
+    def ('map')
+        ({f: [Z.Functor]})
+        ([$.Fn (a) (b), f (a), f (b)])
+        (curry2 (Z.map));
+
+    eq (map (Math.sqrt) (Nothing)) (Nothing);
+    eq (map (Math.sqrt) (Just (9))) (Just (3));
+
+    eq (map (Math.sqrt) (Math.sqrt) (625)) (5);
+
+    const xs = [1, 4, 9];
+    xs['fantasy-land/map'] = xs.map;
+
 ///     throws (() => { map (Math.sqrt) (xs); })
 ///            (new TypeError (`‘map’ applied ‘a -> b’ to the wrong number of arguments
 /// 
@@ -3317,8 +3313,8 @@ See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Integer for i
 /// 
 /// See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#String for information about the String type.
 /// `));
-///   });
-/// 
+  });
+
 ///   test ('supports binary type variables', () => {
 ///     //    f :: Type -> Type -> Type
 ///     const f = $.BinaryTypeVariable ('f');

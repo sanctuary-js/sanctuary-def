@@ -100,6 +100,11 @@ const parenthesize = f => wrap (f ('(')) (f (')'));
 //    q :: String -> String
 const q = wrap ('\u2018') ('\u2019');
 
+//  stripNamespace :: TypeClass -> String
+const stripNamespace = typeClass => (
+  typeClass.name.slice (typeClass.name.indexOf ('/') + 1)
+);
+
 //  _underline :: ... -> String
 function _underline(
   t,              // :: Type
@@ -804,6 +809,7 @@ const UnaryTypeVariable = name => $1 => Object.assign (Object.create (Type$proto
          (parenthesize (outer))
          (inner ('$1') (show ($1)))
   ),
+  new: typeVarMap => env => index => propPath => fail => x => x,
 });
 
 const BinaryTypeVariable = name => $1 => $2 => Object.assign (Object.create (Type$prototype), {
