@@ -403,10 +403,6 @@ const determineActualTypesLoose = (env, values) => (
             _determineActualTypes (env, [], values))
 );
 
-const _test = env => x => function recur(t) {
-  return t.supertypes.every (recur) && t._test (env) (x);
-};
-
 //  satisfactoryTypes :: ... -> Either (() -> Error)
 //                                     { typeVarMap :: TypeVarMap
 //                                     , types :: Array Type }
@@ -593,6 +589,11 @@ const Type$prototype = {
   },
 };
 
+//    ancestors :: Type -> Array Type
+const ancestors = type => (
+  Z.concat (Z.chain (ancestors, type.supertypes), type)
+);
+
 //    extract :: String -> Type -> Any -> Array Any
 const extract = key => type => x => {
   const foldable = type.blah[key].extract (x);
@@ -603,31 +604,22 @@ const extract = key => type => x => {
   );
 };
 
-const new2 = ctx => type => {
-  if (!(_test (ctx.env) (ctx.value) (type))) {
-    ctx.fail (InvalidValue ([]) (ctx.value));
-  } else {
-    return type.new (ctx);
+const validate = env => type => x => {
+  if (!(Z.all (t => t._test (env) (x), ancestors (type)))) {
+    return Left ({value: x, propPath: []});
   }
-};
-
-const validate = env => type => {
-  const test2 = _test (env);
-  return x => {
-    if (!(test2 (x) (type))) return Left ({value: x, propPath: []});
-    for (const k of Object.keys (type.blah)) {
-      const t = type.blah[k].type;
-      const ys = extract (k) (type) (x);
-      for (const y of ys) {
-        const result = validate (env) (t) (y);
-        if (result.isLeft) {
-          return Left ({value: result.value.value,
-                        propPath: Z.prepend (k, result.value.propPath)});
-        }
+  for (const k of Object.keys (type.blah)) {
+    const t = type.blah[k].type;
+    const ys = extract (k) (type) (x);
+    for (const y of ys) {
+      const result = validate (env) (t) (y);
+      if (result.isLeft) {
+        return Left ({value: result.value.value,
+                      propPath: Z.prepend (k, result.value.propPath)});
       }
     }
-    return Right (x);
-  };
+  }
+  return Right (x);
 };
 
 $.Unknown = Object.assign (Object.create (Type$prototype), {
@@ -707,14 +699,18 @@ $.UnaryType = name => url => supertypes => test => _1 => $1 => Object.assign (Ob
   new: ctx => {
     Z.reduce (
       (_, x) => {
-        new2 ({
-          typeVarMap: ctx.typeVarMap,
-          env: ctx.env,
-          index: ctx.index,
-          propPath: ['$1', ...ctx.propPath],
-          fail: myError => ctx.fail (prepend ('$1') (myError)),
-          value: x,
-        }) ($1);
+        if (Z.all (t => t._test (ctx.env) (x), ancestors ($1))) {
+          $1.new ({
+            typeVarMap: ctx.typeVarMap,
+            env: ctx.env,
+            index: ctx.index,
+            propPath: ['$1', ...ctx.propPath],
+            fail: myError => ctx.fail (prepend ('$1') (myError)),
+            value: x,
+          });
+        } else {
+          ctx.fail (prepend ('$1') (InvalidValue ([]) (x)));
+        }
       },
       undefined,
       _1 (ctx.value)
@@ -757,28 +753,36 @@ $.BinaryType = name => url => supertypes => test => _1 => _2 => $1 => $2 => Obje
   new: ctx => {
     Z.reduce (
       (_, x) => {
-        new2 ({
-          typeVarMap: ctx.typeVarMap,
-          env: ctx.env,
-          index: ctx.index,
-          propPath: ['$1', ...ctx.propPath],
-          fail: myError => ctx.fail (prepend ('$1') (myError)),
-          value: x,
-        }) ($1);
+        if (Z.all (t => t._test (ctx.env) (x), ancestors ($1))) {
+          $1.new ({
+            typeVarMap: ctx.typeVarMap,
+            env: ctx.env,
+            index: ctx.index,
+            propPath: ['$1', ...ctx.propPath],
+            fail: myError => ctx.fail (prepend ('$1') (myError)),
+            value: x,
+          });
+        } else {
+          ctx.fail (prepend ('$1') (InvalidValue ([]) (x)));
+        }
       },
       undefined,
       _1 (ctx.value)
     );
     Z.reduce (
       (_, x) => {
-        new2 ({
-          typeVarMap: ctx.typeVarMap,
-          env: ctx.env,
-          index: ctx.index,
-          propPath: ['$2', ...ctx.propPath],
-          fail: myError => ctx.fail (prepend ('$2') (myError)),
-          value: x,
-        }) ($2);
+        if (Z.all (t => t._test (ctx.env) (x), ancestors ($2))) {
+          $2.new ({
+            typeVarMap: ctx.typeVarMap,
+            env: ctx.env,
+            index: ctx.index,
+            propPath: ['$2', ...ctx.propPath],
+            fail: myError => ctx.fail (prepend ('$2') (myError)),
+            value: x,
+          });
+        } else {
+          ctx.fail (prepend ('$2') (InvalidValue ([]) (x)));
+        }
       },
       undefined,
       _2 (ctx.value)
@@ -944,14 +948,18 @@ const RecordType = fields => {
     },
     new: ctx => {
       keys.forEach (k => {
-        new2 ({
-          typeVarMap: ctx.typeVarMap,
-          env: ctx.env,
-          index: ctx.index,
-          propPath: [k, ...ctx.propPath],
-          fail: myError => ctx.fail (prepend (k) (myError)),
-          value: ctx.value[k],
-        }) (fields[k]);
+        if (Z.all (t => t._test (ctx.env) (ctx.value[k]), ancestors (fields[k]))) {
+          fields[k].new ({
+            typeVarMap: ctx.typeVarMap,
+            env: ctx.env,
+            index: ctx.index,
+            propPath: [k, ...ctx.propPath],
+            fail: myError => ctx.fail (prepend (k) (myError)),
+            value: ctx.value[k],
+          });
+        } else {
+          ctx.fail (prepend (k) (InvalidValue ([]) (ctx.value[k])));
+        }
       });
       return ctx.value;
     },
@@ -981,14 +989,18 @@ const NamedRecordType = name => url => supertypes => fields => {
     format: outer => K (outer (name)),
     new: ctx => {
       keys.forEach (k => {
-        new2 ({
-          typeVarMap: ctx.typeVarMap,
-          env: ctx.env,
-          index: ctx.index,
-          propPath: [k, ...ctx.propPath],
-          fail: myError => ctx.fail (InvalidValue ([]) (ctx.value)),
-          value: ctx.value[k],
-        }) (fields[k]);
+        if (Z.all (t => t._test (ctx.env) (ctx.value[k]), ancestors (fields[k]))) {
+          fields[k].new ({
+            typeVarMap: ctx.typeVarMap,
+            env: ctx.env,
+            index: ctx.index,
+            propPath: [k, ...ctx.propPath],
+            fail: myError => ctx.fail (InvalidValue ([]) (ctx.value)),
+            value: ctx.value[k],
+          });
+        } else {
+          ctx.fail (InvalidValue ([]) (ctx.value[k]));
+        }
       });
       return ctx.value;
     },
@@ -1374,9 +1386,31 @@ const Fn = $1 => $2 => (
           ctx.fail (InvalidArgumentsCount ([]) (1) (args));
         }
         const [x] = args;
-        const i = new2 ({typeVarMap: ctx.typeVarMap, env: ctx.env, index: ctx.index, propPath: ['$1', ...ctx.propPath], fail: myError => ctx.fail (prepend ('$1') (myError)), value: x}) ($1);
-        const o = new2 ({typeVarMap: ctx.typeVarMap, env: ctx.env, index: ctx.index, propPath: ['$2', ...ctx.propPath], fail: myError => ctx.fail (prepend ('$2') (myError)), value: ctx.value (x)}) ($2);
-        return o;
+        if (Z.all (t => t._test (ctx.env) (x), ancestors ($1))) {
+          const i = $1.new ({
+            typeVarMap: ctx.typeVarMap,
+            env: ctx.env,
+            index: ctx.index,
+            propPath: ['$1', ...ctx.propPath],
+            fail: myError => ctx.fail (prepend ('$1') (myError)),
+            value: x,
+          });
+          const y = ctx.value (x);
+          if (Z.all (t => t._test (ctx.env) (y), ancestors ($2))) {
+            return $2.new ({
+              typeVarMap: ctx.typeVarMap,
+              env: ctx.env,
+              index: ctx.index,
+              propPath: ['$2', ...ctx.propPath],
+              fail: myError => ctx.fail (prepend ('$2') (myError)),
+              value: y,
+            });
+          } else {
+            ctx.fail (InvalidValue (['$2']) (y));
+          }
+        } else {
+          ctx.fail (InvalidValue (['$1']) (x));
+        }
       },
     }
   )
@@ -1529,15 +1563,18 @@ const create = opts => {
         }
 
         const x = impl ();
-        new2 ({
-          typeVarMap: Object.create (null),
-          env: opts.env,
-          index: 0,
-          propPath: [],
-          fail: myError => TK,
-          value: x,
-        }) (types[0]);
-        return x;
+        if (Z.all (t => t._test (opts.env) (x), ancestors (types[0]))) {
+          return types[0].new ({
+            typeVarMap: Object.create (null),
+            env: opts.env,
+            index: 0,
+            propPath: [],
+            fail: myError => TK,
+            value: x,
+          });
+        } else {
+          TK;
+        }
       };
       const signature = typeSignature (typeInfo);
       wrapped[inspect] = wrapped.toString = () => signature;
@@ -1554,57 +1591,57 @@ const create = opts => {
           }
 
           const typeVarMap = Object.create (_typeVarMap);
-          const x = new2 ({
-            typeVarMap,
-            env: opts.env,
-            index,
-            propPath: [],
-            fail: myError => {
-              switch (myError.tagName) {
-                case 'InvalidValue':
-                  throw invalidValue (
-                    opts.env,
-                    typeInfo,
-                    index,
-                    myError.propPath,
-                    myError.value
-                  );
-                case 'TypeVariableConstraintViolation':
-                  throw typeVarConstraintViolation (
-                    opts.env,
-                    typeInfo,
-                    index,
-                    myError.propPath,
-                    myError.valuesByPath//typeVarMap$[typeVarName].valuesByPath
-                  )
-              }
-            },
-            value: _x,
-          }) (input);
-          return run (typeVarMap) (f (x));
+          if (Z.all (t => t._test (opts.env) (_x), ancestors (input))) {
+            const x = input.new ({
+              typeVarMap,
+              env: opts.env,
+              index,
+              propPath: [],
+              fail: myError => {
+                switch (myError.tagName) {
+                  case 'InvalidValue':
+                    throw invalidValue (
+                      opts.env,
+                      typeInfo,
+                      index,
+                      myError.propPath,
+                      myError.value
+                    );
+                  case 'TypeVariableConstraintViolation':
+                    throw typeVarConstraintViolation (
+                      opts.env,
+                      typeInfo,
+                      index,
+                      myError.propPath,
+                      myError.valuesByPath
+                    )
+                }
+              },
+              value: _x,
+            });
+            return run (typeVarMap) (f (x));
+          } else {
+            throw invalidValue (opts.env, typeInfo, index, [], _x);
+          }
         };
         const signature = typeSignature (typeInfo);
         wrapped[inspect] = wrapped.toString = () => signature;
         return wrapped;
       },
-      typeVarMap => value => (
-        new2 ({
-          typeVarMap,
-          env: opts.env,
-          index: 0,
-          propPath: [],
-          fail: myError => {
-            throw invalidValue (
-              opts.env,
-              typeInfo,
-              types.length - 1,
-              myError.propPath,
-              myError.value
-            );
-          },
-          value,
-        }) (types[types.length - 1])
-      )
+      typeVarMap => value => {
+        if (Z.all (t => t._test (opts.env) (value), ancestors (types[types.length - 1]))) {
+          return types[types.length - 1].new ({
+            typeVarMap,
+            env: opts.env,
+            index: 0,
+            propPath: [],
+            fail: myError => { throw invalidValue (opts.env, typeInfo, types.length - 1, myError.propPath, myError.value); },
+            value,
+          });
+        } else {
+          throw invalidValue (opts.env, typeInfo, types.length - 1, [], value);
+        }
+      }
     ) (Object.create (null)) (impl);
   };
   return def ('def') ({}) (defTypes) (def);
