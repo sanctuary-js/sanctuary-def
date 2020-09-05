@@ -85,13 +85,6 @@ const r = c => s => strRepeat (c, s.length);
 //    _ :: String -> String
 const _ = r (' ');
 
-//    toArray :: Foldable f => f a -> Array a
-const toArray = foldable => (
-  Array.isArray (foldable) ?
-  foldable :
-  Z.reduce ((xs, x) => { xs.push (x); return xs; }, [], foldable)
-);
-
 //    trimTrailingSpaces :: String -> String
 const trimTrailingSpaces = s => s.replace (/[ ]+$/gm, '');
 
@@ -278,11 +271,11 @@ const _determineActualTypes = (
           [] :
         t.type === 'UNARY' ?
           Z.map (fromUnaryType (t),
-                 expandUnknown2 (t.extractors.$1) (t.types.$1)) :
+                 expandUnknown2 (extract ('$1') (t)) (t.types.$1)) :
         t.type === 'BINARY' ?
           Z.lift2 (fromBinaryType (t),
-                   expandUnknown2 (t.extractors.$1) (t.types.$1),
-                   expandUnknown2 (t.extractors.$2) (t.types.$2)) :
+                   expandUnknown2 (extract ('$1') (t)) (t.types.$1),
+                   expandUnknown2 (extract ('$2') (t)) (t.types.$2)) :
         // else
           [t]
       );
@@ -383,7 +376,7 @@ const satisfactoryTypes = (
             //  the actual type depending on the actual type's arity.
             var offset = t.arity - expType.arity;
             return expType.keys.reduce (function(e, k, idx) {
-              var extractor = t.extractors[t.keys[offset + idx]];
+              var extractor = extract (t.keys[offset + idx]) (t);
               return Z.reduce (function(e, x) {
                 return Z.chain (function(r) {
                   return recur (env,
@@ -414,7 +407,7 @@ const satisfactoryTypes = (
                expType.types.$1,
                index,
                Z.concat (propPath, ['$1']),
-               Z.chain (expType.extractors.$1, values))
+               Z.chain (extract ('$1') (expType), values))
       );
 
     case 'BINARY':
@@ -437,7 +430,7 @@ const satisfactoryTypes = (
                    expType.types.$2,
                    index,
                    Z.concat (propPath, ['$2']),
-                   Z.chain (expType.extractors.$2, values))
+                   Z.chain (extract ('$2') (expType), values))
           );
         },
         recur (env,
@@ -446,7 +439,7 @@ const satisfactoryTypes = (
                expType.types.$1,
                index,
                Z.concat (propPath, ['$1']),
-               Z.chain (expType.extractors.$1, values))
+               Z.chain (extract ('$1') (expType), values))
       );
 
     case 'RECORD':
@@ -458,7 +451,7 @@ const satisfactoryTypes = (
                         expType.types[k],
                         index,
                         Z.concat (propPath, [k]),
-                        Z.chain (expType.extractors[k], values));
+                        Z.chain (extract (k) (expType), values));
         }, e);
       }, Right ({typeVarMap: typeVarMap, types: [expType]}), expType.keys);
 
@@ -489,13 +482,23 @@ const Type$prototype = {
   },
 };
 
+//    extract :: String -> Type -> Any -> Array Any
+const extract = key => type => x => {
+  const foldable = type.extractors[key] (x);
+  return (
+    Array.isArray (foldable)
+    ? foldable
+    : Z.reduce ((xs, x) => (xs.push (x), xs), [], foldable)
+  );
+};
+
 const validate = env => type => {
   const test2 = _test (env);
   return x => {
     if (!(test2 (x) (type))) return Left ({value: x, propPath: []});
     for (const k of type.keys) {
       const t = type.types[k];
-      const ys = type.extractors[k] (x);
+      const ys = extract (k) (type) (x);
       for (const y of ys) {
         const result = validate (env) (t) (y);
         if (result.isLeft) {
@@ -515,7 +518,6 @@ $.Unknown = Object.assign (Object.create (Type$prototype), {
   supertypes: [],
   arity: 0,
   keys: [],
-  _extractors: {},
   extractors: {},
   types: {},
   _test: K (K (true)),
@@ -529,7 +531,6 @@ const Unchecked = s => Object.assign (Object.create (Type$prototype), {
   supertypes: [],
   arity: 0,
   keys: [],
-  _extractors: {},
   extractors: {},
   types: {},
   _test: K (K (true)),
@@ -544,7 +545,6 @@ $.Inconsistent = Object.assign (Object.create (Type$prototype), {
   supertypes: [],
   arity: 0,
   keys: [],
-  _extractors: {},
   extractors: {},
   types: {},
   _test: K (K (false)),
@@ -558,7 +558,6 @@ $.NoArguments = Object.assign (Object.create (Type$prototype), {
   supertypes: [],
   arity: 0,
   keys: [],
-  _extractors: {},
   extractors: {},
   types: {},
   _test: K (K (true)),
@@ -572,7 +571,6 @@ $.NullaryType = name => url => supertypes => test => Object.assign (Object.creat
   supertypes: supertypes,
   arity: 0,
   keys: [],
-  _extractors: {},
   extractors: {},
   types: {},
   _test: env => test,
@@ -586,8 +584,7 @@ $.UnaryType = name => url => supertypes => test => _1 => $1 => Object.assign (Ob
   supertypes: supertypes,
   arity: 1,
   keys: ['$1'],
-  _extractors: {$1: _1},
-  extractors: {$1: B (toArray) (_1)},
+  extractors: {$1: _1},
   types: {$1: $1},
   _test: K (test),
   format: outer => inner => (
@@ -605,7 +602,7 @@ const fromUnaryType = t => (
               (t.url)
               (t.supertypes)
               (t._test ([]))
-              (t._extractors.$1)
+              (t.extractors.$1)
 );
 
 $.BinaryType = name => url => supertypes => test => _1 => _2 => $1 => $2 => Object.assign (Object.create (Type$prototype), {
@@ -615,8 +612,7 @@ $.BinaryType = name => url => supertypes => test => _1 => _2 => $1 => $2 => Obje
   supertypes: supertypes,
   arity: 2,
   keys: ['$1', '$2'],
-  _extractors: {$1: _1, $2: _2},
-  extractors: {$1: B (toArray) (_1), $2: B (toArray) (_2)},
+  extractors: {$1: _1, $2: _2},
   types: {$1: $1, $2: $2},
   _test: K (test),
   format: outer => inner => (
@@ -638,8 +634,8 @@ const fromBinaryType = t => (
                (t.url)
                (t.supertypes)
                (t._test ([]))
-               (t._extractors.$1)
-               (t._extractors.$2)
+               (t.extractors.$1)
+               (t.extractors.$2)
 );
 
 const EnumType = name => url => members => Object.assign (Object.create (Type$prototype), {
@@ -649,7 +645,6 @@ const EnumType = name => url => members => Object.assign (Object.create (Type$pr
   supertypes: [],
   arity: 0,
   keys: [],
-  _extractors: {},
   extractors: {},
   types: {},
   _test: env => x => memberOf (members) (x),
@@ -667,7 +662,6 @@ const TypeVariable = name => Object.assign (Object.create (Type$prototype), {
   supertypes: [],
   arity: 0,
   keys: [],
-  _extractors: {},
   extractors: {},
   types: {},
   _test: K (K (true)),
@@ -698,7 +692,6 @@ const UnaryTypeVariable = name => $1 => Object.assign (Object.create (Type$proto
   supertypes: [],
   arity: 1,
   keys: ['$1'],
-  _extractors: {$1: K ([])},
   extractors: {$1: K ([])},
   types: {$1: $1},
   _test: K (K (true)),
@@ -718,7 +711,6 @@ const BinaryTypeVariable = name => $1 => $2 => Object.assign (Object.create (Typ
   supertypes: [],
   arity: 2,
   keys: ['$1', '$2'],
-  _extractors: {$1: K ([]), $2: K ([])},
   extractors: {$1: K ([]), $2: K ([])},
   types: {$1: $1, $2: $2},
   _test: K (K (true)),
@@ -742,7 +734,6 @@ const Function_ = types => Object.assign (Object.create (Type$prototype), {
   supertypes: [$.AnyFunction],
   arity: types.length,
   keys: ['$1', '$2'],
-  _extractors: {$1: K ([]), $2: K ([])},
   extractors: {$1: K ([]), $2: K ([])},
   types: {$1: types[0], $2: types[1]},
   _test: K (K (true)),
@@ -766,7 +757,6 @@ const RecordType = fields => {
     supertypes: [],
     arity: 0,
     keys: keys,
-    _extractors: keys.reduce ((extractors, k) => (extractors[k] = x => [x[k]], extractors), {}),
     extractors: keys.reduce ((extractors, k) => (extractors[k] = x => [x[k]], extractors), {}),
     types: keys.reduce ((types, k) => (types[k] = fields[k], types), {}),
     _test: env => x => {
@@ -810,7 +800,6 @@ const NamedRecordType = name => url => supertypes => fields => {
     supertypes: supertypes,
     arity: 0,
     keys: keys,
-    _extractors: keys.reduce ((extractors, k) => (extractors[k] = x => [x[k]], extractors), {}),
     extractors: keys.reduce ((extractors, k) => (extractors[k] = x => [x[k]], extractors), {}),
     types: keys.reduce ((types, k) => (types[k] = fields[k], types), {}),
     _test: env => x => {
