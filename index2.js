@@ -704,6 +704,23 @@ $.UnaryType = name => url => supertypes => test => _1 => $1 => Object.assign (Ob
          (parenthesize (outer))
          (inner ('$1') (show ($1)))
   ),
+  new: ctx => {
+    Z.reduce (
+      (_, x) => {
+        new2 ({
+          typeVarMap: ctx.typeVarMap,
+          env: ctx.env,
+          index: ctx.index,
+          propPath: ['$1', ...ctx.propPath],
+          fail: myError => ctx.fail (prepend ('$1') (myError)),
+          value: x,
+        }) ($1);
+      },
+      undefined,
+      _1 (ctx.value)
+    )
+    return ctx.value;
+  },
 });
 
 //  fromUnaryType :: Type -> Type -> Type
@@ -737,6 +754,37 @@ $.BinaryType = name => url => supertypes => test => _1 => _2 => $1 => $2 => Obje
          (parenthesize (outer))
          (inner ('$2') (show ($2)))
   ),
+  new: ctx => {
+    Z.reduce (
+      (_, x) => {
+        new2 ({
+          typeVarMap: ctx.typeVarMap,
+          env: ctx.env,
+          index: ctx.index,
+          propPath: ['$1', ...ctx.propPath],
+          fail: myError => ctx.fail (prepend ('$1') (myError)),
+          value: x,
+        }) ($1);
+      },
+      undefined,
+      _1 (ctx.value)
+    );
+    Z.reduce (
+      (_, x) => {
+        new2 ({
+          typeVarMap: ctx.typeVarMap,
+          env: ctx.env,
+          index: ctx.index,
+          propPath: ['$2', ...ctx.propPath],
+          fail: myError => ctx.fail (prepend ('$2') (myError)),
+          value: x,
+        }) ($2);
+      },
+      undefined,
+      _2 (ctx.value)
+    );
+    return ctx.value;
+  },
 });
 
 //    fromBinaryType :: (Type -> Type -> Type) -> Type -> Type -> Type
@@ -1006,51 +1054,21 @@ $.ValidDate = (
                 (x => !(isNaN (Number (x))))
 );
 
-const Descending = $1 => Object.assign (
+const Descending = (
   $.UnaryType ('Descending')
               ('https://github.com/sanctuary-js/sanctuary-def/tree/v0.22.0#Descending')
               ([])
               (x => type (x) === 'sanctuary-descending/Descending@1')
               (I)
-              ($1),
-  {
-    new: ctx => ctx.value,
-  }
 );
 
-const Either = $1 => $2 => Object.assign (
+const Either = (
   $.BinaryType ('Either')
                ('https://github.com/sanctuary-js/sanctuary-def/tree/v0.22.0#Either')
                ([])
                (x => type (x) === 'sanctuary-either/Either@1')
                (e => e.isLeft ? [e.value] : [])
                (e => e.isLeft ? [] : [e.value])
-               ($1)
-               ($2),
-  {
-    new: ctx => {
-      if (ctx.value.isLeft) {
-        new2 ({
-          typeVarMap: ctx.typeVarMap,
-          env: ctx.env,
-          index: ctx.index,
-          propPath: ['$1', ...ctx.propPath],
-          fail: myError => ctx.fail (prepend ('$1') (myError)),
-          value: ctx.value.value,
-        }) ($1);
-      } else {
-        new2 ({
-          typeVarMap: ctx.typeVarMap,
-          env: ctx.env,
-          index: ctx.index,
-          propPath: ['$2', ...ctx.propPath],
-          fail: myError => ctx.fail (prepend ('$2') (myError)),
-          value: ctx.value.value
-        }) ($2);
-      }
-      return ctx.value;
-    },
-  }
 );
 
 $.Error = (
@@ -1067,54 +1085,37 @@ $.HtmlElement = (
                 (x => /^\[object HTML.+Element\]$/.test (Object.prototype.toString.call (x)))
 );
 
-const Identity = $1 => Object.assign (
+const Identity = (
   $.UnaryType ('Identity')
               ('https://github.com/sanctuary-js/sanctuary-def/tree/v0.22.0#Identity')
               ([])
               (x => type (x) === 'sanctuary-identity/Identity@1')
               (I)
-              ($1),
-  {
-    new: ctx => ctx.value,
-  }
 );
 
-const JsMap = $1 => $2 => Object.assign (
+const JsMap = (
   $.BinaryType ('JsMap')
                ('https://github.com/sanctuary-js/sanctuary-def/tree/v0.22.0#JsMap')
                ([])
                (x => Object.prototype.toString.call (x) === '[object Map]')
                (jsMap => Array.from (jsMap.keys ()))
                (jsMap => Array.from (jsMap.values ()))
-               ($1)
-               ($2),
-  {
-    new: ctx => ctx.value,
-  }
 );
 
-const JsSet = $1 => Object.assign (
+const JsSet = (
   $.UnaryType ('JsSet')
               ('https://github.com/sanctuary-js/sanctuary-def/tree/v0.22.0#JsSet')
               ([])
               (x => Object.prototype.toString.call (x) === '[object Set]')
               (jsSet => Array.from (jsSet.values ()))
-              ($1),
-  {
-    new: ctx => ctx.value,
-  }
 );
 
-const Maybe = $1 => Object.assign (
+const Maybe = (
   $.UnaryType ('Maybe')
               ('https://github.com/sanctuary-js/sanctuary-def/tree/v0.22.0#Maybe')
               ([])
               (x => type (x) === 'sanctuary-maybe/Maybe@1')
               (I)
-              ($1),
-  {
-    new: ctx => ctx.value,
-  }
 );
 
 $.Module = (
@@ -1124,26 +1125,12 @@ $.Module = (
                 (x => Object.prototype.toString.call (x) === '[object Module]')
 );
 
-const NonEmpty = $1 => Object.assign (
+const NonEmpty = (
   $.UnaryType ('NonEmpty')
               ('https://github.com/sanctuary-js/sanctuary-def/tree/v0.22.0#NonEmpty')
               ([])
               (x => Z.Monoid.test (x) && Z.Setoid.test (x) && !(Z.equals (x, Z.empty (x.constructor))))
               (monoid => [monoid])
-              ($1),
-  {
-    new: ctx => {
-      new2 ({
-        typeVarMap: ctx.typeVarMap,
-        env: ctx.env,
-        index: ctx.index,
-        propPath: ['$1', ...ctx.propPath],
-        fail: myError => ctx.fail (prepend ('$1') (myError)),
-        value: ctx.value,
-      }) ($1);
-      return ctx.value;
-    },
-  }
 );
 
 $.Null = (
@@ -1153,16 +1140,12 @@ $.Null = (
                 (x => Object.prototype.toString.call (x) === '[object Null]')
 );
 
-const Nullable = $1 => Object.assign (
+const Nullable = (
   $.UnaryType ('Nullable')
               ('https://github.com/sanctuary-js/sanctuary-def/tree/v0.22.0#Nullable')
               ([])
               (K (true))
               (nullable => nullable === null ? [] : [nullable])
-              ($1),
-  {
-    new: ctx => ctx.value,
-  }
 );
 
 $.Number = (
@@ -1270,18 +1253,13 @@ $.Object = (
                 (x => type (x) === 'Object')
 );
 
-const Pair = $1 => $2 => Object.assign (
+const Pair = (
   $.BinaryType ('Pair')
                ('https://github.com/sanctuary-js/sanctuary-def/tree/v0.22.0#Pair')
                ([])
                (x => type (x) === 'sanctuary-pair/Pair@1')
                (pair => [pair.fst])
                (pair => [pair.snd])
-               ($1)
-               ($2),
-  {
-    new: ctx => ctx.value,
-  }
 );
 
 $.RegExp = (
@@ -1326,29 +1304,12 @@ $.RegexFlags = (
                 (s => /^g?i?m?$/.test (s))
 );
 
-const StrMap = $1 => Object.assign (
+const StrMap = (
   $.UnaryType ('StrMap')
               ('https://github.com/sanctuary-js/sanctuary-def/tree/v0.22.0#StrMap')
               ([$.Object])
               (K (true))
               (I)
-              ($1),
-  {
-    new: ctx => {
-      const keys = Object.keys (ctx.value);
-      for (const k of keys) {
-        new2 ({
-          typeVarMap: ctx.typeVarMap,
-          env: ctx.env,
-          index: ctx.index,
-          propPath: ['$1', ...ctx.propPath],
-          fail: myError => ctx.fail (prepend ('$1') (myError)),
-          value: ctx.value[k],
-        }) ($1);
-      }
-      return ctx.value;
-    },
-  }
 );
 
 $.Type = (
@@ -1372,30 +1333,12 @@ $.Undefined = (
                 (x => Object.prototype.toString.call (x) === '[object Undefined]')
 );
 
-$.Array = $1 => (
-  Object.assign (
-    $.UnaryType ('Array')
-                ('https://github.com/sanctuary-js/sanctuary-def/tree/v0.22.0#Array')
-                ([])
-                (Array.isArray)
-                (I)
-                ($1),
-    {
-      new: ctx => {
-        for (const x of ctx.value) {
-          new2 ({
-            typeVarMap: ctx.typeVarMap,
-            env: ctx.env,
-            index: ctx.index,
-            propPath: ['$1', ...ctx.propPath],
-            fail: myError => ctx.fail (prepend ('$1') (myError)),
-            value: x,
-          }) ($1);
-        }
-        return ctx.value;
-      },
-    }
-  )
+$.Array = (
+  $.UnaryType ('Array')
+              ('https://github.com/sanctuary-js/sanctuary-def/tree/v0.22.0#Array')
+              ([])
+              (Array.isArray)
+              (I)
 );
 
 $.Array0 = (
@@ -1405,27 +1348,21 @@ $.Array0 = (
                 (xs => xs.length === 0)
 );
 
-const Array1 = $1 => (
+const Array1 = (
   $.UnaryType ('Array1')
               ('https://github.com/sanctuary-js/sanctuary-def/tree/v0.22.0#Array1')
               ([$.Array ($.Unknown)])
               (xs => xs.length === 1)
               (xs => [xs[0]])
-              ($1)
 );
 
-const Array2 = $1 => $2 => Object.assign (
+const Array2 = (
   $.BinaryType ('Array2')
                ('https://github.com/sanctuary-js/sanctuary-def/tree/v0.22.0#Array2')
                ([$.Array ($.Unknown)])
                (xs => xs.length === 2)
                (xs => [xs[0]])
                (xs => [xs[1]])
-               ($1)
-               ($2),
-  {
-    new: ctx => ctx.value,
-  }
 );
 
 const Fn = $1 => $2 => (
