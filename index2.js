@@ -519,7 +519,7 @@ $.Unknown = Object.assign (Object.create (Type$prototype), {
   extractors: {},
   types: {},
   _test: K (K (true)),
-  format: outer => inner => 'Unknown',
+  format: outer => K (outer ('Unknown')),
 });
 
 const Unchecked = s => Object.assign (Object.create (Type$prototype), {
@@ -533,7 +533,7 @@ const Unchecked = s => Object.assign (Object.create (Type$prototype), {
   extractors: {},
   types: {},
   _test: K (K (true)),
-  format: outer => inner => s,
+  format: outer => K (outer (s)),
   new: K (env => fail => x => x),
 });
 
@@ -548,7 +548,7 @@ $.Inconsistent = Object.assign (Object.create (Type$prototype), {
   extractors: {},
   types: {},
   _test: K (K (false)),
-  format: outer => inner => '???',
+  format: outer => K (outer ('???')),
 });
 
 $.NoArguments = Object.assign (Object.create (Type$prototype), {
@@ -562,7 +562,7 @@ $.NoArguments = Object.assign (Object.create (Type$prototype), {
   extractors: {},
   types: {},
   _test: K (K (true)),
-  format: outer => inner => '()',
+  format: outer => K (outer ('()')),
 });
 
 $.NullaryType = name => url => supertypes => test => Object.assign (Object.create (Type$prototype), {
@@ -576,7 +576,7 @@ $.NullaryType = name => url => supertypes => test => Object.assign (Object.creat
   extractors: {},
   types: {},
   _test: env => test,
-  format: outer => inner => outer (name),
+  format: outer => K (outer (name)),
 });
 
 $.UnaryType = name => url => supertypes => test => _1 => $1 => Object.assign (Object.create (Type$prototype), {
@@ -653,7 +653,7 @@ const EnumType = name => url => members => Object.assign (Object.create (Type$pr
   extractors: {},
   types: {},
   _test: env => x => memberOf (members) (x),
-  format: outer => inner => outer (name),
+  format: outer => K (outer (name)),
   new: K (env => fail => x => {
     if (memberOf (members) (x)) return x;
     fail (InvalidValue ([]) (x));
@@ -671,7 +671,7 @@ const TypeVariable = name => Object.assign (Object.create (Type$prototype), {
   extractors: {},
   types: {},
   _test: K (K (true)),
-  format: outer => inner => name,
+  format: outer => K (outer (name)),
   new: typeVarMap => env => fail => x => {
     if (name in typeVarMap) {
       const $types = typeVarMap[name].types;
@@ -821,7 +821,7 @@ const NamedRecordType = name => url => supertypes => fields => {
       if (!(isEmpty (missing))) return false;
       return keys.every (k => fields[k]._test (env) (x[k]));
     },
-    format: outer => inner => outer (name),
+    format: outer => K (outer (name)),
     new: typeVarMap => env => fail => x => {
       if (x == null) fail (InvalidValue ([]) (x));
       const missing = {};
