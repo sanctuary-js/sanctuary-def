@@ -113,7 +113,7 @@ function _underline(
   propPath,       // :: PropPath
   formatType3     // :: Type -> Array String -> String -> String
 ) {
-  return formatType3 (t) (propPath) (t.format (_, function(k) {
+  return formatType3 (t) (propPath) (t.format (_) (function(k) {
     return K (_underline (t.types[k],
                           Z.concat (propPath, [k]),
                           formatType3));
@@ -274,7 +274,7 @@ const _determineActualTypes = (
     var expandUnknown2 = expandUnknown4 (seen$) (value);
     return Z.chain (function(t) {
       return (
-        (t.validate (env) (value)).isLeft ?
+        (validate (env) (t) (value)).isLeft ?
           [] :
         t.type === 'UNARY' ?
           Z.map (fromUnaryType (t),
@@ -319,7 +319,7 @@ const satisfactoryTypes = (
   var recur = satisfactoryTypes;
 
   for (var idx = 0; idx < values.length; idx += 1) {
-    var result = expType.validate (env) (values[idx]);
+    var result = validate (env) (expType) (values[idx]);
     if (result.isLeft) {
       return Left (function() {
         return invalidValue (env,
@@ -475,26 +475,7 @@ const test = env => t => x => {
 const Type$prototype = {
   '@@type': 'sanctuary-def/Type@1',
   '@@show': function() {
-    return this.format (I, K (I));
-  },
-  'validate': function(env) {
-    const test2 = _test (env);
-    const type = this;
-    return x => {
-      if (!(test2 (x) (this))) return Left ({value: x, propPath: []});
-      for (const k of this.keys) {
-        const t = type.types[k];
-        const ys = type.extractors[k] (x);
-        for (const y of ys) {
-          const result = t.validate (env) (y);
-          if (result.isLeft) {
-            return Left ({value: result.value.value,
-                          propPath: Z.prepend (k, result.value.propPath)});
-          }
-        }
-      }
-      return Right (x);
-    };
+    return this.format (I) (K (I));
   },
   'fantasy-land/equals': function(other) {
     return (
@@ -508,6 +489,25 @@ const Type$prototype = {
   },
 };
 
+const validate = env => type => {
+  const test2 = _test (env);
+  return x => {
+    if (!(test2 (x) (type))) return Left ({value: x, propPath: []});
+    for (const k of type.keys) {
+      const t = type.types[k];
+      const ys = type.extractors[k] (x);
+      for (const y of ys) {
+        const result = validate (env) (t) (y);
+        if (result.isLeft) {
+          return Left ({value: result.value.value,
+                        propPath: Z.prepend (k, result.value.propPath)});
+        }
+      }
+    }
+    return Right (x);
+  };
+};
+
 $.Unknown = Object.assign (Object.create (Type$prototype), {
   type: 'UNKNOWN',
   name: '',
@@ -519,7 +519,7 @@ $.Unknown = Object.assign (Object.create (Type$prototype), {
   extractors: {},
   types: {},
   _test: K (K (true)),
-  format: (outer, inner) => 'Unknown',
+  format: outer => inner => 'Unknown',
 });
 
 const Unchecked = s => Object.assign (Object.create (Type$prototype), {
@@ -533,7 +533,7 @@ const Unchecked = s => Object.assign (Object.create (Type$prototype), {
   extractors: {},
   types: {},
   _test: K (K (true)),
-  format: (outer, inner) => s,
+  format: outer => inner => s,
   new: K (env => fail => x => x),
 });
 
@@ -548,7 +548,7 @@ $.Inconsistent = Object.assign (Object.create (Type$prototype), {
   extractors: {},
   types: {},
   _test: K (K (false)),
-  format: (outer, inner) => '???',
+  format: outer => inner => '???',
 });
 
 $.NoArguments = Object.assign (Object.create (Type$prototype), {
@@ -562,7 +562,7 @@ $.NoArguments = Object.assign (Object.create (Type$prototype), {
   extractors: {},
   types: {},
   _test: K (K (true)),
-  format: (outer, inner) => '()',
+  format: outer => inner => '()',
 });
 
 $.NullaryType = name => url => supertypes => test => Object.assign (Object.create (Type$prototype), {
@@ -576,7 +576,7 @@ $.NullaryType = name => url => supertypes => test => Object.assign (Object.creat
   extractors: {},
   types: {},
   _test: env => test,
-  format: (outer, inner) => outer (name),
+  format: outer => inner => outer (name),
 });
 
 $.UnaryType = name => url => supertypes => test => _1 => $1 => Object.assign (Object.create (Type$prototype), {
@@ -590,7 +590,7 @@ $.UnaryType = name => url => supertypes => test => _1 => $1 => Object.assign (Ob
   extractors: {$1: B (toArray) (_1)},
   types: {$1: $1},
   _test: K (test),
-  format: (outer, inner) => (
+  format: outer => inner => (
     outer (name) +
     outer (' ') +
     when ($1.arity > 0)
@@ -619,7 +619,7 @@ $.BinaryType = name => url => supertypes => test => _1 => _2 => $1 => $2 => Obje
   extractors: {$1: B (toArray) (_1), $2: B (toArray) (_2)},
   types: {$1: $1, $2: $2},
   _test: K (test),
-  format: (outer, inner) => (
+  format: outer => inner => (
     outer (name) +
     outer (' ') +
     when ($1.arity > 0)
@@ -653,7 +653,7 @@ const EnumType = name => url => members => Object.assign (Object.create (Type$pr
   extractors: {},
   types: {},
   _test: env => x => memberOf (members) (x),
-  format: (outer, inner) => outer (name),
+  format: outer => inner => outer (name),
   new: K (env => fail => x => {
     if (memberOf (members) (x)) return x;
     fail (InvalidValue ([]) (x));
@@ -671,7 +671,7 @@ const TypeVariable = name => Object.assign (Object.create (Type$prototype), {
   extractors: {},
   types: {},
   _test: K (K (true)),
-  format: (outer, inner) => name,
+  format: outer => inner => name,
   new: typeVarMap => env => fail => x => {
     if (name in typeVarMap) {
       const $types = typeVarMap[name].types;
@@ -702,7 +702,7 @@ const UnaryTypeVariable = name => $1 => Object.assign (Object.create (Type$proto
   extractors: {$1: K ([])},
   types: {$1: $1},
   _test: K (K (true)),
-  format: (outer, inner) => (
+  format: outer => inner => (
     outer (name) +
     outer (' ') +
     when ($1.arity > 0)
@@ -722,7 +722,7 @@ const BinaryTypeVariable = name => $1 => $2 => Object.assign (Object.create (Typ
   extractors: {$1: K ([]), $2: K ([])},
   types: {$1: $1, $2: $2},
   _test: K (K (true)),
-  format: (outer, inner) => (
+  format: outer => inner => (
     outer (name) +
     outer (' ') +
     when ($1.arity > 0)
@@ -746,7 +746,7 @@ const Function_ = types => Object.assign (Object.create (Type$prototype), {
   extractors: {$1: K ([]), $2: K ([])},
   types: {$1: types[0], $2: types[1]},
   _test: K (K (true)),
-  format: (outer, inner) => (
+  format: outer => inner => (
     when (types.length !== 2)
          (parenthesize (outer))
          (when (types[0].type === 'FUNCTION')
@@ -776,7 +776,7 @@ const RecordType = fields => {
       for (const k in x) delete missing[k];
       return isEmpty (missing);
     },
-    format: (outer, inner) => {
+    format: outer => inner => {
       if (isEmpty (keys)) return outer ('{}');
       const reprs = Z.map (k => {
         const t = fields[k];
@@ -821,7 +821,7 @@ const NamedRecordType = name => url => supertypes => fields => {
       if (!(isEmpty (missing))) return false;
       return keys.every (k => fields[k]._test (env) (x[k]));
     },
-    format: (outer, inner) => outer (name),
+    format: outer => inner => outer (name),
     new: typeVarMap => env => fail => x => {
       if (x == null) fail (InvalidValue ([]) (x));
       const missing = {};
