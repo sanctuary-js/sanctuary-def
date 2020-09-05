@@ -642,7 +642,7 @@ const Unchecked = s => Object.assign (Object.create (Type$prototype), {
   blah: {},
   _test: K (K (true)),
   format: outer => K (outer (s)),
-  new: K (env => index => propPath => fail => x => x),
+  new: ctx => ctx.value,
 });
 
 $.Inconsistent = Object.assign (Object.create (Type$prototype), {
@@ -749,10 +749,10 @@ const EnumType = name => url => members => Object.assign (Object.create (Type$pr
   blah: {},
   _test: env => x => memberOf (members) (x),
   format: outer => K (outer (name)),
-  new: K (env => index => propPath => fail => x => {
-    if (memberOf (members) (x)) return x;
-    fail (InvalidValue ([]) (x));
-  }),
+  new: ctx => {
+    if (memberOf (members) (ctx.value)) return ctx.value;
+    ctx.fail (InvalidValue ([]) (ctx.value));
+  },
 });
 
 const TypeVariable = name => Object.assign (Object.create (Type$prototype), {
@@ -764,31 +764,31 @@ const TypeVariable = name => Object.assign (Object.create (Type$prototype), {
   blah: {},
   _test: K (K (true)),
   format: outer => K (outer (name)),
-  new: typeVarMap => env => index => propPath => fail => x => {
-    if (name in typeVarMap) {
-      const $types = typeVarMap[name].types;
+  new: ctx => {
+    if (name in ctx.typeVarMap) {
+      const $types = ctx.typeVarMap[name].types;
       for (let idx = $types.length - 1; idx >= 0; idx -= 1) {
-        if (!(test (env) ($types[idx]) (x))) {
+        if (!(test (ctx.env) ($types[idx]) (ctx.value))) {
           $types.splice (idx, 1);
         }
       }
-      const key = JSON.stringify ([index].concat (propPath));
-      if (Object.prototype.hasOwnProperty.call (typeVarMap[name].valuesByPath, key)) {
-        typeVarMap[name].valuesByPath[key].push (x);
+      const key = JSON.stringify ([ctx.index].concat (ctx.propPath));
+      if (Object.prototype.hasOwnProperty.call (ctx.typeVarMap[name].valuesByPath, key)) {
+        ctx.typeVarMap[name].valuesByPath[key].push (ctx.value);
       } else {
-        typeVarMap[name].valuesByPath[key] = [x];
+        ctx.typeVarMap[name].valuesByPath[key] = [ctx.value];
       }
       if ($types.length === 0) {
-        fail (TypeVariableConstraintViolation ([]) (typeVarMap[name].valuesByPath));
+        ctx.fail (TypeVariableConstraintViolation ([]) (ctx.typeVarMap[name].valuesByPath));
       }
     } else {
-      const key = JSON.stringify ([index].concat (propPath));
-      typeVarMap[name] = {
-        types: Z.filter (t => t.arity >= 0 && test (env) (t) (x), env),
-        valuesByPath: {[key]: [x]},
+      const key = JSON.stringify ([ctx.index].concat (ctx.propPath));
+      ctx.typeVarMap[name] = {
+        types: Z.filter (t => t.arity >= 0 && test (ctx.env) (t) (ctx.value), ctx.env),
+        valuesByPath: {[key]: [ctx.value]},
       };
     }
-    return x;
+    return ctx.value;
   },
 });
 
@@ -809,7 +809,7 @@ const UnaryTypeVariable = name => $1 => Object.assign (Object.create (Type$proto
          (parenthesize (outer))
          (inner ('$1') (show ($1)))
   ),
-  new: typeVarMap => env => index => propPath => fail => x => x,
+  new: ctx => ctx.value,
 });
 
 const BinaryTypeVariable = name => $1 => $2 => Object.assign (Object.create (Type$prototype), {
@@ -888,21 +888,23 @@ const RecordType = fields => {
       }, keys);
       return wrap (outer ('{')) (outer (' }')) (joinWith (outer (','), reprs));
     },
-    new: typeVarMap => env => index => propPath => fail => x => {
-      if (x == null) fail (InvalidValue ([]) (x));
+    new: ctx => {
+      if (ctx.value == null) ctx.fail (InvalidValue ([]) (ctx.value));
       const missing = {};
       keys.forEach (k => { missing[k] = k; });
-      for (const k in x) delete missing[k];
-      if (!(isEmpty (missing))) fail (InvalidValue ([]) (x));
+      for (const k in ctx.value) delete missing[k];
+      if (!(isEmpty (missing))) ctx.fail (InvalidValue ([]) (ctx.value));
       keys.forEach (k => {
-        fields[k].new (typeVarMap)
-                      (env)
-                      (index)
-                      ([k, ...propPath])
-                      (myError => fail (prepend (k) (myError)))
-                      (x[k]);
+        fields[k].new ({
+          typeVarMap: ctx.typeVarMap,
+          env: ctx.env,
+          index: ctx.index,
+          propPath: [k, ...ctx.propPath],
+          fail: myError => ctx.fail (prepend (k) (myError)),
+          value: ctx.value[k],
+        });
       });
-      return x;
+      return ctx.value;
     },
   });
 };
@@ -928,21 +930,23 @@ const NamedRecordType = name => url => supertypes => fields => {
       return keys.every (k => fields[k]._test (env) (x[k]));
     },
     format: outer => K (outer (name)),
-    new: typeVarMap => env => index => propPath => fail => x => {
-      if (x == null) fail (InvalidValue ([]) (x));
+    new: ctx => {
+      if (ctx.value == null) ctx.fail (InvalidValue ([]) (ctx.value));
       const missing = {};
       keys.forEach (k => { missing[k] = k; });
-      for (const k in x) delete missing[k];
-      if (!(isEmpty (missing))) fail (InvalidValue ([]) (x));
+      for (const k in ctx.value) delete missing[k];
+      if (!(isEmpty (missing))) ctx.fail (InvalidValue ([]) (ctx.value));
       keys.forEach (k => {
-        fields[k].new (typeVarMap)
-                      (env)
-                      (index)
-                      ([k, ...propPath])
-                      (myError => fail (InvalidValue ([]) (x)))
-                      (x[k]);
+        fields[k].new ({
+          typeVarMap: ctx.typeVarMap,
+          env: ctx.env,
+          index: ctx.index,
+          propPath: [k, ...ctx.propPath],
+          fail: myError => ctx.fail (InvalidValue ([]) (ctx.value)),
+          value: ctx.value[k],
+        });
       });
-      return x;
+      return ctx.value;
     },
   });
 };
@@ -956,7 +960,7 @@ $.Void = Object.assign (
                 ([])
                 (x => false),
   {
-    new: K (env => index => propPath => fail => x => TK),
+    new: ctx => TK,
   }
 );
 
@@ -966,7 +970,7 @@ $.Any = Object.assign (
                 ([])
                 (x => true),
   {
-    new: K (env => index => propPath => fail => x => x),
+    new: ctx => ctx.value,
   }
 );
 
@@ -976,10 +980,10 @@ $.AnyFunction = Object.assign (
                 ([])
                 (x => typeof x === 'function'),
   {
-    new: K (env => index => propPath => fail => x => {
-      if (typeof x === 'function') return x;
-      fail (InvalidValue ([]) (x));
-    }),
+    new: ctx => {
+      if (typeof ctx.value === 'function') return ctx.value;
+      ctx.fail (InvalidValue ([]) (ctx.value));
+    },
   }
 );
 
@@ -989,7 +993,7 @@ $.Arguments = Object.assign (
                 ([])
                 (x => Object.prototype.toString.call (x) === '[object Arguments]'),
   {
-    new: K (env => index => propPath => fail => x => TK),
+    new: ctx => TK,
   }
 );
 
@@ -999,10 +1003,10 @@ $.Boolean = Object.assign (
                 ([])
                 (x => typeof x === 'boolean'),
   {
-    new: K (env => index => propPath => fail => x => {
-      if (typeof x === 'boolean') return x;
-      fail (InvalidValue ([]) (x));
-    }),
+    new: ctx => {
+      if (typeof ctx.value === 'boolean') return ctx.value;
+      ctx.fail (InvalidValue ([]) (ctx.value));
+    },
   }
 );
 
@@ -1012,7 +1016,7 @@ $.Buffer = Object.assign (
                 ([])
                 (x => typeof Buffer !== 'undefined' && Buffer.isBuffer (x)),
   {
-    new: K (env => index => propPath => fail => x => TK),
+    new: ctx => TK,
   }
 );
 
@@ -1022,7 +1026,7 @@ $.Date = Object.assign (
                 ([])
                 (x => Object.prototype.toString.call (x) === '[object Date]'),
   {
-    new: K (env => index => propPath => fail => x => x),
+    new: ctx => ctx.value,
   }
 );
 
@@ -1032,10 +1036,10 @@ $.ValidDate = Object.assign (
                 ([$.Date])
                 (x => !(isNaN (Number (x)))),
   {
-    new: K (env => index => propPath => fail => x => {
-      if (!(isNaN (Number (x)))) return x;
-      fail (InvalidValue ([]) (x));
-    }),
+    new: ctx => {
+      if (!(isNaN (Number (ctx.value)))) return ctx.value;
+      ctx.fail (InvalidValue ([]) (ctx.value));
+    },
   }
 );
 
@@ -1047,7 +1051,7 @@ const Descending = $1 => Object.assign (
               (I)
               ($1),
   {
-    new: K (env => index => propPath => fail => x => TK),
+    new: ctx => TK,
   }
 );
 
@@ -1061,24 +1065,28 @@ const Either = $1 => $2 => Object.assign (
                ($1)
                ($2),
   {
-    new: typeVarMap => env => index => propPath => fail => x => {
-      if (type (x) !== 'sanctuary-either/Either@1') fail (InvalidValue ([]) (x));
-      if (x.isLeft) {
-        $1.new (typeVarMap)
-               (env)
-               (index)
-               (['$1', ...propPath])
-               (myError => fail (prepend ('$1') (myError)))
-               (x.value);
+    new: ctx => {
+      if (type (ctx.value) !== 'sanctuary-either/Either@1') ctx.fail (InvalidValue ([]) (ctx.value));
+      if (ctx.value.isLeft) {
+        $1.new ({
+          typeVarMap: ctx.typeVarMap,
+          env: ctx.env,
+          index: ctx.index,
+          propPath: ['$1', ...ctx.propPath],
+          fail: myError => ctx.fail (prepend ('$1') (myError)),
+          value: ctx.value.value,
+        });
       } else {
-        $2.new (typeVarMap)
-               (env)
-               (index)
-               (['$2', ...propPath])
-               (myError => fail (prepend ('$2') (myError)))
-               (x.value);
+        $2.new ({
+          typeVarMap: ctx.typeVarMap,
+          env: ctx.env,
+          index: ctx.index,
+          propPath: ['$2', ...ctx.propPath],
+          fail: myError => ctx.fail (prepend ('$2') (myError)),
+          value: ctx.value.value
+        });
       }
-      return x;
+      return ctx.value;
     },
   }
 );
@@ -1089,7 +1097,7 @@ $.Error = Object.assign (
                 ([])
                 (x => Object.prototype.toString.call (x) === '[object Error]'),
   {
-    new: K (env => index => propPath => fail => x => TK),
+    new: ctx => TK,
   }
 );
 
@@ -1099,7 +1107,7 @@ $.HtmlElement = Object.assign (
                 ([])
                 (x => /^\[object HTML.+Element\]$/.test (Object.prototype.toString.call (x))),
   {
-    new: K (env => index => propPath => fail => x => TK),
+    new: ctx => TK,
   }
 );
 
@@ -1111,7 +1119,7 @@ const Identity = $1 => Object.assign (
               (I)
               ($1),
   {
-    new: K (env => index => propPath => fail => x => TK),
+    new: ctx => TK,
   }
 );
 
@@ -1125,7 +1133,7 @@ const JsMap = $1 => $2 => Object.assign (
                ($1)
                ($2),
   {
-    new: K (env => index => propPath => fail => x => TK),
+    new: ctx => TK,
   }
 );
 
@@ -1137,7 +1145,7 @@ const JsSet = $1 => Object.assign (
               (jsSet => Array.from (jsSet.values ()))
               ($1),
   {
-    new: K (env => index => propPath => fail => x => TK),
+    new: ctx => TK,
   }
 );
 
@@ -1149,10 +1157,10 @@ const Maybe = $1 => Object.assign (
               (I)
               ($1),
   {
-    new: K (env => index => propPath => fail => x => {
-      if (type (x) === 'sanctuary-maybe/Maybe@1') return x;
-      fail (InvalidValue ([]) (x));
-    }),
+    new: ctx => {
+      if (type (ctx.value) === 'sanctuary-maybe/Maybe@1') return ctx.value;
+      ctx.fail (InvalidValue ([]) (ctx.value));
+    },
   }
 );
 
@@ -1162,7 +1170,7 @@ $.Module = Object.assign (
                 ([])
                 (x => Object.prototype.toString.call (x) === '[object Module]'),
   {
-    new: K (env => index => propPath => fail => x => TK),
+    new: ctx => TK,
   }
 );
 
@@ -1174,17 +1182,19 @@ const NonEmpty = $1 => Object.assign (
               (monoid => [monoid])
               ($1),
   {
-    new: typeVarMap => env => index => propPath => fail => x => {
-      if (!(Z.Monoid.test (x) && Z.Setoid.test (x) && !(Z.equals (x, Z.empty (x.constructor))))) {
-        fail (InvalidValue ([]) (x));
+    new: ctx => {
+      if (!(Z.Monoid.test (ctx.value) && Z.Setoid.test (ctx.value) && !(Z.equals (ctx.value, Z.empty (ctx.value.constructor))))) {
+        ctx.fail (InvalidValue ([]) (ctx.value));
       }
-      $1.new (typeVarMap)
-             (env)
-             (index)
-             (['$1', ...propPath])
-             (myError => fail (prepend ('$1') (myError)))
-             (x);
-      return x;
+      $1.new ({
+        typeVarMap: ctx.typeVarMap,
+        env: ctx.env,
+        index: ctx.index,
+        propPath: ['$1', ...ctx.propPath],
+        fail: myError => ctx.fail (prepend ('$1') (myError)),
+        value: ctx.value,
+      });
+      return ctx.value;
     },
   }
 );
@@ -1195,10 +1205,10 @@ $.Null = Object.assign (
                 ([])
                 (x => Object.prototype.toString.call (x) === '[object Null]'),
   {
-    new: K (env => index => propPath => fail => x => {
-      if (x === null) return x;
-      fail (InvalidValue ([]) (x));
-    }),
+    new: ctx => {
+      if (ctx.value === null) return ctx.value;
+      ctx.fail (InvalidValue ([]) (ctx.value));
+    },
   }
 );
 
@@ -1210,7 +1220,7 @@ const Nullable = $1 => Object.assign (
               (nullable => nullable === null ? [] : [nullable])
               ($1),
   {
-    new: K (env => index => propPath => fail => x => x),
+    new: ctx => ctx.value,
   }
 );
 
@@ -1220,10 +1230,10 @@ $.Number = Object.assign (
                 ([])
                 (x => typeof x === 'number'),
   {
-    new: K (env => index => propPath => fail => x => {
-      if (typeof x === 'number') return x;
-      fail (InvalidValue ([]) (x));
-    }),
+    new: ctx => {
+      if (typeof ctx.value === 'number') return ctx.value;
+      ctx.fail (InvalidValue ([]) (ctx.value));
+    },
   }
 );
 
@@ -1233,10 +1243,10 @@ $.ValidNumber = Object.assign (
                 ([$.Number])
                 (x => !(isNaN (x))),
   {
-    new: K (env => index => propPath => fail => x => {
-      if (!(isNaN (x))) return x;
-      fail (InvalidValue ([]) (x));
-    }),
+    new: ctx => {
+      if (!(isNaN (ctx.value))) return ctx.value;
+      ctx.fail (InvalidValue ([]) (ctx.value));
+    },
   }
 );
 
@@ -1246,7 +1256,7 @@ $.PositiveNumber = Object.assign (
                 ([$.Number])
                 (x => x > 0),
   {
-    new: K (env => index => propPath => fail => x => TK),
+    new: ctx => TK,
   }
 );
 
@@ -1256,7 +1266,7 @@ $.NegativeNumber = Object.assign (
                 ([$.Number])
                 (x => x < 0),
   {
-    new: K (env => index => propPath => fail => x => TK),
+    new: ctx => TK,
   }
 );
 
@@ -1266,7 +1276,7 @@ $.NonZeroValidNumber = Object.assign (
                 ([$.ValidNumber])
                 (x => x !== 0),
   {
-    new: K (env => index => propPath => fail => x => TK),
+    new: ctx => TK,
   }
 );
 
@@ -1276,7 +1286,7 @@ $.FiniteNumber = Object.assign (
                 ([$.ValidNumber])
                 (isFinite),
   {
-    new: K (env => index => propPath => fail => x => TK),
+    new: ctx => TK,
   }
 );
 
@@ -1286,10 +1296,10 @@ $.PositiveFiniteNumber = Object.assign (
                 ([$.FiniteNumber])
                 (x => x > 0),
   {
-    new: K (env => index => propPath => fail => x => {
-      if (x > 0) return x;
-      fail (InvalidValue ([]) (x));
-    }),
+    new: ctx => {
+      if (ctx.value > 0) return ctx.value;
+      ctx.fail (InvalidValue ([]) (ctx.value));
+    },
   }
 );
 
@@ -1299,7 +1309,7 @@ $.NegativeFiniteNumber = Object.assign (
                 ([$.FiniteNumber])
                 (x => x < 0),
   {
-    new: K (env => index => propPath => fail => x => TK),
+    new: ctx => TK,
   }
 );
 
@@ -1309,7 +1319,7 @@ $.NonZeroFiniteNumber = Object.assign (
                 ([$.FiniteNumber])
                 (x => x !== 0),
   {
-    new: K (env => index => propPath => fail => x => TK),
+    new: ctx => TK,
   }
 );
 
@@ -1319,10 +1329,10 @@ $.Integer = Object.assign (
                 ([$.ValidNumber])
                 (x => Math.floor (x) === x && x >= MIN_SAFE_INTEGER && x <= MAX_SAFE_INTEGER),
   {
-    new: K (env => index => propPath => fail => x => {
-      if (Math.floor (x) === x && x >= MIN_SAFE_INTEGER && x <= MAX_SAFE_INTEGER) return x;
-      fail (InvalidValue ([]) (x));
-    }),
+    new: ctx => {
+      if (Math.floor (ctx.value) === ctx.value && ctx.value >= MIN_SAFE_INTEGER && ctx.value <= MAX_SAFE_INTEGER) return ctx.value;
+      ctx.fail (InvalidValue ([]) (ctx.value));
+    },
   }
 );
 
@@ -1332,7 +1342,7 @@ $.NonZeroInteger = Object.assign (
                 ([$.Integer])
                 (x => x !== 0),
   {
-    new: K (env => index => propPath => fail => x => TK),
+    new: ctx => TK,
   }
 );
 
@@ -1342,7 +1352,7 @@ $.NonNegativeInteger = Object.assign (
                 ([$.Integer])
                 (x => x >= 0),
   {
-    new: K (env => index => propPath => fail => x => TK),
+    new: ctx => TK,
   }
 );
 
@@ -1352,7 +1362,7 @@ $.PositiveInteger = Object.assign (
                 ([$.Integer])
                 (x => x > 0),
   {
-    new: K (env => index => propPath => fail => x => TK),
+    new: ctx => TK,
   }
 );
 
@@ -1362,7 +1372,7 @@ $.NegativeInteger = Object.assign (
                 ([$.Integer])
                 (x => x < 0),
   {
-    new: K (env => index => propPath => fail => x => TK),
+    new: ctx => TK,
   }
 );
 
@@ -1372,7 +1382,7 @@ $.Object = Object.assign (
                 ([])
                 (x => type (x) === 'Object'),
   {
-    new: K (env => index => propPath => fail => x => TK),
+    new: ctx => TK,
   }
 );
 
@@ -1386,10 +1396,10 @@ const Pair = $1 => $2 => Object.assign (
                ($1)
                ($2),
   {
-    new: K (env => index => propPath => fail => x => {
-      if (type (x) === 'sanctuary-pair/Pair@1') return x;
-      fail (InvalidValue ([]) (x));
-    }),
+    new: ctx => {
+      if (type (ctx.value) === 'sanctuary-pair/Pair@1') return ctx.value;
+      ctx.fail (InvalidValue ([]) (ctx.value));
+    },
   }
 );
 
@@ -1399,7 +1409,7 @@ $.RegExp = Object.assign (
                 ([])
                 (x => Object.prototype.toString.call (x) === '[object RegExp]'),
   {
-    new: K (env => index => propPath => fail => x => TK),
+    new: ctx => TK,
   }
 );
 
@@ -1409,7 +1419,7 @@ $.GlobalRegExp = Object.assign (
                 ([$.RegExp])
                 (regex => regex.global),
   {
-    new: K (env => index => propPath => fail => x => TK),
+    new: ctx => TK,
   }
 );
 
@@ -1419,7 +1429,7 @@ $.NonGlobalRegExp = Object.assign (
                 ([$.RegExp])
                 (regex => !regex.global),
   {
-    new: K (env => index => propPath => fail => x => TK),
+    new: ctx => TK,
   }
 );
 
@@ -1429,10 +1439,10 @@ $.String = Object.assign (
                 ([])
                 (x => typeof x === 'string'),
   {
-    new: K (env => index => propPath => fail => x => {
-      if (typeof x !== 'string') fail (InvalidValue ([]) (x));
-      return x;
-    }),
+    new: ctx => {
+      if (typeof ctx.value !== 'string') ctx.fail (InvalidValue ([]) (ctx.value));
+      return ctx.value;
+    },
   }
 );
 
@@ -1442,7 +1452,7 @@ $.Symbol = Object.assign (
                 ([])
                 (x => typeof x === 'symbol'),
   {
-    new: K (env => index => propPath => fail => x => TK),
+    new: ctx => TK,
   }
 );
 
@@ -1452,7 +1462,7 @@ $.RegexFlags = Object.assign (
                 ([$.String])
                 (s => /^g?i?m?$/.test (s)),
   {
-    new: K (env => index => propPath => fail => x => TK),
+    new: ctx => TK,
   }
 );
 
@@ -1464,18 +1474,20 @@ const StrMap = $1 => Object.assign (
               (I)
               ($1),
   {
-    new: typeVarMap => env => index => propPath => fail => x => {
-      if (x == null) fail (InvalidValue ([]) (x));
-      const keys = Object.keys (x);
+    new: ctx => {
+      if (ctx.value == null) ctx.fail (InvalidValue ([]) (ctx.value));
+      const keys = Object.keys (ctx.value);
       for (const k of keys) {
-        $1.new (typeVarMap)
-               (env)
-               (index)
-               (['$1', propPath])
-               (myError => fail (prepend ('$1') (myError)))
-               (x[k]);
+        $1.new ({
+          typeVarMap: ctx.typeVarMap,
+          env: ctx.env,
+          index: ctx.index,
+          propPath: ['$1', ...ctx.propPath],
+          fail: myError => ctx.fail (prepend ('$1') (myError)),
+          value: ctx.value[k],
+        });
       }
-      return x;
+      return ctx.value;
     },
   }
 );
@@ -1486,10 +1498,10 @@ $.Type = Object.assign (
                 ([])
                 (x => type (x) === 'sanctuary-def/Type@1'),
   {
-    new: K (env => index => propPath => fail => x => {
-      if (type (x) === 'sanctuary-def/Type@1') return x;
-      fail (InvalidValue ([]) (x));
-    }),
+    new: ctx => {
+      if (type (ctx.value) === 'sanctuary-def/Type@1') return ctx.value;
+      ctx.fail (InvalidValue ([]) (ctx.value));
+    },
   }
 );
 
@@ -1499,7 +1511,7 @@ $.TypeClass = Object.assign (
                 ([])
                 (x => type (x) === 'sanctuary-type-classes/TypeClass@1'),
   {
-    new: K (env => index => propPath => fail => x => x),
+    new: ctx => ctx.value,
   }
 );
 
@@ -1509,7 +1521,7 @@ $.Undefined = Object.assign (
                 ([])
                 (x => Object.prototype.toString.call (x) === '[object Undefined]'),
   {
-    new: K (env => index => propPath => fail => x => TK),
+    new: ctx => TK,
   }
 );
 
@@ -1522,19 +1534,21 @@ $.Array = $1 => (
                 (I)
                 ($1),
     {
-      new: typeVarMap => env => index => propPath => fail => xs => {
-        if (!(Array.isArray (xs))) fail (InvalidValue ([]) (xs));
+      new: ctx => {
+        if (!(Array.isArray (ctx.value))) ctx.fail (InvalidValue ([]) (ctx.value));
 
-        for (const x of xs) {
-          $1.new (typeVarMap)
-                 (env)
-                 (index)
-                 (['$1', ...propPath])
-                 (myError => fail (prepend ('$1') (myError)))
-                 (x);
+        for (const x of ctx.value) {
+          $1.new ({
+            typeVarMap: ctx.typeVarMap,
+            env: ctx.env,
+            index: ctx.index,
+            propPath: ['$1', ...ctx.propPath],
+            fail: myError => ctx.fail (prepend ('$1') (myError)),
+            value: x,
+          });
         }
 
-        return xs;
+        return ctx.value;
       },
     }
   )
@@ -1546,7 +1560,7 @@ $.Array0 = Object.assign (
                 ([$.Array ($.Unknown)])
                 (xs => xs.length === 0),
   {
-    new: K (env => index => propPath => fail => x => TK),
+    new: ctx => TK,
   }
 );
 
@@ -1558,7 +1572,7 @@ const Array1 = $1 => Object.assign (
               (xs => [xs[0]])
               ($1),
   {
-    new: K (env => index => propPath => fail => x => TK),
+    new: ctx => TK,
   }
 );
 
@@ -1572,10 +1586,10 @@ const Array2 = $1 => $2 => Object.assign (
                ($1)
                ($2),
   {
-    new: K (env => index => propPath => fail => x => {
-      if (x.length === 2) return x;
-      fail (InvalidValue ([]) (x));
-    }),
+    new: ctx => {
+      if (ctx.value.length === 2) return ctx.value;
+      ctx.fail (InvalidValue ([]) (ctx.value));
+    },
   }
 );
 
@@ -1583,15 +1597,15 @@ const Fn = $1 => $2 => (
   Object.assign (
     Function_ ([$1, $2]),
     {
-      new: typeVarMap => env => index => propPath => fail => f => {
-        if (typeof f !== 'function') fail (InvalidValue ([]) (f));
+      new: ctx => {
+        if (typeof ctx.value !== 'function') ctx.fail (InvalidValue ([]) (ctx.value));
         return (...args) => {
           if (args.length !== 1) {
-            fail (InvalidArgumentsCount ([]) (1) (args));
+            ctx.fail (InvalidArgumentsCount ([]) (1) (args));
           }
           const [x] = args;
-          const i = $1.new (typeVarMap) (env) (index) (['$1', ...propPath]) (myError => fail (prepend ('$1') (myError))) (x);
-          const o = $2.new (typeVarMap) (env) (index) (['$2', ...propPath]) (myError => fail (prepend ('$2') (myError))) (f (x));
+          const i = $1.new ({typeVarMap: ctx.typeVarMap, env: ctx.env, index: ctx.index, propPath: ['$1', ...ctx.propPath], fail: myError => ctx.fail (prepend ('$1') (myError)), value: x});
+          const o = $2.new ({typeVarMap: ctx.typeVarMap, env: ctx.env, index: ctx.index, propPath: ['$2', ...ctx.propPath], fail: myError => ctx.fail (prepend ('$2') (myError)), value: ctx.value (x)});
           return o;
         };
       },
@@ -1746,11 +1760,14 @@ const create = opts => {
         }
 
         const x = impl ();
-        types[0].new (Object.create (null))
-                     (opts.env)
-                     (0)
-                     ([])
-                     (myError => TK);
+        types[0].new ({
+          typeVarMap: Object.create (null),
+          env: opts.env,
+          index: 0,
+          propPath: [],
+          fail: myError => TK,
+          value: x,
+        });
         return x;
       };
       const signature = typeSignature (typeInfo);
@@ -1768,52 +1785,56 @@ const create = opts => {
           }
 
           const typeVarMap = Object.create (_typeVarMap);
-          const x = input.new
-            (typeVarMap)
-            (opts.env)
-            (index)
-            ([])
-            (myError => {
-               switch (myError.tagName) {
-                 case 'InvalidValue':
-                   throw invalidValue (
-                     opts.env,
-                     typeInfo,
-                     index,
-                     myError.propPath,
-                     myError.value
-                   );
-                 case 'TypeVariableConstraintViolation':
-                   throw typeVarConstraintViolation (
-                     opts.env,
-                     typeInfo,
-                     index,
-                     myError.propPath,
-                     myError.valuesByPath//typeVarMap$[typeVarName].valuesByPath
-                   )
-               }
-             })
-            (_x);
+          const x = input.new ({
+            typeVarMap,
+            env: opts.env,
+            index,
+            propPath: [],
+            fail: myError => {
+              switch (myError.tagName) {
+                case 'InvalidValue':
+                  throw invalidValue (
+                    opts.env,
+                    typeInfo,
+                    index,
+                    myError.propPath,
+                    myError.value
+                  );
+                case 'TypeVariableConstraintViolation':
+                  throw typeVarConstraintViolation (
+                    opts.env,
+                    typeInfo,
+                    index,
+                    myError.propPath,
+                    myError.valuesByPath//typeVarMap$[typeVarName].valuesByPath
+                  )
+              }
+            },
+            value: _x,
+          });
           return run (typeVarMap) (f (x));
         };
         const signature = typeSignature (typeInfo);
         wrapped[inspect] = wrapped.toString = () => signature;
         return wrapped;
       },
-      typeVarMap => (
-        types[types.length - 1].new (typeVarMap)
-                                    (opts.env)
-                                    (0)
-                                    ([])
-                                    (myError => {
-                                       throw invalidValue (
-                                         opts.env,
-                                         typeInfo,
-                                         types.length - 1,
-                                         myError.propPath,
-                                         myError.value
-                                       );
-                                     })
+      typeVarMap => value => (
+        types[types.length - 1].new ({
+          typeVarMap,
+          env: opts.env,
+          index: 0,
+          propPath: [],
+          fail: myError => {
+            throw invalidValue (
+              opts.env,
+              typeInfo,
+              types.length - 1,
+              myError.propPath,
+              myError.value
+            );
+          },
+          value,
+        })
       )
     ) (Object.create (null)) (impl);
   };
