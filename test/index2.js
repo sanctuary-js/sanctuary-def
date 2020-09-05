@@ -229,7 +229,7 @@ See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Function for 
   });
 
   test ('returns a function whose length is zero or one', () => {
-///     eq ($0.length) (0);
+    eq ($0.length) (0);
     eq ($1.length) (1);
     eq ($2.length) (1);
     eq ($3.length) (1);
@@ -247,7 +247,7 @@ See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Function for 
     eq (util.inspect (add)) ('add :: Number -> Number -> Number');
     eq (show (add)) ('add :: Number -> Number -> Number');
 
-/// eq (show ($0)) ('$0 :: () -> Array a');
+    eq (show ($0)) ('$0 :: () -> Array a');
     eq (show ($1)) ('$1 :: a -> Array a');
     eq (show ($2)) ('$2 :: a -> a -> Array a');
     eq (show ($3)) ('$3 :: a -> a -> a -> Array a');
@@ -255,7 +255,7 @@ See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Function for 
   });
 
   test ('returns a curried function', () => {
-/// eq ($0 ()) ([]);
+    eq ($0 ()) ([]);
     eq ($1 (1)) ([1]);
     eq ($2 (1) (2)) ([1, 2]);
     eq ($3 (1) (2) (3)) ([1, 2, 3]);
