@@ -363,7 +363,7 @@ const _determineActualTypes = (
     var expandUnknown2 = expandUnknown4 (seen$) (value);
     return Z.chain (function(t) {
       return (
-        (validate (env) (t) (value)).isLeft ?
+        validate (env) (t) (value) != null ?
           [] :
         t.type === 'UNARY' ?
           Z.map (fromUnaryType (t),
@@ -419,13 +419,13 @@ const satisfactoryTypes = (
 
   for (var idx = 0; idx < values.length; idx += 1) {
     var result = validate (env) (expType) (values[idx]);
-    if (result.isLeft) {
+    if (result != null) {
       return Left (function() {
         return invalidValue (env,
                              typeInfo,
                              index,
-                             Z.concat (propPath, result.value.propPath),
-                             result.value.value);
+                             Z.concat (propPath, result.propPath),
+                             result.value);
       });
     }
   }
@@ -606,20 +606,18 @@ const extract = key => type => x => {
 
 const validate = env => type => x => {
   if (!(Z.all (t => t._test (env) (x), ancestors (type)))) {
-    return Left ({value: x, propPath: []});
+    return {value: x, propPath: []};
   }
   for (const k of Object.keys (type.blah)) {
     const t = type.blah[k].type;
     const ys = extract (k) (type) (x);
     for (const y of ys) {
       const result = validate (env) (t) (y);
-      if (result.isLeft) {
-        return Left ({value: result.value.value,
-                      propPath: Z.prepend (k, result.value.propPath)});
+      if (result != null) {
+        return {value: result.value, propPath: Z.prepend (k, result.propPath)};
       }
     }
   }
-  return Right (x);
 };
 
 $.Unknown = Object.assign (Object.create (Type$prototype), {
