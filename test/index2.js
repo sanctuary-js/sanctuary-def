@@ -531,20 +531,20 @@ See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Number for in
         ([a, b, $.Either ($.Array ($.Array (a))) ($.Array (b)), a])
         (x => y => z => x);
 
-///     throws (() => { a00 (1) ('a'); })
-///            (new TypeError (`Type-variable constraint violation
-/// 
-/// a00 :: a -> a -> a
-///        ^    ^
-///        1    2
-/// 
-/// 1)  1 :: Number
-/// 
-/// 2)  "a" :: String
-/// 
-/// Since there is no type of which all the above values are members, the type-variable constraint has been violated.
-/// `));
-/// 
+    throws (() => { a00 (1) ('a'); })
+           (new TypeError (`Type-variable constraint violation
+
+a00 :: a -> a -> a
+       ^    ^
+       1    2
+
+1)  1 :: Number
+
+2)  "a" :: String
+
+Since there is no type of which all the above values are members, the type-variable constraint has been violated.
+`));
+
 ///     throws (() => { a00 (1) (['a']); })
 ///            (new TypeError (`Type-variable constraint violation
 /// 
