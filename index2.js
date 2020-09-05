@@ -107,7 +107,7 @@ function _underline(
   formatType3     // :: Type -> Array String -> String -> String
 ) {
   return formatType3 (t) (propPath) (t.format (_) (function(k) {
-    return K (_underline (t.types[k],
+    return K (_underline (t.blah[k].type,
                           Z.concat (propPath, [k]),
                           formatType3));
   }));
@@ -143,7 +143,7 @@ function underline(
 
 //  resolvePropPath :: (Type, Array String) -> Type
 function resolvePropPath(t, propPath) {
-  return Z.reduce (function(t, prop) { return t.types[prop]; },
+  return Z.reduce (function(t, prop) { return t.blah[prop].type; },
                    t,
                    propPath);
 }
@@ -271,11 +271,11 @@ const _determineActualTypes = (
           [] :
         t.type === 'UNARY' ?
           Z.map (fromUnaryType (t),
-                 expandUnknown2 (extract ('$1') (t)) (t.types.$1)) :
+                 expandUnknown2 (extract ('$1') (t)) (t.blah.$1.type)) :
         t.type === 'BINARY' ?
           Z.lift2 (fromBinaryType (t),
-                   expandUnknown2 (extract ('$1') (t)) (t.types.$1),
-                   expandUnknown2 (extract ('$2') (t)) (t.types.$2)) :
+                   expandUnknown2 (extract ('$1') (t)) (t.blah.$1.type),
+                   expandUnknown2 (extract ('$2') (t)) (t.blah.$2.type)) :
         // else
           [t]
       );
@@ -382,7 +382,7 @@ const satisfactoryTypes = (
                   return recur (env,
                                 typeInfo,
                                 r.typeVarMap,
-                                expType.types[k],
+                                expType.blah[k].type,
                                 index,
                                 Z.concat (propPath, [k]),
                                 [x]);
@@ -398,13 +398,13 @@ const satisfactoryTypes = (
           return {
             typeVarMap: result.typeVarMap,
             types: Z.map (fromUnaryType (expType),
-                          or (result.types, [expType.types.$1]))
+                          or (result.types, [expType.blah.$1.type]))
           };
         },
         recur (env,
                typeInfo,
                typeVarMap,
-               expType.types.$1,
+               expType.blah.$1.type,
                index,
                Z.concat (propPath, ['$1']),
                Z.chain (extract ('$1') (expType), values))
@@ -420,14 +420,14 @@ const satisfactoryTypes = (
               return {
                 typeVarMap: result.typeVarMap,
                 types: Z.lift2 (fromBinaryType (expType),
-                                or ($1s, [expType.types.$1]),
-                                or ($2s, [expType.types.$2]))
+                                or ($1s, [expType.blah.$1.type]),
+                                or ($2s, [expType.blah.$2.type]))
               };
             },
             recur (env,
                    typeInfo,
                    result.typeVarMap,
-                   expType.types.$2,
+                   expType.blah.$2.type,
                    index,
                    Z.concat (propPath, ['$2']),
                    Z.chain (extract ('$2') (expType), values))
@@ -436,7 +436,7 @@ const satisfactoryTypes = (
         recur (env,
                typeInfo,
                typeVarMap,
-               expType.types.$1,
+               expType.blah.$1.type,
                index,
                Z.concat (propPath, ['$1']),
                Z.chain (extract ('$1') (expType), values))
@@ -448,7 +448,7 @@ const satisfactoryTypes = (
           return recur (env,
                         typeInfo,
                         r.typeVarMap,
-                        expType.types[k],
+                        expType.blah[k].type,
                         index,
                         Z.concat (propPath, [k]),
                         Z.chain (extract (k) (expType), values));
@@ -477,7 +477,7 @@ const Type$prototype = {
       Z.equals (this.url, other.url) &&
       Z.equals (this.supertypes, other.supertypes) &&
       Z.equals (this.keys, other.keys) &&
-      Z.equals (this.types, other.types)
+      Z.all (k => Z.equals (this.blah[k].type, other.blah[k].type), this.keys)
     );
   },
 };
@@ -497,7 +497,7 @@ const validate = env => type => {
   return x => {
     if (!(test2 (x) (type))) return Left ({value: x, propPath: []});
     for (const k of type.keys) {
-      const t = type.types[k];
+      const t = type.blah[k].type;
       const ys = extract (k) (type) (x);
       for (const y of ys) {
         const result = validate (env) (t) (y);
@@ -519,7 +519,6 @@ $.Unknown = Object.assign (Object.create (Type$prototype), {
   arity: 0,
   blah: {},
   keys: [],
-  types: {},
   _test: K (K (true)),
   format: outer => K (outer ('Unknown')),
 });
@@ -532,7 +531,6 @@ const Unchecked = s => Object.assign (Object.create (Type$prototype), {
   arity: 0,
   blah: {},
   keys: [],
-  types: {},
   _test: K (K (true)),
   format: outer => K (outer (s)),
   new: K (env => fail => x => x),
@@ -546,7 +544,6 @@ $.Inconsistent = Object.assign (Object.create (Type$prototype), {
   arity: 0,
   blah: {},
   keys: [],
-  types: {},
   _test: K (K (false)),
   format: outer => K (outer ('???')),
 });
@@ -559,7 +556,6 @@ $.NoArguments = Object.assign (Object.create (Type$prototype), {
   arity: 0,
   blah: {},
   keys: [],
-  types: {},
   _test: K (K (true)),
   format: outer => K (outer ('()')),
 });
@@ -572,7 +568,6 @@ $.NullaryType = name => url => supertypes => test => Object.assign (Object.creat
   arity: 0,
   blah: {},
   keys: [],
-  types: {},
   _test: env => test,
   format: outer => K (outer (name)),
 });
@@ -587,7 +582,6 @@ $.UnaryType = name => url => supertypes => test => _1 => $1 => Object.assign (Ob
     $1: {type: $1, extract: _1},
   },
   keys: ['$1'],
-  types: {$1: $1},
   _test: K (test),
   format: outer => inner => (
     outer (name) +
@@ -618,7 +612,6 @@ $.BinaryType = name => url => supertypes => test => _1 => _2 => $1 => $2 => Obje
     $2: {type: $2, extract: _2},
   },
   keys: ['$1', '$2'],
-  types: {$1: $1, $2: $2},
   _test: K (test),
   format: outer => inner => (
     outer (name) +
@@ -651,7 +644,6 @@ const EnumType = name => url => members => Object.assign (Object.create (Type$pr
   arity: 0,
   blah: {},
   keys: [],
-  types: {},
   _test: env => x => memberOf (members) (x),
   format: outer => K (outer (name)),
   new: K (env => fail => x => {
@@ -668,7 +660,6 @@ const TypeVariable = name => Object.assign (Object.create (Type$prototype), {
   arity: 0,
   blah: {},
   keys: [],
-  types: {},
   _test: K (K (true)),
   format: outer => K (outer (name)),
   new: typeVarMap => env => fail => x => {
@@ -700,7 +691,6 @@ const UnaryTypeVariable = name => $1 => Object.assign (Object.create (Type$proto
     $1: {type: $1, extract: K ([])},
   },
   keys: ['$1'],
-  types: {$1: $1},
   _test: K (K (true)),
   format: outer => inner => (
     outer (name) +
@@ -722,7 +712,6 @@ const BinaryTypeVariable = name => $1 => $2 => Object.assign (Object.create (Typ
     $2: {type: $2, extract: K ([])},
   },
   keys: ['$1', '$2'],
-  types: {$1: $1, $2: $2},
   _test: K (K (true)),
   format: outer => inner => (
     outer (name) +
@@ -748,7 +737,6 @@ const Function_ = types => Object.assign (Object.create (Type$prototype), {
     $2: {type: types[1], extract: K ([])},
   },
   keys: ['$1', '$2'],
-  types: {$1: types[0], $2: types[1]},
   _test: K (K (true)),
   format: outer => inner => (
     when (types.length !== 2)
@@ -774,7 +762,6 @@ const RecordType = fields => {
       {}
     ),
     keys: keys,
-    types: keys.reduce ((types, k) => (types[k] = fields[k], types), {}),
     _test: env => x => {
       if (x == null) return false;
       const missing = {};
@@ -820,7 +807,6 @@ const NamedRecordType = name => url => supertypes => fields => {
       {}
     ),
     keys: keys,
-    types: keys.reduce ((types, k) => (types[k] = fields[k], types), {}),
     _test: env => x => {
       if (x == null) return false;
       const missing = {};
@@ -1524,7 +1510,7 @@ const label = label => s => {
 const typeVarNames = t => (
   Z.concat (
     t.type === 'VARIABLE' ? [t.name] : [],
-    Z.chain (k => typeVarNames (t.types[k]), t.keys)
+    Z.chain (k => typeVarNames (t.blah[k].type), t.keys)
   )
 );
 
