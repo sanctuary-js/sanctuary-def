@@ -709,7 +709,7 @@ $.UnaryType = name => url => supertypes => test => _1 => $1 => Object.assign (Ob
             value: x,
           });
         } else {
-          ctx.fail (prepend ('$1') (InvalidValue ([]) (x)));
+          ctx.fail (InvalidValue (['$1']) (x));
         }
       },
       undefined,
@@ -763,7 +763,7 @@ $.BinaryType = name => url => supertypes => test => _1 => _2 => $1 => $2 => Obje
             value: x,
           });
         } else {
-          ctx.fail (prepend ('$1') (InvalidValue ([]) (x)));
+          ctx.fail (InvalidValue (['$1']) (x));
         }
       },
       undefined,
@@ -781,7 +781,7 @@ $.BinaryType = name => url => supertypes => test => _1 => _2 => $1 => $2 => Obje
             value: x,
           });
         } else {
-          ctx.fail (prepend ('$2') (InvalidValue ([]) (x)));
+          ctx.fail (InvalidValue (['$2']) (x));
         }
       },
       undefined,
@@ -958,7 +958,7 @@ const RecordType = fields => {
             value: ctx.value[k],
           });
         } else {
-          ctx.fail (prepend (k) (InvalidValue ([]) (ctx.value[k])));
+          ctx.fail (InvalidValue ([k]) (ctx.value[k]));
         }
       });
       return ctx.value;
