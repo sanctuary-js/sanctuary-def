@@ -545,34 +545,34 @@ a00 :: a -> a -> a
 Since there is no type of which all the above values are members, the type-variable constraint has been violated.
 `));
 
-///     throws (() => { a00 (1) (['a']); })
-///            (new TypeError (`Type-variable constraint violation
-/// 
-/// a00 :: a -> a -> a
-///        ^    ^
-///        1    2
-/// 
-/// 1)  1 :: Number
-/// 
-/// 2)  ["a"] :: Array String
-/// 
-/// Since there is no type of which all the above values are members, the type-variable constraint has been violated.
-/// `));
-/// 
-///     throws (() => { a00 (1) (Just (1)); })
-///            (new TypeError (`Type-variable constraint violation
-/// 
-/// a00 :: a -> a -> a
-///        ^    ^
-///        1    2
-/// 
-/// 1)  1 :: Number
-/// 
-/// 2)  Just (1) :: Maybe Number
-/// 
-/// Since there is no type of which all the above values are members, the type-variable constraint has been violated.
-/// `));
-/// 
+    throws (() => { a00 (1) (['a']); })
+           (new TypeError (`Type-variable constraint violation
+
+a00 :: a -> a -> a
+       ^    ^
+       1    2
+
+1)  1 :: Number
+
+2)  ["a"] :: Array String
+
+Since there is no type of which all the above values are members, the type-variable constraint has been violated.
+`));
+
+    throws (() => { a00 (1) (Just (1)); })
+           (new TypeError (`Type-variable constraint violation
+
+a00 :: a -> a -> a
+       ^    ^
+       1    2
+
+1)  1 :: Number
+
+2)  Just (1) :: Maybe Number
+
+Since there is no type of which all the above values are members, the type-variable constraint has been violated.
+`));
+
 ///     throws (() => { a01 (1) (['a', 'b']); })
 ///            (new TypeError (`Type-variable constraint violation
 /// 

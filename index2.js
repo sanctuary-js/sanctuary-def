@@ -1364,7 +1364,7 @@ $.Object = Object.assign (
   $.NullaryType ('Object')
                 ('https://github.com/sanctuary-js/sanctuary-def/tree/v0.22.0#Object')
                 ([])
-                (x => Object.prototype.toString.call (x) === '[object Object]'),
+                (x => type (x) === 'Object'),
   {
     new: K (env => index => propPath => fail => x => TK),
   }
