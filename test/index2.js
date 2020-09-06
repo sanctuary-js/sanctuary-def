@@ -1160,19 +1160,19 @@ See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Type for info
 
     eq (foo ({x: 1, y: 2, z: 3})) ({x: 1, y: 2, z: 3});
 
-///     throws (() => { foo ({x: 'abc', y: 123}); })
-///            (new TypeError (`Type-variable constraint violation
-/// 
-/// foo :: { x :: a, y :: a } -> { x :: a, y :: a }
-///               ^       ^
-///               1       2
-/// 
-/// 1)  "abc" :: String
-/// 
-/// 2)  123 :: Number
-/// 
-/// Since there is no type of which all the above values are members, the type-variable constraint has been violated.
-/// `));
+    throws (() => { foo ({x: 'abc', y: 123}); })
+           (new TypeError (`Type-variable constraint violation
+
+foo :: { x :: a, y :: a } -> { x :: a, y :: a }
+              ^       ^
+              1       2
+
+1)  "abc" :: String
+
+2)  123 :: Number
+
+Since there is no type of which all the above values are members, the type-variable constraint has been violated.
+`));
 
     //    fooBarBaz :: { 'foo "bar" baz' :: Number } -> Number
     const fooBarBaz =
@@ -1381,19 +1381,19 @@ See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Type for info
     eq (toUpper (null)) (null);
     eq (toUpper ('abc')) ('ABC');
 
-///     throws (() => { toUpper (['abc']); })
-///            (new TypeError (`Invalid value
-/// 
-/// toUpper :: Nullable String -> Nullable String
-///                     ^^^^^^
-///                       1
-/// 
-/// 1)  ["abc"] :: Array String
-/// 
-/// The value at position 1 is not a member of ‘String’.
-/// 
-/// See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#String for information about the String type.
-/// `));
+    throws (() => { toUpper (['abc']); })
+           (new TypeError (`Invalid value
+
+toUpper :: Nullable String -> Nullable String
+                    ^^^^^^
+                      1
+
+1)  ["abc"] :: Array String
+
+The value at position 1 is not a member of ‘String’.
+
+See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#String for information about the String type.
+`));
 
     //    defaultTo :: a -> Nullable a -> a
     const defaultTo =
@@ -1405,19 +1405,19 @@ See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Type for info
     eq (defaultTo (0) (null)) (0);
     eq (defaultTo (0) (42)) (42);
 
-///     throws (() => { defaultTo (0) ('XXX'); })
-///            (new TypeError (`Type-variable constraint violation
-/// 
-/// defaultTo :: a -> Nullable a -> a
-///              ^             ^
-///              1             2
-/// 
-/// 1)  0 :: Number
-/// 
-/// 2)  "XXX" :: String
-/// 
-/// Since there is no type of which all the above values are members, the type-variable constraint has been violated.
-/// `));
+    throws (() => { defaultTo (0) ('XXX'); })
+           (new TypeError (`Type-variable constraint violation
+
+defaultTo :: a -> Nullable a -> a
+             ^             ^
+             1             2
+
+1)  0 :: Number
+
+2)  "XXX" :: String
+
+Since there is no type of which all the above values are members, the type-variable constraint has been violated.
+`));
 
     //    f :: Nullable a -> Nullable a
     const f =
@@ -2137,35 +2137,35 @@ See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#ValidDate for
     eq (keys ({x: 1, y: 2, z: 3})) (['x', 'y', 'z']);
     eq (keys (o)) (['x', 'y', 'z']);
 
-///     throws (() => { keys ({a: 1, b: 'XXX'}); })
-///            (new TypeError (`Type-variable constraint violation
-/// 
-/// keys :: StrMap a -> Array String
-///                ^
-///                1
-/// 
-/// 1)  1 :: Number
-///     "XXX" :: String
-/// 
-/// Since there is no type of which all the above values are members, the type-variable constraint has been violated.
-/// `));
+    throws (() => { keys ({a: 1, b: 'XXX'}); })
+           (new TypeError (`Type-variable constraint violation
+
+keys :: StrMap a -> Array String
+               ^
+               1
+
+1)  1 :: Number
+    "XXX" :: String
+
+Since there is no type of which all the above values are members, the type-variable constraint has been violated.
+`));
 
     eq (values ({})) ([]);
     eq (values ({x: 1, y: 2, z: 3})) ([1, 2, 3]);
     eq (values (o)) ([1, 2, 3]);
 
-///     throws (() => { values ({a: 1, b: 'XXX'}); })
-///            (new TypeError (`Type-variable constraint violation
-/// 
-/// values :: StrMap a -> Array a
-///                  ^
-///                  1
-/// 
-/// 1)  1 :: Number
-///     "XXX" :: String
-/// 
-/// Since there is no type of which all the above values are members, the type-variable constraint has been violated.
-/// `));
+    throws (() => { values ({a: 1, b: 'XXX'}); })
+           (new TypeError (`Type-variable constraint violation
+
+values :: StrMap a -> Array a
+                 ^
+                 1
+
+1)  1 :: Number
+    "XXX" :: String
+
+Since there is no type of which all the above values are members, the type-variable constraint has been violated.
+`));
 
     //    testUnaryType :: Array (StrMap Number) -> Array (StrMap Number)
     const testUnaryType =
