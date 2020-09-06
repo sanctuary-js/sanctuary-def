@@ -824,73 +824,45 @@ const TypeVariable = name => Object.assign (Object.create (Type$prototype), {
   _test: K (K (true)),
   format: outer => K (outer (name)),
   new: ctx => {
-    if (name in ctx.typeVarMap) {
-      const $types = ctx.typeVarMap[name].types;
-      for (let idx = $types.length - 1; idx >= 0; idx -= 1) {
-        if (!(test (ctx.env) ($types[idx]) (ctx.value))) {
-          $types.splice (idx, 1);
-        }
-      }
-      ctx.typeVarMap[name].types = Z.chain (
-        t => (
-          t.arity === 2 ? Z.lift2 (
-            fromBinaryType (t),
-            expandUnknown (ctx.env) ([]) (ctx.value) (t.blah.$1.extract) (t.blah.$1.type),
-            expandUnknown (ctx.env) ([]) (ctx.value) (t.blah.$2.extract) (t.blah.$2.type)
-          ) :
-          t.arity === 1 ? Z.map (
-            fromUnaryType (t),
-            expandUnknown (ctx.env) ([]) (ctx.value) (t.blah.$1.extract) (t.blah.$1.type),
-          ) :
-          [t]
-        ),
-        Z.filter (
-          t => test (ctx.env) (t) (ctx.value),
-          ctx.typeVarMap[name].types
-        )
-      );
-      const key = JSON.stringify ([ctx.index].concat (ctx.propPath));
-      if (Object.prototype.hasOwnProperty.call (ctx.typeVarMap[name].valuesByPath, key)) {
-        ctx.typeVarMap[name].valuesByPath[key].push (ctx.value);
-      } else {
-        ctx.typeVarMap[name].valuesByPath[key] = [ctx.value];
-      }
-      if ($types.length === 0) {
-        ctx.fail (TypeVariableConstraintViolation ([]) (ctx.typeVarMap[name].valuesByPath));
-      }
-    } else {
-      const key = JSON.stringify ([ctx.index].concat (ctx.propPath));
+    if (!(name in ctx.typeVarMap)) {
       ctx.typeVarMap[name] = {
-        types: Z.chain (
-          t => (
-            t.arity === 2 ? Z.lift2 (
-              fromBinaryType (t),
-              Z.filter (isConsistent, expandUnknown (ctx.env) ([]) (ctx.value) (t.blah.$1.extract) (t.blah.$1.type)),
-              Z.filter (isConsistent, expandUnknown (ctx.env) ([]) (ctx.value) (t.blah.$2.extract) (t.blah.$2.type))
-            ) :
-            t.arity === 1 ? Z.map (
-              fromUnaryType (t),
-              Z.filter (isConsistent, expandUnknown (ctx.env) ([]) (ctx.value) (t.blah.$1.extract) (t.blah.$1.type)),
-            ) :
-            [t]
-          ),
-          Z.filter (
-            t => t.arity >= 0 && test (ctx.env) (t) (ctx.value),
-            ctx.env
-          )
+        valuesByPath: Object.create (null),
+        types: Z.filter (
+          t => t.arity >= 0 && test (ctx.env) (t) (ctx.value),
+          ctx.env
         ),
-        valuesByPath: {[key]: [ctx.value]},
       };
     }
-    if (ctx.typeVarMap[name].types.length === 0) {
-      throw typeVarConstraintViolation (
-        ctx.env,
-        ctx.typeInfo,
-        ctx.index,
-        ctx.propPath,
-        ctx.typeVarMap[name].valuesByPath
-      );
+
+    ctx.typeVarMap[name].types = Z.chain (
+      t => (
+        t.arity === 2 ? Z.lift2 (
+          fromBinaryType (t),
+          Z.filter (isConsistent, expandUnknown (ctx.env) ([]) (ctx.value) (t.blah.$1.extract) (t.blah.$1.type)),
+          Z.filter (isConsistent, expandUnknown (ctx.env) ([]) (ctx.value) (t.blah.$2.extract) (t.blah.$2.type))
+        ) :
+        t.arity === 1 ? Z.map (
+          fromUnaryType (t),
+          Z.filter (isConsistent, expandUnknown (ctx.env) ([]) (ctx.value) (t.blah.$1.extract) (t.blah.$1.type)),
+        ) :
+        [t]
+      ),
+      Z.filter (
+        t => test (ctx.env) (t) (ctx.value),
+        ctx.typeVarMap[name].types
+      )
+    );
+
+    const key = JSON.stringify ([ctx.index].concat (ctx.propPath));
+    if (!(key in ctx.typeVarMap[name].valuesByPath)) {
+      ctx.typeVarMap[name].valuesByPath[key] = [];
     }
+    ctx.typeVarMap[name].valuesByPath[key].push (ctx.value);
+
+    if (ctx.typeVarMap[name].types.length === 0) {
+      ctx.fail (TypeVariableConstraintViolation ([]) (ctx.typeVarMap[name].valuesByPath));
+    }
+
     return ctx.value;
   },
 });

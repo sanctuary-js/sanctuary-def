@@ -2396,19 +2396,19 @@ See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Pair for info
     eq (twin (Pair (42) (42))) (true);
     eq (twin (Pair (42) (99))) (false);
 
-///     throws (() => { twin (Pair (42) ('XXX')); })
-///            (new TypeError (`Type-variable constraint violation
-/// 
-/// twin :: Pair a a -> Boolean
-///              ^ ^
-///              1 2
-/// 
-/// 1)  42 :: Number
-/// 
-/// 2)  "XXX" :: String
-/// 
-/// Since there is no type of which all the above values are members, the type-variable constraint has been violated.
-/// `));
+    throws (() => { twin (Pair (42) ('XXX')); })
+           (new TypeError (`Type-variable constraint violation
+
+twin :: Pair a a -> Boolean
+             ^ ^
+             1 2
+
+1)  42 :: Number
+
+2)  "XXX" :: String
+
+Since there is no type of which all the above values are members, the type-variable constraint has been violated.
+`));
 
     //    concat :: Either a b -> Either a b -> Either a b
     const concat =
@@ -2459,61 +2459,61 @@ Since there is no type of which all the above values are members, the type-varia
 
     eq (f (1) (2) (3)) (1);
 
-///     throws (() => { f (Left ('abc')) (Left (/XXX/)); })
-///            (new TypeError (`Type-variable constraint violation
-/// 
-/// f :: a -> a -> a -> a
-///      ^    ^
-///      1    2
-/// 
-/// 1)  Left ("abc") :: Either String b
-/// 
-/// 2)  Left (/XXX/) :: Either RegExp b
-/// 
-/// Since there is no type of which all the above values are members, the type-variable constraint has been violated.
-/// `));
-/// 
-///     throws (() => { f (Right (123)) (Right (/XXX/)); })
-///            (new TypeError (`Type-variable constraint violation
-/// 
-/// f :: a -> a -> a -> a
-///      ^    ^
-///      1    2
-/// 
-/// 1)  Right (123) :: Either b Number
-/// 
-/// 2)  Right (/XXX/) :: Either b RegExp
-/// 
-/// Since there is no type of which all the above values are members, the type-variable constraint has been violated.
-/// `));
-/// 
-///     throws (() => { f (Left ('abc')) (Right (123)) (Left (/XXX/)); })
-///            (new TypeError (`Type-variable constraint violation
-/// 
-/// f :: a -> a -> a -> a
-///      ^         ^
-///      1         2
-/// 
-/// 1)  Left ("abc") :: Either String b
-/// 
-/// 2)  Left (/XXX/) :: Either RegExp b
-/// 
-/// Since there is no type of which all the above values are members, the type-variable constraint has been violated.
-/// `));
-/// 
-///     throws (() => { f (Left ('abc')) (Right (123)) (Right (/XXX/)); })
-///            (new TypeError (`Type-variable constraint violation
-/// 
-/// f :: a -> a -> a -> a
-///           ^    ^
-///           1    2
-/// 
-/// 1)  Right (123) :: Either b Number
-/// 
-/// 2)  Right (/XXX/) :: Either b RegExp
-/// 
-/// Since there is no type of which all the above values are members, the type-variable constraint has been violated.
-/// `));
+    throws (() => { f (Left ('abc')) (Left (/XXX/)); })
+           (new TypeError (`Type-variable constraint violation
+
+f :: a -> a -> a -> a
+     ^    ^
+     1    2
+
+1)  Left ("abc") :: Either String b
+
+2)  Left (/XXX/) :: Either RegExp b
+
+Since there is no type of which all the above values are members, the type-variable constraint has been violated.
+`));
+
+    throws (() => { f (Right (123)) (Right (/XXX/)); })
+           (new TypeError (`Type-variable constraint violation
+
+f :: a -> a -> a -> a
+     ^    ^
+     1    2
+
+1)  Right (123) :: Either b Number
+
+2)  Right (/XXX/) :: Either b RegExp
+
+Since there is no type of which all the above values are members, the type-variable constraint has been violated.
+`));
+
+    throws (() => { f (Left ('abc')) (Right (123)) (Left (/XXX/)); })
+           (new TypeError (`Type-variable constraint violation
+
+f :: a -> a -> a -> a
+     ^         ^
+     1         2
+
+1)  Left ("abc") :: Either String b
+
+2)  Left (/XXX/) :: Either RegExp b
+
+Since there is no type of which all the above values are members, the type-variable constraint has been violated.
+`));
+
+    throws (() => { f (Left ('abc')) (Right (123)) (Right (/XXX/)); })
+           (new TypeError (`Type-variable constraint violation
+
+f :: a -> a -> a -> a
+          ^    ^
+          1    2
+
+1)  Right (123) :: Either b Number
+
+2)  Right (/XXX/) :: Either b RegExp
+
+Since there is no type of which all the above values are members, the type-variable constraint has been violated.
+`));
   });
 
   test ('supports arbitrary nesting of types', () => {
@@ -2635,31 +2635,31 @@ See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#String for in
     eq (concat ([1, 2, 3]) ([4, 5, 6])) ([1, 2, 3, 4, 5, 6]);
     eq (concat ([Left ('XXX')]) ([Right (42)])) ([Left ('XXX'), Right (42)]);
 
-///     throws (() => { concat ([[1, 2, 3], [Left ('XXX'), Right (42)]]); })
-///            (new TypeError (`Type-variable constraint violation
-/// 
-/// concat :: Array a -> Array a -> Array a
-///                 ^
-///                 1
-/// 
-/// 1)  [1, 2, 3] :: Array Number
-///     [Left ("XXX"), Right (42)] :: Array (Either String Number), Array2 (Either String b) (Either c Number)
-/// 
-/// Since there is no type of which all the above values are members, the type-variable constraint has been violated.
-/// `));
-/// 
-///     throws (() => { concat ([[1, 2, 3], [Right (42), Left ('XXX')]]); })
-///            (new TypeError (`Type-variable constraint violation
-/// 
-/// concat :: Array a -> Array a -> Array a
-///                 ^
-///                 1
-/// 
-/// 1)  [1, 2, 3] :: Array Number
-///     [Right (42), Left ("XXX")] :: Array (Either String Number), Array2 (Either b Number) (Either String c)
-/// 
-/// Since there is no type of which all the above values are members, the type-variable constraint has been violated.
-/// `));
+    throws (() => { concat ([[1, 2, 3], [Left ('XXX'), Right (42)]]); })
+           (new TypeError (`Type-variable constraint violation
+
+concat :: Array a -> Array a -> Array a
+                ^
+                1
+
+1)  [1, 2, 3] :: Array Number
+    [Left ("XXX"), Right (42)] :: Array (Either String Number), Array2 (Either String b) (Either c Number)
+
+Since there is no type of which all the above values are members, the type-variable constraint has been violated.
+`));
+
+    throws (() => { concat ([[1, 2, 3], [Right (42), Left ('XXX')]]); })
+           (new TypeError (`Type-variable constraint violation
+
+concat :: Array a -> Array a -> Array a
+                ^
+                1
+
+1)  [1, 2, 3] :: Array Number
+    [Right (42), Left ("XXX")] :: Array (Either String Number), Array2 (Either b Number) (Either String c)
+
+Since there is no type of which all the above values are members, the type-variable constraint has been violated.
+`));
 
     //    concatNested :: Array (Array a) -> Array (Array a) -> Array (Array a)
     const concatNested =
