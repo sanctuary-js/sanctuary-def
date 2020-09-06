@@ -2327,17 +2327,17 @@ aa :: a -> a -> Pair a a
 Since there is no type of which all the above values are members, the type-variable constraint has been violated.
 `));
 
-///     throws (() => { aa ([Left ('XXX'), false, 42]); })
-///            (new TypeError (`Type-variable constraint violation
-/// 
-/// aa :: a -> a -> Pair a a
-///       ^
-///       1
-/// 
-/// 1)  [Left ("XXX"), false, 42] :: Array ???
-/// 
-/// Since there is no type of which all the above values are members, the type-variable constraint has been violated.
-/// `));
+    throws (() => { aa ([Left ('XXX'), false, 42]); })
+           (new TypeError (`Type-variable constraint violation
+
+aa :: a -> a -> Pair a a
+      ^
+      1
+
+1)  [Left ("XXX"), false, 42] :: Array ???
+
+Since there is no type of which all the above values are members, the type-variable constraint has been violated.
+`));
 
     //    fromMaybe :: a -> Maybe a -> a
     const fromMaybe =

@@ -385,9 +385,9 @@ const _determineActualTypes = (
 
 //    isConsistent :: Type -> Boolean
 const isConsistent = t => (
-  t.type === 'UNARY'   ? isConsistent (t.types.$1) :
-  t.type === 'BINARY'  ? isConsistent (t.types.$1) &&
-                         isConsistent (t.types.$2) :
+  t.type === 'UNARY'   ? isConsistent (t.blah.$1.type) :
+  t.type === 'BINARY'  ? isConsistent (t.blah.$1.type) &&
+                         isConsistent (t.blah.$2.type) :
   /* else */             t.type !== 'INCONSISTENT'
 );
 
@@ -699,6 +699,7 @@ $.UnaryType = name => url => supertypes => test => _1 => $1 => Object.assign (Ob
       (_, x) => {
         if (Z.all (t => t._test (ctx.env) (x), ancestors ($1))) {
           $1.new ({
+            typeInfo: ctx.typeInfo,
             typeVarMap: ctx.typeVarMap,
             env: ctx.env,
             index: ctx.index,
@@ -753,6 +754,7 @@ $.BinaryType = name => url => supertypes => test => _1 => _2 => $1 => $2 => Obje
       (_, x) => {
         if (Z.all (t => t._test (ctx.env) (x), ancestors ($1))) {
           $1.new ({
+            typeInfo: ctx.typeInfo,
             typeVarMap: ctx.typeVarMap,
             env: ctx.env,
             index: ctx.index,
@@ -771,6 +773,7 @@ $.BinaryType = name => url => supertypes => test => _1 => _2 => $1 => $2 => Obje
       (_, x) => {
         if (Z.all (t => t._test (ctx.env) (x), ancestors ($2))) {
           $2.new ({
+            typeInfo: ctx.typeInfo,
             typeVarMap: ctx.typeVarMap,
             env: ctx.env,
             index: ctx.index,
@@ -828,6 +831,24 @@ const TypeVariable = name => Object.assign (Object.create (Type$prototype), {
           $types.splice (idx, 1);
         }
       }
+      ctx.typeVarMap[name].types = Z.chain (
+        t => (
+          t.arity === 2 ? Z.lift2 (
+            fromBinaryType (t),
+            expandUnknown (ctx.env) ([]) (ctx.value) (t.blah.$1.extract) (t.blah.$1.type),
+            expandUnknown (ctx.env) ([]) (ctx.value) (t.blah.$2.extract) (t.blah.$2.type)
+          ) :
+          t.arity === 1 ? Z.map (
+            fromUnaryType (t),
+            expandUnknown (ctx.env) ([]) (ctx.value) (t.blah.$1.extract) (t.blah.$1.type),
+          ) :
+          [t]
+        ),
+        Z.filter (
+          t => test (ctx.env) (t) (ctx.value),
+          ctx.typeVarMap[name].types
+        )
+      );
       const key = JSON.stringify ([ctx.index].concat (ctx.propPath));
       if (Object.prototype.hasOwnProperty.call (ctx.typeVarMap[name].valuesByPath, key)) {
         ctx.typeVarMap[name].valuesByPath[key].push (ctx.value);
@@ -840,9 +861,35 @@ const TypeVariable = name => Object.assign (Object.create (Type$prototype), {
     } else {
       const key = JSON.stringify ([ctx.index].concat (ctx.propPath));
       ctx.typeVarMap[name] = {
-        types: Z.filter (t => t.arity >= 0 && test (ctx.env) (t) (ctx.value), ctx.env),
+        types: Z.chain (
+          t => (
+            t.arity === 2 ? Z.lift2 (
+              fromBinaryType (t),
+              Z.filter (isConsistent, expandUnknown (ctx.env) ([]) (ctx.value) (t.blah.$1.extract) (t.blah.$1.type)),
+              Z.filter (isConsistent, expandUnknown (ctx.env) ([]) (ctx.value) (t.blah.$2.extract) (t.blah.$2.type))
+            ) :
+            t.arity === 1 ? Z.map (
+              fromUnaryType (t),
+              Z.filter (isConsistent, expandUnknown (ctx.env) ([]) (ctx.value) (t.blah.$1.extract) (t.blah.$1.type)),
+            ) :
+            [t]
+          ),
+          Z.filter (
+            t => t.arity >= 0 && test (ctx.env) (t) (ctx.value),
+            ctx.env
+          )
+        ),
         valuesByPath: {[key]: [ctx.value]},
       };
+    }
+    if (ctx.typeVarMap[name].types.length === 0) {
+      throw typeVarConstraintViolation (
+        ctx.env,
+        ctx.typeInfo,
+        ctx.index,
+        ctx.propPath,
+        ctx.typeVarMap[name].valuesByPath
+      );
     }
     return ctx.value;
   },
@@ -948,6 +995,7 @@ const RecordType = fields => {
       keys.forEach (k => {
         if (Z.all (t => t._test (ctx.env) (ctx.value[k]), ancestors (fields[k]))) {
           fields[k].new ({
+            typeInfo: ctx.typeInfo,
             typeVarMap: ctx.typeVarMap,
             env: ctx.env,
             index: ctx.index,
@@ -989,6 +1037,7 @@ const NamedRecordType = name => url => supertypes => fields => {
       keys.forEach (k => {
         if (Z.all (t => t._test (ctx.env) (ctx.value[k]), ancestors (fields[k]))) {
           fields[k].new ({
+            typeInfo: ctx.typeInfo,
             typeVarMap: ctx.typeVarMap,
             env: ctx.env,
             index: ctx.index,
@@ -1386,6 +1435,7 @@ const Fn = $1 => $2 => (
         const [x] = args;
         if (Z.all (t => t._test (ctx.env) (x), ancestors ($1))) {
           const i = $1.new ({
+            typeInfo: ctx.typeInfo,
             typeVarMap: ctx.typeVarMap,
             env: ctx.env,
             index: ctx.index,
@@ -1396,6 +1446,7 @@ const Fn = $1 => $2 => (
           const y = ctx.value (x);
           if (Z.all (t => t._test (ctx.env) (y), ancestors ($2))) {
             return $2.new ({
+              typeInfo: ctx.typeInfo,
               typeVarMap: ctx.typeVarMap,
               env: ctx.env,
               index: ctx.index,
@@ -1563,6 +1614,7 @@ const create = opts => {
         const x = impl ();
         if (Z.all (t => t._test (opts.env) (x), ancestors (types[0]))) {
           return types[0].new ({
+            typeInfo: typeInfo,
             typeVarMap: Object.create (null),
             env: opts.env,
             index: 0,
@@ -1591,6 +1643,7 @@ const create = opts => {
           const typeVarMap = Object.create (_typeVarMap);
           if (Z.all (t => t._test (opts.env) (_x), ancestors (input))) {
             const x = input.new ({
+              typeInfo: typeInfo,
               typeVarMap,
               env: opts.env,
               index,
@@ -1629,6 +1682,7 @@ const create = opts => {
       typeVarMap => value => {
         if (Z.all (t => t._test (opts.env) (value), ancestors (types[types.length - 1]))) {
           return types[types.length - 1].new ({
+            typeInfo: typeInfo,
             typeVarMap,
             env: opts.env,
             index: 0,
