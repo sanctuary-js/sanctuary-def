@@ -1048,7 +1048,7 @@ const UnaryTypeVariable = name => $1 => Object.assign (Object.create (Type$proto
         switch (t.arity) {
           case 1:
             Z.map (
-              x => t.blah.$1.type.new ({
+              x => $1.new ({
                 typeInfo: ctx.typeInfo,
                 typeVarMap: ctx.typeVarMap,
                 env: ctx.env,
@@ -1062,7 +1062,7 @@ const UnaryTypeVariable = name => $1 => Object.assign (Object.create (Type$proto
             break;
           case 2:
             Z.map (
-              x => t.blah.$2.type.new ({
+              x => $1.new ({
                 typeInfo: ctx.typeInfo,
                 typeVarMap: ctx.typeVarMap,
                 env: ctx.env,
@@ -1153,10 +1153,6 @@ const BinaryTypeVariable = name => $1 => $2 => Object.assign (Object.create (Typ
     }
     ctx.typeVarMap[name].valuesByPath[key].push (ctx.value);
 
-    if (ctx.typeVarMap[name].types.length === 0) {
-      ctx.fail (TypeVariableConstraintViolation ([]) (ctx.typeVarMap[name].valuesByPath));
-    }
-
     // Foo X Y Z
     //
     // f a b
@@ -1182,6 +1178,15 @@ const BinaryTypeVariable = name => $1 => $2 => Object.assign (Object.create (Typ
       t => {
         Z.map (
           x => {
+            if (!($1._test (ctx.env) (x))) {
+              throw invalidValue (
+                ctx.env,
+                ctx.typeInfo,
+                ctx.index,
+                [...ctx.propPath, '$1'],
+                x
+              );
+            }
             $1.new ({
               typeInfo: ctx.typeInfo,
               typeVarMap: ctx.typeVarMap,
@@ -1196,7 +1201,16 @@ const BinaryTypeVariable = name => $1 => $2 => Object.assign (Object.create (Typ
         );
         Z.map (
           x => {
-            t.blah.$2.type.new ({
+            if (!($2._test (ctx.env) (x))) {
+              throw invalidValue (
+                ctx.env,
+                ctx.typeInfo,
+                ctx.index,
+                [...ctx.propPath, '$2'],
+                x
+              );
+            }
+            $2.new ({
               typeInfo: ctx.typeInfo,
               typeVarMap: ctx.typeVarMap,
               env: ctx.env,
@@ -1211,6 +1225,17 @@ const BinaryTypeVariable = name => $1 => $2 => Object.assign (Object.create (Typ
       },
       ctx.typeVarMap[name].types,
     );
+
+    if (ctx.typeVarMap[name].types.length === 0) {
+      throw invalidValue (
+        ctx.env,
+        ctx.typeInfo,
+        ctx.index,
+        ctx.propPath,
+        ctx.value
+      );
+      ctx.fail (TypeVariableConstraintViolation ([]) (ctx.typeVarMap[name].valuesByPath));
+    }
 
     return ctx.value;
   },

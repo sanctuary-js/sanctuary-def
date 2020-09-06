@@ -3341,13 +3341,13 @@ bimap :: Bifunctor f => (a -> b) -> (c -> d) -> f a c -> f b d
 Since there is no type of which all the above values are members, the type-variable constraint has been violated.
 `));
 
-///     //    chain :: Chain m => (a -> m b) -> m a -> m b
-///     const chain =
-///     def ('chain')
-///         ({m: [Z.Chain]})
-///         ([$.Fn (a) (m (b)), m (a), m (b)])
-///         (curry2 (Z.chain));
-/// 
+    //    chain :: Chain m => (a -> m b) -> m a -> m b
+    const chain =
+    def ('chain')
+        ({m: [Z.Chain]})
+        ([$.Fn (a) (m (b)), m (a), m (b)])
+        (curry2 (Z.chain));
+
 ///     throws (() => { chain (Left) (Just ('x')); })
 ///            (new TypeError (`Type-variable constraint violation
 /// 
@@ -3361,53 +3361,53 @@ Since there is no type of which all the above values are members, the type-varia
 /// 
 /// Since there is no type of which all the above values are members, the type-variable constraint has been violated.
 /// `));
-/// 
-///     //    xxx :: f String Number -> Null
-///     const xxx = def ('xxx') ({}) ([f ($.String) ($.Number), $.Null]) (x => null);
-/// 
-///     eq (xxx (Pair ('abc') (123))) (null);
-///     eq (xxx (Left ('abc'))) (null);
-///     eq (xxx (Right (123))) (null);
-/// 
-///     throws (() => { xxx (/XXX/); })
-///            (new TypeError (`Invalid value
-/// 
-/// xxx :: f String Number -> Null
-///        ^^^^^^^^^^^^^^^
-///               1
-/// 
-/// 1)  /XXX/ :: RegExp
-/// 
-/// The value at position 1 is not a member of ‘f String Number’.
-/// `));
-/// 
-///     throws (() => { xxx (Left (/XXX/)); })
-///            (new TypeError (`Invalid value
-/// 
-/// xxx :: f String Number -> Null
-///          ^^^^^^
-///            1
-/// 
-/// 1)  /XXX/ :: RegExp
-/// 
-/// The value at position 1 is not a member of ‘String’.
-/// 
-/// See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#String for information about the String type.
-/// `));
-/// 
-///     throws (() => { xxx (Right (/XXX/)); })
-///            (new TypeError (`Invalid value
-/// 
-/// xxx :: f String Number -> Null
-///                 ^^^^^^
-///                   1
-/// 
-/// 1)  /XXX/ :: RegExp
-/// 
-/// The value at position 1 is not a member of ‘Number’.
-/// 
-/// See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Number for information about the Number type.
-/// `));
+
+    //    xxx :: f String Number -> Null
+    const xxx = def ('xxx') ({}) ([f ($.String) ($.Number), $.Null]) (x => null);
+
+    eq (xxx (Pair ('abc') (123))) (null);
+    eq (xxx (Left ('abc'))) (null);
+    eq (xxx (Right (123))) (null);
+
+    throws (() => { xxx (/XXX/); })
+           (new TypeError (`Invalid value
+
+xxx :: f String Number -> Null
+       ^^^^^^^^^^^^^^^
+              1
+
+1)  /XXX/ :: RegExp
+
+The value at position 1 is not a member of ‘f String Number’.
+`));
+
+    throws (() => { xxx (Left (/XXX/)); })
+           (new TypeError (`Invalid value
+
+xxx :: f String Number -> Null
+         ^^^^^^
+           1
+
+1)  /XXX/ :: RegExp
+
+The value at position 1 is not a member of ‘String’.
+
+See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#String for information about the String type.
+`));
+
+    throws (() => { xxx (Right (/XXX/)); })
+           (new TypeError (`Invalid value
+
+xxx :: f String Number -> Null
+                ^^^^^^
+                  1
+
+1)  /XXX/ :: RegExp
+
+The value at position 1 is not a member of ‘Number’.
+
+See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Number for information about the Number type.
+`));
   });
 
 ///   test ('only determines actual types when necessary', () => {
