@@ -2967,132 +2967,132 @@ The value at position 1 is not a member of ‘a -> a -> a -> b’.
         ([f (a), f (a), f (a)])
         (curry2 (Z.alt));
 
-///     eq (alt ([]) ([])) ([]);
-///     eq (alt ({}) ({})) ({});
-///     eq (alt (Nothing) (Nothing)) (Nothing);
-///     eq (alt (Nothing) (Just (1))) (Just (1));
-///     eq (alt (Just (2)) (Nothing)) (Just (2));
-///     eq (alt (Just (3)) (Just (4))) (Just (3));
-///     eq (alt (Left (1)) (Left (2))) (Left (2));
-///     eq (alt (Left (3)) (Right (4))) (Right (4));
-///     eq (alt (Right (5)) (Left (6))) (Right (5));
-///     eq (alt (Right (7)) (Right (8))) (Right (7));
-/// 
-///     //    concat :: Semigroup a => a -> a -> a
-///     const concat =
-///     def ('concat')
-///         ({a: [Z.Semigroup]})
-///         ([a, a, a])
-///         (curry2 (Z.concat));
-/// 
-///     eq (concat ([1, 2, 3]) ([4, 5, 6])) ([1, 2, 3, 4, 5, 6]);
-///     eq (concat ('abc') ('def')) ('abcdef');
-/// 
-///     throws (() => { concat (/x/); })
-///            (new TypeError (`Type-class constraint violation
-/// 
-/// concat :: Semigroup a => a -> a -> a
-///           ^^^^^^^^^^^    ^
-///                          1
-/// 
-/// 1)  /x/ :: RegExp
-/// 
-/// ‘concat’ requires ‘a’ to satisfy the Semigroup type-class constraint; the value at position 1 does not.
-/// 
-/// See https://github.com/sanctuary-js/sanctuary-type-classes/tree/v${Z$version}#Semigroup for information about the sanctuary-type-classes/Semigroup type class.
-/// `));
-/// 
-///     throws (() => { concat ([]) (''); })
-///            (new TypeError (`Type-variable constraint violation
-/// 
-/// concat :: Semigroup a => a -> a -> a
-///                          ^    ^
-///                          1    2
-/// 
-/// 1)  [] :: Array b
-/// 
-/// 2)  "" :: String
-/// 
-/// Since there is no type of which all the above values are members, the type-variable constraint has been violated.
-/// `));
-/// 
-///     throws (() => { concat ('') ([]); })
-///            (new TypeError (`Type-variable constraint violation
-/// 
-/// concat :: Semigroup a => a -> a -> a
-///                          ^    ^
-///                          1    2
-/// 
-/// 1)  "" :: String
-/// 
-/// 2)  [] :: Array b
-/// 
-/// Since there is no type of which all the above values are members, the type-variable constraint has been violated.
-/// `));
-/// 
-///     //    filter :: Filterable f => (a -> Boolean) -> f a -> f a
-///     const filter =
-///     def ('filter')
-///         ({f: [Z.Filterable]})
-///         ([$.Fn (a) ($.Boolean), f (a), f (a)])
-///         (curry2 (Z.filter));
-/// 
-///     //    even :: Integer -> Boolean
-///     const even = x => x % 2 === 0;
-/// 
-///     eq (filter (even) (Nothing)) (Nothing);
-///     eq (filter (even) (Just (9))) (Nothing);
-///     eq (filter (even) (Just (4))) (Just (4));
-/// 
-///     throws (() => { filter (even) (Right (42)); })
-///            (new TypeError (`Type-class constraint violation
-/// 
-/// filter :: Filterable f => (a -> Boolean) -> f a -> f a
-///           ^^^^^^^^^^^^                      ^^^
-///                                              1
-/// 
-/// 1)  Right (42) :: Either b Number
-/// 
-/// ‘filter’ requires ‘f’ to satisfy the Filterable type-class constraint; the value at position 1 does not.
-/// 
-/// See https://github.com/sanctuary-js/sanctuary-type-classes/tree/v${Z$version}#Filterable for information about the sanctuary-type-classes/Filterable type class.
-/// `));
-/// 
-///     //    concatMaybes :: Semigroup a => Maybe a -> Maybe a -> Maybe a
-///     const concatMaybes =
-///     def ('concatMaybes')
-///         ({a: [Z.Semigroup]})
-///         ([$.Maybe (a), $.Maybe (a), $.Maybe (a)])
-///         (m => n => Just (/xxx/));
-/// 
-///     throws (() => { concatMaybes (Just (/xxx/)); })
-///            (new TypeError (`Type-class constraint violation
-/// 
-/// concatMaybes :: Semigroup a => Maybe a -> Maybe a -> Maybe a
-///                 ^^^^^^^^^^^          ^
-///                                      1
-/// 
-/// 1)  /xxx/ :: RegExp
-/// 
-/// ‘concatMaybes’ requires ‘a’ to satisfy the Semigroup type-class constraint; the value at position 1 does not.
-/// 
-/// See https://github.com/sanctuary-js/sanctuary-type-classes/tree/v${Z$version}#Semigroup for information about the sanctuary-type-classes/Semigroup type class.
-/// `));
-/// 
-///     throws (() => { concatMaybes (Just ('abc')) (Just (/xxx/)); })
-///            (new TypeError (`Type-class constraint violation
-/// 
-/// concatMaybes :: Semigroup a => Maybe a -> Maybe a -> Maybe a
-///                 ^^^^^^^^^^^                     ^
-///                                                 1
-/// 
-/// 1)  /xxx/ :: RegExp
-/// 
-/// ‘concatMaybes’ requires ‘a’ to satisfy the Semigroup type-class constraint; the value at position 1 does not.
-/// 
-/// See https://github.com/sanctuary-js/sanctuary-type-classes/tree/v${Z$version}#Semigroup for information about the sanctuary-type-classes/Semigroup type class.
-/// `));
-/// 
+    eq (alt ([]) ([])) ([]);
+    eq (alt ({}) ({})) ({});
+    eq (alt (Nothing) (Nothing)) (Nothing);
+    eq (alt (Nothing) (Just (1))) (Just (1));
+    eq (alt (Just (2)) (Nothing)) (Just (2));
+    eq (alt (Just (3)) (Just (4))) (Just (3));
+    eq (alt (Left (1)) (Left (2))) (Left (2));
+    eq (alt (Left (3)) (Right (4))) (Right (4));
+    eq (alt (Right (5)) (Left (6))) (Right (5));
+    eq (alt (Right (7)) (Right (8))) (Right (7));
+
+    //    concat :: Semigroup a => a -> a -> a
+    const concat =
+    def ('concat')
+        ({a: [Z.Semigroup]})
+        ([a, a, a])
+        (curry2 (Z.concat));
+
+    eq (concat ([1, 2, 3]) ([4, 5, 6])) ([1, 2, 3, 4, 5, 6]);
+    eq (concat ('abc') ('def')) ('abcdef');
+
+    throws (() => { concat (/x/); })
+           (new TypeError (`Type-class constraint violation
+
+concat :: Semigroup a => a -> a -> a
+          ^^^^^^^^^^^    ^
+                         1
+
+1)  /x/ :: RegExp
+
+‘concat’ requires ‘a’ to satisfy the Semigroup type-class constraint; the value at position 1 does not.
+
+See https://github.com/sanctuary-js/sanctuary-type-classes/tree/v${Z$version}#Semigroup for information about the sanctuary-type-classes/Semigroup type class.
+`));
+
+    throws (() => { concat ([]) (''); })
+           (new TypeError (`Type-variable constraint violation
+
+concat :: Semigroup a => a -> a -> a
+                         ^    ^
+                         1    2
+
+1)  [] :: Array b
+
+2)  "" :: String
+
+Since there is no type of which all the above values are members, the type-variable constraint has been violated.
+`));
+
+    throws (() => { concat ('') ([]); })
+           (new TypeError (`Type-variable constraint violation
+
+concat :: Semigroup a => a -> a -> a
+                         ^    ^
+                         1    2
+
+1)  "" :: String
+
+2)  [] :: Array b
+
+Since there is no type of which all the above values are members, the type-variable constraint has been violated.
+`));
+
+    //    filter :: Filterable f => (a -> Boolean) -> f a -> f a
+    const filter =
+    def ('filter')
+        ({f: [Z.Filterable]})
+        ([$.Fn (a) ($.Boolean), f (a), f (a)])
+        (curry2 (Z.filter));
+
+    //    even :: Integer -> Boolean
+    const even = x => x % 2 === 0;
+
+    eq (filter (even) (Nothing)) (Nothing);
+    eq (filter (even) (Just (9))) (Nothing);
+    eq (filter (even) (Just (4))) (Just (4));
+
+    throws (() => { filter (even) (Right (42)); })
+           (new TypeError (`Type-class constraint violation
+
+filter :: Filterable f => (a -> Boolean) -> f a -> f a
+          ^^^^^^^^^^^^                      ^^^
+                                             1
+
+1)  Right (42) :: Either b Number
+
+‘filter’ requires ‘f’ to satisfy the Filterable type-class constraint; the value at position 1 does not.
+
+See https://github.com/sanctuary-js/sanctuary-type-classes/tree/v${Z$version}#Filterable for information about the sanctuary-type-classes/Filterable type class.
+`));
+
+    //    concatMaybes :: Semigroup a => Maybe a -> Maybe a -> Maybe a
+    const concatMaybes =
+    def ('concatMaybes')
+        ({a: [Z.Semigroup]})
+        ([$.Maybe (a), $.Maybe (a), $.Maybe (a)])
+        (m => n => Just (/xxx/));
+
+    throws (() => { concatMaybes (Just (/xxx/)); })
+           (new TypeError (`Type-class constraint violation
+
+concatMaybes :: Semigroup a => Maybe a -> Maybe a -> Maybe a
+                ^^^^^^^^^^^          ^
+                                     1
+
+1)  /xxx/ :: RegExp
+
+‘concatMaybes’ requires ‘a’ to satisfy the Semigroup type-class constraint; the value at position 1 does not.
+
+See https://github.com/sanctuary-js/sanctuary-type-classes/tree/v${Z$version}#Semigroup for information about the sanctuary-type-classes/Semigroup type class.
+`));
+
+    throws (() => { concatMaybes (Just ('abc')) (Just (/xxx/)); })
+           (new TypeError (`Type-class constraint violation
+
+concatMaybes :: Semigroup a => Maybe a -> Maybe a -> Maybe a
+                ^^^^^^^^^^^                     ^
+                                                1
+
+1)  /xxx/ :: RegExp
+
+‘concatMaybes’ requires ‘a’ to satisfy the Semigroup type-class constraint; the value at position 1 does not.
+
+See https://github.com/sanctuary-js/sanctuary-type-classes/tree/v${Z$version}#Semigroup for information about the sanctuary-type-classes/Semigroup type class.
+`));
+
 ///     throws (() => { concatMaybes (Just ('abc')) (Just ('def')); })
 ///            (new TypeError (`Type-class constraint violation
 /// 
@@ -3106,29 +3106,29 @@ The value at position 1 is not a member of ‘a -> a -> a -> b’.
 /// 
 /// See https://github.com/sanctuary-js/sanctuary-type-classes/tree/v${Z$version}#Semigroup for information about the sanctuary-type-classes/Semigroup type class.
 /// `));
-/// 
-///     //    sillyConst :: (Alternative a, Semigroup b) => a -> b -> a
-///     const sillyConst =
-///     def ('sillyConst')
-///         ({a: [Z.Alternative], b: [Z.Semigroup]})
-///         ([a, b, a])
-///         (x => y => x);
-/// 
-///     eq (sillyConst (Just (42)) ([1, 2, 3])) (Just (42));
-/// 
-///     throws (() => { sillyConst (true); })
-///            (new TypeError (`Type-class constraint violation
-/// 
-/// sillyConst :: (Alternative a, Semigroup b) => a -> b -> a
-///                ^^^^^^^^^^^^^                  ^
-///                                               1
-/// 
-/// 1)  true :: Boolean
-/// 
-/// ‘sillyConst’ requires ‘a’ to satisfy the Alternative type-class constraint; the value at position 1 does not.
-/// 
-/// See https://github.com/sanctuary-js/sanctuary-type-classes/tree/v${Z$version}#Alternative for information about the sanctuary-type-classes/Alternative type class.
-/// `));
+
+    //    sillyConst :: (Alternative a, Semigroup b) => a -> b -> a
+    const sillyConst =
+    def ('sillyConst')
+        ({a: [Z.Alternative], b: [Z.Semigroup]})
+        ([a, b, a])
+        (x => y => x);
+
+    eq (sillyConst (Just (42)) ([1, 2, 3])) (Just (42));
+
+    throws (() => { sillyConst (true); })
+           (new TypeError (`Type-class constraint violation
+
+sillyConst :: (Alternative a, Semigroup b) => a -> b -> a
+               ^^^^^^^^^^^^^                  ^
+                                              1
+
+1)  true :: Boolean
+
+‘sillyConst’ requires ‘a’ to satisfy the Alternative type-class constraint; the value at position 1 does not.
+
+See https://github.com/sanctuary-js/sanctuary-type-classes/tree/v${Z$version}#Alternative for information about the sanctuary-type-classes/Alternative type class.
+`));
   });
 
   test ('supports unary type variables', () => {

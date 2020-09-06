@@ -179,6 +179,40 @@ const see = (label, record) => (
   ' for information about the ' + record.name + ' ' + label + '.\n'
 );
 
+//    typeClassConstraintViolation :: ... -> Error
+const typeClassConstraintViolation = (
+  env,            // :: Array Type
+  typeInfo,       // :: TypeInfo
+  typeClass,      // :: TypeClass
+  index,          // :: Integer
+  propPath,       // :: PropPath
+  value,          // :: Any
+  typeVarMap      // :: TypeVarMap
+) => {
+  var expType = resolvePropPath (typeInfo.types[index], propPath);
+  return new TypeError (trimTrailingSpaces (
+    'Type-class constraint violation\n\n' +
+    underline (typeInfo,
+               function(tvn) {
+                 return function(tc) {
+                   return (
+                     tvn === expType.name && tc.name === typeClass.name ?
+                       r ('^') :
+                       _
+                   );
+                 };
+               },
+               formatType6 (Z.concat ([index], propPath))) +
+    '\n' +
+    showValuesAndTypes (env, typeInfo, [value], 1) + '\n\n' +
+    q (typeInfo.name) + ' requires ' +
+    q (expType.name) + ' to satisfy the ' +
+    stripNamespace (typeClass) + ' type-class constraint; ' +
+    'the value at position 1 does not.\n' +
+    see ('type class', typeClass)
+  ));
+};
+
 //    InvalidArgumentsCount :: PropPath -> Integer -> Array Any -> MyError
 const InvalidArgumentsCount = propPath => count => args => ({
   tagName: 'InvalidArgumentsCount',
@@ -832,13 +866,27 @@ const TypeVariable = name => Object.assign (Object.create (Type$prototype), {
   _test: K (K (true)),
   format: outer => K (outer (name)),
   new: ctx => {
+    if (Object.prototype.hasOwnProperty.call (ctx.typeInfo.constraints, name)) {
+      for (let idx = 0; idx < ctx.typeInfo.constraints[name].length; idx += 1) {
+        const typeClass = ctx.typeInfo.constraints[name][idx];
+        if (!typeClass.test (ctx.value)) {
+          throw typeClassConstraintViolation (
+            ctx.env,
+            ctx.typeInfo,
+            typeClass,
+            ctx.index,
+            ctx.propPath,
+            ctx.value,
+            ctx.typeVarMap
+          );
+        }
+      }
+    }
+
     if (!(name in ctx.typeVarMap)) {
       ctx.typeVarMap[name] = {
+        types: Z.filter (t => t.arity >= 0, ctx.env),
         valuesByPath: Object.create (null),
-        types: Z.filter (
-          t => t.arity >= 0 && test (ctx.env) (t) (ctx.value),
-          ctx.env
-        ),
       };
     }
 
@@ -892,7 +940,62 @@ const UnaryTypeVariable = name => $1 => Object.assign (Object.create (Type$proto
          (parenthesize (outer))
          (inner ('$1') (show ($1)))
   ),
-  new: ctx => ctx.value,
+  new: ctx => {
+    if (Object.prototype.hasOwnProperty.call (ctx.typeInfo.constraints, name)) {
+      for (let idx = 0; idx < ctx.typeInfo.constraints[name].length; idx += 1) {
+        const typeClass = ctx.typeInfo.constraints[name][idx];
+        if (!typeClass.test (ctx.value)) {
+          throw typeClassConstraintViolation (
+            ctx.env,
+            ctx.typeInfo,
+            typeClass,
+            ctx.index,
+            ctx.propPath,
+            ctx.value,
+            ctx.typeVarMap
+          );
+        }
+      }
+    }
+
+    if (!(name in ctx.typeVarMap)) {
+      ctx.typeVarMap[name] = {
+        types: Z.filter (t => t.arity >= 1, ctx.env),
+        valuesByPath: Object.create (null),
+      };
+    }
+
+    ctx.typeVarMap[name].types = Z.chain (
+      t => (
+        t.arity === 2 ? Z.lift2 (
+          fromBinaryType (t),
+          Z.filter (isConsistent, expandUnknown (ctx.env) ([]) (ctx.value) (t.blah.$1.extract) (t.blah.$1.type)),
+          Z.filter (isConsistent, expandUnknown (ctx.env) ([]) (ctx.value) (t.blah.$2.extract) (t.blah.$2.type))
+        ) :
+        t.arity === 1 ? Z.map (
+          fromUnaryType (t),
+          Z.filter (isConsistent, expandUnknown (ctx.env) ([]) (ctx.value) (t.blah.$1.extract) (t.blah.$1.type)),
+        ) :
+        [t]
+      ),
+      Z.filter (
+        t => test (ctx.env) (t) (ctx.value),
+        ctx.typeVarMap[name].types
+      )
+    );
+
+    const key = JSON.stringify ([ctx.index].concat (ctx.propPath));
+    if (!(key in ctx.typeVarMap[name].valuesByPath)) {
+      ctx.typeVarMap[name].valuesByPath[key] = [];
+    }
+    ctx.typeVarMap[name].valuesByPath[key].push (ctx.value);
+
+    if (ctx.typeVarMap[name].types.length === 0) {
+      ctx.fail (TypeVariableConstraintViolation ([]) (ctx.typeVarMap[name].valuesByPath));
+    }
+
+    return ctx.value;
+  },
 });
 
 const BinaryTypeVariable = name => $1 => $2 => Object.assign (Object.create (Type$prototype), {
