@@ -3315,32 +3315,32 @@ Expected one argument but received three arguments:
 /// `));
   });
 
-///   test ('supports binary type variables', () => {
-///     //    f :: Type -> Type -> Type
-///     const f = $.BinaryTypeVariable ('f');
-/// 
-///     //    bimap :: Bifunctor f => (a -> b) -> (c -> d) -> f a c -> f b d
-///     const bimap =
-///     def ('bimap')
-///         ({f: [Z.Bifunctor]})
-///         ([$.Fn (a) (b), $.Fn (c) (d), f (a) (c), f (b) (d)])
-///         (curry3 (Z.bimap));
-/// 
-///     eq (show (bimap)) ('bimap :: Bifunctor f => (a -> b) -> (c -> d) -> f a c -> f b d');
-///     eq (bimap (s => s.length) (Math.sqrt) (Pair ('Sanctuary') (25))) (Pair (9) (5));
-/// 
-///     throws (() => { bimap (xs => xs.length) (Math.sqrt) (Pair (['foo', true, 42]) (null)); })
-///            (new TypeError (`Type-variable constraint violation
-/// 
-/// bimap :: Bifunctor f => (a -> b) -> (c -> d) -> f a c -> f b d
-///                                                   ^
-///                                                   1
-/// 
-/// 1)  ["foo", true, 42] :: Array ???
-/// 
-/// Since there is no type of which all the above values are members, the type-variable constraint has been violated.
-/// `));
-/// 
+  test ('supports binary type variables', () => {
+    //    f :: Type -> Type -> Type
+    const f = $.BinaryTypeVariable ('f');
+
+    //    bimap :: Bifunctor f => (a -> b) -> (c -> d) -> f a c -> f b d
+    const bimap =
+    def ('bimap')
+        ({f: [Z.Bifunctor]})
+        ([$.Fn (a) (b), $.Fn (c) (d), f (a) (c), f (b) (d)])
+        (curry3 (Z.bimap));
+
+    eq (show (bimap)) ('bimap :: Bifunctor f => (a -> b) -> (c -> d) -> f a c -> f b d');
+    eq (bimap (s => s.length) (Math.sqrt) (Pair ('Sanctuary') (25))) (Pair (9) (5));
+
+    throws (() => { bimap (xs => xs.length) (Math.sqrt) (Pair (['foo', true, 42]) (null)); })
+           (new TypeError (`Type-variable constraint violation
+
+bimap :: Bifunctor f => (a -> b) -> (c -> d) -> f a c -> f b d
+                                                  ^
+                                                  1
+
+1)  ["foo", true, 42] :: Array ???
+
+Since there is no type of which all the above values are members, the type-variable constraint has been violated.
+`));
+
 ///     //    chain :: Chain m => (a -> m b) -> m a -> m b
 ///     const chain =
 ///     def ('chain')
@@ -3408,8 +3408,8 @@ Expected one argument but received three arguments:
 /// 
 /// See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Number for information about the Number type.
 /// `));
-///   });
-/// 
+  });
+
 ///   test ('only determines actual types when necessary', () => {
 ///     //  count :: Integer
 ///     let count = 0;
