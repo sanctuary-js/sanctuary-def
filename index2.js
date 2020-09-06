@@ -187,6 +187,14 @@ const InvalidArgumentsCount = propPath => count => args => ({
   args,
 });
 
+//    InvalidArgumentsLength :: PropPath -> Integer -> Array Any -> MyError
+const InvalidArgumentsLength = propPath => count => args => ({
+  tagName: 'InvalidArgumentsLength',
+  propPath,
+  count,
+  args,
+});
+
 //    InvalidValue :: PropPath -> Any -> MyError
 const InvalidValue = propPath => value => ({
   tagName: 'InvalidValue',
@@ -1402,7 +1410,7 @@ const Fn = $1 => $2 => (
     {
       new: ctx => (...args) => {
         if (args.length !== 1) {
-          ctx.fail (InvalidArgumentsCount ([]) (1) (args));
+          ctx.fail (InvalidArgumentsLength ([]) (1) (args));
         }
         const [x] = args;
         if (Z.all (t => t._test (ctx.env) (x), ancestors ($1))) {
@@ -1448,6 +1456,44 @@ const invalidArgumentsCount = (typeInfo, index, numArgsExpected, args) => {
       function(index_) {
         return function(f) {
           return K (K (index_ === index ? f : _));
+        };
+      }
+    ) + '\n' +
+    'Expected ' + numArgs (numArgsExpected) +
+    ' but received ' + numArgs (args.length) +
+    toMarkdownList ('.\n', ':\n\n', show, args)
+  ));
+};
+
+//  invalidArgumentsLength :: ... -> Error
+//
+//  This function is used in `wrapFunctionCond` to ensure that higher-order
+//  functions defined via `def` only ever apply a function argument to the
+//  correct number of arguments.
+const invalidArgumentsLength = (
+  typeInfo,           // :: TypeInfo
+  index,              // :: Integer
+  numArgsExpected,    // :: Integer
+  args                // :: Array Any
+) => {
+  return new TypeError (trimTrailingSpaces (
+    q (typeInfo.name) +
+    ' applied ' + q (show (typeInfo.types[index])) +
+    ' to the wrong number of arguments\n\n' +
+    underline (
+      typeInfo,
+      K (K (_)),
+      function(index_) {
+        return function(f) {
+          return function(t) {
+            return function(propPath) {
+              return function(s) {
+                return index_ === index ?
+                  t.format (_) (function(k) { return k === '$1' ? f : _; }) :
+                  _ (s);
+              };
+            };
+          };
         };
       }
     ) + '\n' +
@@ -1622,6 +1668,13 @@ const create = opts => {
               propPath: [],
               fail: myError => {
                 switch (myError.tagName) {
+                  case 'InvalidArgumentsLength':
+                    throw invalidArgumentsLength (
+                      typeInfo,
+                      index,
+                      myError.count,
+                      myError.args
+                    );
                   case 'InvalidValue':
                     throw invalidValue (
                       opts.env,
@@ -1638,6 +1691,8 @@ const create = opts => {
                       myError.propPath,
                       myError.valuesByPath
                     )
+                  default:
+                    TK;
                 }
               },
               value: _x,
@@ -1659,7 +1714,9 @@ const create = opts => {
             env: opts.env,
             index: 0,
             propPath: [],
-            fail: myError => { throw invalidValue (opts.env, typeInfo, types.length - 1, myError.propPath, myError.value); },
+            fail: myError => {
+              throw invalidValue (opts.env, typeInfo, types.length - 1, myError.propPath, myError.value);
+            },
             value,
           });
         } else {

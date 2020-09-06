@@ -2875,20 +2875,20 @@ unfoldr :: (b -> Maybe (Array2 a b)) -> b -> Array a
 The value at position 1 is not a member of ‘b -> Maybe (Array2 a b)’.
 `));
 
-///     throws (() => { unfoldr (n => n >= 5 ? Nothing : Just (n)) (1); })
-///            (new TypeError (`Invalid value
-/// 
-/// unfoldr :: (b -> Maybe (Array2 a b)) -> b -> Array a
-///                         ^^^^^^^^^^
-///                             1
-/// 
-/// 1)  1 :: Number
-/// 
-/// The value at position 1 is not a member of ‘Array2 a b’.
-/// 
-/// See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Array2 for information about the Array2 type constructor.
-/// `));
-/// 
+    throws (() => { unfoldr (n => n >= 5 ? Nothing : Just (n)) (1); })
+           (new TypeError (`Invalid value
+
+unfoldr :: (b -> Maybe (Array2 a b)) -> b -> Array a
+                        ^^^^^^^^^^
+                            1
+
+1)  1 :: Number
+
+The value at position 1 is not a member of ‘Array2 a b’.
+
+See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Array2 for information about the Array2 type constructor.
+`));
+
 ///     throws (() => { unfoldr (n => n >= 5 ? Nothing : Just ([null, 'XXX'])) (1); })
 ///            (new TypeError (`Type-variable constraint violation
 /// 
@@ -2912,61 +2912,61 @@ The value at position 1 is not a member of ‘b -> Maybe (Array2 a b)’.
         ([a, $.Fn (a) (b), b])
         (x => f => f (/* x */));
 
-///     throws (() => { T (100) (Math.sqrt); })
-///            (new TypeError (`‘T’ applied ‘a -> b’ to the wrong number of arguments
-/// 
-/// T :: a -> (a -> b) -> b
-///            ^
-///            1
-/// 
-/// Expected one argument but received zero arguments.
-/// `));
-/// 
-///     throws (() => { def ('once') ({}) ([$.Fn (a) (b), a, b]) (f => x => f (x)) (null); })
-///            (new TypeError (`Invalid value
-/// 
-/// once :: (a -> b) -> a -> b
-///          ^^^^^^
-///            1
-/// 
-/// 1)  null :: Null
-/// 
-/// The value at position 1 is not a member of ‘a -> b’.
-/// `));
-/// 
-///     throws (() => { def ('twice') ({}) ([$.Fn (a) ($.Fn (a) (b)), a, b]) (f => x => f (x) (x)) (null); })
-///            (new TypeError (`Invalid value
-/// 
-/// twice :: (a -> a -> b) -> a -> b
-///           ^^^^^^^^^^^
-///                1
-/// 
-/// 1)  null :: Null
-/// 
-/// The value at position 1 is not a member of ‘a -> a -> b’.
-/// `));
-/// 
-///     throws (() => { def ('thrice') ({}) ([$.Fn (a) ($.Fn (a) ($.Fn (a) (b))), a, b]) (f => x => f (x) (x) (x)) (null); })
-///            (new TypeError (`Invalid value
-/// 
-/// thrice :: (a -> a -> a -> b) -> a -> b
-///            ^^^^^^^^^^^^^^^^
-///                   1
-/// 
-/// 1)  null :: Null
-/// 
-/// The value at position 1 is not a member of ‘a -> a -> a -> b’.
-/// `));
+    throws (() => { T (100) (Math.sqrt); })
+           (new TypeError (`‘T’ applied ‘a -> b’ to the wrong number of arguments
+
+T :: a -> (a -> b) -> b
+           ^
+           1
+
+Expected one argument but received zero arguments.
+`));
+
+    throws (() => { def ('once') ({}) ([$.Fn (a) (b), a, b]) (f => x => f (x)) (null); })
+           (new TypeError (`Invalid value
+
+once :: (a -> b) -> a -> b
+         ^^^^^^
+           1
+
+1)  null :: Null
+
+The value at position 1 is not a member of ‘a -> b’.
+`));
+
+    throws (() => { def ('twice') ({}) ([$.Fn (a) ($.Fn (a) (b)), a, b]) (f => x => f (x) (x)) (null); })
+           (new TypeError (`Invalid value
+
+twice :: (a -> a -> b) -> a -> b
+          ^^^^^^^^^^^
+               1
+
+1)  null :: Null
+
+The value at position 1 is not a member of ‘a -> a -> b’.
+`));
+
+    throws (() => { def ('thrice') ({}) ([$.Fn (a) ($.Fn (a) ($.Fn (a) (b))), a, b]) (f => x => f (x) (x) (x)) (null); })
+           (new TypeError (`Invalid value
+
+thrice :: (a -> a -> a -> b) -> a -> b
+           ^^^^^^^^^^^^^^^^
+                  1
+
+1)  null :: Null
+
+The value at position 1 is not a member of ‘a -> a -> a -> b’.
+`));
   });
 
-///   test ('supports type-class constraints', () => {
-///     //    alt :: Alt f => f a -> f a -> f a
-///     const alt =
-///     def ('alt')
-///         ({f: [Z.Alt]})
-///         ([f (a), f (a), f (a)])
-///         (curry2 (Z.alt));
-/// 
+  test ('supports type-class constraints', () => {
+    //    alt :: Alt f => f a -> f a -> f a
+    const alt =
+    def ('alt')
+        ({f: [Z.Alt]})
+        ([f (a), f (a), f (a)])
+        (curry2 (Z.alt));
+
 ///     eq (alt ([]) ([])) ([]);
 ///     eq (alt ({}) ({})) ({});
 ///     eq (alt (Nothing) (Nothing)) (Nothing);
@@ -3129,7 +3129,7 @@ The value at position 1 is not a member of ‘b -> Maybe (Array2 a b)’.
 /// 
 /// See https://github.com/sanctuary-js/sanctuary-type-classes/tree/v${Z$version}#Alternative for information about the sanctuary-type-classes/Alternative type class.
 /// `));
-///   });
+  });
 
   test ('supports unary type variables', () => {
     //    Box :: a -> Box a
@@ -3165,33 +3165,33 @@ The value at position 1 is not a member of ‘b -> Maybe (Array2 a b)’.
     const xs = [1, 4, 9];
     xs['fantasy-land/map'] = xs.map;
 
-///     throws (() => { map (Math.sqrt) (xs); })
-///            (new TypeError (`‘map’ applied ‘a -> b’ to the wrong number of arguments
-/// 
-/// map :: Functor f => (a -> b) -> f a -> f b
-///                      ^
-///                      1
-/// 
-/// Expected one argument but received three arguments:
-/// 
-///   - 1
-///   - 0
-///   - [1, 4, 9, "fantasy-land/map": function map() { [native code] }]
-/// `));
-/// 
-///     //    sum :: Foldable f => f FiniteNumber -> FiniteNumber
-///     const sum =
-///     def ('sum')
-///         ({f: [Z.Foldable]})
-///         ([f ($.FiniteNumber), $.FiniteNumber])
-///         (foldable => Z.reduce ((x, y) => x + y, 0, foldable));
-/// 
-///     eq (sum ([1, 2, 3, 4, 5])) (15);
-///     eq (sum (Nothing)) (0);
-///     eq (sum (Just (42))) (42);
-///     eq (sum (Left ('XXX'))) (0);
-///     eq (sum (Right (42))) (42);
-/// 
+    throws (() => { map (Math.sqrt) (xs); })
+           (new TypeError (`‘map’ applied ‘a -> b’ to the wrong number of arguments
+
+map :: Functor f => (a -> b) -> f a -> f b
+                     ^
+                     1
+
+Expected one argument but received three arguments:
+
+  - 1
+  - 0
+  - [1, 4, 9, "fantasy-land/map": function map() { [native code] }]
+`));
+
+    //    sum :: Foldable f => f FiniteNumber -> FiniteNumber
+    const sum =
+    def ('sum')
+        ({f: [Z.Foldable]})
+        ([f ($.FiniteNumber), $.FiniteNumber])
+        (foldable => Z.reduce ((x, y) => x + y, 0, foldable));
+
+    eq (sum ([1, 2, 3, 4, 5])) (15);
+    eq (sum (Nothing)) (0);
+    eq (sum (Just (42))) (42);
+    eq (sum (Left ('XXX'))) (0);
+    eq (sum (Right (42))) (42);
+
 ///     throws (() => { sum (42); })
 ///            (new TypeError (`Invalid value
 /// 
@@ -3231,28 +3231,28 @@ The value at position 1 is not a member of ‘b -> Maybe (Array2 a b)’.
 /// 
 /// See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#FiniteNumber for information about the FiniteNumber type.
 /// `));
-/// 
-///     //    sort :: (Ord a, Applicative f, Foldable f, Monoid (f a)) => f a -> f a
-///     const sort =
-///     def ('sort')
-///         ({a: [Z.Ord], f: [Z.Applicative, Z.Foldable, Z.Monoid]})
-///         ([f (a), f (a)])
-///         (m => {
-///            const M = m.constructor;
-///            return Z.reduce (
-///              (m, x) => Z.concat (m, Z.of (M, x)),
-///              Z.empty (M),
-///              Z.reduce ((xs, x) => {
-///                let idx = 0;
-///                while (idx < xs.length && Z.lte (xs[idx], x)) idx += 1;
-///                xs.splice (idx, 0, x);
-///                return xs;
-///              }, [], m)
-///            );
-///          });
-/// 
-///     eq (sort (['foo', 'bar', 'baz'])) (['bar', 'baz', 'foo']);
-/// 
+
+    //    sort :: (Ord a, Applicative f, Foldable f, Monoid (f a)) => f a -> f a
+    const sort =
+    def ('sort')
+        ({a: [Z.Ord], f: [Z.Applicative, Z.Foldable, Z.Monoid]})
+        ([f (a), f (a)])
+        (m => {
+           const M = m.constructor;
+           return Z.reduce (
+             (m, x) => Z.concat (m, Z.of (M, x)),
+             Z.empty (M),
+             Z.reduce ((xs, x) => {
+               let idx = 0;
+               while (idx < xs.length && Z.lte (xs[idx], x)) idx += 1;
+               xs.splice (idx, 0, x);
+               return xs;
+             }, [], m)
+           );
+         });
+
+    eq (sort (['foo', 'bar', 'baz'])) (['bar', 'baz', 'foo']);
+
 ///     throws (() => { sort (['foo', true, 42]); })
 ///            (new TypeError (`Type-variable constraint violation
 /// 
