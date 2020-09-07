@@ -719,7 +719,7 @@ Since there is no type of which all the above values are members, the type-varia
 /// 
 /// Since there is no type of which all the above values are members, the type-variable constraint has been violated.
 /// `));
-///   });
+  });
 /// 
 ///   test ('throws custom error for unrecognized value (empty env)', () => {
 ///     const env = [];
@@ -799,18 +799,18 @@ See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Number for in
 `));
   });
 
-///   test ('performs type checking when a "returned" function is applied', () => {
-///     //    lt :: Ord a => a -> (a -> Boolean)
-///     const lt =
-///     def ('lt')
-///         ({a: [Z.Ord]})
-///         ([a, $.Fn (a) ($.Boolean)])
-///         (y => x => x < y);
-/// 
-///     eq (lt (1) (0)) (true);
-///     eq (lt (1) (1)) (false);
-///     eq (lt (1) (2)) (false);
-/// 
+  test ('performs type checking when a "returned" function is applied', () => {
+    //    lt :: Ord a => a -> (a -> Boolean)
+    const lt =
+    def ('lt')
+        ({a: [Z.Ord]})
+        ([a, $.Fn (a) ($.Boolean)])
+        (y => x => x < y);
+
+    eq (lt (1) (0)) (true);
+    eq (lt (1) (1)) (false);
+    eq (lt (1) (2)) (false);
+
 ///     throws (() => { lt (123) ('abc'); })
 ///            (new TypeError (`Type-variable constraint violation
 /// 
@@ -848,59 +848,59 @@ See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Number for in
     eq (length (vm.runInNewContext ('["foo", "bar", "baz"]'))) (3);
   });
 
-///   test ('accommodates circular references', () => {
-///     //    id :: a -> a
-///     const id =
-///     def ('id')
-///         ({})
-///         ([a, a])
-///         (x => x);
-/// 
-///     const x = {name: 'x'};
-///     const y = {name: 'y'};
-///     x.y = y;
-///     y.x = x;
-/// 
-///     eq (id (x)) (x);
-/// 
-///     const z = [];
-///     z.push (z);
-/// 
-///     throws (() => { id (z); })
-///            (new TypeError (`Type-variable constraint violation
-/// 
-/// id :: a -> a
-///       ^
-///       1
-/// 
-/// 1)  [<Circular>] :: Array ???
-/// 
-/// Since there is no type of which all the above values are members, the type-variable constraint has been violated.
-/// `));
-///   });
-/// 
-///   test ('supports custom types', () => {
-///     //    fromMaybe :: a -> Maybe a
-///     const fromMaybe =
-///     def ('fromMaybe')
-///         ({})
-///         ([a, $.Maybe (a), a])
-///         (x => maybe => maybe.isJust ? maybe.value : x);
-/// 
-///     throws (() => { fromMaybe ('x') (Just (null)); })
-///            (new TypeError (`Type-variable constraint violation
-/// 
-/// fromMaybe :: a -> Maybe a -> a
-///              ^          ^
-///              1          2
-/// 
-/// 1)  "x" :: String
-/// 
-/// 2)  null :: Null
-/// 
-/// Since there is no type of which all the above values are members, the type-variable constraint has been violated.
-/// `));
-///   });
+  test ('accommodates circular references', () => {
+    //    id :: a -> a
+    const id =
+    def ('id')
+        ({})
+        ([a, a])
+        (x => x);
+
+    const x = {name: 'x'};
+    const y = {name: 'y'};
+    x.y = y;
+    y.x = x;
+
+    eq (id (x)) (x);
+
+    const z = [];
+    z.push (z);
+
+    throws (() => { id (z); })
+           (new TypeError (`Type-variable constraint violation
+
+id :: a -> a
+      ^
+      1
+
+1)  [<Circular>] :: Array ???
+
+Since there is no type of which all the above values are members, the type-variable constraint has been violated.
+`));
+  });
+
+  test ('supports custom types', () => {
+    //    fromMaybe :: a -> Maybe a
+    const fromMaybe =
+    def ('fromMaybe')
+        ({})
+        ([a, $.Maybe (a), a])
+        (x => maybe => maybe.isJust ? maybe.value : x);
+
+    throws (() => { fromMaybe ('x') (Just (null)); })
+           (new TypeError (`Type-variable constraint violation
+
+fromMaybe :: a -> Maybe a -> a
+             ^          ^
+             1          2
+
+1)  "x" :: String
+
+2)  null :: Null
+
+Since there is no type of which all the above values are members, the type-variable constraint has been violated.
+`));
+  });
 
   test ('supports enumerated types', () => {
     eq (typeof $.EnumType) ('function');
@@ -968,17 +968,17 @@ The value at position 1 is not a member of ‘TimeUnit’.
 
     eq (id (['foo', true, 42])) (['foo', true, 42]);
 
-///     throws (() => { id (['foo', false, 42]); })
-///            (new TypeError (`Type-variable constraint violation
-/// 
-/// id :: a -> a
-///       ^
-///       1
-/// 
-/// 1)  ["foo", false, 42] :: Array ???
-/// 
-/// Since there is no type of which all the above values are members, the type-variable constraint has been violated.
-/// `));
+    throws (() => { id (['foo', false, 42]); })
+           (new TypeError (`Type-variable constraint violation
+
+id :: a -> a
+      ^
+      1
+
+1)  ["foo", false, 42] :: Array ???
+
+Since there is no type of which all the above values are members, the type-variable constraint has been violated.
+`));
   });
 
   test ('supports anonymous record types', () => {
@@ -2822,13 +2822,13 @@ map :: (a -> b) -> Array a -> Array b
 Since there is no type of which all the above values are members, the type-variable constraint has been violated.
 `));
 
-///     //    reduce_ :: ((a, b) -> a) -> a -> Array b -> a
-///     const reduce_ =
-///     def ('reduce_')
-///         ({})
-///         ([$.Function ([a, b, a]), a, $.Array (b), a])
-///         (curry3 (Z.reduce));
-/// 
+    //    reduce_ :: ((a, b) -> a) -> a -> Array b -> a
+    const reduce_ =
+    def ('reduce_')
+        ({})
+        ([$.Function ([a, b, a]), a, $.Array (b), a])
+        (curry3 (Z.reduce));
+
 ///     eq (reduce_ ((x, y) => x + y) (0) ([1, 2, 3, 4, 5, 6])) (21);
 /// 
 ///     throws (() => { reduce_ (null); })
