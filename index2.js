@@ -708,7 +708,7 @@ $.NoArguments = Object.assign (Object.create (Type$prototype), {
   format: outer => K (outer ('()')),
 });
 
-$.NullaryType = name => url => supertypes => test => Object.assign (Object.create (Type$prototype), {
+const NullaryType = name => url => supertypes => test => Object.assign (Object.create (Type$prototype), {
   type: 'NULLARY',
   name: name,
   url: url,
@@ -720,7 +720,7 @@ $.NullaryType = name => url => supertypes => test => Object.assign (Object.creat
   new: ctx => ctx.value,
 });
 
-$.UnaryType = name => url => supertypes => test => _1 => $1 => Object.assign (Object.create (Type$prototype), {
+const UnaryType = name => url => supertypes => test => _1 => $1 => Object.assign (Object.create (Type$prototype), {
   type: 'UNARY',
   name: name,
   url: url,
@@ -763,14 +763,14 @@ $.UnaryType = name => url => supertypes => test => _1 => $1 => Object.assign (Ob
 
 //  fromUnaryType :: Type -> Type -> Type
 const fromUnaryType = t => (
-  $.UnaryType (t.name)
-              (t.url)
-              (t.supertypes)
-              (t._test ([]))
-              (t.blah.$1.extract)
+  UnaryType (t.name)
+            (t.url)
+            (t.supertypes)
+            (t._test ([]))
+            (t.blah.$1.extract)
 );
 
-$.BinaryType = name => url => supertypes => test => _1 => _2 => $1 => $2 => Object.assign (Object.create (Type$prototype), {
+const BinaryType = name => url => supertypes => test => _1 => _2 => $1 => $2 => Object.assign (Object.create (Type$prototype), {
   type: 'BINARY',
   name: name,
   url: url,
@@ -837,12 +837,12 @@ $.BinaryType = name => url => supertypes => test => _1 => _2 => $1 => $2 => Obje
 
 //    fromBinaryType :: (Type -> Type -> Type) -> Type -> Type -> Type
 const fromBinaryType = t => (
-  $.BinaryType (t.name)
-               (t.url)
-               (t.supertypes)
-               (t._test ([]))
-               (t.blah.$1.extract)
-               (t.blah.$2.extract)
+  BinaryType (t.name)
+             (t.url)
+             (t.supertypes)
+             (t._test ([]))
+             (t.blah.$1.extract)
+             (t.blah.$2.extract)
 );
 
 const EnumType = name => url => members => Object.assign (Object.create (Type$prototype), {
@@ -1360,370 +1360,370 @@ const a = TypeVariable ('a');
 const b = TypeVariable ('b');
 
 $.Void = (
-  $.NullaryType ('Void')
-                ('https://github.com/sanctuary-js/sanctuary-def/tree/v0.22.0#Void')
-                ([])
-                (x => false)
+  NullaryType ('Void')
+              ('https://github.com/sanctuary-js/sanctuary-def/tree/v0.22.0#Void')
+              ([])
+              (x => false)
 );
 
 $.Any = (
-  $.NullaryType ('Any')
-                ('https://github.com/sanctuary-js/sanctuary-def/tree/v0.22.0#Any')
-                ([])
-                (x => true)
+  NullaryType ('Any')
+              ('https://github.com/sanctuary-js/sanctuary-def/tree/v0.22.0#Any')
+              ([])
+              (x => true)
 );
 
 $.AnyFunction = (
-  $.NullaryType ('Function')
-                ('https://github.com/sanctuary-js/sanctuary-def/tree/v0.22.0#Function') // XXX
-                ([])
-                (x => typeof x === 'function')
+  NullaryType ('Function')
+              ('https://github.com/sanctuary-js/sanctuary-def/tree/v0.22.0#Function') // XXX
+              ([])
+              (x => typeof x === 'function')
 );
 
 $.Arguments = (
-  $.NullaryType ('Arguments')
-                ('https://github.com/sanctuary-js/sanctuary-def/tree/v0.22.0#Arguments')
-                ([])
-                (x => Object.prototype.toString.call (x) === '[object Arguments]')
+  NullaryType ('Arguments')
+              ('https://github.com/sanctuary-js/sanctuary-def/tree/v0.22.0#Arguments')
+              ([])
+              (x => Object.prototype.toString.call (x) === '[object Arguments]')
 );
 
 $.Boolean = (
-  $.NullaryType ('Boolean')
-                ('https://github.com/sanctuary-js/sanctuary-def/tree/v0.22.0#Boolean')
-                ([])
-                (x => typeof x === 'boolean')
+  NullaryType ('Boolean')
+              ('https://github.com/sanctuary-js/sanctuary-def/tree/v0.22.0#Boolean')
+              ([])
+              (x => typeof x === 'boolean')
 );
 
 $.Buffer = (
-  $.NullaryType ('Buffer')
-                ('https://github.com/sanctuary-js/sanctuary-def/tree/v0.22.0#Buffer')
-                ([])
-                (x => typeof Buffer !== 'undefined' && Buffer.isBuffer (x))
+  NullaryType ('Buffer')
+              ('https://github.com/sanctuary-js/sanctuary-def/tree/v0.22.0#Buffer')
+              ([])
+              (x => typeof Buffer !== 'undefined' && Buffer.isBuffer (x))
 );
 
 $.Date = (
-  $.NullaryType ('Date')
-                ('https://github.com/sanctuary-js/sanctuary-def/tree/v0.22.0#Date')
-                ([])
-                (x => Object.prototype.toString.call (x) === '[object Date]')
+  NullaryType ('Date')
+              ('https://github.com/sanctuary-js/sanctuary-def/tree/v0.22.0#Date')
+              ([])
+              (x => Object.prototype.toString.call (x) === '[object Date]')
 );
 
 $.ValidDate = (
-  $.NullaryType ('ValidDate')
-                ('https://github.com/sanctuary-js/sanctuary-def/tree/v0.22.0#ValidDate')
-                ([$.Date])
-                (x => !(isNaN (Number (x))))
+  NullaryType ('ValidDate')
+              ('https://github.com/sanctuary-js/sanctuary-def/tree/v0.22.0#ValidDate')
+              ([$.Date])
+              (x => !(isNaN (Number (x))))
 );
 
 const Descending = (
-  $.UnaryType ('Descending')
-              ('https://github.com/sanctuary-js/sanctuary-def/tree/v0.22.0#Descending')
-              ([])
-              (x => type (x) === 'sanctuary-descending/Descending@1')
-              (I)
+  UnaryType ('Descending')
+            ('https://github.com/sanctuary-js/sanctuary-def/tree/v0.22.0#Descending')
+            ([])
+            (x => type (x) === 'sanctuary-descending/Descending@1')
+            (I)
 );
 
 const Either = (
-  $.BinaryType ('Either')
-               ('https://github.com/sanctuary-js/sanctuary-def/tree/v0.22.0#Either')
-               ([])
-               (x => type (x) === 'sanctuary-either/Either@1')
-               (e => e.isLeft ? [e.value] : [])
-               (e => e.isLeft ? [] : [e.value])
+  BinaryType ('Either')
+             ('https://github.com/sanctuary-js/sanctuary-def/tree/v0.22.0#Either')
+             ([])
+             (x => type (x) === 'sanctuary-either/Either@1')
+             (e => e.isLeft ? [e.value] : [])
+             (e => e.isLeft ? [] : [e.value])
 );
 
 $.Error = (
-  $.NullaryType ('Error')
-                ('https://github.com/sanctuary-js/sanctuary-def/tree/v0.22.0#Error')
-                ([])
-                (x => Object.prototype.toString.call (x) === '[object Error]')
+  NullaryType ('Error')
+              ('https://github.com/sanctuary-js/sanctuary-def/tree/v0.22.0#Error')
+              ([])
+              (x => Object.prototype.toString.call (x) === '[object Error]')
 );
 
 $.HtmlElement = (
-  $.NullaryType ('HtmlElement')
-                ('https://github.com/sanctuary-js/sanctuary-def/tree/v0.22.0#HtmlElement')
-                ([])
-                (x => /^\[object HTML.+Element\]$/.test (Object.prototype.toString.call (x)))
+  NullaryType ('HtmlElement')
+              ('https://github.com/sanctuary-js/sanctuary-def/tree/v0.22.0#HtmlElement')
+              ([])
+              (x => /^\[object HTML.+Element\]$/.test (Object.prototype.toString.call (x)))
 );
 
 const Identity = (
-  $.UnaryType ('Identity')
-              ('https://github.com/sanctuary-js/sanctuary-def/tree/v0.22.0#Identity')
-              ([])
-              (x => type (x) === 'sanctuary-identity/Identity@1')
-              (I)
+  UnaryType ('Identity')
+            ('https://github.com/sanctuary-js/sanctuary-def/tree/v0.22.0#Identity')
+            ([])
+            (x => type (x) === 'sanctuary-identity/Identity@1')
+            (I)
 );
 
 const JsMap = (
-  $.BinaryType ('JsMap')
-               ('https://github.com/sanctuary-js/sanctuary-def/tree/v0.22.0#JsMap')
-               ([])
-               (x => Object.prototype.toString.call (x) === '[object Map]')
-               (jsMap => Array.from (jsMap.keys ()))
-               (jsMap => Array.from (jsMap.values ()))
+  BinaryType ('JsMap')
+             ('https://github.com/sanctuary-js/sanctuary-def/tree/v0.22.0#JsMap')
+             ([])
+             (x => Object.prototype.toString.call (x) === '[object Map]')
+             (jsMap => Array.from (jsMap.keys ()))
+             (jsMap => Array.from (jsMap.values ()))
 );
 
 const JsSet = (
-  $.UnaryType ('JsSet')
-              ('https://github.com/sanctuary-js/sanctuary-def/tree/v0.22.0#JsSet')
-              ([])
-              (x => Object.prototype.toString.call (x) === '[object Set]')
-              (jsSet => Array.from (jsSet.values ()))
+  UnaryType ('JsSet')
+            ('https://github.com/sanctuary-js/sanctuary-def/tree/v0.22.0#JsSet')
+            ([])
+            (x => Object.prototype.toString.call (x) === '[object Set]')
+            (jsSet => Array.from (jsSet.values ()))
 );
 
 const Maybe = (
-  $.UnaryType ('Maybe')
-              ('https://github.com/sanctuary-js/sanctuary-def/tree/v0.22.0#Maybe')
-              ([])
-              (x => type (x) === 'sanctuary-maybe/Maybe@1')
-              (I)
+  UnaryType ('Maybe')
+            ('https://github.com/sanctuary-js/sanctuary-def/tree/v0.22.0#Maybe')
+            ([])
+            (x => type (x) === 'sanctuary-maybe/Maybe@1')
+            (I)
 );
 
 $.Module = (
-  $.NullaryType ('Module')
-                ('https://github.com/sanctuary-js/sanctuary-def/tree/v0.22.0#Module')
-                ([])
-                (x => Object.prototype.toString.call (x) === '[object Module]')
+  NullaryType ('Module')
+              ('https://github.com/sanctuary-js/sanctuary-def/tree/v0.22.0#Module')
+              ([])
+              (x => Object.prototype.toString.call (x) === '[object Module]')
 );
 
 const NonEmpty = (
-  $.UnaryType ('NonEmpty')
-              ('https://github.com/sanctuary-js/sanctuary-def/tree/v0.22.0#NonEmpty')
-              ([])
-              (x => Z.Monoid.test (x) && Z.Setoid.test (x) && !(Z.equals (x, Z.empty (x.constructor))))
-              (monoid => [monoid])
+  UnaryType ('NonEmpty')
+            ('https://github.com/sanctuary-js/sanctuary-def/tree/v0.22.0#NonEmpty')
+            ([])
+            (x => Z.Monoid.test (x) && Z.Setoid.test (x) && !(Z.equals (x, Z.empty (x.constructor))))
+            (monoid => [monoid])
 );
 
 $.Null = (
-  $.NullaryType ('Null')
-                ('https://github.com/sanctuary-js/sanctuary-def/tree/v0.22.0#Null')
-                ([])
-                (x => Object.prototype.toString.call (x) === '[object Null]')
+  NullaryType ('Null')
+              ('https://github.com/sanctuary-js/sanctuary-def/tree/v0.22.0#Null')
+              ([])
+              (x => Object.prototype.toString.call (x) === '[object Null]')
 );
 
 const Nullable = (
-  $.UnaryType ('Nullable')
-              ('https://github.com/sanctuary-js/sanctuary-def/tree/v0.22.0#Nullable')
-              ([])
-              (K (true))
-              (nullable => nullable === null ? [] : [nullable])
+  UnaryType ('Nullable')
+            ('https://github.com/sanctuary-js/sanctuary-def/tree/v0.22.0#Nullable')
+            ([])
+            (K (true))
+            (nullable => nullable === null ? [] : [nullable])
 );
 
 $.Number = (
-  $.NullaryType ('Number')
-                ('https://github.com/sanctuary-js/sanctuary-def/tree/v0.22.0#Number')
-                ([])
-                (x => typeof x === 'number')
+  NullaryType ('Number')
+              ('https://github.com/sanctuary-js/sanctuary-def/tree/v0.22.0#Number')
+              ([])
+              (x => typeof x === 'number')
 );
 
 $.ValidNumber = (
-  $.NullaryType ('ValidNumber')
-                ('https://github.com/sanctuary-js/sanctuary-def/tree/v0.22.0#ValidNumber')
-                ([$.Number])
-                (x => !(isNaN (x)))
+  NullaryType ('ValidNumber')
+              ('https://github.com/sanctuary-js/sanctuary-def/tree/v0.22.0#ValidNumber')
+              ([$.Number])
+              (x => !(isNaN (x)))
 );
 
 $.PositiveNumber = (
-  $.NullaryType ('PositiveNumber')
-                ('https://github.com/sanctuary-js/sanctuary-def/tree/v0.22.0#PositiveNumber')
-                ([$.Number])
-                (x => x > 0)
+  NullaryType ('PositiveNumber')
+              ('https://github.com/sanctuary-js/sanctuary-def/tree/v0.22.0#PositiveNumber')
+              ([$.Number])
+              (x => x > 0)
 );
 
 $.NegativeNumber = (
-  $.NullaryType ('NegativeNumber')
-                ('https://github.com/sanctuary-js/sanctuary-def/tree/v0.22.0#NegativeNumber')
-                ([$.Number])
-                (x => x < 0)
+  NullaryType ('NegativeNumber')
+              ('https://github.com/sanctuary-js/sanctuary-def/tree/v0.22.0#NegativeNumber')
+              ([$.Number])
+              (x => x < 0)
 );
 
 $.NonZeroValidNumber = (
-  $.NullaryType ('NonZeroValidNumber')
-                ('https://github.com/sanctuary-js/sanctuary-def/tree/v0.22.0#NonZeroValidNumber')
-                ([$.ValidNumber])
-                (x => x !== 0)
+  NullaryType ('NonZeroValidNumber')
+              ('https://github.com/sanctuary-js/sanctuary-def/tree/v0.22.0#NonZeroValidNumber')
+              ([$.ValidNumber])
+              (x => x !== 0)
 );
 
 $.FiniteNumber = (
-  $.NullaryType ('FiniteNumber')
-                ('https://github.com/sanctuary-js/sanctuary-def/tree/v0.22.0#FiniteNumber')
-                ([$.ValidNumber])
-                (isFinite)
+  NullaryType ('FiniteNumber')
+              ('https://github.com/sanctuary-js/sanctuary-def/tree/v0.22.0#FiniteNumber')
+              ([$.ValidNumber])
+              (isFinite)
 );
 
 $.PositiveFiniteNumber = (
-  $.NullaryType ('PositiveFiniteNumber')
-                ('https://github.com/sanctuary-js/sanctuary-def/tree/v0.22.0#PositiveFiniteNumber')
-                ([$.FiniteNumber])
-                (x => x > 0)
+  NullaryType ('PositiveFiniteNumber')
+              ('https://github.com/sanctuary-js/sanctuary-def/tree/v0.22.0#PositiveFiniteNumber')
+              ([$.FiniteNumber])
+              (x => x > 0)
 );
 
 $.NegativeFiniteNumber = (
-  $.NullaryType ('NegativeFiniteNumber')
-                ('https://github.com/sanctuary-js/sanctuary-def/tree/v0.22.0#NegativeFiniteNumber')
-                ([$.FiniteNumber])
-                (x => x < 0)
+  NullaryType ('NegativeFiniteNumber')
+              ('https://github.com/sanctuary-js/sanctuary-def/tree/v0.22.0#NegativeFiniteNumber')
+              ([$.FiniteNumber])
+              (x => x < 0)
 );
 
 $.NonZeroFiniteNumber = (
-  $.NullaryType ('NonZeroFiniteNumber')
-                ('https://github.com/sanctuary-js/sanctuary-def/tree/v0.22.0#NonZeroFiniteNumber')
-                ([$.FiniteNumber])
-                (x => x !== 0)
+  NullaryType ('NonZeroFiniteNumber')
+              ('https://github.com/sanctuary-js/sanctuary-def/tree/v0.22.0#NonZeroFiniteNumber')
+              ([$.FiniteNumber])
+              (x => x !== 0)
 );
 
 $.Integer = (
-  $.NullaryType ('Integer')
-                ('https://github.com/sanctuary-js/sanctuary-def/tree/v0.22.0#Integer')
-                ([$.ValidNumber])
-                (x => Math.floor (x) === x && x >= MIN_SAFE_INTEGER && x <= MAX_SAFE_INTEGER)
+  NullaryType ('Integer')
+              ('https://github.com/sanctuary-js/sanctuary-def/tree/v0.22.0#Integer')
+              ([$.ValidNumber])
+              (x => Math.floor (x) === x && x >= MIN_SAFE_INTEGER && x <= MAX_SAFE_INTEGER)
 );
 
 $.NonZeroInteger = (
-  $.NullaryType ('NonZeroInteger')
-                ('https://github.com/sanctuary-js/sanctuary-def/tree/v0.22.0#NonZeroInteger')
-                ([$.Integer])
-                (x => x !== 0)
+  NullaryType ('NonZeroInteger')
+              ('https://github.com/sanctuary-js/sanctuary-def/tree/v0.22.0#NonZeroInteger')
+              ([$.Integer])
+              (x => x !== 0)
 );
 
 $.NonNegativeInteger = (
-  $.NullaryType ('NonNegativeInteger')
-                ('https://github.com/sanctuary-js/sanctuary-def/tree/v0.22.0#NonNegativeInteger')
-                ([$.Integer])
-                (x => x >= 0)
+  NullaryType ('NonNegativeInteger')
+              ('https://github.com/sanctuary-js/sanctuary-def/tree/v0.22.0#NonNegativeInteger')
+              ([$.Integer])
+              (x => x >= 0)
 );
 
 $.PositiveInteger = (
-  $.NullaryType ('PositiveInteger')
-                ('https://github.com/sanctuary-js/sanctuary-def/tree/v0.22.0#PositiveInteger')
-                ([$.Integer])
-                (x => x > 0)
+  NullaryType ('PositiveInteger')
+              ('https://github.com/sanctuary-js/sanctuary-def/tree/v0.22.0#PositiveInteger')
+              ([$.Integer])
+              (x => x > 0)
 );
 
 $.NegativeInteger = (
-  $.NullaryType ('NegativeInteger')
-                ('https://github.com/sanctuary-js/sanctuary-def/tree/v0.22.0#NegativeInteger')
-                ([$.Integer])
-                (x => x < 0)
+  NullaryType ('NegativeInteger')
+              ('https://github.com/sanctuary-js/sanctuary-def/tree/v0.22.0#NegativeInteger')
+              ([$.Integer])
+              (x => x < 0)
 );
 
 $.Object = (
-  $.NullaryType ('Object')
-                ('https://github.com/sanctuary-js/sanctuary-def/tree/v0.22.0#Object')
-                ([])
-                (x => type (x) === 'Object')
+  NullaryType ('Object')
+              ('https://github.com/sanctuary-js/sanctuary-def/tree/v0.22.0#Object')
+              ([])
+              (x => type (x) === 'Object')
 );
 
 const Pair = (
-  $.BinaryType ('Pair')
-               ('https://github.com/sanctuary-js/sanctuary-def/tree/v0.22.0#Pair')
-               ([])
-               (x => type (x) === 'sanctuary-pair/Pair@1')
-               (pair => [pair.fst])
-               (pair => [pair.snd])
+  BinaryType ('Pair')
+             ('https://github.com/sanctuary-js/sanctuary-def/tree/v0.22.0#Pair')
+             ([])
+             (x => type (x) === 'sanctuary-pair/Pair@1')
+             (pair => [pair.fst])
+             (pair => [pair.snd])
 );
 
 $.RegExp = (
-  $.NullaryType ('RegExp')
-                ('https://github.com/sanctuary-js/sanctuary-def/tree/v0.22.0#RegExp')
-                ([])
-                (x => Object.prototype.toString.call (x) === '[object RegExp]')
+  NullaryType ('RegExp')
+              ('https://github.com/sanctuary-js/sanctuary-def/tree/v0.22.0#RegExp')
+              ([])
+              (x => Object.prototype.toString.call (x) === '[object RegExp]')
 );
 
 $.GlobalRegExp = (
-  $.NullaryType ('GlobalRegExp')
-                ('https://github.com/sanctuary-js/sanctuary-def/tree/v0.22.0#GlobalRegExp')
-                ([$.RegExp])
-                (regex => regex.global)
+  NullaryType ('GlobalRegExp')
+              ('https://github.com/sanctuary-js/sanctuary-def/tree/v0.22.0#GlobalRegExp')
+              ([$.RegExp])
+              (regex => regex.global)
 );
 
 $.NonGlobalRegExp = (
-  $.NullaryType ('NonGlobalRegExp')
-                ('https://github.com/sanctuary-js/sanctuary-def/tree/v0.22.0#NonGlobalRegExp')
-                ([$.RegExp])
-                (regex => !regex.global)
+  NullaryType ('NonGlobalRegExp')
+              ('https://github.com/sanctuary-js/sanctuary-def/tree/v0.22.0#NonGlobalRegExp')
+              ([$.RegExp])
+              (regex => !regex.global)
 );
 
 $.String = (
-  $.NullaryType ('String')
-                ('https://github.com/sanctuary-js/sanctuary-def/tree/v0.22.0#String')
-                ([])
-                (x => typeof x === 'string')
+  NullaryType ('String')
+              ('https://github.com/sanctuary-js/sanctuary-def/tree/v0.22.0#String')
+              ([])
+              (x => typeof x === 'string')
 );
 
 $.Symbol = (
-  $.NullaryType ('Symbol')
-                ('https://github.com/sanctuary-js/sanctuary-def/tree/v0.22.0#Symbol')
-                ([])
-                (x => typeof x === 'symbol')
+  NullaryType ('Symbol')
+              ('https://github.com/sanctuary-js/sanctuary-def/tree/v0.22.0#Symbol')
+              ([])
+              (x => typeof x === 'symbol')
 );
 
 $.RegexFlags = (
-  $.NullaryType ('RegexFlags')
-                ('https://github.com/sanctuary-js/sanctuary-def/tree/v0.22.0#RegexFlags')
-                ([$.String])
-                (s => /^g?i?m?$/.test (s))
+  NullaryType ('RegexFlags')
+              ('https://github.com/sanctuary-js/sanctuary-def/tree/v0.22.0#RegexFlags')
+              ([$.String])
+              (s => /^g?i?m?$/.test (s))
 );
 
 const StrMap = (
-  $.UnaryType ('StrMap')
-              ('https://github.com/sanctuary-js/sanctuary-def/tree/v0.22.0#StrMap')
-              ([$.Object])
-              (K (true))
-              (I)
+  UnaryType ('StrMap')
+            ('https://github.com/sanctuary-js/sanctuary-def/tree/v0.22.0#StrMap')
+            ([$.Object])
+            (K (true))
+            (I)
 );
 
 $.Type = (
-  $.NullaryType ('Type')
-                ('https://github.com/sanctuary-js/sanctuary-def/tree/v0.22.0#Type')
-                ([])
-                (x => type (x) === 'sanctuary-def/Type@1')
+  NullaryType ('Type')
+              ('https://github.com/sanctuary-js/sanctuary-def/tree/v0.22.0#Type')
+              ([])
+              (x => type (x) === 'sanctuary-def/Type@1')
 );
 
 $.TypeClass = (
-  $.NullaryType ('TypeClass')
-                ('https://github.com/sanctuary-js/sanctuary-def/tree/v0.22.0#TypeClass')
-                ([])
-                (x => type (x) === 'sanctuary-type-classes/TypeClass@1')
+  NullaryType ('TypeClass')
+              ('https://github.com/sanctuary-js/sanctuary-def/tree/v0.22.0#TypeClass')
+              ([])
+              (x => type (x) === 'sanctuary-type-classes/TypeClass@1')
 );
 
 $.Undefined = (
-  $.NullaryType ('Undefined')
-                ('https://github.com/sanctuary-js/sanctuary-def/tree/v0.22.0#Undefined')
-                ([])
-                (x => Object.prototype.toString.call (x) === '[object Undefined]')
+  NullaryType ('Undefined')
+              ('https://github.com/sanctuary-js/sanctuary-def/tree/v0.22.0#Undefined')
+              ([])
+              (x => Object.prototype.toString.call (x) === '[object Undefined]')
 );
 
 $.Array = (
-  $.UnaryType ('Array')
-              ('https://github.com/sanctuary-js/sanctuary-def/tree/v0.22.0#Array')
-              ([])
-              (Array.isArray)
-              (I)
+  UnaryType ('Array')
+            ('https://github.com/sanctuary-js/sanctuary-def/tree/v0.22.0#Array')
+            ([])
+            (Array.isArray)
+            (I)
 );
 
 $.Array0 = (
-  $.NullaryType ('Array0')
-                ('https://github.com/sanctuary-js/sanctuary-def/tree/v0.22.0#Array0')
-                ([$.Array ($.Unknown)])
-                (xs => xs.length === 0)
+  NullaryType ('Array0')
+              ('https://github.com/sanctuary-js/sanctuary-def/tree/v0.22.0#Array0')
+              ([$.Array ($.Unknown)])
+              (xs => xs.length === 0)
 );
 
 const Array1 = (
-  $.UnaryType ('Array1')
-              ('https://github.com/sanctuary-js/sanctuary-def/tree/v0.22.0#Array1')
-              ([$.Array ($.Unknown)])
-              (xs => xs.length === 1)
-              (xs => [xs[0]])
+  UnaryType ('Array1')
+            ('https://github.com/sanctuary-js/sanctuary-def/tree/v0.22.0#Array1')
+            ([$.Array ($.Unknown)])
+            (xs => xs.length === 1)
+            (xs => [xs[0]])
 );
 
 const Array2 = (
-  $.BinaryType ('Array2')
-               ('https://github.com/sanctuary-js/sanctuary-def/tree/v0.22.0#Array2')
-               ([$.Array ($.Unknown)])
-               (xs => xs.length === 2)
-               (xs => [xs[0]])
-               (xs => [xs[1]])
+  BinaryType ('Array2')
+             ('https://github.com/sanctuary-js/sanctuary-def/tree/v0.22.0#Array2')
+             ([$.Array ($.Unknown)])
+             (xs => xs.length === 2)
+             (xs => [xs[0]])
+             (xs => [xs[1]])
 );
 
 const Fn = $1 => $2 => (
@@ -2108,3 +2108,38 @@ $.TypeVariable = def ('TypeVariable') ({}) ([$.String, $.Type]) (TypeVariable);
 $.UnaryTypeVariable = def ('UnaryTypeVariable') ({}) ([$.String, Unchecked ('Type -> Type')]) (name => def (name) ({}) ([$.Type, $.Type]) (UnaryTypeVariable (name)));
 
 $.BinaryTypeVariable = def ('BinaryTypeVariable') ({}) ([$.String, Unchecked ('Type -> Type -> Type')]) (name => def (name) ({}) ([$.Type, $.Type, $.Type]) (BinaryTypeVariable (name)));
+
+$.NullaryType = def ('NullaryType') ({}) ([$.String, $.String, $.Array ($.Type), $.Fn ($.Any) ($.Boolean), $.Type]) (NullaryType);
+
+{
+const a = TypeVariable ('a');
+const f = UnaryTypeVariable ('f');
+const t = UnaryTypeVariable ('t');
+
+$.UnaryType =
+def ('UnaryType')
+    ({f: [Z.Foldable]})
+    ([$.String,
+      $.String,
+      $.Array ($.Type),
+      Unchecked ('(Any -> Boolean)'),
+      Unchecked ('(t a -> f a)'),
+      Unchecked ('Type -> Type')])
+    (name => url => supertypes => test => _1 => (
+       def (name) ({}) ([$.Type, $.Type]) (UnaryType (name) (url) (supertypes) (test) (_1))));
+}
+
+{
+$.BinaryType =
+def ('BinaryType')
+    ({f: [Z.Foldable]})
+    ([$.String,
+      $.String,
+      $.Array ($.Type),
+      Unchecked ('(Any -> Boolean)'),
+      Unchecked ('(t a b -> f a)'),
+      Unchecked ('(t a b -> f b)'),
+      Unchecked ('Type -> Type -> Type')])
+    (name => url => supertypes => test => _1 => _2 => (
+       def (name) ({}) ([$.Type, $.Type, $.Type]) (BinaryType (name) (url) (supertypes) (test) (_1) (_2))));
+}

@@ -3410,53 +3410,53 @@ See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Number for in
 `));
   });
 
-///   test ('only determines actual types when necessary', () => {
-///     //  count :: Integer
-///     let count = 0;
-/// 
-///     //    Void :: Type
-///     const Void = $.NullaryType
-///       ('Void')
-///       ('http://example.com/my-package#Void')
-///       ([])
-///       (x => { count += 1; return false; });
-/// 
-///     const env = [$.Array ($.Unknown), $.Maybe ($.Unknown), $.Number, Void];
-///     const def = $.create ({checkTypes: true, env});
-/// 
-///     //    head :: Array a -> Maybe a
-///     const head =
-///     def ('head')
-///         ({})
-///         ([$.Array (a), $.Maybe (a)])
-///         (xs => xs.length > 0 ? Just (xs[0]) : Nothing);
-/// 
-///     eq (head ([])) (Nothing);
-///     eq (count) (0);
-///     eq (head ([1, 2, 3])) (Just (1));
-///     eq (count) (1);
-///   });
-/// 
-///   test ('replaces Unknowns with free type variables', () => {
-///     //    map :: Functor f => (a -> b) -> f a -> f b
-///     const map =
-///     def ('map')
-///         ({f: [Z.Functor]})
-///         ([$.Fn (a) (b), f (a), f (b)])
-///         (curry2 (Z.map));
-/// 
-///     throws (() => { map (Right (Right (Right (Right (0))))); })
-///            (new TypeError (`Invalid value
-/// 
-/// map :: Functor f => (a -> b) -> f a -> f b
-///                      ^^^^^^
-///                        1
-/// 
-/// 1)  Right (Right (Right (Right (0)))) :: Either c (Either d (Either e (Either g Number)))
-/// 
-/// The value at position 1 is not a member of ‘a -> b’.
-/// `));
-///   });
+  test ('only determines actual types when necessary', () => {
+    //  count :: Integer
+    let count = 0;
+
+    //    Void :: Type
+    const Void = $.NullaryType
+      ('Void')
+      ('http://example.com/my-package#Void')
+      ([])
+      (x => { count += 1; return false; });
+
+    const env = [$.Array ($.Unknown), $.Maybe ($.Unknown), $.Number, Void];
+    const def = $.create ({checkTypes: true, env});
+
+    //    head :: Array a -> Maybe a
+    const head =
+    def ('head')
+        ({})
+        ([$.Array (a), $.Maybe (a)])
+        (xs => xs.length > 0 ? Just (xs[0]) : Nothing);
+
+    eq (head ([])) (Nothing);
+    eq (count) (0);
+    eq (head ([1, 2, 3])) (Just (1));
+    eq (count) (1);
+  });
+
+  test ('replaces Unknowns with free type variables', () => {
+    //    map :: Functor f => (a -> b) -> f a -> f b
+    const map =
+    def ('map')
+        ({f: [Z.Functor]})
+        ([$.Fn (a) (b), f (a), f (b)])
+        (curry2 (Z.map));
+
+    throws (() => { map (Right (Right (Right (Right (0))))); })
+           (new TypeError (`Invalid value
+
+map :: Functor f => (a -> b) -> f a -> f b
+                     ^^^^^^
+                       1
+
+1)  Right (Right (Right (Right (0)))) :: Either c (Either d (Either e (Either g Number)))
+
+The value at position 1 is not a member of ‘a -> b’.
+`));
+  });
 
 });
 
@@ -3505,157 +3505,157 @@ suite ('test', () => {
 
 });
 
-/// suite ('NullaryType', () => {
-/// 
-///   test ('is a ternary function', () => {
-///     eq (typeof $.NullaryType) ('function');
-///     eq ($.NullaryType.length) (1);
-///     eq (show ($.NullaryType)) ('NullaryType :: String -> String -> Array Type -> (Any -> Boolean) -> Type');
-///   });
-/// 
-///   test ('supports subtyping', () => {
-///     //    Number_ :: Type
-///     const Number_ = $.NullaryType
-///       ('Number')
-///       ('')
-///       ([])
-///       (x => typeof x === 'number');
-/// 
-///     //    ValidNumber :: Type
-///     const ValidNumber = $.NullaryType
-///       ('ValidNumber')
-///       ('')
-///       ([Number_])
-///       (complement (isNaN));
-/// 
-///     //    FiniteNumber :: Type
-///     const FiniteNumber = $.NullaryType
-///       ('FiniteNumber')
-///       ('')
-///       ([ValidNumber])
-///       (isFinite);
-/// 
-///     eq ($.test ([]) (Number_) (null)) (false);
-///     eq ($.test ([]) (Number_) (NaN)) (true);
-///     eq ($.test ([]) (ValidNumber) (null)) (false);
-///     eq ($.test ([]) (ValidNumber) (NaN)) (false);
-///     eq ($.test ([]) (ValidNumber) (Infinity)) (true);
-///     eq ($.test ([]) (FiniteNumber) (null)) (false);
-///     eq ($.test ([]) (FiniteNumber) (NaN)) (false);
-///     eq ($.test ([]) (FiniteNumber) (Infinity)) (false);
-///     eq ($.test ([]) (FiniteNumber) (0)) (true);
-///   });
-/// 
-/// });
-/// 
-/// suite ('UnaryType', () => {
-/// 
-///   test ('is a quaternary function', () => {
-///     eq (typeof $.UnaryType) ('function');
-///     eq ($.UnaryType.length) (1);
-///     eq (show ($.UnaryType)) ('UnaryType :: Foldable f => String -> String -> Array Type -> (Any -> Boolean) -> (t a -> f a) -> Type -> Type');
-///   });
-/// 
-///   test ('returns a type constructor which type checks its arguments', () => {
-///     //    MyUnaryType :: Type -> Type
-///     const MyUnaryType = $.UnaryType
-///       ('MyUnaryType')
-///       ('')
-///       ([])
-///       (x => type (x) === 'my-package/MyUnaryType@1')
-///       (_ => []);
-/// 
-///     eq (show (def ('f')
-///                   ({})
-///                   ([MyUnaryType ($.RecordType ({x: $.Number, y: $.Number}))])
-///                   (() => {})))
-///        ('f :: () -> MyUnaryType { x :: Number, y :: Number }');
-/// 
-///     throws (() => { MyUnaryType ({x: $.Number, y: $.Number}); })
-///            (new TypeError (`Invalid value
-/// 
-/// MyUnaryType :: Type -> Type
-///                ^^^^
-///                 1
-/// 
-/// 1)  {"x": Number, "y": Number} :: Object, StrMap Type
-/// 
-/// The value at position 1 is not a member of ‘Type’.
-/// 
-/// See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Type for information about the Type type.
-/// `));
-///   });
-/// 
-///   test ('supports subtyping', () => {
-///     //    Palindrome :: Type -> Type
-///     const Palindrome = $.UnaryType
-///       ('Palindrome')
-///       ('http://example.com/my-package#Palindrome')
-///       ([$.Array ($.Unknown)])
-///       (xs => Z.equals (xs, Z.reverse (xs)))
-///       (palindrome => palindrome);
-/// 
-///     eq ($.test ([]) (Palindrome ($.Number)) (null)) (false);
-///     eq ($.test ([]) (Palindrome ($.Number)) ([])) (true);
-///     eq ($.test ([]) (Palindrome ($.Number)) ([1])) (true);
-///     eq ($.test ([]) (Palindrome ($.Number)) ([1, 2, 3])) (false);
-///     eq ($.test ([]) (Palindrome ($.Number)) ([1, 2, 1])) (true);
-///     eq ($.test ([]) (Palindrome ($.Number)) (['foo', 'bar', 'foo'])) (false);
-///   });
-/// 
-/// });
-/// 
-/// suite ('BinaryType', () => {
-/// 
-///   test ('is a quinary function', () => {
-///     eq (typeof $.BinaryType) ('function');
-///     eq ($.BinaryType.length) (1);
-///     eq (show ($.BinaryType)) ('BinaryType :: Foldable f => String -> String -> Array Type -> (Any -> Boolean) -> (t a b -> f a) -> (t a b -> f b) -> Type -> Type -> Type');
-///   });
-/// 
-///   test ('returns a type constructor which type checks its arguments', () => {
-///     //    MyBinaryType :: Type -> Type -> Type
-///     const MyBinaryType = $.BinaryType
-///       ('MyBinaryType')
-///       ('')
-///       ([])
-///       (x => type (x) === 'my-package/MyBinaryType@1')
-///       (_ => [])
-///       (_ => []);
-/// 
-///     throws (() => { MyBinaryType ($.Number) ({x: $.Number, y: $.Number}); })
-///            (new TypeError (`Invalid value
-/// 
-/// MyBinaryType :: Type -> Type -> Type
-///                         ^^^^
-///                          1
-/// 
-/// 1)  {"x": Number, "y": Number} :: Object, StrMap Type
-/// 
-/// The value at position 1 is not a member of ‘Type’.
-/// 
-/// See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Type for information about the Type type.
-/// `));
-///   });
-/// 
-///   test ('supports subtyping', () => {
-///     //    Different :: Type -> Type -> Type
-///     const Different = $.BinaryType
-///       ('Different')
-///       ('http://example.com/my-package#Different')
-///       ([$.Array2 ($.Unknown) ($.Unknown)])
-///       (array2 => !(Z.equals (array2[0], array2[1])))
-///       (different => [different[0]])
-///       (different => [different[1]]);
-/// 
-///     eq ($.test ([]) (Different ($.String) ($.String)) ([null, null])) (false);
-///     eq ($.test ([]) (Different ($.String) ($.String)) ([null, 'foo'])) (false);
-///     eq ($.test ([]) (Different ($.String) ($.String)) (['foo', null])) (false);
-///     eq ($.test ([]) (Different ($.String) ($.String)) (['foo', 'foo'])) (false);
-///     eq ($.test ([]) (Different ($.String) ($.String)) (['foo', 'bar'])) (true);
-///   });
-/// 
-/// });
+suite ('NullaryType', () => {
+
+  test ('is a ternary function', () => {
+    eq (typeof $.NullaryType) ('function');
+    eq ($.NullaryType.length) (1);
+    eq (show ($.NullaryType)) ('NullaryType :: String -> String -> Array Type -> (Any -> Boolean) -> Type');
+  });
+
+  test ('supports subtyping', () => {
+    //    Number_ :: Type
+    const Number_ = $.NullaryType
+      ('Number')
+      ('')
+      ([])
+      (x => typeof x === 'number');
+
+    //    ValidNumber :: Type
+    const ValidNumber = $.NullaryType
+      ('ValidNumber')
+      ('')
+      ([Number_])
+      (complement (isNaN));
+
+    //    FiniteNumber :: Type
+    const FiniteNumber = $.NullaryType
+      ('FiniteNumber')
+      ('')
+      ([ValidNumber])
+      (isFinite);
+
+    eq ($.test ([]) (Number_) (null)) (false);
+    eq ($.test ([]) (Number_) (NaN)) (true);
+    eq ($.test ([]) (ValidNumber) (null)) (false);
+    eq ($.test ([]) (ValidNumber) (NaN)) (false);
+    eq ($.test ([]) (ValidNumber) (Infinity)) (true);
+    eq ($.test ([]) (FiniteNumber) (null)) (false);
+    eq ($.test ([]) (FiniteNumber) (NaN)) (false);
+    eq ($.test ([]) (FiniteNumber) (Infinity)) (false);
+    eq ($.test ([]) (FiniteNumber) (0)) (true);
+  });
+
+});
+
+suite ('UnaryType', () => {
+
+  test ('is a quaternary function', () => {
+    eq (typeof $.UnaryType) ('function');
+    eq ($.UnaryType.length) (1);
+    eq (show ($.UnaryType)) ('UnaryType :: Foldable f => String -> String -> Array Type -> (Any -> Boolean) -> (t a -> f a) -> Type -> Type');
+  });
+
+  test ('returns a type constructor which type checks its arguments', () => {
+    //    MyUnaryType :: Type -> Type
+    const MyUnaryType = $.UnaryType
+      ('MyUnaryType')
+      ('')
+      ([])
+      (x => type (x) === 'my-package/MyUnaryType@1')
+      (_ => []);
+
+    eq (show (def ('f')
+                  ({})
+                  ([MyUnaryType ($.RecordType ({x: $.Number, y: $.Number}))])
+                  (() => {})))
+       ('f :: () -> MyUnaryType { x :: Number, y :: Number }');
+
+    throws (() => { MyUnaryType ({x: $.Number, y: $.Number}); })
+           (new TypeError (`Invalid value
+
+MyUnaryType :: Type -> Type
+               ^^^^
+                1
+
+1)  {"x": Number, "y": Number} :: Object, StrMap Type
+
+The value at position 1 is not a member of ‘Type’.
+
+See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Type for information about the Type type.
+`));
+  });
+
+  test ('supports subtyping', () => {
+    //    Palindrome :: Type -> Type
+    const Palindrome = $.UnaryType
+      ('Palindrome')
+      ('http://example.com/my-package#Palindrome')
+      ([$.Array ($.Unknown)])
+      (xs => Z.equals (xs, Z.reverse (xs)))
+      (palindrome => palindrome);
+
+    eq ($.test ([]) (Palindrome ($.Number)) (null)) (false);
+    eq ($.test ([]) (Palindrome ($.Number)) ([])) (true);
+    eq ($.test ([]) (Palindrome ($.Number)) ([1])) (true);
+    eq ($.test ([]) (Palindrome ($.Number)) ([1, 2, 3])) (false);
+    eq ($.test ([]) (Palindrome ($.Number)) ([1, 2, 1])) (true);
+    eq ($.test ([]) (Palindrome ($.Number)) (['foo', 'bar', 'foo'])) (false);
+  });
+
+});
+
+suite ('BinaryType', () => {
+
+  test ('is a quinary function', () => {
+    eq (typeof $.BinaryType) ('function');
+    eq ($.BinaryType.length) (1);
+    eq (show ($.BinaryType)) ('BinaryType :: Foldable f => String -> String -> Array Type -> (Any -> Boolean) -> (t a b -> f a) -> (t a b -> f b) -> Type -> Type -> Type');
+  });
+
+  test ('returns a type constructor which type checks its arguments', () => {
+    //    MyBinaryType :: Type -> Type -> Type
+    const MyBinaryType = $.BinaryType
+      ('MyBinaryType')
+      ('')
+      ([])
+      (x => type (x) === 'my-package/MyBinaryType@1')
+      (_ => [])
+      (_ => []);
+
+    throws (() => { MyBinaryType ($.Number) ({x: $.Number, y: $.Number}); })
+           (new TypeError (`Invalid value
+
+MyBinaryType :: Type -> Type -> Type
+                        ^^^^
+                         1
+
+1)  {"x": Number, "y": Number} :: Object, StrMap Type
+
+The value at position 1 is not a member of ‘Type’.
+
+See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Type for information about the Type type.
+`));
+  });
+
+  test ('supports subtyping', () => {
+    //    Different :: Type -> Type -> Type
+    const Different = $.BinaryType
+      ('Different')
+      ('http://example.com/my-package#Different')
+      ([$.Array2 ($.Unknown) ($.Unknown)])
+      (array2 => !(Z.equals (array2[0], array2[1])))
+      (different => [different[0]])
+      (different => [different[1]]);
+
+    eq ($.test ([]) (Different ($.String) ($.String)) ([null, null])) (false);
+    eq ($.test ([]) (Different ($.String) ($.String)) ([null, 'foo'])) (false);
+    eq ($.test ([]) (Different ($.String) ($.String)) (['foo', null])) (false);
+    eq ($.test ([]) (Different ($.String) ($.String)) (['foo', 'foo'])) (false);
+    eq ($.test ([]) (Different ($.String) ($.String)) (['foo', 'bar'])) (true);
+  });
+
+});
 
 suite ('TypeVariable', () => {
 
