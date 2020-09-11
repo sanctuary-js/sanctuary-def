@@ -229,6 +229,13 @@ const InvalidArgumentsLength = propPath => count => args => ({
   args,
 });
 
+//    UnrecognizedValue :: PropPath -> Any -> MyError
+const UnrecognizedValue = propPath => value => ({
+  tagName: 'UnrecognizedValue',
+  propPath,
+  value,
+});
+
 //    InvalidValue :: PropPath -> Any -> MyError
 const InvalidValue = propPath => value => ({
   tagName: 'InvalidValue',
@@ -330,45 +337,61 @@ const typeVarConstraintViolation = (
   ));
 };
 
-//  invalidValue :: ... -> Error
-function invalidValue(
+//    unrecognizedValue :: ... -> Error
+const unrecognizedValue = (
   env,            // :: Array Type
   typeInfo,       // :: TypeInfo
   index,          // :: Integer
   propPath,       // :: PropPath
   value           // :: Any
-) {
-  var t = resolvePropPath (typeInfo.types[index], propPath);
+) => {
+  const t = resolvePropPath (typeInfo.types[index], propPath);
 
-  var underlinedTypeVars =
+  const underlinedTypeVars =
   underline (typeInfo,
              K (K (_)),
              formatType6 (Z.concat ([index], propPath)));
 
   return new TypeError (trimTrailingSpaces (
-    t.type === 'VARIABLE' &&
-    isEmpty (determineActualTypesLoose (env, [value])) ?
-      'Unrecognized value\n\n' +
-      underlinedTypeVars + '\n' +
-      showValuesAndTypes (env, typeInfo, [value], 1) + '\n\n' +
-      toMarkdownList (
-        'The environment is empty! ' +
-        'Polymorphic functions require a non-empty environment.\n',
-        'The value at position 1 is not a member of any type in ' +
-        'the environment.\n\n' +
-        'The environment contains the following types:\n\n',
-        showTypeWith (typeInfo.types),
-        env
-      ) :
-    // else
-      'Invalid value\n\n' +
-      underlinedTypeVars + '\n' +
-      showValuesAndTypes (env, typeInfo, [value], 1) + '\n\n' +
-      'The value at position 1 is not a member of ' +
-      q (show (t)) + '.\n' +
-      see (t.arity >= 1 ? 'type constructor' : 'type', t)
+    'Unrecognized value\n\n' +
+    underlinedTypeVars + '\n' +
+    showValuesAndTypes (env, typeInfo, [value], 1) + '\n\n' +
+    toMarkdownList (
+      'The environment is empty! ' +
+      'Polymorphic functions require a non-empty environment.\n',
+      'The value at position 1 is not a member of any type in ' +
+      'the environment.\n\n' +
+      'The environment contains the following types:\n\n',
+      showTypeWith (typeInfo.types),
+      env
+    )
   ));
-}
+};
+
+//    invalidValue :: ... -> Error
+const invalidValue = (
+  env,            // :: Array Type
+  typeInfo,       // :: TypeInfo
+  index,          // :: Integer
+  propPath,       // :: PropPath
+  value           // :: Any
+) => {
+  const t = resolvePropPath (typeInfo.types[index], propPath);
+
+  const underlinedTypeVars =
+  underline (typeInfo,
+             K (K (_)),
+             formatType6 (Z.concat ([index], propPath)));
+
+  return new TypeError (trimTrailingSpaces (
+    'Invalid value\n\n' +
+    underlinedTypeVars + '\n' +
+    showValuesAndTypes (env, typeInfo, [value], 1) + '\n\n' +
+    'The value at position 1 is not a member of ' +
+    q (show (t)) + '.\n' +
+    see (t.arity >= 1 ? 'type constructor' : 'type', t)
+  ));
+};
 
 //  expandUnknown
 //  :: Array Type
@@ -886,9 +909,12 @@ const TypeVariable = name => Object.assign (Object.create (Type$prototype), {
 
     if (!(name in ctx.typeVarMap)) {
       ctx.typeVarMap[name] = {
-        types: Z.filter (t => t.arity >= 0, ctx.env),
+        types: Z.filter (t => t.arity >= 0 && test (ctx.env) (t) (ctx.value), ctx.env),
         valuesByPath: Object.create (null),
       };
+      if (ctx.typeVarMap[name].types.length === 0) {
+        ctx.fail (UnrecognizedValue ([]) (ctx.value));
+      }
     }
 
     ctx.typeVarMap[name].types = Z.chain (
@@ -1996,6 +2022,14 @@ const create = opts => {
                       index,
                       myError.count,
                       myError.args
+                    );
+                  case 'UnrecognizedValue':
+                    throw unrecognizedValue (
+                      opts.env,
+                      typeInfo,
+                      index,
+                      myError.propPath,
+                      myError.value
                     );
                   case 'InvalidValue':
                     throw invalidValue (

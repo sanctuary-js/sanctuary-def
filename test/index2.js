@@ -704,60 +704,60 @@ Since there is no type of which all the above values are members, the type-varia
 /// `));
   });
 
-///   test ('throws custom error for unrecognized value (empty env)', () => {
-///     const env = [];
-///     const def = $.create ({checkTypes: true, env});
-/// 
-///     //    id :: a -> a
-///     const id =
-///     def ('id')
-///         ({})
-///         ([a, a])
-///         (x => x);
-/// 
-///     throws (() => { id (/xxx/); })
-///            (new TypeError (`Unrecognized value
-/// 
-/// id :: a -> a
-///       ^
-///       1
-/// 
-/// 1)  /xxx/ :: (no types)
-/// 
-/// The environment is empty! Polymorphic functions require a non-empty environment.
-/// `));
-///   });
-/// 
-///   test ('throws custom error for unrecognized value (non-empty env)', () => {
-///     const env = [$.Array ($.Unknown), $.Boolean, $.Number, $.String];
-///     const def = $.create ({checkTypes: true, env});
-/// 
-///     //    id :: a -> a
-///     const id =
-///     def ('id')
-///         ({})
-///         ([a, a])
-///         (x => x);
-/// 
-///     throws (() => { id (/xxx/); })
-///            (new TypeError (`Unrecognized value
-/// 
-/// id :: a -> a
-///       ^
-///       1
-/// 
-/// 1)  /xxx/ :: (no types)
-/// 
-/// The value at position 1 is not a member of any type in the environment.
-/// 
-/// The environment contains the following types:
-/// 
-///   - Array b
-///   - Boolean
-///   - Number
-///   - String
-/// `));
-///   });
+  test ('throws custom error for unrecognized value (empty env)', () => {
+    const env = [];
+    const def = $.create ({checkTypes: true, env});
+
+    //    id :: a -> a
+    const id =
+    def ('id')
+        ({})
+        ([a, a])
+        (x => x);
+
+    throws (() => { id (/xxx/); })
+           (new TypeError (`Unrecognized value
+
+id :: a -> a
+      ^
+      1
+
+1)  /xxx/ :: (no types)
+
+The environment is empty! Polymorphic functions require a non-empty environment.
+`));
+  });
+
+  test ('throws custom error for unrecognized value (non-empty env)', () => {
+    const env = [$.Array ($.Unknown), $.Boolean, $.Number, $.String];
+    const def = $.create ({checkTypes: true, env});
+
+    //    id :: a -> a
+    const id =
+    def ('id')
+        ({})
+        ([a, a])
+        (x => x);
+
+    throws (() => { id (/xxx/); })
+           (new TypeError (`Unrecognized value
+
+id :: a -> a
+      ^
+      1
+
+1)  /xxx/ :: (no types)
+
+The value at position 1 is not a member of any type in the environment.
+
+The environment contains the following types:
+
+  - Array b
+  - Boolean
+  - Number
+  - String
+`));
+  });
 
   test ('returns a function which type checks its return value', () => {
     //    add :: Number -> Number -> Number
