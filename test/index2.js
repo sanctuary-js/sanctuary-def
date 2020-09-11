@@ -657,22 +657,19 @@ ab02e :: a -> b -> Array (Array (Either a b)) -> a
 Since there is no type of which all the above values are members, the type-variable constraint has been violated.
 `));
 
-///     throws (() => { ab02e (1) ('x') ([[Right (1), Right (2)], [Right (3), Right (4)]]); })
-///            (new TypeError (`Type-variable constraint violation
-/// 
-/// ab02e :: a -> b -> Array (Array (Either a b)) -> a
-///               ^                           ^
-///               1                           2
-/// 
-/// 1)  "x" :: String
-/// 
-/// 2)  1 :: Number
-///     2 :: Number
-///     3 :: Number
-///     4 :: Number
-/// 
-/// Since there is no type of which all the above values are members, the type-variable constraint has been violated.
-/// `));
+    throws (() => { ab02e (1) ('x') ([[Right (1), Right (2)], [Right (3), Right (4)]]); })
+           (new TypeError (`Type-variable constraint violation
+
+ab02e :: a -> b -> Array (Array (Either a b)) -> a
+              ^                           ^
+              1                           2
+
+1)  "x" :: String
+
+2)  1 :: Number
+
+Since there is no type of which all the above values are members, the type-variable constraint has been violated.
+`));
 
     throws (() => { ab0e21 (1) ('x') (Left ([['a', 'b'], ['c', 'd']])); })
            (new TypeError (`Type-variable constraint violation
@@ -688,20 +685,19 @@ ab0e21 :: a -> b -> Either (Array (Array a)) (Array b) -> a
 Since there is no type of which all the above values are members, the type-variable constraint has been violated.
 `));
 
-///     throws (() => { ab0e21 (1) ('x') (Right ([1, 2])); })
-///            (new TypeError (`Type-variable constraint violation
-/// 
-/// ab0e21 :: a -> b -> Either (Array (Array a)) (Array b) -> a
-///                ^                                    ^
-///                1                                    2
-/// 
-/// 1)  "x" :: String
-/// 
-/// 2)  1 :: Number
-///     2 :: Number
-/// 
-/// Since there is no type of which all the above values are members, the type-variable constraint has been violated.
-/// `));
+    throws (() => { ab0e21 (1) ('x') (Right ([1, 2])); })
+           (new TypeError (`Type-variable constraint violation
+
+ab0e21 :: a -> b -> Either (Array (Array a)) (Array b) -> a
+               ^                                    ^
+               1                                    2
+
+1)  "x" :: String
+
+2)  1 :: Number
+
+Since there is no type of which all the above values are members, the type-variable constraint has been violated.
+`));
   });
 
   test ('throws custom error for unrecognized value (empty env)', () => {
