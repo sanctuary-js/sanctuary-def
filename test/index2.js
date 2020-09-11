@@ -2183,17 +2183,17 @@ See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Number for in
     eq (testBinaryType (Left ('XXX'))) (Left ('XXX'));
     eq (testBinaryType (Right ({x: 1, y: 2, z: 3}))) (Right ({x: 1, y: 2, z: 3}));
 
-///     throws (() => { testBinaryType (Right ({x: ['foo', false, 42]})); })
-///            (new TypeError (`Type-variable constraint violation
-/// 
-/// testBinaryType :: Either a (StrMap b) -> Either a (StrMap b)
-///                                    ^
-///                                    1
-/// 
-/// 1)  ["foo", false, 42] :: Array ???
-/// 
-/// Since there is no type of which all the above values are members, the type-variable constraint has been violated.
-/// `));
+    throws (() => { testBinaryType (Right ({x: ['foo', false, 42]})); })
+           (new TypeError (`Type-variable constraint violation
+
+testBinaryType :: Either a (StrMap b) -> Either a (StrMap b)
+                                   ^
+                                   1
+
+1)  ["foo", false, 42] :: Array ???
+
+Since there is no type of which all the above values are members, the type-variable constraint has been violated.
+`));
   });
 
   test ('uses show-like string representations', () => {
