@@ -740,7 +740,10 @@ const NullaryType = name => url => supertypes => test => Object.assign (Object.c
   blah: {},
   _test: env => test,
   format: outer => K (outer (name)),
-  new: ctx => ctx.value,
+  new: ctx => {
+    if (test (ctx.value)) return ctx.value;
+    ctx.fail (InvalidValue ([]) (ctx.value));
+  },
 });
 
 const UnaryType = name => url => supertypes => test => _1 => $1 => Object.assign (Object.create (Type$prototype), {

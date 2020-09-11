@@ -3199,19 +3199,19 @@ sum :: Foldable f => f FiniteNumber -> FiniteNumber
 See https://github.com/sanctuary-js/sanctuary-type-classes/tree/v${Z$version}#Foldable for information about the sanctuary-type-classes/Foldable type class.
 `));
 
-///     throws (() => { sum (Just (Infinity)); })
-///            (new TypeError (`Invalid value
-/// 
-/// sum :: Foldable f => f FiniteNumber -> FiniteNumber
-///                        ^^^^^^^^^^^^
-///                             1
-/// 
-/// 1)  Infinity :: Number
-/// 
-/// The value at position 1 is not a member of ‘FiniteNumber’.
-/// 
-/// See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#FiniteNumber for information about the FiniteNumber type.
-/// `));
+    throws (() => { sum (Just (Infinity)); })
+           (new TypeError (`Invalid value
+
+sum :: Foldable f => f FiniteNumber -> FiniteNumber
+                       ^^^^^^^^^^^^
+                            1
+
+1)  Infinity :: Number
+
+The value at position 1 is not a member of ‘FiniteNumber’.
+
+See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#FiniteNumber for information about the FiniteNumber type.
+`));
 
     //    sort :: (Ord a, Applicative f, Foldable f, Monoid (f a)) => f a -> f a
     const sort =
