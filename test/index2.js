@@ -3173,32 +3173,32 @@ Expected one argument but received three arguments:
     eq (sum (Left ('XXX'))) (0);
     eq (sum (Right (42))) (42);
 
-///     throws (() => { sum (42); })
-///            (new TypeError (`Invalid value
-/// 
-/// sum :: Foldable f => f FiniteNumber -> FiniteNumber
-///                      ^^^^^^^^^^^^^^
-///                            1
-/// 
-/// 1)  42 :: Number
-/// 
-/// The value at position 1 is not a member of ‘f FiniteNumber’.
-/// `));
-/// 
-///     throws (() => { sum (Box (42)); })
-///            (new TypeError (`Type-class constraint violation
-/// 
-/// sum :: Foldable f => f FiniteNumber -> FiniteNumber
-///        ^^^^^^^^^^    ^^^^^^^^^^^^^^
-///                            1
-/// 
-/// 1)  Box (42) :: Box Number
-/// 
-/// ‘sum’ requires ‘f’ to satisfy the Foldable type-class constraint; the value at position 1 does not.
-/// 
-/// See https://github.com/sanctuary-js/sanctuary-type-classes/tree/v${Z$version}#Foldable for information about the sanctuary-type-classes/Foldable type class.
-/// `));
-/// 
+    throws (() => { sum (42); })
+           (new TypeError (`Invalid value
+
+sum :: Foldable f => f FiniteNumber -> FiniteNumber
+                     ^^^^^^^^^^^^^^
+                           1
+
+1)  42 :: Number
+
+The value at position 1 is not a member of ‘f FiniteNumber’.
+`));
+
+    throws (() => { sum (Box (42)); })
+           (new TypeError (`Type-class constraint violation
+
+sum :: Foldable f => f FiniteNumber -> FiniteNumber
+       ^^^^^^^^^^    ^^^^^^^^^^^^^^
+                           1
+
+1)  Box (42) :: Box Number
+
+‘sum’ requires ‘f’ to satisfy the Foldable type-class constraint; the value at position 1 does not.
+
+See https://github.com/sanctuary-js/sanctuary-type-classes/tree/v${Z$version}#Foldable for information about the sanctuary-type-classes/Foldable type class.
+`));
+
 ///     throws (() => { sum (Just (Infinity)); })
 ///            (new TypeError (`Invalid value
 /// 

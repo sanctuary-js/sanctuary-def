@@ -1016,23 +1016,6 @@ const UnaryTypeVariable = name => $1 => Object.assign (Object.create (Type$proto
          (inner ('$1') (show ($1)))
   ),
   new: ctx => {
-    if (Object.prototype.hasOwnProperty.call (ctx.typeInfo.constraints, name)) {
-      for (let idx = 0; idx < ctx.typeInfo.constraints[name].length; idx += 1) {
-        const typeClass = ctx.typeInfo.constraints[name][idx];
-        if (!typeClass.test (ctx.value)) {
-          throw typeClassConstraintViolation (
-            ctx.env,
-            ctx.typeInfo,
-            typeClass,
-            ctx.index,
-            ctx.propPath,
-            ctx.value,
-            ctx.typeVarMap
-          );
-        }
-      }
-    }
-
     if (!(name in ctx.typeVarMap)) {
       ctx.typeVarMap[name] = {
         types: Z.filter (t => t.arity >= 1, ctx.env),
@@ -1060,13 +1043,33 @@ const UnaryTypeVariable = name => $1 => Object.assign (Object.create (Type$proto
     );
 
     const key = JSON.stringify ([ctx.index].concat (ctx.propPath));
-    if (!(key in ctx.typeVarMap[name].valuesByPath)) {
-      ctx.typeVarMap[name].valuesByPath[key] = [];
+    if (key in ctx.typeVarMap[name].valuesByPath) {
+      ctx.typeVarMap[name].valuesByPath[key].push (ctx.value);
+      if (ctx.typeVarMap[name].types.length === 0) {
+        ctx.fail (TypeVariableConstraintViolation ([]) (ctx.typeVarMap[name].valuesByPath));
+      }
+    } else {
+      ctx.typeVarMap[name].valuesByPath[key] = [ctx.value];
+      if (ctx.typeVarMap[name].types.length === 0) {
+        ctx.fail (InvalidValue ([]) (ctx.value));
+      }
     }
-    ctx.typeVarMap[name].valuesByPath[key].push (ctx.value);
 
-    if (ctx.typeVarMap[name].types.length === 0) {
-      ctx.fail (TypeVariableConstraintViolation ([]) (ctx.typeVarMap[name].valuesByPath));
+    if (Object.prototype.hasOwnProperty.call (ctx.typeInfo.constraints, name)) {
+      for (let idx = 0; idx < ctx.typeInfo.constraints[name].length; idx += 1) {
+        const typeClass = ctx.typeInfo.constraints[name][idx];
+        if (!typeClass.test (ctx.value)) {
+          throw typeClassConstraintViolation (
+            ctx.env,
+            ctx.typeInfo,
+            typeClass,
+            ctx.index,
+            ctx.propPath,
+            ctx.value,
+            ctx.typeVarMap
+          );
+        }
+      }
     }
 
     Z.map (
