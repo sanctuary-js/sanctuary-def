@@ -2872,21 +2872,19 @@ The value at position 1 is not a member of ‘Array2 a b’.
 See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Array2 for information about the Array2 type constructor.
 `));
 
-///     throws (() => { unfoldr (n => n >= 5 ? Nothing : Just ([null, 'XXX'])) (1); })
-///            (new TypeError (`Type-variable constraint violation
-/// 
-/// unfoldr :: (b -> Maybe (Array2 a b)) -> b -> Array a
-///             ^                    ^      ^
-///             1                    2      3
-/// 
-/// 1)  1 :: Number
-/// 
-/// 2)  "XXX" :: String
-/// 
-/// 3)  1 :: Number
-/// 
-/// Since there is no type of which all the above values are members, the type-variable constraint has been violated.
-/// `));
+    throws (() => { unfoldr (n => n >= 5 ? Nothing : Just ([null, 'XXX'])) (1); })
+           (new TypeError (`Type-variable constraint violation
+
+unfoldr :: (b -> Maybe (Array2 a b)) -> b -> Array a
+            ^                    ^
+            1                    2
+
+1)  1 :: Number
+
+2)  "XXX" :: String
+
+Since there is no type of which all the above values are members, the type-variable constraint has been violated.
+`));
 
     //    T :: a -> (a -> b) -> b
     const T =
