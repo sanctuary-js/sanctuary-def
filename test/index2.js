@@ -1408,19 +1408,19 @@ Since there is no type of which all the above values are members, the type-varia
     eq (f (null)) (42);
     eq (f (0)) (42);
 
-///     throws (() => { f ('XXX'); })
-///            (new TypeError (`Type-variable constraint violation
-/// 
-/// f :: Nullable a -> Nullable a
-///               ^             ^
-///               1             2
-/// 
-/// 1)  "XXX" :: String
-/// 
-/// 2)  42 :: Number
-/// 
-/// Since there is no type of which all the above values are members, the type-variable constraint has been violated.
-/// `));
+    throws (() => { f ('XXX'); })
+           (new TypeError (`Type-variable constraint violation
+
+f :: Nullable a -> Nullable a
+              ^             ^
+              1             2
+
+1)  "XXX" :: String
+
+2)  42 :: Number
+
+Since there is no type of which all the above values are members, the type-variable constraint has been violated.
+`));
   });
 
   test ('provides the "Void" type', () => {
