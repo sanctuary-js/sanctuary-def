@@ -3240,20 +3240,20 @@ See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#FiniteNumber 
 /// 
 /// Since there is no type of which all the above values are members, the type-variable constraint has been violated.
 /// `));
-/// 
-///     throws (() => { sort ([Math.sin, Math.cos]); })
-///            (new TypeError (`Type-class constraint violation
-/// 
-/// sort :: (Ord a, Applicative f, Foldable f, Monoid f) => f a -> f a
-///          ^^^^^                                            ^
-///                                                           1
-/// 
-/// 1)  function sin() { [native code] } :: Function, (b -> c)
-/// 
-/// ‘sort’ requires ‘a’ to satisfy the Ord type-class constraint; the value at position 1 does not.
-/// 
-/// See https://github.com/sanctuary-js/sanctuary-type-classes/tree/v${Z$version}#Ord for information about the sanctuary-type-classes/Ord type class.
-/// `));
+
+    throws (() => { sort ([Math.sin, Math.cos]); })
+           (new TypeError (`Type-class constraint violation
+
+sort :: (Ord a, Applicative f, Foldable f, Monoid f) => f a -> f a
+         ^^^^^                                            ^
+                                                          1
+
+1)  function sin() { [native code] } :: Function, (b -> c)
+
+‘sort’ requires ‘a’ to satisfy the Ord type-class constraint; the value at position 1 does not.
+
+See https://github.com/sanctuary-js/sanctuary-type-classes/tree/v${Z$version}#Ord for information about the sanctuary-type-classes/Ord type class.
+`));
 
     //    xxx :: f String -> Null
     const xxx = def ('xxx') ({}) ([f ($.String), $.Null]) (x => null);
