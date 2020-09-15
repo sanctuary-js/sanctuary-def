@@ -1176,13 +1176,15 @@ const Function_ = types => Object.assign (Object.create (Type$prototype), {
   },
   _test: K (K (true)),
   format: outer => inner => (
-    when (types.length !== 2)
-         (parenthesize (outer))
-         (when (types[0].type === 'FUNCTION')
-               (parenthesize (outer))
-               (inner ('$1') (show (types[0])))) +
-    outer (' -> ') +
-    inner ('$2') (show (types[1]))
+    types.length === 1
+    ? outer ('() -> ') + inner ('$1') (show (types[0]))
+    : when (types.length !== 2)
+           (parenthesize (outer))
+           (when (types[0].type === 'FUNCTION')
+                 (parenthesize (outer))
+                 (inner ('$1') (show (types[0])))) +
+      outer (' -> ') +
+      inner ('$2') (show (types[1]))
   ),
 });
 

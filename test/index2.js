@@ -3716,9 +3716,9 @@ suite ('Thunk', () => {
     eq (typeof $.Thunk) ('function');
     eq ($.Thunk.length) (1);
     eq (show ($.Thunk)) ('Thunk :: Type -> Type');
-/// eq (show ($.Thunk (a))) ('() -> a');
-/// eq (show ($.Thunk ($.Thunk (a)))) ('() -> () -> a');
-/// eq (show ($.Thunk ($.Thunk ($.Thunk (a))))) ('() -> () -> () -> a');
+    eq (show ($.Thunk (a))) ('() -> a');
+    eq (show ($.Thunk ($.Thunk (a)))) ('() -> () -> a');
+    eq (show ($.Thunk ($.Thunk ($.Thunk (a))))) ('() -> () -> () -> a');
   });
 
 ///   test ('is short for `t => $.Function ([t])`', () => {
