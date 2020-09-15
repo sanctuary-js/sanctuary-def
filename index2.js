@@ -213,29 +213,6 @@ const typeClassConstraintViolation = (
   ));
 };
 
-//    InvalidArgumentsCount :: PropPath -> Integer -> Array Any -> MyError
-const InvalidArgumentsCount = propPath => count => args => ({
-  tagName: 'InvalidArgumentsCount',
-  propPath,
-  count,
-  args,
-});
-
-//    InvalidArgumentsLength :: PropPath -> Integer -> Array Any -> MyError
-const InvalidArgumentsLength = propPath => count => args => ({
-  tagName: 'InvalidArgumentsLength',
-  propPath,
-  count,
-  args,
-});
-
-//    UnrecognizedValue :: PropPath -> Any -> MyError
-const UnrecognizedValue = propPath => value => ({
-  tagName: 'UnrecognizedValue',
-  propPath,
-  value,
-});
-
 //    InvalidValue :: PropPath -> Any -> MyError
 const InvalidValue = propPath => value => ({
   tagName: 'InvalidValue',
@@ -243,21 +220,10 @@ const InvalidValue = propPath => value => ({
   value,
 });
 
-const TypeVariableConstraintViolation = propPath => valuesByPath => ({
-  tagName: 'TypeVariableConstraintViolation',
-  propPath,
-  valuesByPath,
-});
-
 //    prepend :: String -> MyError -> MyError
-const prepend = prop => myError => {
-  switch (myError.tagName) {
-    case 'InvalidValue':
-      return InvalidValue ([prop, ...myError.propPath]) (myError.value);
-    case 'TypeVariableConstraintViolation':
-      return TypeVariableConstraintViolation ([prop, ...myError.propPath]) (myError.valuesByPath);
-  }
-};
+const prepend = prop => myError => (
+  InvalidValue ([prop, ...myError.propPath]) (myError.value)
+);
 
 //    underlineTypeVars :: (TypeInfo, StrMap (Array Any)) -> String
 const underlineTypeVars = (typeInfo, valuesByPath) => {
@@ -742,7 +708,7 @@ const NullaryType = name => url => supertypes => test => Object.assign (Object.c
   format: outer => K (outer (name)),
   new: ctx => typeVarMap => {
     if (test (ctx.value)) return ctx.value;
-    ctx.fail (InvalidValue ([]) (ctx.value));
+    throw invalidValue (ctx.env, ctx.typeInfo, ctx.index, ctx.propPath, ctx.value);
   },
 });
 
@@ -776,7 +742,7 @@ const UnaryType = name => url => supertypes => test => _1 => $1 => Object.assign
             value: x,
           }) (typeVarMap);
         } else {
-          ctx.fail (InvalidValue (['$1']) (x));
+          throw invalidValue (ctx.env, ctx.typeInfo, ctx.index, [...ctx.propPath, '$1'], x);
         }
       },
       undefined,
@@ -830,7 +796,7 @@ const BinaryType = name => url => supertypes => test => _1 => _2 => $1 => $2 => 
             value: x,
           }) (typeVarMap);
         } else {
-          ctx.fail (InvalidValue (['$1']) (x));
+          throw invalidValue (ctx.env, ctx.typeInfo, ctx.index, [...ctx.propPath, '$1'], x);
         }
       },
       undefined,
@@ -848,7 +814,7 @@ const BinaryType = name => url => supertypes => test => _1 => _2 => $1 => $2 => 
             value: x,
           }) (typeVarMap);
         } else {
-          ctx.fail (InvalidValue (['$2']) (x));
+          throw invalidValue (ctx.env, ctx.typeInfo, ctx.index, [...ctx.propPath, '$2'], x);
         }
       },
       undefined,
@@ -913,7 +879,7 @@ const TypeVariable = name => Object.assign (Object.create (Type$prototype), {
         valuesByPath: Object.create (null),
       };
       if (typeVarMap[name].types.length === 0) {
-        ctx.fail (UnrecognizedValue ([]) (ctx.value));
+        throw unrecognizedValue (ctx.env, ctx.typeInfo, ctx.index, ctx.propPath, ctx.value);
       }
     }
 
@@ -943,7 +909,13 @@ const TypeVariable = name => Object.assign (Object.create (Type$prototype), {
     typeVarMap[name].valuesByPath[key].push (ctx.value);
 
     if (typeVarMap[name].types.length === 0) {
-      ctx.fail (TypeVariableConstraintViolation ([]) (typeVarMap[name].valuesByPath));
+      throw typeVarConstraintViolation (
+        ctx.env,
+        ctx.typeInfo,
+        ctx.index,
+        ctx.propPath,
+        typeVarMap[name].valuesByPath
+      )
     }
 
     Z.map (
@@ -1043,12 +1015,18 @@ const UnaryTypeVariable = name => $1 => Object.assign (Object.create (Type$proto
     if (key in typeVarMap[name].valuesByPath) {
       typeVarMap[name].valuesByPath[key].push (ctx.value);
       if (typeVarMap[name].types.length === 0) {
-        ctx.fail (TypeVariableConstraintViolation ([]) (typeVarMap[name].valuesByPath));
+        throw typeVarConstraintViolation (
+          ctx.env,
+          ctx.typeInfo,
+          ctx.index,
+          ctx.propPath,
+          typeVarMap[name].valuesByPath
+        )
       }
     } else {
       typeVarMap[name].valuesByPath[key] = [ctx.value];
       if (typeVarMap[name].types.length === 0) {
-        ctx.fail (InvalidValue ([]) (ctx.value));
+        throw invalidValue (ctx.env, ctx.typeInfo, ctx.index, ctx.propPath, ctx.value);
       }
     }
 
@@ -1255,7 +1233,6 @@ const BinaryTypeVariable = name => $1 => $2 => Object.assign (Object.create (Typ
         ctx.propPath,
         ctx.value
       );
-      ctx.fail (TypeVariableConstraintViolation ([]) (typeVarMap[name].valuesByPath));
     }
 
     return ctx.value;
@@ -1326,7 +1303,7 @@ const RecordType = fields => {
             value: ctx.value[k],
           }) (typeVarMap);
         } else {
-          ctx.fail (InvalidValue ([k]) (ctx.value[k]));
+          throw invalidValue (ctx.env, ctx.typeInfo, ctx.index, [...ctx.propPath, k], ctx.value[k]);
         }
       });
       return ctx.value;
@@ -1367,7 +1344,7 @@ const NamedRecordType = name => url => supertypes => fields => {
             value: ctx.value[k],
           }) (typeVarMap);
         } else {
-          ctx.fail (InvalidValue ([]) (ctx.value[k]));
+          throw invalidValue (ctx.env, ctx.typeInfo, ctx.index, ctx.propPath, ctx.value[k]);
         }
       });
       return ctx.value;
@@ -1751,7 +1728,7 @@ const Fn = $1 => $2 => (
     {
       new: ctx => typeVarMap => (...args) => {
         if (args.length !== 1) {
-          ctx.fail (InvalidArgumentsLength ([]) (1) (args));
+          throw invalidArgumentsLength (ctx.typeInfo, ctx.index, 1, args);
         }
         const [x] = args;
         if (Z.all (t => t._test (ctx.env) (x), ancestors ($1))) {
@@ -1774,10 +1751,10 @@ const Fn = $1 => $2 => (
               value: y,
             }) (typeVarMap);
           } else {
-            ctx.fail (InvalidValue (['$2']) (y));
+            throw invalidValue (ctx.env, ctx.typeInfo, ctx.index, [...ctx.propPath, '$2'], y);
           }
         } else {
-          ctx.fail (InvalidValue (['$1']) (x));
+          throw invalidValue (ctx.env, ctx.typeInfo, ctx.index, [...ctx.propPath, '$1'], x);
         }
       },
     }
@@ -2006,22 +1983,8 @@ const create = opts => {
               propPath: [],
               fail: myError => {
                 switch (myError.tagName) {
-                  case 'InvalidArgumentsLength':
-                    throw invalidArgumentsLength (
-                      typeInfo,
-                      index,
-                      myError.count,
-                      myError.args
-                    );
-                  case 'UnrecognizedValue':
-                    throw unrecognizedValue (
-                      opts.env,
-                      typeInfo,
-                      index,
-                      myError.propPath,
-                      myError.value
-                    );
                   case 'InvalidValue':
+                    console.log ('myError:', myError);
                     throw invalidValue (
                       opts.env,
                       typeInfo,
@@ -2029,14 +1992,6 @@ const create = opts => {
                       myError.propPath,
                       myError.value
                     );
-                  case 'TypeVariableConstraintViolation':
-                    throw typeVarConstraintViolation (
-                      opts.env,
-                      typeInfo,
-                      index,
-                      myError.propPath,
-                      myError.valuesByPath
-                    )
                   default:
                     TK;
                 }
@@ -2053,19 +2008,20 @@ const create = opts => {
         return wrapped;
       },
       typeVarMap => value => {
-        if (Z.all (t => t._test (opts.env) (value), ancestors (types[types.length - 1]))) {
-          return types[types.length - 1].new ({
+        const index = types.length - 1;
+        if (Z.all (t => t._test (opts.env) (value), ancestors (types[index]))) {
+          return types[index].new ({
             typeInfo: typeInfo,
             env: opts.env,
-            index: 0,
+            index,
             propPath: [],
             fail: myError => {
-              throw invalidValue (opts.env, typeInfo, types.length - 1, myError.propPath, myError.value);
+              throw invalidValue (opts.env, typeInfo, index, myError.propPath, myError.value);
             },
             value,
           }) (typeVarMap);
         } else {
-          throw invalidValue (opts.env, typeInfo, types.length - 1, [], value);
+          throw invalidValue (opts.env, typeInfo, index, [], value);
         }
       }
     ) (Object.create (null)) (impl);

@@ -2677,22 +2677,20 @@ concatNested :: Array (Array a) -> Array (Array a) -> Array (Array a)
 Since there is no type of which all the above values are members, the type-variable constraint has been violated.
 `));
 
-///     throws (() => { concatNested ([]) ([]); })
-///            (new TypeError (`Type-variable constraint violation
-/// 
-/// concatNested :: Array (Array a) -> Array (Array a) -> Array (Array a)
-///                                                                    ^
-///                                                                    1
-/// 
-/// 1)  "a" :: String
-///     "b" :: String
-///     "c" :: String
-///     1 :: Number
-///     2 :: Number
-///     3 :: Number
-/// 
-/// Since there is no type of which all the above values are members, the type-variable constraint has been violated.
-/// `));
+    throws (() => { concatNested ([]) ([]); })
+           (new TypeError (`Type-variable constraint violation
+
+concatNested :: Array (Array a) -> Array (Array a) -> Array (Array a)
+                                                                   ^
+                                                                   1
+
+1)  "a" :: String
+    "b" :: String
+    "c" :: String
+    1 :: Number
+
+Since there is no type of which all the above values are members, the type-variable constraint has been violated.
+`));
   });
 
   test ('supports higher-order functions', () => {
@@ -3070,19 +3068,19 @@ concatMaybes :: Semigroup a => Maybe a -> Maybe a -> Maybe a
 See https://github.com/sanctuary-js/sanctuary-type-classes/tree/v${Z$version}#Semigroup for information about the sanctuary-type-classes/Semigroup type class.
 `));
 
-///     throws (() => { concatMaybes (Just ('abc')) (Just ('def')); })
-///            (new TypeError (`Type-class constraint violation
-/// 
-/// concatMaybes :: Semigroup a => Maybe a -> Maybe a -> Maybe a
-///                 ^^^^^^^^^^^                                ^
-///                                                            1
-/// 
-/// 1)  /xxx/ :: RegExp
-/// 
-/// ‘concatMaybes’ requires ‘a’ to satisfy the Semigroup type-class constraint; the value at position 1 does not.
-/// 
-/// See https://github.com/sanctuary-js/sanctuary-type-classes/tree/v${Z$version}#Semigroup for information about the sanctuary-type-classes/Semigroup type class.
-/// `));
+    throws (() => { concatMaybes (Just ('abc')) (Just ('def')); })
+           (new TypeError (`Type-class constraint violation
+
+concatMaybes :: Semigroup a => Maybe a -> Maybe a -> Maybe a
+                ^^^^^^^^^^^                                ^
+                                                           1
+
+1)  /xxx/ :: RegExp
+
+‘concatMaybes’ requires ‘a’ to satisfy the Semigroup type-class constraint; the value at position 1 does not.
+
+See https://github.com/sanctuary-js/sanctuary-type-classes/tree/v${Z$version}#Semigroup for information about the sanctuary-type-classes/Semigroup type class.
+`));
 
     //    sillyConst :: (Alternative a, Semigroup b) => a -> b -> a
     const sillyConst =
@@ -3256,40 +3254,40 @@ See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#FiniteNumber 
 /// 
 /// See https://github.com/sanctuary-js/sanctuary-type-classes/tree/v${Z$version}#Ord for information about the sanctuary-type-classes/Ord type class.
 /// `));
-/// 
-///     //    xxx :: f String -> Null
-///     const xxx = def ('xxx') ({}) ([f ($.String), $.Null]) (x => null);
-/// 
-///     eq (xxx ([])) (null);
-///     eq (xxx (['foo'])) (null);
-///     eq (xxx (['foo', 'bar'])) (null);
-///     eq (xxx (['foo', 'bar', 'baz'])) (null);
-/// 
-///     throws (() => { xxx ('XXX'); })
-///            (new TypeError (`Invalid value
-/// 
-/// xxx :: f String -> Null
-///        ^^^^^^^^
-///           1
-/// 
-/// 1)  "XXX" :: String
-/// 
-/// The value at position 1 is not a member of ‘f String’.
-/// `));
-/// 
-///     throws (() => { xxx ([1, 2, 3]); })
-///            (new TypeError (`Invalid value
-/// 
-/// xxx :: f String -> Null
-///          ^^^^^^
-///            1
-/// 
-/// 1)  1 :: Number
-/// 
-/// The value at position 1 is not a member of ‘String’.
-/// 
-/// See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#String for information about the String type.
-/// `));
+
+    //    xxx :: f String -> Null
+    const xxx = def ('xxx') ({}) ([f ($.String), $.Null]) (x => null);
+
+    eq (xxx ([])) (null);
+    eq (xxx (['foo'])) (null);
+    eq (xxx (['foo', 'bar'])) (null);
+    eq (xxx (['foo', 'bar', 'baz'])) (null);
+
+    throws (() => { xxx ('XXX'); })
+           (new TypeError (`Invalid value
+
+xxx :: f String -> Null
+       ^^^^^^^^
+          1
+
+1)  "XXX" :: String
+
+The value at position 1 is not a member of ‘f String’.
+`));
+
+    throws (() => { xxx ([1, 2, 3]); })
+           (new TypeError (`Invalid value
+
+xxx :: f String -> Null
+         ^^^^^^
+           1
+
+1)  1 :: Number
+
+The value at position 1 is not a member of ‘String’.
+
+See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#String for information about the String type.
+`));
   });
 
   test ('supports binary type variables', () => {
