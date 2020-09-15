@@ -1170,39 +1170,54 @@ const Function_ = types => Object.assign (Object.create (Type$prototype), {
   url: '',
   supertypes: [$.AnyFunction],
   arity: types.length,
-  blah: (
-    types.length === 1
-    ? {$1: {type: types[0], extract: K ([])}}
-    : {$1: {type: types[0], extract: K ([])},
-       $2: {type: types[1], extract: K ([])}}
+  blah: types.reduce (
+    (blah, t, idx) => {
+      blah[`$${idx + 1}`] = {type: t, extract: K ([])};
+      return blah;
+    },
+    {}
   ),
   _test: K (K (true)),
   format: outer => inner => (
-    types.length === 1
-    ? outer ('() -> ') + inner ('$1') (show (types[0]))
-    : when (types.length !== 2)
-           (parenthesize (outer))
-           (when (types[0].type === 'FUNCTION')
-                 (parenthesize (outer))
-                 (inner ('$1') (show (types[0])))) +
-      outer (' -> ') +
-      inner ('$2') (show (types[1]))
+    when (types.length !== 2)
+         (parenthesize (outer))
+         (types
+          .slice (0, -1)
+          .map ((t, idx) => when (t.type === 'FUNCTION')
+                                 (parenthesize (outer))
+                                 (inner (`$${idx + 1}`) (show (t))))
+          .join (outer (', '))) +
+    outer (' -> ') +
+    inner (`$${types.length}`) (show (types[types.length - 1]))
   ),
   new: ctx => typeVarMap => (...args) => {
-    if (args.length !== 0) {
-      throw invalidArgumentsLength (ctx.typeInfo, ctx.index, 0, args);
+    if (args.length !== types.length - 1) {
+      throw invalidArgumentsLength (ctx.typeInfo, ctx.index, types.length - 1, args);
     }
-    const x = ctx.value ();
-    if (Z.all (t => t._test (ctx.env) (x), ancestors (types[0]))) {
-      return types[0].new ({
+    args.forEach ((arg, idx) => {
+      if (Z.all (t => t._test (ctx.env) (arg), ancestors (types[idx]))) {
+        types[idx].new ({
+          typeInfo: ctx.typeInfo,
+          env: ctx.env,
+          index: ctx.index,
+          propPath: [...ctx.propPath, `$${idx + 1}`],
+          value: arg,
+        });
+      } else {
+        throw invalidValue (ctx.env, ctx.typeInfo, idx, [...ctx.propPath, `$${idx + 1}`], arg);
+      }
+    });
+    const returnValue = ctx.value (...args);
+    if (Z.all (t => t._test (ctx.env) (returnValue), ancestors (types[types.length - 1]))) {
+      return types[types.length - 1].new ({
         typeInfo: ctx.typeInfo,
         env: ctx.env,
         index: ctx.index,
-        propPath: ['$1', ...ctx.propPath],
-        value: x,
+        propPath: [...ctx.propPath, `$${types.length}`],
+        value: returnValue,
       }) (typeVarMap);
     } else {
-      throw invalidValue (ctx.env, ctx.typeInfo, ctx.index, [...ctx.propPath, '$1'], x);
+      throw invalidValue (ctx.env, ctx.typeInfo, ctx.index, [...ctx.propPath, `$${types.length}`], returnValue);
     }
   },
 });

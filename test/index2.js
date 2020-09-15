@@ -2806,19 +2806,19 @@ Since there is no type of which all the above values are members, the type-varia
         ([$.Function ([a, b, a]), a, $.Array (b), a])
         (curry3 (Z.reduce));
 
-///     eq (reduce_ ((x, y) => x + y) (0) ([1, 2, 3, 4, 5, 6])) (21);
-/// 
-///     throws (() => { reduce_ (null); })
-///            (new TypeError (`Invalid value
-/// 
-/// reduce_ :: ((a, b) -> a) -> a -> Array b -> a
-///             ^^^^^^^^^^^
-///                  1
-/// 
-/// 1)  null :: Null
-/// 
-/// The value at position 1 is not a member of ‘(a, b) -> a’.
-/// `));
+    eq (reduce_ ((x, y) => x + y) (0) ([1, 2, 3, 4, 5, 6])) (21);
+
+    throws (() => { reduce_ (null); })
+           (new TypeError (`Invalid value
+
+reduce_ :: ((a, b) -> a) -> a -> Array b -> a
+            ^^^^^^^^^^^
+                 1
+
+1)  null :: Null
+
+The value at position 1 is not a member of ‘(a, b) -> a’.
+`));
 
     //    unfoldr :: (b -> Maybe (Array2 a b)) -> b -> Array a
     const unfoldr =
