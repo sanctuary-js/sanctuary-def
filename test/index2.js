@@ -790,19 +790,19 @@ See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Number for in
     eq (lt (1) (1)) (false);
     eq (lt (1) (2)) (false);
 
-///     throws (() => { lt (123) ('abc'); })
-///            (new TypeError (`Type-variable constraint violation
-/// 
-/// lt :: Ord a => a -> (a -> Boolean)
-///                ^     ^
-///                1     2
-/// 
-/// 1)  123 :: Number
-/// 
-/// 2)  "abc" :: String
-/// 
-/// Since there is no type of which all the above values are members, the type-variable constraint has been violated.
-/// `));
+    throws (() => { lt (123) ('abc'); })
+           (new TypeError (`Type-variable constraint violation
+
+lt :: Ord a => a -> (a -> Boolean)
+               ^     ^
+               1     2
+
+1)  123 :: Number
+
+2)  "abc" :: String
+
+Since there is no type of which all the above values are members, the type-variable constraint has been violated.
+`));
   });
 
   test ('does not rely on constructor identity', () => {
