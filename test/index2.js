@@ -3721,30 +3721,30 @@ suite ('Thunk', () => {
     eq (show ($.Thunk ($.Thunk ($.Thunk (a))))) ('() -> () -> () -> a');
   });
 
-///   test ('is short for `t => $.Function ([t])`', () => {
-///     //    why :: (() -> Integer) -> Integer
-///     const why =
-///     def ('why')
-///         ({})
-///         ([$.Thunk ($.Integer), $.Integer])
-///         (thunk => thunk ());
-/// 
-///     eq (why (() => 42)) (42);
-/// 
-///     throws (() => { why (() => 'Who knows?'); })
-///            (new TypeError (`Invalid value
-/// 
-/// why :: (() -> Integer) -> Integer
-///               ^^^^^^^
-///                  1
-/// 
-/// 1)  "Who knows?" :: String
-/// 
-/// The value at position 1 is not a member of ‘Integer’.
-/// 
-/// See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Integer for information about the Integer type.
-/// `));
-///   });
+  test ('is short for `t => $.Function ([t])`', () => {
+    //    why :: (() -> Integer) -> Integer
+    const why =
+    def ('why')
+        ({})
+        ([$.Thunk ($.Integer), $.Integer])
+        (thunk => thunk ());
+
+    eq (why (() => 42)) (42);
+
+    throws (() => { why (() => 'Who knows?'); })
+           (new TypeError (`Invalid value
+
+why :: (() -> Integer) -> Integer
+              ^^^^^^^
+                 1
+
+1)  "Who knows?" :: String
+
+The value at position 1 is not a member of ‘Integer’.
+
+See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Integer for information about the Integer type.
+`));
+  });
 
 });
 

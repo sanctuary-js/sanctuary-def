@@ -1170,10 +1170,12 @@ const Function_ = types => Object.assign (Object.create (Type$prototype), {
   url: '',
   supertypes: [$.AnyFunction],
   arity: types.length,
-  blah: {
-    $1: {type: types[0], extract: K ([])},
-    $2: {type: types[1], extract: K ([])},
-  },
+  blah: (
+    types.length === 1
+    ? {$1: {type: types[0], extract: K ([])}}
+    : {$1: {type: types[0], extract: K ([])},
+       $2: {type: types[1], extract: K ([])}}
+  ),
   _test: K (K (true)),
   format: outer => inner => (
     types.length === 1
@@ -1186,6 +1188,23 @@ const Function_ = types => Object.assign (Object.create (Type$prototype), {
       outer (' -> ') +
       inner ('$2') (show (types[1]))
   ),
+  new: ctx => typeVarMap => (...args) => {
+    if (args.length !== 0) {
+      throw invalidArgumentsLength (ctx.typeInfo, ctx.index, 0, args);
+    }
+    const x = ctx.value ();
+    if (Z.all (t => t._test (ctx.env) (x), ancestors (types[0]))) {
+      return types[0].new ({
+        typeInfo: ctx.typeInfo,
+        env: ctx.env,
+        index: ctx.index,
+        propPath: ['$1', ...ctx.propPath],
+        value: x,
+      }) (typeVarMap);
+    } else {
+      throw invalidValue (ctx.env, ctx.typeInfo, ctx.index, [...ctx.propPath, '$1'], x);
+    }
+  },
 });
 
 const RecordType = fields => {
