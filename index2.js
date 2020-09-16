@@ -1959,11 +1959,11 @@ const create = opts => {
               index,
               propPath: [],
               value: _x,
-            }) (typeVarMap) (newTypeVarMap) (newTypeVarMap => value => {
-              return run (typeVarMap)
-                         (newTypeVarMap)
-                         (f (value));
-            });
+            }) (typeVarMap) (newTypeVarMap) (newTypeVarMap => value => (
+              run (typeVarMap)
+                  (newTypeVarMap)
+                  (f (value))
+            ));
           } else {
             throw invalidValue (opts.env, typeInfo, index, [], _x);
           }
@@ -1985,9 +1985,7 @@ const create = opts => {
               value})
             (typeVarMap)
             (newTypeVarMap)
-            (newTypeVarMap => value => {
-               return value;
-             });
+            (newTypeVarMap => value => value);
         } else {
           throw invalidValue (opts.env, typeInfo, index, [], value);
         }
