@@ -617,7 +617,7 @@ $.Unknown = Object.assign (Object.create (Type$prototype), {
   blah: {},
   _test: K (K (true)),
   format: outer => K (outer ('Unknown')),
-  new: ctx => typeVarMap => newTypeVarMap => cont => cont (ctx.value),
+  new: ctx => typeVarMap => newTypeVarMap => cont => cont (newTypeVarMap) (ctx.value),
 });
 
 const Unchecked = s => Object.assign (Object.create (Type$prototype), {
@@ -629,7 +629,7 @@ const Unchecked = s => Object.assign (Object.create (Type$prototype), {
   blah: {},
   _test: K (K (true)),
   format: outer => K (outer (s)),
-  new: ctx => typeVarMap => newTypeVarMap => cont => cont (ctx.value),
+  new: ctx => typeVarMap => newTypeVarMap => cont => cont (newTypeVarMap) (ctx.value),
 });
 
 $.Inconsistent = Object.assign (Object.create (Type$prototype), {
@@ -664,7 +664,7 @@ const NullaryType = name => url => supertypes => test => Object.assign (Object.c
   _test: env => test,
   format: outer => K (outer (name)),
   new: ctx => typeVarMap => newTypeVarMap => cont => {
-    if (test (ctx.value)) return cont (ctx.value);
+    if (test (ctx.value)) return cont (newTypeVarMap) (ctx.value);
     throw invalidValue (ctx.env, ctx.typeInfo, ctx.index, ctx.propPath, ctx.value);
   },
 });
@@ -696,7 +696,7 @@ const UnaryType = name => url => supertypes => test => _1 => $1 => Object.assign
             index: ctx.index,
             propPath: [...ctx.propPath, '$1'],
             value: x,
-          }) (typeVarMap) (newTypeVarMap) (value => value);
+          }) (typeVarMap) (newTypeVarMap) (newTypeVarMap => value => value);
         } else {
           throw invalidValue (ctx.env, ctx.typeInfo, ctx.index, [...ctx.propPath, '$1'], x);
         }
@@ -704,7 +704,7 @@ const UnaryType = name => url => supertypes => test => _1 => $1 => Object.assign
       undefined,
       _1 (ctx.value)
     );
-    return cont (ctx.value);
+    return cont (newTypeVarMap) (ctx.value);
   },
 });
 
@@ -749,7 +749,7 @@ const BinaryType = name => url => supertypes => test => _1 => _2 => $1 => $2 => 
             index: ctx.index,
             propPath: [...ctx.propPath, '$1'],
             value: x,
-          }) (typeVarMap) (newTypeVarMap) (value => value);
+          }) (typeVarMap) (newTypeVarMap) (newTypeVarMap => value => value);
         } else {
           throw invalidValue (ctx.env, ctx.typeInfo, ctx.index, [...ctx.propPath, '$1'], x);
         }
@@ -766,7 +766,7 @@ const BinaryType = name => url => supertypes => test => _1 => _2 => $1 => $2 => 
             index: ctx.index,
             propPath: [...ctx.propPath, '$2'],
             value: x,
-          }) (typeVarMap) (newTypeVarMap) (value => value);
+          }) (typeVarMap) (newTypeVarMap) (newTypeVarMap => value => value);
         } else {
           throw invalidValue (ctx.env, ctx.typeInfo, ctx.index, [...ctx.propPath, '$2'], x);
         }
@@ -774,7 +774,7 @@ const BinaryType = name => url => supertypes => test => _1 => _2 => $1 => $2 => 
       undefined,
       _2 (ctx.value)
     );
-    return cont (ctx.value);
+    return cont (newTypeVarMap) (ctx.value);
   },
 });
 
@@ -797,7 +797,7 @@ const EnumType = name => url => members => Object.assign (Object.create (Type$pr
   blah: {},
   _test: env => x => memberOf (members) (x),
   format: outer => K (outer (name)),
-  new: ctx => typeVarMap => newTypeVarMap => cont => cont (ctx.value),
+  new: ctx => typeVarMap => newTypeVarMap => cont => cont (newTypeVarMap) (ctx.value),
 });
 
 const TypeVariable = name => Object.assign (Object.create (Type$prototype), {
@@ -883,7 +883,7 @@ const TypeVariable = name => Object.assign (Object.create (Type$prototype), {
                 index: ctx.index,
                 propPath: [...ctx.propPath, '$1'],
                 value: x,
-              }) (typeVarMap) (newTypeVarMap) (value => value),
+              }) (typeVarMap) (newTypeVarMap) (newTypeVarMap => value => value),
               t.blah.$1.extract (ctx.value)
             );
             break;
@@ -895,7 +895,7 @@ const TypeVariable = name => Object.assign (Object.create (Type$prototype), {
                 index: ctx.index,
                 propPath: [...ctx.propPath, '$1'],
                 value: x,
-              }) (typeVarMap) (newTypeVarMap) (value => value),
+              }) (typeVarMap) (newTypeVarMap) (newTypeVarMap => value => value),
               t.blah.$1.extract (ctx.value)
             );
             Z.map (
@@ -905,7 +905,7 @@ const TypeVariable = name => Object.assign (Object.create (Type$prototype), {
                 index: ctx.index,
                 propPath: [...ctx.propPath, '$2'],
                 value: x,
-              }) (typeVarMap) (newTypeVarMap) (value => value),
+              }) (typeVarMap) (newTypeVarMap) (newTypeVarMap => value => value),
               t.blah.$2.extract (ctx.value)
             );
             break;
@@ -914,7 +914,7 @@ const TypeVariable = name => Object.assign (Object.create (Type$prototype), {
       typeVarMap[name].types
     );
 
-    return cont (ctx.value);
+    return cont (newTypeVarMap) (ctx.value);
   },
 });
 
@@ -1009,7 +1009,7 @@ const UnaryTypeVariable = name => $1 => Object.assign (Object.create (Type$proto
                 index: ctx.index,
                 propPath: ['$1', ...ctx.propPath],
                 value: x,
-              }) (typeVarMap) (newTypeVarMap) (value => value),
+              }) (typeVarMap) (newTypeVarMap) (newTypeVarMap => value => value),
               t.blah.$1.extract (ctx.value)
             );
             break;
@@ -1021,7 +1021,7 @@ const UnaryTypeVariable = name => $1 => Object.assign (Object.create (Type$proto
                 index: ctx.index,
                 propPath: ['$2', ...ctx.propPath],
                 value: x,
-              }) (typeVarMap) (newTypeVarMap) (value => value),
+              }) (typeVarMap) (newTypeVarMap) (newTypeVarMap => value => value),
               t.blah.$2.extract (ctx.value)
             );
             break;
@@ -1030,7 +1030,7 @@ const UnaryTypeVariable = name => $1 => Object.assign (Object.create (Type$proto
       typeVarMap[name].types
     );
 
-    return cont (ctx.value);
+    return cont (newTypeVarMap) (ctx.value);
   },
 });
 
@@ -1123,7 +1123,7 @@ const BinaryTypeVariable = name => $1 => $2 => Object.assign (Object.create (Typ
               index: ctx.index,
               propPath: ['$1', ...ctx.propPath],
               value: x,
-            }) (typeVarMap) (newTypeVarMap) (value => value);
+            }) (typeVarMap) (newTypeVarMap) (newTypeVarMap => value => value);
           },
           t.blah.$1.extract (ctx.value)
         );
@@ -1144,7 +1144,7 @@ const BinaryTypeVariable = name => $1 => $2 => Object.assign (Object.create (Typ
               index: ctx.index,
               propPath: ['$2', ...ctx.propPath],
               value: x,
-            }) (typeVarMap) (newTypeVarMap) (value => value);
+            }) (typeVarMap) (newTypeVarMap) (newTypeVarMap => value => value);
           },
           t.blah.$2.extract (ctx.value)
         );
@@ -1162,7 +1162,7 @@ const BinaryTypeVariable = name => $1 => $2 => Object.assign (Object.create (Typ
       );
     }
 
-    return cont (ctx.value);
+    return cont (newTypeVarMap) (ctx.value);
   },
 });
 
@@ -1192,7 +1192,7 @@ const Function_ = types => Object.assign (Object.create (Type$prototype), {
     outer (' -> ') +
     inner (`$${types.length}`) (show (types[types.length - 1]))
   ),
-  new: ctx => typeVarMap => newTypeVarMap => cont => cont ((...args) => {
+  new: ctx => typeVarMap => newTypeVarMap => cont => cont (newTypeVarMap) ((...args) => {
     if (args.length !== types.length - 1) {
       throw invalidArgumentsLength (ctx.typeInfo, ctx.index, types.length - 1, args);
     }
@@ -1204,7 +1204,7 @@ const Function_ = types => Object.assign (Object.create (Type$prototype), {
           index: ctx.index,
           propPath: [...ctx.propPath, `$${idx + 1}`],
           value: arg,
-        }) (typeVarMap) (newTypeVarMap) (value => value);
+        }) (typeVarMap) (newTypeVarMap) (newTypeVarMap => value => value);
       } else {
         throw invalidValue (ctx.env, ctx.typeInfo, idx, [...ctx.propPath, `$${idx + 1}`], arg);
       }
@@ -1217,7 +1217,7 @@ const Function_ = types => Object.assign (Object.create (Type$prototype), {
         index: ctx.index,
         propPath: [...ctx.propPath, `$${types.length}`],
         value: returnValue,
-      }) (typeVarMap) (newTypeVarMap) (value => value);
+      }) (typeVarMap) (newTypeVarMap) (newTypeVarMap => value => value);
     } else {
       throw invalidValue (ctx.env, ctx.typeInfo, ctx.index, [...ctx.propPath, `$${types.length}`], returnValue);
     }
@@ -1264,12 +1264,12 @@ const RecordType = fields => {
             index: ctx.index,
             propPath: [k, ...ctx.propPath],
             value: ctx.value[k],
-          }) (typeVarMap) (newTypeVarMap) (value => value);
+          }) (typeVarMap) (newTypeVarMap) (newTypeVarMap => value => value);
         } else {
           throw invalidValue (ctx.env, ctx.typeInfo, ctx.index, [...ctx.propPath, k], ctx.value[k]);
         }
       });
-      return cont (ctx.value);
+      return cont (newTypeVarMap) (ctx.value);
     },
   });
 };
@@ -1305,12 +1305,12 @@ const NamedRecordType = name => url => supertypes => fields => {
             index: ctx.index,
             propPath: [k, ...ctx.propPath],
             value: ctx.value[k],
-          }) (typeVarMap) (newTypeVarMap) (value => value);
+          }) (typeVarMap) (newTypeVarMap) (newTypeVarMap => value => value);
         } else {
           throw invalidValue (ctx.env, ctx.typeInfo, ctx.index, ctx.propPath, ctx.value[k]);
         }
       });
-      return cont (ctx.value);
+      return cont (newTypeVarMap) (ctx.value);
     },
   });
 };
@@ -1687,7 +1687,7 @@ const Fn = $1 => $2 => (
   Object.assign (
     Function_ ([$1, $2]),
     {
-      new: ctx => typeVarMap => newTypeVarMap => cont => cont ((...args) => {
+      new: ctx => typeVarMap => newTypeVarMap => cont => cont (newTypeVarMap) ((...args) => {
         if (args.length !== 1) {
           throw invalidArgumentsLength (ctx.typeInfo, ctx.index, 1, args);
         }
@@ -1699,7 +1699,7 @@ const Fn = $1 => $2 => (
             index: ctx.index,
             propPath: ['$1', ...ctx.propPath],
             value: x,
-          }) (typeVarMap) (newTypeVarMap) (value => value);
+          }) (typeVarMap) (newTypeVarMap) (newTypeVarMap => value => value);
           const y = ctx.value (x);
           if (Z.all (t => t._test (ctx.env) (y), ancestors ($2))) {
             return $2.new ({
@@ -1708,7 +1708,7 @@ const Fn = $1 => $2 => (
               index: ctx.index,
               propPath: ['$2', ...ctx.propPath],
               value: y,
-            }) (typeVarMap) (newTypeVarMap) (value => value);
+            }) (typeVarMap) (newTypeVarMap) (newTypeVarMap => value => value);
           } else {
             throw invalidValue (ctx.env, ctx.typeInfo, ctx.index, [...ctx.propPath, '$2'], y);
           }
@@ -1900,7 +1900,7 @@ const create = opts => {
             index: 0,
             propPath: [],
             value: x,
-          }) (typeVarMap) (name => []) (value => value);
+          }) (typeVarMap) (name => []) (newTypeVarMap => value => value);
         }
       };
       const signature = typeSignature (typeInfo);
@@ -1924,7 +1924,7 @@ const create = opts => {
               index,
               propPath: [],
               value: _x,
-            }) (typeVarMap) (newTypeVarMap) (value => value);
+            }) (typeVarMap) (newTypeVarMap) (newTypeVarMap => value => value);
             return run (typeVarMap) (newTypeVarMap) (f (x));
           } else {
             throw invalidValue (opts.env, typeInfo, index, [], _x);
@@ -1945,7 +1945,7 @@ const create = opts => {
             index,
             propPath: [],
             value,
-          }) (typeVarMap) (newTypeVarMap) (value => value);
+          }) (typeVarMap) (newTypeVarMap) (newTypeVarMap => value => value);
         } else {
           throw invalidValue (opts.env, typeInfo, index, [], value);
         }
