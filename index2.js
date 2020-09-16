@@ -25,7 +25,7 @@ const toArray = list => {
   return result;
 };
 
-const wrapTypeVarMap = typeVarMap => update => name => update (typeVarMap (null));
+const wrapTypeVarMap = typeVarMap => update => update (typeVarMap);
 
 //    toMarkdownList :: (String, String, a -> String, Array a) -> String
 const toMarkdownList = (empty, s, f, xs) => (
@@ -882,7 +882,7 @@ const TypeVariable = name => Object.assign (Object.create (Type$prototype), {
         ctx.index,
         ctx.propPath,
         typeVarMap[name].valuesByPath,
-        newNewTypeVarMap (name)
+        newNewTypeVarMap
       );
     }
 
@@ -1713,8 +1713,8 @@ const Fn = $1 => $2 => (
     Function_ ([$1, $2]),
     {
       new: ctx => typeVarMap => newTypeVarMap => cont => {
-        const $values = cons ({path: JSON.stringify ([]), value: 'hack'}) (newTypeVarMap ('a'));
-        const newNewTypeVarMap = name => $values;
+        const $values = cons ({path: JSON.stringify ([]), value: 'hack'}) (newTypeVarMap);
+        const newNewTypeVarMap = $values;
         return cont (newNewTypeVarMap) ((...args) => {
           if (args.length !== 1) {
             throw invalidArgumentsLength (ctx.typeInfo, ctx.index, 1, args);
@@ -1935,7 +1935,7 @@ const create = opts => {
             index: 0,
             propPath: [],
             value: x,
-          }) (typeVarMap) (name => { throw new Error ('XXX'); }) (newTypeVarMap => value => value);
+          }) (typeVarMap) (nil) (newTypeVarMap => value => value);
         }
       };
       const signature = typeSignature (typeInfo);
@@ -1992,7 +1992,7 @@ const create = opts => {
           throw invalidValue (opts.env, typeInfo, index, [], value);
         }
       }
-    ) (Object.create (null)) (name => nil) (impl);
+    ) (Object.create (null)) (nil) (impl);
   };
   return def ('def') ({}) (defTypes) (def);
 };
