@@ -814,16 +814,13 @@ const TypeVariable = name => Object.assign (Object.create (Type$prototype), {
     }
 
     if (!(name in typeVarMap)) {
-      typeVarMap[name] = {
-        types: Z.filter (t => t.arity >= 0 && test (ctx.env) (t) (ctx.value), ctx.env),
-        valuesByPath: Object.create (null),
-      };
-      if (typeVarMap[name].types.length === 0) {
+      typeVarMap[name] = Z.filter (t => t.arity >= 0 && test (ctx.env) (t) (ctx.value), ctx.env);
+      if (typeVarMap[name].length === 0) {
         throw unrecognizedValue (ctx.env, ctx.typeInfo, ctx.index, ctx.propPath, ctx.value);
       }
     }
 
-    typeVarMap[name].types = Z.chain (
+    typeVarMap[name] = Z.chain (
       t => (
         t.arity === 2 ? Z.lift2 (
           fromBinaryType (t),
@@ -838,11 +835,11 @@ const TypeVariable = name => Object.assign (Object.create (Type$prototype), {
       ),
       Z.filter (
         t => test (ctx.env) (t) (ctx.value),
-        typeVarMap[name].types
+        typeVarMap[name]
       )
     );
 
-    if (typeVarMap[name].types.length === 0) {
+    if (typeVarMap[name].length === 0) {
       throw typeVarConstraintViolation (
         ctx.env,
         ctx.typeInfo,
@@ -891,7 +888,7 @@ const TypeVariable = name => Object.assign (Object.create (Type$prototype), {
             break;
         }
       },
-      typeVarMap[name].types
+      typeVarMap[name]
     );
 
     return cont (values) (ctx.value);
@@ -922,13 +919,10 @@ const UnaryTypeVariable = name => $1 => Object.assign (Object.create (Type$proto
                      (cons ({path: key, value: ctx.value}));
 
     if (!(name in typeVarMap)) {
-      typeVarMap[name] = {
-        types: Z.filter (t => t.arity >= 1, ctx.env),
-        valuesByPath: Object.create (null),
-      };
+      typeVarMap[name] = Z.filter (t => t.arity >= 1, ctx.env);
     }
 
-    typeVarMap[name].types = Z.chain (
+    typeVarMap[name] = Z.chain (
       t => (
         t.arity === 2 ? Z.lift2 (
           fromBinaryType (t),
@@ -943,11 +937,11 @@ const UnaryTypeVariable = name => $1 => Object.assign (Object.create (Type$proto
       ),
       Z.filter (
         t => test (ctx.env) (t) (ctx.value),
-        typeVarMap[name].types
+        typeVarMap[name]
       )
     );
 
-    if (typeVarMap[name].types.length === 0) {
+    if (typeVarMap[name].length === 0) {
       throw invalidValue (ctx.env, ctx.typeInfo, ctx.index, ctx.propPath, ctx.value);
     }
 
@@ -997,7 +991,7 @@ const UnaryTypeVariable = name => $1 => Object.assign (Object.create (Type$proto
                              }
                            },
                            values,
-                           typeVarMap[name].types))
+                           typeVarMap[name]))
                 (ctx.value);
   },
 });
@@ -1043,10 +1037,7 @@ const BinaryTypeVariable = name => $1 => $2 => Object.assign (Object.create (Typ
     }
 
     if (!(name in typeVarMap)) {
-      typeVarMap[name] = {
-        types: Z.filter (t => t.arity >= 2, ctx.env),
-        valuesByPath: Object.create (null),
-      };
+      typeVarMap[name] = Z.filter (t => t.arity >= 2, ctx.env);
     }
 
     // a         Pair ('abc') (123)
@@ -1061,9 +1052,9 @@ const BinaryTypeVariable = name => $1 => $2 => Object.assign (Object.create (Typ
     // a         String
     // b         Number
 
-    typeVarMap[name].types = Z.filter (
+    typeVarMap[name] = Z.filter (
       t => test (ctx.env) (t) (ctx.value),
-      typeVarMap[name].types
+      typeVarMap[name]
     );
 
     const key = JSON.stringify ([ctx.index].concat (ctx.propPath));
@@ -1113,10 +1104,10 @@ const BinaryTypeVariable = name => $1 => $2 => Object.assign (Object.create (Typ
           t.blah.$2.extract (ctx.value)
         );
       },
-      typeVarMap[name].types
+      typeVarMap[name]
     );
 
-    if (typeVarMap[name].types.length === 0) {
+    if (typeVarMap[name].length === 0) {
       throw invalidValue (
         ctx.env,
         ctx.typeInfo,
