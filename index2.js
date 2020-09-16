@@ -234,12 +234,12 @@ const typeVarConstraintViolation = (
   //  and Right (null) we'd like to avoid underlining the first argument
   //  position, since Left ('x') is compatible with the other ‘a’ values.
   const key = JSON.stringify (Z.concat ([index], propPath));
-  const values = Z.chain (({path, value}) => path === key ? [value] : [], toArray (valuesAtPath));
+  const values = Z.chain (({path, value}) => path === key ? [value] : [], valuesAtPath);
 
   //  Note: Sorting these keys lexicographically is not "correct", but it
   //  does the right thing for indexes less than 10.
   const keys = Z.filter (k => {
-    const values_ = Z.chain (({path, value}) => path === k ? [value] : [], toArray (valuesAtPath));
+    const values_ = Z.chain (({path, value}) => path === k ? [value] : [], valuesAtPath);
     return (
       //  Keep X, the position at which the violation was observed.
       k === key ||
@@ -879,7 +879,7 @@ const TypeVariable = name => Object.assign (Object.create (Type$prototype), {
         ctx.index,
         ctx.propPath,
         typeVarMap[name].valuesByPath,
-        values
+        toArray (values)
       );
     }
 
@@ -987,7 +987,7 @@ const UnaryTypeVariable = name => $1 => Object.assign (Object.create (Type$proto
           ctx.index,
           ctx.propPath,
           typeVarMap[name].valuesByPath,
-          values (name)
+          toArray (values)
         );
       }
     } else {
