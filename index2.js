@@ -695,26 +695,24 @@ const UnaryType = name => url => supertypes => test => _1 => $1 => Object.assign
          (parenthesize (outer))
          (inner ('$1') (show ($1)))
   ),
-  new: ctx => typeVarMap => values => cont => {
-    const newNewTypeVarMap = Z.reduce (
-      (values, x) => {
-        if (Z.all (t => t._test (ctx.env) (x), ancestors ($1))) {
-          return $1.new ({
-            typeInfo: ctx.typeInfo,
-            env: ctx.env,
-            index: ctx.index,
-            propPath: [...ctx.propPath, '$1'],
-            value: x,
-          }) (typeVarMap) (values) (values => value => values);
-        } else {
-          throw invalidValue (ctx.env, ctx.typeInfo, ctx.index, [...ctx.propPath, '$1'], x);
-        }
-      },
-      values,
-      _1 (ctx.value)
-    );
-    return cont (newNewTypeVarMap) (ctx.value);
-  },
+  new: ctx => typeVarMap => values => cont => (
+    cont (Z.reduce ((values, x) => {
+                      if (Z.all (t => t._test (ctx.env) (x), ancestors ($1))) {
+                        return $1.new ({
+                          typeInfo: ctx.typeInfo,
+                          env: ctx.env,
+                          index: ctx.index,
+                          propPath: [...ctx.propPath, '$1'],
+                          value: x,
+                        }) (typeVarMap) (values) (values => value => values);
+                      } else {
+                        throw invalidValue (ctx.env, ctx.typeInfo, ctx.index, [...ctx.propPath, '$1'], x);
+                      }
+                    },
+                    values,
+                    _1 (ctx.value)))
+         (ctx.value)
+  ),
 });
 
 //  fromUnaryType :: Type -> Type -> Type
