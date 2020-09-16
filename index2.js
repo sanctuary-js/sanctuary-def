@@ -227,7 +227,6 @@ const typeVarConstraintViolation = (
   typeInfo,       // :: TypeInfo
   index,          // :: Integer
   propPath,       // :: PropPath
-  _valuesByPath,   // :: StrMap (Array Any)
   values_
 ) => {
   const valuesAtPath = Z.reject (({value}) => value === 'hack', Z.reverse (toArray (values_)));
@@ -897,7 +896,6 @@ const TypeVariable = name => Object.assign (Object.create (Type$prototype), {
         ctx.typeInfo,
         ctx.index,
         ctx.propPath,
-        typeVarMap[name].valuesByPath,
         values
       );
     }
@@ -1005,7 +1003,6 @@ const UnaryTypeVariable = name => $1 => Object.assign (Object.create (Type$proto
           ctx.typeInfo,
           ctx.index,
           ctx.propPath,
-          typeVarMap[name].valuesByPath,
           values
         );
       }
