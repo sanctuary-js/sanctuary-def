@@ -470,49 +470,6 @@ const satisfactoryTypes = (
         }
       }
       return;
-
-      // var typeVarMap$ = updateTypeVarMap (env,
-      //                                     typeVarMap,
-      //                                     expType,
-      //                                     index,
-      //                                     propPath,
-      //                                     values);
-
-      // const okTypes = typeVarMap$[typeVarName].types;
-      // return isEmpty (okTypes) ?
-      //   Left (() => (
-      //     typeVarConstraintViolation (
-      //       env,
-      //       typeInfo,
-      //       index,
-      //       propPath,
-      //       typeVarMap$[typeVarName].valuesByPath
-      //     )
-      //   )) :
-      //   Z.reduce ((e, t) => (
-      //     Z.chain (r => {
-      //       //  The `a` in `Functor f => f a` corresponds to the `a`
-      //       //  in `Maybe a` but to the `b` in `Either a b`. A type
-      //       //  variable's $1 will correspond to either $1 or $2 of
-      //       //  the actual type depending on the actual type's arity.
-      //       const offset = t.arity - expType.arity;
-      //       const keys = Object.keys (expType.blah);
-      //       return keys.reduce ((e, k, idx) => {
-      //         const extractor = extract (keys[offset + idx]) (t);
-      //         return Z.reduce ((e, x) => (
-      //           Z.chain (r => (
-      //             recur (env,
-      //                    typeInfo,
-      //                    r.typeVarMap,
-      //                    expType.blah[k].type,
-      //                    index,
-      //                    Z.concat (propPath, [k]),
-      //                    [x])
-      //           ), e)
-      //         ), e, Z.chain (extractor, values));
-      //       }, Right (r));
-      //     }, e)
-      //   ), Right ({typeVarMap: typeVarMap$, types: okTypes}), okTypes);
     }
 
     case 'UNARY':
@@ -885,11 +842,6 @@ const TypeVariable = name => Object.assign (Object.create (Type$prototype), {
       )
     );
 
-    if (!(key in typeVarMap[name].valuesByPath)) {
-      typeVarMap[name].valuesByPath[key] = [];
-    }
-    typeVarMap[name].valuesByPath[key].push (ctx.value);
-
     if (typeVarMap[name].types.length === 0) {
       throw typeVarConstraintViolation (
         ctx.env,
@@ -995,22 +947,8 @@ const UnaryTypeVariable = name => $1 => Object.assign (Object.create (Type$proto
       )
     );
 
-    if (key in typeVarMap[name].valuesByPath) {
-      typeVarMap[name].valuesByPath[key].push (ctx.value);
-      if (typeVarMap[name].types.length === 0) {
-        throw typeVarConstraintViolation (
-          ctx.env,
-          ctx.typeInfo,
-          ctx.index,
-          ctx.propPath,
-          values
-        );
-      }
-    } else {
-      typeVarMap[name].valuesByPath[key] = [ctx.value];
-      if (typeVarMap[name].types.length === 0) {
-        throw invalidValue (ctx.env, ctx.typeInfo, ctx.index, ctx.propPath, ctx.value);
-      }
+    if (typeVarMap[name].types.length === 0) {
+      throw invalidValue (ctx.env, ctx.typeInfo, ctx.index, ctx.propPath, ctx.value);
     }
 
     if (Object.prototype.hasOwnProperty.call (ctx.typeInfo.constraints, name)) {
@@ -1129,10 +1067,6 @@ const BinaryTypeVariable = name => $1 => $2 => Object.assign (Object.create (Typ
     );
 
     const key = JSON.stringify ([ctx.index].concat (ctx.propPath));
-    if (!(key in typeVarMap[name].valuesByPath)) {
-      typeVarMap[name].valuesByPath[key] = [];
-    }
-    typeVarMap[name].valuesByPath[key].push (ctx.value);
 
     Z.map (
       t => {
