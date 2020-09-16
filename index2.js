@@ -25,7 +25,7 @@ const toArray = list => {
   return result;
 };
 
-const wrapTypeVarMap = typeVarMap => update => name => update (name) (typeVarMap (name));
+const wrapTypeVarMap = typeVarMap => update => name => update (typeVarMap (null));
 
 //    toMarkdownList :: (String, String, a -> String, Array a) -> String
 const toMarkdownList = (empty, s, f, xs) => (
@@ -819,9 +819,10 @@ const TypeVariable = name => Object.assign (Object.create (Type$prototype), {
   _test: K (K (true)),
   format: outer => K (outer (name)),
   new: ctx => typeVarMap => newTypeVarMap => cont => {
+    const key = JSON.stringify ([ctx.index].concat (ctx.propPath));
     const newNewTypeVarMap =
       wrapTypeVarMap (newTypeVarMap)
-                     (name_ => values => { return name_ === name ? cons ({path: key, value: ctx.value}) (values) : values; });
+                     (cons ({path: key, value: ctx.value}));
 
     if (Object.prototype.hasOwnProperty.call (ctx.typeInfo.constraints, name)) {
       for (let idx = 0; idx < ctx.typeInfo.constraints[name].length; idx += 1) {
@@ -869,7 +870,6 @@ const TypeVariable = name => Object.assign (Object.create (Type$prototype), {
       )
     );
 
-    const key = JSON.stringify ([ctx.index].concat (ctx.propPath));
     if (!(key in typeVarMap[name].valuesByPath)) {
       typeVarMap[name].valuesByPath[key] = [];
     }
@@ -950,9 +950,10 @@ const UnaryTypeVariable = name => $1 => Object.assign (Object.create (Type$proto
          (inner ('$1') (show ($1)))
   ),
   new: ctx => typeVarMap => newTypeVarMap => cont => {
+    const key = JSON.stringify ([ctx.index].concat (ctx.propPath));
     const newNewTypeVarMap =
       wrapTypeVarMap (newTypeVarMap)
-                     (name_ => values => name_ === name ? cons ({path: key, value: ctx.value}) (values) : values);
+                     (cons ({path: key, value: ctx.value}));
 
     if (!(name in typeVarMap)) {
       typeVarMap[name] = {
@@ -980,7 +981,6 @@ const UnaryTypeVariable = name => $1 => Object.assign (Object.create (Type$proto
       )
     );
 
-    const key = JSON.stringify ([ctx.index].concat (ctx.propPath));
     if (key in typeVarMap[name].valuesByPath) {
       typeVarMap[name].valuesByPath[key].push (ctx.value);
       if (typeVarMap[name].types.length === 0) {
@@ -1183,7 +1183,7 @@ const BinaryTypeVariable = name => $1 => $2 => Object.assign (Object.create (Typ
     }
 
     return cont (wrapTypeVarMap (newTypeVarMap)
-                                (name_ => values => name_ === name ? cons ({path: key, value: ctx.value}) (values) : values))
+                                (cons ({path: key, value: ctx.value})))
                 (ctx.value);
   },
 });
@@ -1215,10 +1215,7 @@ const Function_ = types => Object.assign (Object.create (Type$prototype), {
     inner (`$${types.length}`) (show (types[types.length - 1]))
   ),
   new: ctx => typeVarMap => newTypeVarMap => cont => {
-    const newNewTypeVarMap = wrapTypeVarMap (newTypeVarMap)
-                                            (name => values => {
-                                               return values;
-                                             })
+    const newNewTypeVarMap = wrapTypeVarMap (newTypeVarMap) (I);
     return cont (newNewTypeVarMap) ((...args) => {
       if (args.length !== types.length - 1) {
         throw invalidArgumentsLength (ctx.typeInfo, ctx.index, types.length - 1, args);
