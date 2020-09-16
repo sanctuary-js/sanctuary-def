@@ -227,14 +227,33 @@ const typeVarConstraintViolation = (
   typeInfo,       // :: TypeInfo
   index,          // :: Integer
   propPath,       // :: PropPath
-  valuesByPath,   // :: StrMap (Array Any)
-  valuesAtPath
+  _valuesByPath,   // :: StrMap (Array Any)
+  values_
 ) => {
+  const valuesAtPath = Z.reject (({value}) => value === 'hack', Z.reverse (toArray (values_)));
   //  If we apply an ‘a -> a -> a -> a’ function to Left ('x'), Right (1),
   //  and Right (null) we'd like to avoid underlining the first argument
   //  position, since Left ('x') is compatible with the other ‘a’ values.
   const key = JSON.stringify (Z.concat ([index], propPath));
   const values = Z.chain (({path, value}) => path === key ? [value] : [], valuesAtPath);
+
+  const {name} = propPath.reduce ((t, prop) => t.blah[prop].type, typeInfo.types[index]);
+
+  const valuesByPath = Z.reduce (
+    (acc, {path, value}) => {
+      const [index, ...propPath] = JSON.parse (path);
+      const {name: name_} = propPath.reduce ((t, prop) => t.blah[prop].type, typeInfo.types[index]);
+      if (name_ === name) {
+        if (!(path in acc)) {
+          acc[path] = [];
+        }
+        acc[path].push (value);
+      }
+      return acc;
+    },
+    Object.create (null),
+    valuesAtPath
+  );
 
   //  Note: Sorting these keys lexicographically is not "correct", but it
   //  does the right thing for indexes less than 10.
@@ -879,7 +898,7 @@ const TypeVariable = name => Object.assign (Object.create (Type$prototype), {
         ctx.index,
         ctx.propPath,
         typeVarMap[name].valuesByPath,
-        toArray (values)
+        values
       );
     }
 
@@ -987,7 +1006,7 @@ const UnaryTypeVariable = name => $1 => Object.assign (Object.create (Type$proto
           ctx.index,
           ctx.propPath,
           typeVarMap[name].valuesByPath,
-          toArray (values)
+          values
         );
       }
     } else {
