@@ -958,19 +958,7 @@ const BinaryTypeVariable = name => $1 => $2 => Object.assign (Object.create (Typ
          (parenthesize (outer))
          (inner ('$2') (show ($2)))
   ),
-  new: cont => env => typeInfo => index => path => value => neueTypeVarMap => values => {
-    // a         Pair ('abc') (123)
-    // a         Pair String Number
-    //
-    // f a       Pair ('abc') (123)
-    // f         Pair String
-    // a         Number
-    //
-    // f a b     Pair ('abc') (123)
-    // f         Pair
-    // a         String
-    // b         Number
-
+  new: cont => env => typeInfo => index => path => value => neueTypeVarMap => _values => {
     const neueNeueTypeVarMap = name_ => (
       name_ === name
       ? Z.filter (t => test (env) (t) (value), neueTypeVarMap (name))
@@ -979,45 +967,38 @@ const BinaryTypeVariable = name => $1 => $2 => Object.assign (Object.create (Typ
 
     const key = JSON.stringify ([index, ...path]);
 
-    Z.map (
-      t => {
-        Z.map (
-          value => {
-            if (!($1._test (env) (value))) {
-              throw invalidValue (env, typeInfo, index, [...path, '$1'], value);
-            }
-            $1.new
-              (value => neueTypeVarMap => values => value)
-              (env)
-              (typeInfo)
-              (index)
-              (['$1', ...path])
-              (value)
-              (neueTypeVarMap)
-              (values);
-          },
-          t.blah.$1.extract (value)
-        );
-        Z.map (
-          value => {
-            if (!($2._test (env) (value))) {
-              throw invalidValue (env, typeInfo, index, [...path, '$2'], value);
-            }
-            $2.new
-              (value => neueTypeVarMap => values => value)
-              (env)
-              (typeInfo)
-              (index)
-              (['$2', ...path])
-              (value)
-              (neueTypeVarMap)
-              (values);
-          },
-          t.blah.$2.extract (value)
-        );
-      },
-      neueNeueTypeVarMap (name)
-    );
+    const values = reduce
+      (values => type => (
+         reduce
+           (values => value => (
+              $2.new
+                (value => neueTypeVarMap => values => values)
+                (env)
+                (typeInfo)
+                (index)
+                (['$2', ...path])
+                (value)
+                (neueTypeVarMap)
+                (values)
+            ))
+           (reduce
+              (values => value => (
+                 $1.new
+                   (value => neueTypeVarMap => values => values)
+                   (env)
+                   (typeInfo)
+                   (index)
+                   (['$1', ...path])
+                   (value)
+                   (neueTypeVarMap)
+                   (values)
+               ))
+              (values)
+              (type.blah.$1.extract (value)))
+           (type.blah.$2.extract (value))
+       ))
+      (_values)
+      (neueNeueTypeVarMap (name));
 
     if ((neueNeueTypeVarMap (name)).length === 0) {
       throw invalidValue (env, typeInfo, index, path, value);
