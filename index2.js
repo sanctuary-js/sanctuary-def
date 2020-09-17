@@ -808,54 +808,39 @@ const TypeVariable = name => Object.assign (Object.create (Type$prototype), {
 
     const neueNeueNeueTypeVarMap = reduce
       (neueTypeVarMap => t => {
-         switch (t.arity) {
-           case 1:
-             return reduce
-               (neueTypeVarMap => value => (
-                  t.blah.$1.type.new
-                    (value => neueTypeVarMap => values => neueTypeVarMap)
-                    (env)
-                    (typeInfo)
-                    (index)
-                    ([...path, '$1'])
-                    (value)
-                    (neueTypeVarMap)
-                    (values)
-                ))
-               (neueTypeVarMap)
-               (t.blah.$1.extract (value));
-           case 2: {
-             return reduce
-               (neueTypeVarMap => value => (
-                  t.blah.$2.type.new
-                    (value => neueTypeVarMap => values => neueTypeVarMap)
-                    (env)
-                    (typeInfo)
-                    (index)
-                    ([...path, '$2'])
-                    (value)
-                    (neueTypeVarMap)
-                    (values)
-                ))
-               (reduce
-                  (neueTypeVarMap => value => (
-                     t.blah.$1.type.new
-                       (value => neueTypeVarMap => values => neueTypeVarMap)
-                       (env)
-                       (typeInfo)
-                       (index)
-                       ([...path, '$1'])
-                       (value)
-                       (neueTypeVarMap)
-                       (values)
-                   ))
-                  (neueTypeVarMap)
-                  (t.blah.$1.extract (value)))
-               (t.blah.$2.extract (value));
-           }
-           default:
-             return neueTypeVarMap;
-         }
+         if (t.arity === 0) return neueTypeVarMap;
+
+         const neueTypeVarMap$1 = reduce
+           (neueTypeVarMap => value => (
+              t.blah.$1.type.new
+                (value => neueTypeVarMap => values => neueTypeVarMap)
+                (env)
+                (typeInfo)
+                (index)
+                ([...path, '$1'])
+                (value)
+                (neueTypeVarMap)
+                (values)
+            ))
+           (neueTypeVarMap)
+           (t.blah.$1.extract (value));
+         if (t.arity === 1) return neueTypeVarMap$1;
+
+         const neueTypeVarMap$2 = reduce
+           (neueTypeVarMap => value => (
+              t.blah.$2.type.new
+                (value => neueTypeVarMap => values => neueTypeVarMap)
+                (env)
+                (typeInfo)
+                (index)
+                ([...path, '$2'])
+                (value)
+                (neueTypeVarMap)
+                (values)
+            ))
+           (neueTypeVarMap$1)
+           (t.blah.$2.extract (value))
+         if (t.arity === 2) return neueTypeVarMap$2;
        })
       (neueNeueTypeVarMap)
       (neueNeueTypeVarMap (name));
