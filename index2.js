@@ -653,11 +653,11 @@ const UnaryType = name => url => supertypes => test => _1 => $1 => Object.assign
   ),
   new: cont => env => typeInfo => index => path => value => (
     reduceRight
-      (run => value => neueTypeVarMap => (
+      (cont => value => neueTypeVarMap => (
          bool (Z.all (t => t._test (env) (value), ancestors ($1)))
               (() => { throw invalidValue (env, typeInfo, index, [...path, '$1'], value); })
               (() => $1.new
-                       (value => run)
+                       (value => cont)
                        (env)
                        (typeInfo)
                        (index)
@@ -703,11 +703,11 @@ const BinaryType = name => url => supertypes => test => _1 => _2 => $1 => $2 => 
   ),
   new: cont => env => typeInfo => index => path => value => (
     reduceRight
-      (run => value => (
+      (cont => value => (
          bool (Z.all (t => t._test (env) (value), ancestors ($1)))
               (() => { throw invalidValue (env, typeInfo, index, [...path, '$1'], value); })
               (() => $1.new
-                       (value => neueTypeVarMap => values => run (neueTypeVarMap) (values))
+                       (value => neueTypeVarMap => values => cont (neueTypeVarMap) (values))
                        (env)
                        (typeInfo)
                        (index)
@@ -715,11 +715,11 @@ const BinaryType = name => url => supertypes => test => _1 => _2 => $1 => $2 => 
                        (value))
        ))
       (reduceRight
-         (run => value => (
+         (cont => value => (
             bool (Z.all (t => t._test (env) (value), ancestors ($2)))
                  (() => { throw invalidValue (env, typeInfo, index, [...path, '$2'], value); })
                  (() => $2.new
-                          (value => neueTypeVarMap => values => run (neueTypeVarMap) (values))
+                          (value => neueTypeVarMap => values => cont (neueTypeVarMap) (values))
                           (env)
                           (typeInfo)
                           (index)
@@ -1164,11 +1164,11 @@ const RecordType = fields => {
     },
     new: cont => env => typeInfo => index => path => value => (
       reduceRight
-        (run => key => neueTypeVarMap => (
+        (cont => key => neueTypeVarMap => (
            bool (Z.all (t => t._test (env) (value[key]), ancestors (fields[key])))
                 (() => { throw invalidValue (env, typeInfo, index, [...path, key], value[key]); })
                 (() => fields[key].new
-                         (value => run)
+                         (value => cont)
                          (env)
                          (typeInfo)
                          (index)
@@ -1838,14 +1838,14 @@ const create = opts => {
     return types
     .slice (0, -1)
     .reduceRight (
-      (run, input, index) => neueTypeVarMap => values => f => {
+      (cont, input, index) => neueTypeVarMap => values => f => {
         const wrapped = (_x, ...rest) => {
           if (rest.length > 0) {
             throw invalidArgumentsCount (typeInfo, index, 1, [_x, ...rest]);
           }
           if (Z.all (t => t._test (opts.env) (_x), ancestors (input))) {
             return input.new
-              (value => neueTypeVarMap => values => run (neueTypeVarMap) (values) (f (value)))
+              (value => neueTypeVarMap => values => cont (neueTypeVarMap) (values) (f (value)))
               (opts.env)
               (typeInfo)
               (index)
