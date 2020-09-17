@@ -19,6 +19,7 @@ const $ = module.exports = {};
 
 const nil = {tail: null};
 const cons = head => tail => ({head, tail});
+const clone = list => list.tail == null ? {tail: null} : {head: list.head, tail: list.tail};
 const toArray = list => {
   const result = [];
   for (let xs = list; xs.tail != null; xs = xs.tail) result.push (xs.head);
@@ -226,7 +227,7 @@ const typeVarConstraintViolation = (
   propPath,       // :: PropPath
   values_
 ) => {
-  const valuesAtPath = Z.reject (({value}) => value === 'hack', Z.reverse (toArray (values_)));
+  const valuesAtPath = Z.reverse (toArray (values_));
   //  If we apply an ‘a -> a -> a -> a’ function to Left ('x'), Right (1),
   //  and Right (null) we'd like to avoid underlining the first argument
   //  position, since Left ('x') is compatible with the other ‘a’ values.
@@ -1624,7 +1625,7 @@ const Fn = $1 => $2 => (
     Function_ ([$1, $2]),
     {
       new: ctx => typeVarMap => neueTypeVarMap => values => cont => {
-        const $values = cons ({path: JSON.stringify ([]), value: 'hack'}) (values);
+        const $values = clone (values);
         return cont (neueTypeVarMap) ($values) ((...args) => {
           if (args.length !== 1) {
             throw invalidArgumentsLength (ctx.typeInfo, ctx.index, 1, args);
@@ -1638,7 +1639,8 @@ const Fn = $1 => $2 => (
               propPath: ['$1', ...ctx.propPath],
               value: x,
             }) (typeVarMap) (neueTypeVarMap) ($values) (neueTypeVarMap => values => value => {
-              $values.tail = cons ({path: JSON.stringify ([ctx.index, ...ctx.propPath, '$1']), value: value}) ($values.tail);
+              $values.head = {path: JSON.stringify ([ctx.index, ...ctx.propPath, '$1']), value};
+              $values.tail = clone ($values);
               return value;
             });
             const y = ctx.value (x);
@@ -1650,7 +1652,8 @@ const Fn = $1 => $2 => (
                 propPath: ['$2', ...ctx.propPath],
                 value: y,
               }) (typeVarMap) (neueTypeVarMap) ($values) (neueTypeVarMap => values => value => {
-                $values.tail = cons ({path: JSON.stringify ([ctx.index, ...ctx.propPath, '$2']), value: value}) ($values.tail);
+                $values.head = {path: JSON.stringify ([ctx.index, ...ctx.propPath, '$2']), value};
+                $values.tail = clone ($values);
                 return value;
               });
             } else {
