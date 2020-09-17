@@ -31,6 +31,11 @@ const bool = predicate => alternative => consequent => (
   (predicate ? consequent : alternative) ()
 );
 
+//    reduce :: Foldable f => (b -> a -> b) -> b -> f a -> b
+const reduce = f => b => foldable => (
+  Z.reduce ((b, a) => f (b) (a), b, foldable)
+);
+
 //    reduceRight :: Foldable f => (b -> a -> b) -> b -> f a -> b
 const reduceRight = f => b => foldable => (
   Z.reduce (
@@ -251,21 +256,20 @@ const typeVarConstraintViolation = (
 
   const {name} = propPath.reduce ((t, prop) => t.blah[prop].type, typeInfo.types[index]);
 
-  const valuesByPath = Z.reduce (
-    (acc, {path, value}) => {
-      const [index, ...propPath] = JSON.parse (path);
-      const {name: name_} = propPath.reduce ((t, prop) => t.blah[prop].type, typeInfo.types[index]);
-      if (name_ === name) {
-        if (!(path in acc)) {
-          acc[path] = [];
-        }
-        acc[path].push (value);
-      }
-      return acc;
-    },
-    Object.create (null),
-    valuesAtPath
-  );
+  const valuesByPath = reduce
+    (acc => ({path, value}) => {
+       const [index, ...propPath] = JSON.parse (path);
+       const {name: name_} = propPath.reduce ((t, prop) => t.blah[prop].type, typeInfo.types[index]);
+       if (name_ === name) {
+         if (!(path in acc)) {
+           acc[path] = [];
+         }
+         acc[path].push (value);
+       }
+       return acc;
+     })
+    (Object.create (null))
+    (valuesAtPath);
 
   //  Note: Sorting these keys lexicographically is not "correct", but it
   //  does the right thing for indexes less than 10.
@@ -281,10 +285,9 @@ const typeVarConstraintViolation = (
 
   const underlinedTypeVars =
   underlineTypeVars (typeInfo,
-                     Z.reduce (($valuesByPath, k) => {
-                       $valuesByPath[k] = valuesByPath[k];
-                       return $valuesByPath;
-                     }, {}, keys));
+                     reduce ($valuesByPath => k => { $valuesByPath[k] = valuesByPath[k]; return $valuesByPath; })
+                            ({})
+                            (keys));
 
   return new TypeError (trimTrailingSpaces (
     'Type-variable constraint violation\n\n' +
@@ -803,40 +806,12 @@ const TypeVariable = name => Object.assign (Object.create (Type$prototype), {
       : neueTypeVarMap (name_)
     );
 
-    const neueNeueNeueTypeVarMap = Z.reduce (
-      (neueTypeVarMap, t) => {
-        switch (t.arity) {
-          case 1:
-            return Z.reduce (
-              (neueTypeVarMap, value) => (
-                t.blah.$1.type.new
-                  (value => neueTypeVarMap => values => neueTypeVarMap)
-                  (env)
-                  (typeInfo)
-                  (index)
-                  ([...path, '$1'])
-                  (value)
-                  (neueTypeVarMap)
-                  (values)
-              ),
-              neueTypeVarMap,
-              t.blah.$1.extract (value)
-            );
-          case 2: {
-            return Z.reduce (
-              (neueTypeVarMap, value) => (
-                t.blah.$2.type.new
-                  (value => neueTypeVarMap => values => neueTypeVarMap)
-                  (env)
-                  (typeInfo)
-                  (index)
-                  ([...path, '$2'])
-                  (value)
-                  (neueTypeVarMap)
-                  (values)
-              ),
-              Z.reduce (
-                (neueTypeVarMap, value) => (
+    const neueNeueNeueTypeVarMap = reduce
+      (neueTypeVarMap => t => {
+         switch (t.arity) {
+           case 1:
+             return reduce
+               (neueTypeVarMap => value => (
                   t.blah.$1.type.new
                     (value => neueTypeVarMap => values => neueTypeVarMap)
                     (env)
@@ -846,20 +821,44 @@ const TypeVariable = name => Object.assign (Object.create (Type$prototype), {
                     (value)
                     (neueTypeVarMap)
                     (values)
-                ),
-                neueTypeVarMap,
-                t.blah.$1.extract (value)
-              ),
-              t.blah.$2.extract (value)
-            );
-          }
-          default:
-            return neueTypeVarMap;
-        }
-      },
-      neueNeueTypeVarMap,
-      neueNeueTypeVarMap (name)
-    );
+                ))
+               (neueTypeVarMap)
+               (t.blah.$1.extract (value));
+           case 2: {
+             return reduce
+               (neueTypeVarMap => value => (
+                  t.blah.$2.type.new
+                    (value => neueTypeVarMap => values => neueTypeVarMap)
+                    (env)
+                    (typeInfo)
+                    (index)
+                    ([...path, '$2'])
+                    (value)
+                    (neueTypeVarMap)
+                    (values)
+                ))
+               (reduce
+                  (neueTypeVarMap => value => (
+                     t.blah.$1.type.new
+                       (value => neueTypeVarMap => values => neueTypeVarMap)
+                       (env)
+                       (typeInfo)
+                       (index)
+                       ([...path, '$1'])
+                       (value)
+                       (neueTypeVarMap)
+                       (values)
+                   ))
+                  (neueTypeVarMap)
+                  (t.blah.$1.extract (value)))
+               (t.blah.$2.extract (value));
+           }
+           default:
+             return neueTypeVarMap;
+         }
+       })
+      (neueNeueTypeVarMap)
+      (neueNeueTypeVarMap (name));
 
     if ((neueNeueNeueTypeVarMap (name)).length > 0) {
       return cont (value) (neueNeueTypeVarMap) (values);
@@ -937,44 +936,43 @@ const UnaryTypeVariable = name => $1 => Object.assign (Object.create (Type$proto
 
     return cont (value)
                 (neueNeueTypeVarMap)
-                (Z.reduce ((values, t) => {
-                             switch (t.arity) {
-                               case 1:
-                                 return Z.reduce (
-                                   (values, value) => (
-                                     $1.new
-                                       (value => neueTypeVarMap => values => values)
-                                       (env)
-                                       (typeInfo)
-                                       (index)
-                                       (['$1', ...path])
-                                       (value)
-                                       (neueTypeVarMap)
-                                       (values)
-                                   ),
-                                   values,
-                                   t.blah.$1.extract (value)
-                                 );
-                               case 2:
-                                 return Z.reduce (
-                                   (values, value) => (
-                                     $1.new
-                                       (value => neueTypeVarMap => values => values)
-                                       (env)
-                                       (typeInfo)
-                                       (index)
-                                       (['$2', ...path])
-                                       (value)
-                                       (neueTypeVarMap)
-                                       (values)
-                                   ),
-                                   values,
-                                   t.blah.$2.extract (value)
-                                 );
-                             }
-                           },
-                           values,
-                           neueNeueTypeVarMap (name)));
+                (reduce
+                   (values => t => {
+                      switch (t.arity) {
+                        case 1:
+                          return reduce
+                            (values => value => (
+                               $1.new
+                                 (value => neueTypeVarMap => values => values)
+                                 (env)
+                                 (typeInfo)
+                                 (index)
+                                 (['$1', ...path])
+                                 (value)
+                                 (neueTypeVarMap)
+                                 (values)
+                             ))
+                            (values)
+                            (t.blah.$1.extract (value));
+                        case 2:
+                          return reduce
+                            (values => value => (
+                               $1.new
+                                 (value => neueTypeVarMap => values => values)
+                                 (env)
+                                 (typeInfo)
+                                 (index)
+                                 (['$2', ...path])
+                                 (value)
+                                 (neueTypeVarMap)
+                                 (values)
+                             ))
+                            (values)
+                            (t.blah.$2.extract (value));
+                      }
+                    })
+                   (values)
+                   (neueNeueTypeVarMap (name)));
   },
 });
 
