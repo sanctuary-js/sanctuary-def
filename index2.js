@@ -795,50 +795,101 @@ const TypeVariable = name => Object.assign (Object.create (Type$prototype), {
       )
     );
 
-    Z.map (
-      t => {
-        switch (t.arity) {
-          case 1:
-            Z.map (
-              x => t.blah.$1.type.new ({
-                typeInfo: ctx.typeInfo,
-                env: ctx.env,
-                index: ctx.index,
-                propPath: [...ctx.propPath, '$1'],
-                value: x,
-              }) (typeVarMap) (neueTypeVarMap) (values) (neueTypeVarMap => values => value => value),
-              t.blah.$1.extract (ctx.value)
-            );
-            break;
-          case 2:
-            Z.map (
-              x => t.blah.$1.type.new ({
-                typeInfo: ctx.typeInfo,
-                env: ctx.env,
-                index: ctx.index,
-                propPath: [...ctx.propPath, '$1'],
-                value: x,
-              }) (typeVarMap) (neueTypeVarMap) (values) (neueTypeVarMap => values => value => value),
-              t.blah.$1.extract (ctx.value)
-            );
-            Z.map (
-              x => t.blah.$2.type.new ({
-                typeInfo: ctx.typeInfo,
-                env: ctx.env,
-                index: ctx.index,
-                propPath: [...ctx.propPath, '$2'],
-                value: x,
-              }) (typeVarMap) (neueTypeVarMap) (values) (neueTypeVarMap => values => value => value),
-              t.blah.$2.extract (ctx.value)
-            );
-            break;
-        }
-      },
-      typeVarMap[name]
+    const neueNeueTypeVarMap = name_ => (
+      name_ === name
+      ? Z.chain (
+          t => (
+            t.arity === 2 ? Z.lift2 (
+              fromBinaryType (t),
+              Z.filter (isConsistent, expandUnknown (ctx.env) ([]) (ctx.value) (t.blah.$1.extract) (t.blah.$1.type)),
+              Z.filter (isConsistent, expandUnknown (ctx.env) ([]) (ctx.value) (t.blah.$2.extract) (t.blah.$2.type))
+            ) :
+            t.arity === 1 ? Z.map (
+              fromUnaryType (t),
+              Z.filter (isConsistent, expandUnknown (ctx.env) ([]) (ctx.value) (t.blah.$1.extract) (t.blah.$1.type))
+            ) :
+            [t]
+          ),
+          Z.filter (
+            t => test (ctx.env) (t) (ctx.value),
+            neueTypeVarMap (name)
+          )
+        )
+      : neueTypeVarMap (name_)
     );
 
+    const neueNeueNeueTypeVarMap = Z.reduce (
+      (neueTypeVarMap, t) => {
+        switch (t.arity) {
+          case 1:
+            return Z.reduce (
+              (neueTypeVarMap, x) => (
+                t.blah.$1.type.new
+                  ({typeInfo: ctx.typeInfo,
+                    env: ctx.env,
+                    index: ctx.index,
+                    propPath: [...ctx.propPath, '$1'],
+                    value: x})
+                  (typeVarMap)
+                  (neueTypeVarMap)
+                  (values)
+                  (neueTypeVarMap => values => value => neueTypeVarMap)
+              ),
+              neueTypeVarMap,
+              t.blah.$1.extract (ctx.value)
+            );
+          case 2: {
+            return Z.reduce (
+              (neueTypeVarMap, x) => (
+                t.blah.$2.type.new
+                  ({typeInfo: ctx.typeInfo,
+                    env: ctx.env,
+                    index: ctx.index,
+                    propPath: [...ctx.propPath, '$2'],
+                    value: x})
+                  (typeVarMap)
+                  (neueTypeVarMap)
+                  (values)
+                  (neueTypeVarMap => values => value => neueTypeVarMap)
+              ),
+              Z.reduce (
+                (neueTypeVarMap, x) => (
+                  t.blah.$1.type.new
+                    ({typeInfo: ctx.typeInfo,
+                      env: ctx.env,
+                      index: ctx.index,
+                      propPath: [...ctx.propPath, '$1'],
+                      value: x})
+                    (typeVarMap)
+                    (neueTypeVarMap)
+                    (values)
+                    (neueTypeVarMap => values => value => neueTypeVarMap)
+                ),
+                neueTypeVarMap,
+                t.blah.$1.extract (ctx.value)
+              ),
+              t.blah.$2.extract (ctx.value)
+            );
+          }
+          default:
+            return neueTypeVarMap;
+        }
+      },
+      neueNeueTypeVarMap,
+      neueNeueTypeVarMap (name)
+    );
+
+//  console.log ('-----------------------------------');
+//  console.log (show (typeVarMap[name]));
+//  console.log (show (neueNeueNeueTypeVarMap (name)));
+//  (require ('assert')).strictEqual (
+//    show (typeVarMap[name]),
+//    show (neueNeueNeueTypeVarMap (name))
+//  );
+//  console.log ('===================================');
+
     if (typeVarMap[name].length > 0) {
-      return cont (neueTypeVarMap) (values) (ctx.value);
+      return cont (neueNeueTypeVarMap) (values) (ctx.value);
     } else if (Z.any (t => test (ctx.env) (t) (ctx.value), ctx.env)) {
       throw typeVarConstraintViolation (ctx.env, ctx.typeInfo, ctx.index, ctx.propPath, values);
     } else {
@@ -868,26 +919,30 @@ const UnaryTypeVariable = name => $1 => Object.assign (Object.create (Type$proto
     const key = JSON.stringify ([ctx.index].concat (ctx.propPath));
     const values = (cons ({path: key, value: ctx.value})) (_values);
 
-    typeVarMap[name] = Z.chain (
-      t => (
-        t.arity === 2 ? Z.lift2 (
-          fromBinaryType (t),
-          Z.filter (isConsistent, expandUnknown (ctx.env) ([]) (ctx.value) (t.blah.$1.extract) (t.blah.$1.type)),
-          Z.filter (isConsistent, expandUnknown (ctx.env) ([]) (ctx.value) (t.blah.$2.extract) (t.blah.$2.type))
-        ) :
-        t.arity === 1 ? Z.map (
-          fromUnaryType (t),
-          Z.filter (isConsistent, expandUnknown (ctx.env) ([]) (ctx.value) (t.blah.$1.extract) (t.blah.$1.type))
-        ) :
-        [t]
-      ),
-      Z.filter (
-        t => test (ctx.env) (t) (ctx.value),
-        typeVarMap[name]
-      )
+    const neueNeueTypeVarMap = name_ => (
+      name_ === name
+      ? Z.chain (
+          t => (
+            t.arity === 2 ? Z.lift2 (
+              fromBinaryType (t),
+              Z.filter (isConsistent, expandUnknown (ctx.env) ([]) (ctx.value) (t.blah.$1.extract) (t.blah.$1.type)),
+              Z.filter (isConsistent, expandUnknown (ctx.env) ([]) (ctx.value) (t.blah.$2.extract) (t.blah.$2.type))
+            ) :
+            t.arity === 1 ? Z.map (
+              fromUnaryType (t),
+              Z.filter (isConsistent, expandUnknown (ctx.env) ([]) (ctx.value) (t.blah.$1.extract) (t.blah.$1.type))
+            ) :
+            [t]
+          ),
+          Z.filter (
+            t => test (ctx.env) (t) (ctx.value),
+            neueTypeVarMap (name)
+          )
+        )
+      : neueTypeVarMap (name_)
     );
 
-    if (typeVarMap[name].length === 0) {
+    if ((neueNeueTypeVarMap (name)).length === 0) {
       throw invalidValue (ctx.env, ctx.typeInfo, ctx.index, ctx.propPath, ctx.value);
     }
 
@@ -907,7 +962,7 @@ const UnaryTypeVariable = name => $1 => Object.assign (Object.create (Type$proto
       }
     }
 
-    return cont (neueTypeVarMap)
+    return cont (neueNeueTypeVarMap)
                 (Z.reduce ((values, t) => {
                              switch (t.arity) {
                                case 1:
@@ -937,7 +992,7 @@ const UnaryTypeVariable = name => $1 => Object.assign (Object.create (Type$proto
                              }
                            },
                            values,
-                           typeVarMap[name]))
+                           neueNeueTypeVarMap (name)))
                 (ctx.value);
   },
 });
@@ -977,9 +1032,10 @@ const BinaryTypeVariable = name => $1 => $2 => Object.assign (Object.create (Typ
     // a         String
     // b         Number
 
-    typeVarMap[name] = Z.filter (
-      t => test (ctx.env) (t) (ctx.value),
-      typeVarMap[name]
+    const neueNeueTypeVarMap = name_ => (
+      name_ === name
+      ? Z.filter (t => test (ctx.env) (t) (ctx.value), neueTypeVarMap (name))
+      : neueTypeVarMap (name_)
     );
 
     const key = JSON.stringify ([ctx.index].concat (ctx.propPath));
@@ -1029,10 +1085,10 @@ const BinaryTypeVariable = name => $1 => $2 => Object.assign (Object.create (Typ
           t.blah.$2.extract (ctx.value)
         );
       },
-      typeVarMap[name]
+      neueNeueTypeVarMap (name)
     );
 
-    if (typeVarMap[name].length === 0) {
+    if ((neueNeueTypeVarMap (name)).length === 0) {
       throw invalidValue (
         ctx.env,
         ctx.typeInfo,
@@ -1042,7 +1098,7 @@ const BinaryTypeVariable = name => $1 => $2 => Object.assign (Object.create (Typ
       );
     }
 
-    return cont (neueTypeVarMap)
+    return cont (neueNeueTypeVarMap)
                 (cons ({path: key, value: ctx.value}) (values))
                 (ctx.value);
   },
@@ -1851,7 +1907,11 @@ const create = opts => {
           throw invalidValue (opts.env, typeInfo, index, [], value);
         }
       }
-    ) (typeVarMap) (name => typeVarMap[name]) (nil) (impl);
+    ) (typeVarMap)
+      (name => (arity => Z.filter (t => t.arity >= arity, opts.env))
+               ((Z.foldMap (Object, typeVarNames, types))[name]))
+      (nil)
+      (impl);
   };
   return def ('def') ({}) (defTypes) (def);
 };
