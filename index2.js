@@ -874,10 +874,6 @@ const TypeVariable = name => Object.assign (Object.create (Type$prototype), {
             );
           }
           default:
-            console.log ('here');
-            console.log ('ctx.value:', ctx.value);
-            console.log ('typeVarMap[name]:', show (typeVarMap[name]));
-            console.log (show (neueTypeVarMap (name)));
             return neueTypeVarMap;
         }
       },
@@ -894,7 +890,7 @@ const TypeVariable = name => Object.assign (Object.create (Type$prototype), {
     );
     console.log ('===================================');
 
-    if (typeVarMap[name].length > 0) {
+    if ((neueNeueNeueTypeVarMap (name)).length > 0) {
       return cont (neueNeueTypeVarMap) (values) (ctx.value);
     } else if (Z.any (t => test (ctx.env) (t) (ctx.value), ctx.env)) {
       throw typeVarConstraintViolation (ctx.env, ctx.typeInfo, ctx.index, ctx.propPath, values);
