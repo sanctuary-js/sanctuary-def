@@ -915,40 +915,22 @@ const UnaryTypeVariable = name => $1 => Object.assign (Object.create (Type$proto
     return cont (value)
                 (neueNeueTypeVarMap)
                 (reduce
-                   (values => t => {
-                      switch (t.arity) {
-                        case 1:
-                          return reduce
-                            (values => value => (
-                               $1.new
-                                 (value => neueTypeVarMap => values => values)
-                                 (env)
-                                 (typeInfo)
-                                 (index)
-                                 (['$1', ...path])
-                                 (value)
-                                 (neueTypeVarMap)
-                                 (values)
-                             ))
-                            (values)
-                            (t.blah.$1.extract (value));
-                        case 2:
-                          return reduce
-                            (values => value => (
-                               $1.new
-                                 (value => neueTypeVarMap => values => values)
-                                 (env)
-                                 (typeInfo)
-                                 (index)
-                                 (['$2', ...path])
-                                 (value)
-                                 (neueTypeVarMap)
-                                 (values)
-                             ))
-                            (values)
-                            (t.blah.$2.extract (value));
-                      }
-                    })
+                   (values => type => (
+                      reduce
+                        (values => value => (
+                           $1.new
+                             (value => neueTypeVarMap => values => values)
+                             (env)
+                             (typeInfo)
+                             (index)
+                             ([`$${type.arity}`, ...path])
+                             (value)
+                             (neueTypeVarMap)
+                             (values)
+                         ))
+                        (values)
+                        (type.blah[`$${type.arity}`].extract (value))
+                    ))
                    (values)
                    (neueNeueTypeVarMap (name)));
   },
