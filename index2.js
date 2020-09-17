@@ -1698,19 +1698,19 @@ const label = label => s => {
          strRepeat (' ', Math.ceil (delta / 2));
 };
 
-//    typeVarNames :: Type -> Array String
+//    typeVarNames :: Type -> StrMap Integer
 const typeVarNames = t => {
-  const names = [];
-  if (t.type === 'VARIABLE') names.push (t.name);
+  const names = {};
+  if (t.type === 'VARIABLE') names[t.name] = t.arity;
   for (const v of Object.values (t.blah)) {
-    Array.prototype.push.apply (names, typeVarNames (v.type));
+    Object.assign (names, typeVarNames (v.type));
   }
   return names;
 };
 
 //    showTypeWith :: Array Type -> Type -> String
 const showTypeWith = types => {
-  const names = Z.chain (typeVarNames, types);
+  const names = Object.keys (Z.foldMap (Object, typeVarNames, types));
   return t => {
     let code = 'a'.charCodeAt (0);
     return when (t.type === 'FUNCTION')
@@ -1814,6 +1814,10 @@ const create = opts => {
     }
 
     const typeVarMap = Object.create (null);
+    const typeVarMap_ = Z.map (
+      arity => Z.filter (t => t.arity >= arity, opts.env),
+      Z.foldMap (Object, typeVarNames, types)
+    );
 
     return types
     .slice (0, -1)
