@@ -1204,22 +1204,22 @@ const NamedRecordType = name => url => supertypes => fields => {
       return keys.every (k => fields[k]._test (env) (x[k]));
     },
     format: outer => K (outer (name)),
-    new: cont => env => typeInfo => index => path => value => neueTypeVarMap => values => {
-      keys.forEach (k => {
-        if (Z.all (t => t._test (env) (value[k]), ancestors (fields[k]))) {
-          fields[k].new
-            (value => neueTypeVarMap => values => value)
-            (env)
-            (typeInfo)
-            (index)
-            ([k, ...path])
-            (value[k])
-            (neueTypeVarMap)
-            (values);
-        }
-      });
-      return cont (value) (neueTypeVarMap) (values);
-    },
+    new: cont => env => typeInfo => index => path => value => (
+      reduceRight
+        (cont => key => (
+           bool (Z.all (t => t._test (env) (value[key]), ancestors (fields[key])))
+                (() => { throw new Error ('TK'); })
+                (() => fields[key].new
+                         (value => cont)
+                         (env)
+                         (typeInfo)
+                         (index)
+                         ([key, ...path])
+                         (value[key]))
+         ))
+        (cont (value))
+        (keys)
+    ),
   });
 };
 
