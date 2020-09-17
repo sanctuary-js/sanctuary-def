@@ -1,27 +1,11 @@
 {
   "root": true,
   "extends": ["./node_modules/sanctuary-style/eslint-es6.json"],
+  "env": {"node": true},
   "rules": {
-    "indent": [
-      "error",
-      2,
-      {
-        "SwitchCase": 1,
-        "FunctionDeclaration": {"parameters": "first"},
-        "FunctionExpression": {"parameters": "first"},
-        "CallExpression": {"arguments": "first"},
-        "ArrayExpression": "first",
-        "ObjectExpression": "first",
-        "ignoredNodes": [
-          "CallExpression",
-          "CallExpression > *",
-          "CallExpression > ArrowFunctionExpression ArrowFunctionExpression > *",
-          "CallExpression > FunctionExpression > BlockStatement",
-          "ConditionalExpression",
-          "MemberExpression"
-        ]
-      }
-    ]
+    "indent": ["off"],
+    "max-len": ["off"],
+    "spaced-comment": ["off"]
   },
   "overrides": [
     {
@@ -37,14 +21,21 @@
     {
       "files": ["index.js"],
       "rules": {
-        "multiline-comment-style": ["off"]
+        "comma-dangle": ["off"],
+        "multiline-comment-style": ["off"],
+        "no-unused-vars": ["off"],
+        "no-var": ["off"],
+        "prefer-arrow-callback": ["off"],
+        "prefer-rest-params": ["off"],
+        "strict": ["off"]
       }
     },
     {
       "files": ["test/**/*.js"],
       "rules": {
         "comma-dangle": ["error", "always-multiline"],
-        "func-style": ["error", "declaration", {"allowArrowFunctions": true}]
+        "func-style": ["error", "declaration", {"allowArrowFunctions": true}],
+        "no-trailing-spaces": ["off"]
       }
     }
   ]

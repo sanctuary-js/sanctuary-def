@@ -612,7 +612,6 @@
     ([])
     (function(x) {
        return typeof Buffer !== 'undefined' &&
-              // eslint-disable-next-line no-undef
               Buffer.isBuffer (x);
      });
 

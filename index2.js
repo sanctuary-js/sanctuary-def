@@ -25,8 +25,6 @@ const toArray = list => {
   return result;
 };
 
-const wrapTypeVarMap = typeVarMap => update => update (typeVarMap);
-
 //    toMarkdownList :: (String, String, a -> String, Array a) -> String
 const toMarkdownList = (empty, s, f, xs) => (
   isEmpty (xs) ? empty : Z.reduce ((s, x) => s + '  - ' + f (x) + '\n', s, xs)
@@ -759,9 +757,7 @@ const TypeVariable = name => Object.assign (Object.create (Type$prototype), {
   format: outer => K (outer (name)),
   new: ctx => typeVarMap => _values => cont => {
     const key = JSON.stringify ([ctx.index].concat (ctx.propPath));
-    const values =
-      wrapTypeVarMap (_values)
-                     (cons ({path: key, value: ctx.value}));
+    const values = cons ({path: key, value: ctx.value}) (_values);
 
     if (Object.prototype.hasOwnProperty.call (ctx.typeInfo.constraints, name)) {
       for (let idx = 0; idx < ctx.typeInfo.constraints[name].length; idx += 1) {
@@ -881,9 +877,7 @@ const UnaryTypeVariable = name => $1 => Object.assign (Object.create (Type$proto
   ),
   new: ctx => typeVarMap => _values => cont => {
     const key = JSON.stringify ([ctx.index].concat (ctx.propPath));
-    const values =
-      wrapTypeVarMap (_values)
-                     (cons ({path: key, value: ctx.value}));
+    const values = (cons ({path: key, value: ctx.value})) (_values);
 
     if (!(name in typeVarMap)) {
       typeVarMap[name] = Z.filter (t => t.arity >= 1, ctx.env);
@@ -1067,8 +1061,7 @@ const BinaryTypeVariable = name => $1 => $2 => Object.assign (Object.create (Typ
       );
     }
 
-    return cont (wrapTypeVarMap (values)
-                                (cons ({path: key, value: ctx.value})))
+    return cont (cons ({path: key, value: ctx.value}) (values))
                 (ctx.value);
   },
 });
@@ -1099,9 +1092,8 @@ const Function_ = types => Object.assign (Object.create (Type$prototype), {
     outer (' -> ') +
     inner (`$${types.length}`) (show (types[types.length - 1]))
   ),
-  new: ctx => typeVarMap => _values => cont => {
-    const values = wrapTypeVarMap (_values) (I);
-    return cont (values) ((...args) => {
+  new: ctx => typeVarMap => values => cont => (
+    cont (values) ((...args) => {
       const returnValue = ctx.value (...args);
       if (Z.all (t => t._test (ctx.env) (returnValue), ancestors (types[types.length - 1]))) {
         return types[types.length - 1].new
@@ -1126,8 +1118,8 @@ const Function_ = types => Object.assign (Object.create (Type$prototype), {
       } else {
         throw invalidValue (ctx.env, ctx.typeInfo, ctx.index, [...ctx.propPath, `$${types.length}`], returnValue);
       }
-    });
-  },
+    })
+  ),
 });
 
 const RecordType = fields => {
@@ -1821,6 +1813,8 @@ const create = opts => {
       return wrapped;
     }
 
+    const typeVarMap = Object.create (null);
+
     return types
     .slice (0, -1)
     .reduceRight (
@@ -1868,7 +1862,7 @@ const create = opts => {
           throw invalidValue (opts.env, typeInfo, index, [], value);
         }
       }
-    ) (Object.create (null)) (nil) (impl);
+    ) (typeVarMap) (nil) (impl);
   };
   return def ('def') ({}) (defTypes) (def);
 };
