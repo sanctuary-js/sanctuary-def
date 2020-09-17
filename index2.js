@@ -774,14 +774,7 @@ const TypeVariable = name => Object.assign (Object.create (Type$prototype), {
       for (let idx = 0; idx < typeInfo.constraints[name].length; idx += 1) {
         const typeClass = typeInfo.constraints[name][idx];
         if (!(typeClass.test (value))) {
-          throw typeClassConstraintViolation (
-            env,
-            typeInfo,
-            typeClass,
-            index,
-            path,
-            value
-          );
+          throw typeClassConstraintViolation (env, typeInfo, typeClass, index, path, value);
         }
       }
     }
