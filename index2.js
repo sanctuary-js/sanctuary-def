@@ -593,7 +593,7 @@ const Unchecked = s => Object.assign (Object.create (Type$prototype), {
   blah: {},
   _test: K (K (true)),
   format: outer => K (outer (s)),
-  new: cont => env => typeInfo => index => path => value => neueTypeVarMap => values => cont (value) (neueTypeVarMap) (values),
+  new: cont => env => typeInfo => index => path => cont,
 });
 
 $.Inconsistent = Object.assign (Object.create (Type$prototype), {
@@ -627,10 +627,11 @@ const NullaryType = name => url => supertypes => test => Object.assign (Object.c
   blah: {},
   _test: env => test,
   format: outer => K (outer (name)),
-  new: cont => env => typeInfo => index => path => value => neueTypeVarMap => values => {
-    if (test (value)) return cont (value) (neueTypeVarMap) (values);
-    throw invalidValue (env, typeInfo, index, path, value);
-  },
+  new: cont => env => typeInfo => index => path => value => (
+    bool (test (value))
+         (() => { throw invalidValue (env, typeInfo, index, path, value); })
+         (() => cont (value))
+  ),
 });
 
 const UnaryType = name => url => supertypes => test => _1 => $1 => Object.assign (Object.create (Type$prototype), {
@@ -656,7 +657,7 @@ const UnaryType = name => url => supertypes => test => _1 => $1 => Object.assign
          bool (Z.all (t => t._test (env) (value), ancestors ($1)))
               (() => { throw invalidValue (env, typeInfo, index, [...path, '$1'], value); })
               (() => $1.new
-                       (value => neueTypeVarMap => values => run (neueTypeVarMap) (values))
+                       (value => run)
                        (env)
                        (typeInfo)
                        (index)
@@ -664,7 +665,7 @@ const UnaryType = name => url => supertypes => test => _1 => $1 => Object.assign
                        (value)
                        (neueTypeVarMap))
        ))
-      (neueTypeVarMap => values => cont (value) (neueTypeVarMap) (values))
+      (cont (value))
       (_1 (value))
   ),
 });
@@ -725,7 +726,7 @@ const BinaryType = name => url => supertypes => test => _1 => _2 => $1 => $2 => 
                           ([...path, '$2'])
                           (value))
           ))
-         (neueTypeVarMap => values => cont (value) (neueTypeVarMap) (values))
+         (cont (value))
          (_2 (value)))
       (_1 (value))
   ),
@@ -750,7 +751,7 @@ const EnumType = name => url => members => Object.assign (Object.create (Type$pr
   blah: {},
   _test: env => x => memberOf (members) (x),
   format: outer => K (outer (name)),
-  new: cont => env => typeInfo => index => path => value => neueTypeVarMap => values => cont (value) (neueTypeVarMap) (values),
+  new: cont => env => typeInfo => index => path => cont,
 });
 
 const TypeVariable = name => Object.assign (Object.create (Type$prototype), {
@@ -1167,7 +1168,7 @@ const RecordType = fields => {
            bool (Z.all (t => t._test (env) (value[key]), ancestors (fields[key])))
                 (() => { throw invalidValue (env, typeInfo, index, [...path, key], value[key]); })
                 (() => fields[key].new
-                         (value => neueTypeVarMap => values => run (neueTypeVarMap) (values))
+                         (value => run)
                          (env)
                          (typeInfo)
                          (index)
@@ -1175,7 +1176,7 @@ const RecordType = fields => {
                          (value[key])
                          (neueTypeVarMap))
          ))
-        (neueTypeVarMap => values => cont (value) (neueTypeVarMap) (values))
+        (cont (value))
         (keys)
     ),
   });
