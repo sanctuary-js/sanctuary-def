@@ -767,8 +767,8 @@ const TypeVariable = name => Object.assign (Object.create (Type$prototype), {
   _test: K (K (true)),
   format: outer => K (outer (name)),
   new: cont => env => typeInfo => index => path => value => _mappings => _values => {
-    const selector = JSON.stringify ([index, ...path]);
-    const values = cons ({selector, value}) (_values);
+    const values = cons ({selector: JSON.stringify ([index, ...path]), value})
+                        (_values);
 
     if (Object.prototype.hasOwnProperty.call (typeInfo.constraints, name)) {
       for (let idx = 0; idx < typeInfo.constraints[name].length; idx += 1) {
