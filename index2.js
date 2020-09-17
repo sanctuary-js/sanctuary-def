@@ -866,8 +866,8 @@ const UnaryTypeVariable = name => $1 => Object.assign (Object.create (Type$proto
          (inner ('$1') (show ($1)))
   ),
   new: cont => env => typeInfo => index => path => value => _mappings => _values => {
-    const selector = JSON.stringify ([index, ...path]);
-    const values = (cons ({selector, value})) (_values);
+    const values = cons ({selector: JSON.stringify ([index, ...path]), value})
+                        (_values);
 
     const mappings = name_ => (
       name_ === name
