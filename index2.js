@@ -176,8 +176,7 @@ const typeClassConstraintViolation = (
   typeClass,      // :: TypeClass
   index,          // :: Integer
   propPath,       // :: PropPath
-  value,          // :: Any
-  typeVarMap      // :: TypeVarMap
+  value           // :: Any
 ) => {
   const expType = resolvePropPath (typeInfo.types[index], propPath);
   return new TypeError (trimTrailingSpaces (
@@ -771,8 +770,7 @@ const TypeVariable = name => Object.assign (Object.create (Type$prototype), {
             typeClass,
             ctx.index,
             ctx.propPath,
-            ctx.value,
-            typeVarMap
+            ctx.value
           );
         }
       }
@@ -903,8 +901,7 @@ const UnaryTypeVariable = name => $1 => Object.assign (Object.create (Type$proto
             typeClass,
             ctx.index,
             ctx.propPath,
-            ctx.value,
-            typeVarMap
+            ctx.value
           );
         }
       }
@@ -1792,7 +1789,7 @@ const create = opts => {
             index: 0,
             propPath: [],
             value: x,
-          }) (typeVarMap) ('neue') (nil) (neueTypeVarMap => values => value => value);
+          }) (typeVarMap) (name => typeVarMap[name]) (nil) (neueTypeVarMap => values => value => value);
         }
       };
       const signature = typeSignature (typeInfo);
@@ -1854,7 +1851,7 @@ const create = opts => {
           throw invalidValue (opts.env, typeInfo, index, [], value);
         }
       }
-    ) (typeVarMap) ('neue') (nil) (impl);
+    ) (typeVarMap) (name => typeVarMap[name]) (nil) (impl);
   };
   return def ('def') ({}) (defTypes) (def);
 };
