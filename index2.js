@@ -26,6 +26,16 @@ const toArray = list => {
   return result;
 };
 
+//    reduceRight :: Foldable f => (b -> a -> b) -> b -> f a -> b
+const reduceRight = f => b => foldable => (
+  Z.reduce (
+    (as, a) => { as.push (a); return as; },
+    [],
+    foldable
+  )
+  .reduceRight ((b, a) => f (b) (a), b)
+);
+
 //    toMarkdownList :: (String, String, a -> String, Array a) -> String
 const toMarkdownList = (empty, s, f, xs) => (
   isEmpty (xs) ? empty : Z.reduce ((s, x) => s + '  - ' + f (x) + '\n', s, xs)
@@ -636,23 +646,24 @@ const UnaryType = name => url => supertypes => test => _1 => $1 => Object.assign
          (inner ('$1') (show ($1)))
   ),
   new: ctx => neueTypeVarMap => values => cont => (
-    Z.reduce (
-      (run, x) => neueTypeVarMap => values => {
-        if (Z.all (t => t._test (ctx.env) (x), ancestors ($1))) {
-          return $1.new ({
-            typeInfo: ctx.typeInfo,
-            env: ctx.env,
-            index: ctx.index,
-            propPath: [...ctx.propPath, '$1'],
-            value: x,
-          }) (neueTypeVarMap) (values) (neueTypeVarMap => values => K (run (neueTypeVarMap) (values)));
-        } else {
-          throw invalidValue (ctx.env, ctx.typeInfo, ctx.index, [...ctx.propPath, '$1'], x);
-        }
-      },
-      neueTypeVarMap => values => cont (neueTypeVarMap) (values) (ctx.value),
-      Z.reverse (Z.reduce ((xs, x) => (xs.push (x), xs), [], _1 (ctx.value)))
-    ) (neueTypeVarMap) (values)
+    reduceRight
+      (run => x => neueTypeVarMap => values => {
+         if (Z.all (t => t._test (ctx.env) (x), ancestors ($1))) {
+           return $1.new ({
+             typeInfo: ctx.typeInfo,
+             env: ctx.env,
+             index: ctx.index,
+             propPath: [...ctx.propPath, '$1'],
+             value: x,
+           }) (neueTypeVarMap) (values) (neueTypeVarMap => values => K (run (neueTypeVarMap) (values)));
+         } else {
+           throw invalidValue (ctx.env, ctx.typeInfo, ctx.index, [...ctx.propPath, '$1'], x);
+         }
+       })
+      (neueTypeVarMap => values => cont (neueTypeVarMap) (values) (ctx.value))
+      (_1 (ctx.value))
+      (neueTypeVarMap)
+      (values)
   ),
 });
 
@@ -688,41 +699,43 @@ const BinaryType = name => url => supertypes => test => _1 => _2 => $1 => $2 => 
          (inner ('$2') (show ($2)))
   ),
   new: ctx => neueTypeVarMap => values => cont => (
-    Z.reduce (
-      (run, x) => neueTypeVarMap => values => {
-        if (Z.all (t => t._test (ctx.env) (x), ancestors ($1))) {
-          return $1.new ({
-            typeInfo: ctx.typeInfo,
-            env: ctx.env,
-            index: ctx.index,
-            propPath: [...ctx.propPath, '$1'],
-            value: x,
-          }) (neueTypeVarMap) (values) (neueTypeVarMap => values => K (run (neueTypeVarMap) (values)));
-        } else {
-          throw invalidValue (ctx.env, ctx.typeInfo, ctx.index, [...ctx.propPath, '$1'], x);
-        }
-      },
-      Z.reduce (
-        (run, x) => neueTypeVarMap => values => {
-          if (Z.all (t => t._test (ctx.env) (x), ancestors ($2))) {
-            return $2.new ({
-              typeInfo: ctx.typeInfo,
-              env: ctx.env,
-              index: ctx.index,
-              propPath: [...ctx.propPath, '$2'],
-              value: x,
-            }) (neueTypeVarMap) (values) (neueTypeVarMap => values => K (run (neueTypeVarMap) (values)));
-          } else {
-            throw invalidValue (ctx.env, ctx.typeInfo, ctx.index, [...ctx.propPath, '$2'], x);
-          }
-        },
-        neueTypeVarMap => values => (
-          cont (neueTypeVarMap) (values) (ctx.value)
-        ),
-        Z.reverse (Z.reduce ((xs, x) => (xs.push (x), xs), [], _2 (ctx.value)))
-      ),
-      Z.reverse (Z.reduce ((xs, x) => (xs.push (x), xs), [], _1 (ctx.value)))
-    ) (neueTypeVarMap) (values)
+    reduceRight
+      (run => x => neueTypeVarMap => values => {
+         if (Z.all (t => t._test (ctx.env) (x), ancestors ($1))) {
+           return $1.new
+             ({typeInfo: ctx.typeInfo,
+               env: ctx.env,
+               index: ctx.index,
+               propPath: [...ctx.propPath, '$1'],
+               value: x})
+             (neueTypeVarMap)
+             (values)
+             (neueTypeVarMap => values => K (run (neueTypeVarMap) (values)));
+         } else {
+           throw invalidValue (ctx.env, ctx.typeInfo, ctx.index, [...ctx.propPath, '$1'], x);
+         }
+       })
+      (reduceRight
+         (run => x => neueTypeVarMap => values => {
+            if (Z.all (t => t._test (ctx.env) (x), ancestors ($2))) {
+              return $2.new
+                ({typeInfo: ctx.typeInfo,
+                  env: ctx.env,
+                  index: ctx.index,
+                  propPath: [...ctx.propPath, '$2'],
+                  value: x})
+                (neueTypeVarMap)
+                (values)
+                (neueTypeVarMap => values => K (run (neueTypeVarMap) (values)));
+            } else {
+              throw invalidValue (ctx.env, ctx.typeInfo, ctx.index, [...ctx.propPath, '$2'], x);
+            }
+          })
+         (neueTypeVarMap => values => cont (neueTypeVarMap) (values) (ctx.value))
+         (_2 (ctx.value)))
+      (_1 (ctx.value))
+      (neueTypeVarMap)
+      (values)
   ),
 });
 
@@ -1167,23 +1180,26 @@ const RecordType = fields => {
       return wrap (outer ('{')) (outer (' }')) (joinWith (outer (','), reprs));
     },
     new: ctx => neueTypeVarMap => values => cont => (
-      Z.reduce (
-        (run, k) => neueTypeVarMap => values => {
-          if (Z.all (t => t._test (ctx.env) (ctx.value[k]), ancestors (fields[k]))) {
-            return fields[k].new ({
-              typeInfo: ctx.typeInfo,
-              env: ctx.env,
-              index: ctx.index,
-              propPath: [k, ...ctx.propPath],
-              value: ctx.value[k],
-            }) (neueTypeVarMap) (values) (neueTypeVarMap => values => K (run (neueTypeVarMap) (values)));
-          } else {
-            throw invalidValue (ctx.env, ctx.typeInfo, ctx.index, [...ctx.propPath, k], ctx.value[k]);
-          }
-        },
-        neueTypeVarMap => values => cont (neueTypeVarMap) (values) (ctx.value),
-        Z.reverse (keys)
-      ) (neueTypeVarMap) (values)
+      reduceRight
+        (run => k => neueTypeVarMap => values => {
+           if (Z.all (t => t._test (ctx.env) (ctx.value[k]), ancestors (fields[k]))) {
+             return fields[k].new
+               ({typeInfo: ctx.typeInfo,
+                 env: ctx.env,
+                 index: ctx.index,
+                 propPath: [k, ...ctx.propPath],
+                 value: ctx.value[k]})
+               (neueTypeVarMap)
+               (values)
+               (neueTypeVarMap => values => K (run (neueTypeVarMap) (values)));
+           } else {
+             throw invalidValue (ctx.env, ctx.typeInfo, ctx.index, [...ctx.propPath, k], ctx.value[k]);
+           }
+         })
+        (neueTypeVarMap => values => cont (neueTypeVarMap) (values) (ctx.value))
+        (keys)
+        (neueTypeVarMap)
+        (values)
     ),
   });
 };
