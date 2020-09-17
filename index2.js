@@ -865,11 +865,11 @@ const UnaryTypeVariable = name => $1 => Object.assign (Object.create (Type$proto
          (parenthesize (outer))
          (inner ('$1') (show ($1)))
   ),
-  new: cont => env => typeInfo => index => path => value => mappings => _values => {
+  new: cont => env => typeInfo => index => path => value => _mappings => _values => {
     const selector = JSON.stringify ([index, ...path]);
     const values = (cons ({selector, value})) (_values);
 
-    const neueNeueTypeVarMap = name_ => (
+    const mappings = name_ => (
       name_ === name
       ? Z.chain (
           t => (
@@ -884,12 +884,13 @@ const UnaryTypeVariable = name => $1 => Object.assign (Object.create (Type$proto
             ) :
             [t]
           ),
-          Z.filter (t => test (env) (t) (value), mappings (name))
+          Z.filter (t => test (env) (t) (value), _mappings (name))
         )
-      : mappings (name_)
+      : _mappings (name_)
     );
 
-    if ((neueNeueTypeVarMap (name)).length === 0) {
+    const types = mappings (name);
+    if (types.length === 0) {
       throw invalidValue (env, typeInfo, index, path, value);
     }
 
@@ -910,7 +911,7 @@ const UnaryTypeVariable = name => $1 => Object.assign (Object.create (Type$proto
     }
 
     return cont (value)
-                (neueNeueTypeVarMap)
+                (mappings)
                 (reduce
                    (values => type => (
                       reduce
@@ -929,7 +930,7 @@ const UnaryTypeVariable = name => $1 => Object.assign (Object.create (Type$proto
                         (type.blah[`$${type.arity}`].extract (value))
                     ))
                    (values)
-                   (neueNeueTypeVarMap (name)));
+                   (types));
   },
 });
 
