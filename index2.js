@@ -434,43 +434,11 @@ const satisfactoryTypes = (
   for (let idx = 0; idx < values.length; idx += 1) {
     const result = validate (env) (expType) (values[idx]);
     if (result != null) {
-      return Left (() => (
-        invalidValue (env,
-                      typeInfo,
-                      index,
-                      Z.concat (propPath, result.propPath),
-                      result.value)
-      ));
+      return Left (null);
     }
   }
 
   switch (expType.type) {
-
-    case 'VARIABLE': {
-      const typeVarName = expType.name;
-      const constraints = typeInfo.constraints;
-      if (hasOwnProperty.call (constraints, typeVarName)) {
-        const typeClasses = constraints[typeVarName];
-        for (let idx = 0; idx < values.length; idx += 1) {
-          for (let idx2 = 0; idx2 < typeClasses.length; idx2 += 1) {
-            if (!(typeClasses[idx2].test (values[idx]))) {
-              return Left (() => (
-                typeClassConstraintViolation (
-                  env,
-                  typeInfo,
-                  typeClasses[idx2],
-                  index,
-                  propPath,
-                  values[idx],
-                  typeVarMap
-                )
-              ));
-            }
-          }
-        }
-      }
-      return;
-    }
 
     case 'UNARY':
       return Z.map (
@@ -601,7 +569,6 @@ $.Unknown = Object.assign (Object.create (Type$prototype), {
   blah: {},
   _test: K (K (true)),
   format: outer => K (outer ('Unknown')),
-  new: ctx => typeVarMap => values => cont => cont (values) (ctx.value),
 });
 
 const Unchecked = s => Object.assign (Object.create (Type$prototype), {
@@ -1019,23 +986,6 @@ const BinaryTypeVariable = name => $1 => $2 => Object.assign (Object.create (Typ
          (inner ('$2') (show ($2)))
   ),
   new: ctx => typeVarMap => values => cont => {
-    if (Object.prototype.hasOwnProperty.call (ctx.typeInfo.constraints, name)) {
-      for (let idx = 0; idx < ctx.typeInfo.constraints[name].length; idx += 1) {
-        const typeClass = ctx.typeInfo.constraints[name][idx];
-        if (!typeClass.test (ctx.value)) {
-          throw typeClassConstraintViolation (
-            ctx.env,
-            ctx.typeInfo,
-            typeClass,
-            ctx.index,
-            ctx.propPath,
-            ctx.value,
-            typeVarMap
-          );
-        }
-      }
-    }
-
     if (!(name in typeVarMap)) {
       typeVarMap[name] = Z.filter (t => t.arity >= 2, ctx.env);
     }
@@ -1152,9 +1102,6 @@ const Function_ = types => Object.assign (Object.create (Type$prototype), {
   new: ctx => typeVarMap => _values => cont => {
     const values = wrapTypeVarMap (_values) (I);
     return cont (values) ((...args) => {
-      if (args.length !== types.length - 1) {
-        throw invalidArgumentsLength (ctx.typeInfo, ctx.index, types.length - 1, args);
-      }
       const returnValue = ctx.value (...args);
       if (Z.all (t => t._test (ctx.env) (returnValue), ancestors (types[types.length - 1]))) {
         return types[types.length - 1].new
@@ -1173,8 +1120,6 @@ const Function_ = types => Object.assign (Object.create (Type$prototype), {
                  propPath: [...ctx.propPath, `$${idx + 1}`],
                  value: arg,
                }) (typeVarMap) (values) (values => value => values);
-             } else {
-               throw invalidValue (ctx.env, ctx.typeInfo, idx, [...ctx.propPath, `$${idx + 1}`], arg);
              }
            }, values))
           (values => value => value);
@@ -1267,8 +1212,6 @@ const NamedRecordType = name => url => supertypes => fields => {
             propPath: [k, ...ctx.propPath],
             value: ctx.value[k],
           }) (typeVarMap) (values) (values => value => value);
-        } else {
-          throw invalidValue (ctx.env, ctx.typeInfo, ctx.index, ctx.propPath, ctx.value[k]);
         }
       });
       return cont (values) (ctx.value);

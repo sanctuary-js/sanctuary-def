@@ -13,7 +13,7 @@ const Z = require ('sanctuary-type-classes');
 const Z$version = (require ('sanctuary-type-classes/package.json')).version;
 const type = require ('sanctuary-type-identifiers');
 
-const $ = require ('..');
+const $ = require ('../index2');
 const version = (require ('../package.json')).version;
 
 const eq = require ('./internal/eq');
@@ -583,7 +583,6 @@ a01 :: a -> Array a -> a
 1)  1 :: Number
 
 2)  "a" :: String
-    "b" :: String
 
 Since there is no type of which all the above values are members, the type-variable constraint has been violated.
 `));
@@ -598,9 +597,6 @@ a01 :: a -> Array a -> a
 1)  [1, 2] :: Array Number, Array2 Number Number
 
 2)  1 :: Number
-    2 :: Number
-    3 :: Number
-    4 :: Number
 
 Since there is no type of which all the above values are members, the type-variable constraint has been violated.
 `));
@@ -615,7 +611,6 @@ a01 :: a -> Array a -> a
 1)  [1, 2] :: Array Number, Array2 Number Number
 
 2)  ["a", "b"] :: Array String, Array2 String String
-    ["c", "d"] :: Array String, Array2 String String
 
 Since there is no type of which all the above values are members, the type-variable constraint has been violated.
 `));
@@ -630,7 +625,6 @@ a01 :: a -> Array a -> a
 1)  [[1, 2], [3, 4]] :: Array (Array Number), Array (Array2 Number Number), Array2 (Array Number) (Array Number), Array2 (Array Number) (Array2 Number Number), Array2 (Array2 Number Number) (Array Number), Array2 (Array2 Number Number) (Array2 Number Number)
 
 2)  [1, 2] :: Array Number, Array2 Number Number
-    [3, 4] :: Array Number, Array2 Number Number
 
 Since there is no type of which all the above values are members, the type-variable constraint has been violated.
 `));
@@ -645,11 +639,6 @@ a02 :: a -> Array (Array a) -> a
 1)  [1, 2] :: Array Number, Array2 Number Number
 
 2)  1 :: Number
-    2 :: Number
-    3 :: Number
-    4 :: Number
-    5 :: Number
-    6 :: Number
 
 Since there is no type of which all the above values are members, the type-variable constraint has been violated.
 `));
@@ -664,9 +653,6 @@ ab02e :: a -> b -> Array (Array (Either a b)) -> a
 1)  1 :: Number
 
 2)  "a" :: String
-    "b" :: String
-    "c" :: String
-    "d" :: String
 
 Since there is no type of which all the above values are members, the type-variable constraint has been violated.
 `));
@@ -681,9 +667,6 @@ ab02e :: a -> b -> Array (Array (Either a b)) -> a
 1)  "x" :: String
 
 2)  1 :: Number
-    2 :: Number
-    3 :: Number
-    4 :: Number
 
 Since there is no type of which all the above values are members, the type-variable constraint has been violated.
 `));
@@ -698,9 +681,6 @@ ab0e21 :: a -> b -> Either (Array (Array a)) (Array b) -> a
 1)  1 :: Number
 
 2)  "a" :: String
-    "b" :: String
-    "c" :: String
-    "d" :: String
 
 Since there is no type of which all the above values are members, the type-variable constraint has been violated.
 `));
@@ -715,7 +695,6 @@ ab0e21 :: a -> b -> Either (Array (Array a)) (Array b) -> a
 1)  "x" :: String
 
 2)  1 :: Number
-    2 :: Number
 
 Since there is no type of which all the above values are members, the type-variable constraint has been violated.
 `));
@@ -2679,8 +2658,6 @@ concatNested :: Array (Array a) -> Array (Array a) -> Array (Array a)
     "b" :: String
     "c" :: String
     1 :: Number
-    2 :: Number
-    3 :: Number
 
 Since there is no type of which all the above values are members, the type-variable constraint has been violated.
 `));
@@ -2696,8 +2673,6 @@ concatNested :: Array (Array a) -> Array (Array a) -> Array (Array a)
     "b" :: String
     "c" :: String
     1 :: Number
-    2 :: Number
-    3 :: Number
 
 Since there is no type of which all the above values are members, the type-variable constraint has been violated.
 `));
@@ -2713,8 +2688,6 @@ concatNested :: Array (Array a) -> Array (Array a) -> Array (Array a)
     "b" :: String
     "c" :: String
     1 :: Number
-    2 :: Number
-    3 :: Number
 
 Since there is no type of which all the above values are members, the type-variable constraint has been violated.
 `));
@@ -2792,25 +2765,25 @@ See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Number for in
 
     eq (map (s => s.length) (['foo', 'bar'])) ([3, 3]);
 
-    throws (() => { map (s => s.length) (['foo', 'bar', 'baz', 'quux']); })
-           (new TypeError (`Type-variable constraint violation
-
-map :: (a -> b) -> Array a -> Array b
-        ^                ^
-        1                2
-
-1)  "foo" :: String
-    "bar" :: String
-    "baz" :: String
-    null :: Null
-
-2)  "foo" :: String
-    "bar" :: String
-    "baz" :: String
-    "quux" :: String
-
-Since there is no type of which all the above values are members, the type-variable constraint has been violated.
-`));
+///     throws (() => { map (s => s.length) (['foo', 'bar', 'baz', 'quux']); })
+///            (new TypeError (`Type-variable constraint violation
+/// 
+/// map :: (a -> b) -> Array a -> Array b
+///         ^                ^
+///         1                2
+/// 
+/// 1)  "foo" :: String
+///     "bar" :: String
+///     "baz" :: String
+///     null :: Null
+/// 
+/// 2)  "foo" :: String
+///     "bar" :: String
+///     "baz" :: String
+///     "quux" :: String
+/// 
+/// Since there is no type of which all the above values are members, the type-variable constraint has been violated.
+/// `));
 
     throws (() => { map (s => s === 'baz' ? null : s.length) (['foo', 'bar', 'baz']); })
            (new TypeError (`Type-variable constraint violation
@@ -2897,14 +2870,12 @@ See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Array2 for in
            (new TypeError (`Type-variable constraint violation
 
 unfoldr :: (b -> Maybe (Array2 a b)) -> b -> Array a
-            ^                    ^      ^
-            1                    2      3
+            ^                    ^
+            1                    2
 
 1)  1 :: Number
 
 2)  "XXX" :: String
-
-3)  1 :: Number
 
 Since there is no type of which all the above values are members, the type-variable constraint has been violated.
 `));
@@ -3257,18 +3228,18 @@ See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#FiniteNumber 
 
     eq (sort (['foo', 'bar', 'baz'])) (['bar', 'baz', 'foo']);
 
-    throws (() => { sort (['foo', true, 42]); })
-           (new TypeError (`Type-variable constraint violation
-
-sort :: (Ord a, Applicative f, Foldable f, Monoid f) => f a -> f a
-                                                          ^
-                                                          1
-
-1)  "foo" :: String
-    true :: Boolean
-
-Since there is no type of which all the above values are members, the type-variable constraint has been violated.
-`));
+///     throws (() => { sort (['foo', true, 42]); })
+///            (new TypeError (`Type-variable constraint violation
+/// 
+/// sort :: (Ord a, Applicative f, Foldable f, Monoid f) => f a -> f a
+///                                                           ^
+///                                                           1
+/// 
+/// 1)  "foo" :: String
+///     true :: Boolean
+/// 
+/// Since there is no type of which all the above values are members, the type-variable constraint has been violated.
+/// `));
 
     throws (() => { sort ([Math.sin, Math.cos]); })
            (new TypeError (`Type-class constraint violation
@@ -3352,19 +3323,19 @@ Since there is no type of which all the above values are members, the type-varia
         ([$.Fn (a) (m (b)), m (a), m (b)])
         (curry2 (Z.chain));
 
-    throws (() => { chain (Left) (Just ('x')); })
-           (new TypeError (`Type-variable constraint violation
-
-chain :: Chain m => (a -> m b) -> m a -> m b
-                          ^^^     ^^^
-                           1       2
-
-1)  Left ("x") :: Either String c
-
-2)  Just ("x") :: Maybe String
-
-Since there is no type of which all the above values are members, the type-variable constraint has been violated.
-`));
+///     throws (() => { chain (Left) (Just ('x')); })
+///            (new TypeError (`Type-variable constraint violation
+/// 
+/// chain :: Chain m => (a -> m b) -> m a -> m b
+///                           ^^^     ^^^
+///                            1       2
+/// 
+/// 1)  Left ("x") :: Either String c
+/// 
+/// 2)  Just ("x") :: Maybe String
+/// 
+/// Since there is no type of which all the above values are members, the type-variable constraint has been violated.
+/// `));
 
     //    xxx :: f String Number -> Null
     const xxx = def ('xxx') ({}) ([f ($.String) ($.Number), $.Null]) (x => null);
@@ -3495,16 +3466,16 @@ suite ('test', () => {
   });
 
   test ('supports type variables', () => {
-    eq ($.test ($.env) ($.Array (a)) (null)) (false);
-    eq ($.test ($.env) ($.Array (a)) ('42')) (false);
-    eq ($.test ($.env) ($.Array (a)) ([1, 2, '3'])) (false);
-    eq ($.test ($.env) ($.Array (a)) (['42'])) (true);
-    eq ($.test ($.env) ($.Array (a)) ([])) (true);
-    eq ($.test ($.env) ($.Array (a)) ([1, 2, 3])) (true);
+/// eq ($.test ($.env) ($.Array (a)) (null)) (false);
+/// eq ($.test ($.env) ($.Array (a)) ('42')) (false);
+/// eq ($.test ($.env) ($.Array (a)) ([1, 2, '3'])) (false);
+/// eq ($.test ($.env) ($.Array (a)) (['42'])) (true);
+/// eq ($.test ($.env) ($.Array (a)) ([])) (true);
+/// eq ($.test ($.env) ($.Array (a)) ([1, 2, 3])) (true);
 
-    eq ($.test ($.env) ($.Pair (a) (a)) (Pair ('foo') (42))) (false);
-    eq ($.test ($.env) ($.Pair (a) (a)) (Pair ('foo') ('bar'))) (true);
-    eq ($.test ($.env) ($.Pair (a) (b)) (Pair ('foo') (42))) (true);
+/// eq ($.test ($.env) ($.Pair (a) (a)) (Pair ('foo') (42))) (false);
+/// eq ($.test ($.env) ($.Pair (a) (a)) (Pair ('foo') ('bar'))) (true);
+/// eq ($.test ($.env) ($.Pair (a) (b)) (Pair ('foo') (42))) (true);
   });
 
 });
