@@ -766,7 +766,7 @@ const TypeVariable = name => Object.assign (Object.create (Type$prototype), {
   blah: {},
   _test: K (K (true)),
   format: outer => K (outer (name)),
-  new: cont => env => typeInfo => index => path => value => mappings => _values => {
+  new: cont => env => typeInfo => index => path => value => _mappings => _values => {
     const selector = JSON.stringify ([index, ...path]);
     const values = cons ({selector, value}) (_values);
 
@@ -779,7 +779,7 @@ const TypeVariable = name => Object.assign (Object.create (Type$prototype), {
       }
     }
 
-    const neueNeueTypeVarMap = name_ => (
+    const mappings = name_ => (
       name_ === name
       ? Z.chain (
           t => (
@@ -794,12 +794,12 @@ const TypeVariable = name => Object.assign (Object.create (Type$prototype), {
             ) :
             [t]
           ),
-          Z.filter (t => test (env) (t) (value), mappings (name))
+          Z.filter (t => test (env) (t) (value), _mappings (name))
         )
-      : mappings (name_)
+      : _mappings (name_)
     );
 
-    const neueNeueNeueTypeVarMap = reduce
+    const mappings_ = reduce
       (mappings => t => {
          if (t.arity === 0) return mappings;
 
@@ -835,11 +835,11 @@ const TypeVariable = name => Object.assign (Object.create (Type$prototype), {
            (t.blah.$2.extract (value));
          if (t.arity === 2) return mappings$2;
        })
-      (neueNeueTypeVarMap)
-      (neueNeueTypeVarMap (name));
+      (mappings)
+      (mappings (name));
 
-    if ((neueNeueNeueTypeVarMap (name)).length > 0) {
-      return cont (value) (neueNeueTypeVarMap) (values);
+    if ((mappings_ (name)).length > 0) {
+      return cont (value) (mappings) (values);
     } else if (Z.any (t => test (env) (t) (value), env)) {
       throw typeVarConstraintViolation (env, typeInfo, index, path, values);
     } else {
