@@ -645,7 +645,7 @@ const UnaryType = name => url => supertypes => test => _1 => $1 => Object.assign
          (parenthesize (outer))
          (inner ('$1') (show ($1)))
   ),
-  new: cont => ctx => neueTypeVarMap => values => (
+  new: cont => ctx => (
     reduceRight
       (run => x => neueTypeVarMap => values => {
          if (Z.all (t => t._test (ctx.env) (x), ancestors ($1))) {
@@ -664,8 +664,6 @@ const UnaryType = name => url => supertypes => test => _1 => $1 => Object.assign
        })
       (neueTypeVarMap => values => cont (neueTypeVarMap) (values) (ctx.value))
       (_1 (ctx.value))
-      (neueTypeVarMap)
-      (values)
   ),
 });
 
@@ -700,7 +698,7 @@ const BinaryType = name => url => supertypes => test => _1 => _2 => $1 => $2 => 
          (parenthesize (outer))
          (inner ('$2') (show ($2)))
   ),
-  new: cont => ctx => neueTypeVarMap => values => (
+  new: cont => ctx => (
     reduceRight
       (run => x => neueTypeVarMap => values => {
          if (Z.all (t => t._test (ctx.env) (x), ancestors ($1))) {
@@ -736,8 +734,6 @@ const BinaryType = name => url => supertypes => test => _1 => _2 => $1 => $2 => 
          (neueTypeVarMap => values => cont (neueTypeVarMap) (values) (ctx.value))
          (_2 (ctx.value)))
       (_1 (ctx.value))
-      (neueTypeVarMap)
-      (values)
   ),
 });
 
@@ -1195,7 +1191,7 @@ const RecordType = fields => {
       }, keys);
       return wrap (outer ('{')) (outer (' }')) (joinWith (outer (','), reprs));
     },
-    new: cont => ctx => neueTypeVarMap => values => (
+    new: cont => ctx => (
       reduceRight
         (run => k => neueTypeVarMap => values => {
            if (Z.all (t => t._test (ctx.env) (ctx.value[k]), ancestors (fields[k]))) {
@@ -1214,8 +1210,6 @@ const RecordType = fields => {
          })
         (neueTypeVarMap => values => cont (neueTypeVarMap) (values) (ctx.value))
         (keys)
-        (neueTypeVarMap)
-        (values)
     ),
   });
 };
