@@ -865,10 +865,7 @@ const UnaryTypeVariable = name => $1 => Object.assign (Object.create (Type$proto
          (parenthesize (outer))
          (inner ('$1') (show ($1)))
   ),
-  new: cont => env => typeInfo => index => path => value => _mappings => _values => {
-    const values = cons ({selector: JSON.stringify ([index, ...path]), value})
-                        (_values);
-
+  new: cont => env => typeInfo => index => path => value => _mappings => values => {
     const mappings = name_ => (
       name_ === name
       ? Z.chain (
@@ -929,7 +926,8 @@ const UnaryTypeVariable = name => $1 => Object.assign (Object.create (Type$proto
                         (values)
                         (type.blah[`$${type.arity}`].extract (value))
                     ))
-                   (values)
+                   (cons ({selector: JSON.stringify ([index, ...path]), value})
+                         (values))
                    (types));
   },
 });
