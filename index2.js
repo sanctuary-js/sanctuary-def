@@ -832,7 +832,7 @@ const TypeVariable = name => Object.assign (Object.create (Type$prototype), {
                 (values)
             ))
            (mappings$1)
-           (t.blah.$2.extract (value))
+           (t.blah.$2.extract (value));
          if (t.arity === 2) return mappings$2;
        })
       (neueNeueTypeVarMap)
@@ -955,14 +955,17 @@ const BinaryTypeVariable = name => $1 => $2 => Object.assign (Object.create (Typ
          (parenthesize (outer))
          (inner ('$2') (show ($2)))
   ),
-  new: cont => env => typeInfo => index => path => value => mappings => _values => {
-    const neueNeueTypeVarMap = name_ => (
+  new: cont => env => typeInfo => index => path => value => _mappings => _values => {
+    const mappings = name_ => (
       name_ === name
-      ? Z.filter (t => test (env) (t) (value), mappings (name))
-      : mappings (name_)
+      ? Z.filter (t => test (env) (t) (value), _mappings (name))
+      : _mappings (name_)
     );
 
-    const selector = JSON.stringify ([index, ...path]);
+    const types = mappings (name);
+    if (types.length === 0) {
+      throw invalidValue (env, typeInfo, index, path, value);
+    }
 
     const values = reduce
       (values => type => (
@@ -995,15 +998,12 @@ const BinaryTypeVariable = name => $1 => $2 => Object.assign (Object.create (Typ
            (type.blah.$2.extract (value))
        ))
       (_values)
-      (neueNeueTypeVarMap (name));
-
-    if ((neueNeueTypeVarMap (name)).length === 0) {
-      throw invalidValue (env, typeInfo, index, path, value);
-    }
+      (types);
 
     return cont (value)
-                (neueNeueTypeVarMap)
-                (cons ({selector, value}) (values));
+                (mappings)
+                (cons ({selector: JSON.stringify ([index, ...path]), value})
+                      (values));
   },
 });
 
