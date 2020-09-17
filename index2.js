@@ -776,13 +776,6 @@ const TypeVariable = name => Object.assign (Object.create (Type$prototype), {
       }
     }
 
-    if (!(name in typeVarMap)) {
-      typeVarMap[name] = Z.filter (t => t.arity >= 0 && test (ctx.env) (t) (ctx.value), ctx.env);
-      if (typeVarMap[name].length === 0) {
-        throw unrecognizedValue (ctx.env, ctx.typeInfo, ctx.index, ctx.propPath, ctx.value);
-      }
-    }
-
     typeVarMap[name] = Z.chain (
       t => (
         t.arity === 2 ? Z.lift2 (
@@ -801,16 +794,6 @@ const TypeVariable = name => Object.assign (Object.create (Type$prototype), {
         typeVarMap[name]
       )
     );
-
-    if (typeVarMap[name].length === 0) {
-      throw typeVarConstraintViolation (
-        ctx.env,
-        ctx.typeInfo,
-        ctx.index,
-        ctx.propPath,
-        values
-      );
-    }
 
     Z.map (
       t => {
@@ -854,7 +837,13 @@ const TypeVariable = name => Object.assign (Object.create (Type$prototype), {
       typeVarMap[name]
     );
 
-    return cont (values) (ctx.value);
+    if (typeVarMap[name].length > 0) {
+      return cont (values) (ctx.value);
+    } else if (Z.any (t => test (ctx.env) (t) (ctx.value), ctx.env)) {
+      throw typeVarConstraintViolation (ctx.env, ctx.typeInfo, ctx.index, ctx.propPath, values);
+    } else {
+      throw unrecognizedValue (ctx.env, ctx.typeInfo, ctx.index, ctx.propPath, ctx.value);
+    }
   },
 });
 
@@ -878,10 +867,6 @@ const UnaryTypeVariable = name => $1 => Object.assign (Object.create (Type$proto
   new: ctx => typeVarMap => _values => cont => {
     const key = JSON.stringify ([ctx.index].concat (ctx.propPath));
     const values = (cons ({path: key, value: ctx.value})) (_values);
-
-    if (!(name in typeVarMap)) {
-      typeVarMap[name] = Z.filter (t => t.arity >= 1, ctx.env);
-    }
 
     typeVarMap[name] = Z.chain (
       t => (
@@ -980,10 +965,6 @@ const BinaryTypeVariable = name => $1 => $2 => Object.assign (Object.create (Typ
          (inner ('$2') (show ($2)))
   ),
   new: ctx => typeVarMap => values => cont => {
-    if (!(name in typeVarMap)) {
-      typeVarMap[name] = Z.filter (t => t.arity >= 2, ctx.env);
-    }
-
     // a         Pair ('abc') (123)
     // a         Pair String Number
     //
@@ -1813,8 +1794,7 @@ const create = opts => {
       return wrapped;
     }
 
-    const typeVarMap = Object.create (null);
-    const typeVarMap_ = Z.map (
+    const typeVarMap = Z.map (
       arity => Z.filter (t => t.arity >= arity, opts.env),
       Z.foldMap (Object, typeVarNames, types)
     );
