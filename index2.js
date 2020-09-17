@@ -229,9 +229,9 @@ const underlineTypeVars = (typeInfo, valuesByPath) => {
       const indexedPropPath = Z.concat ([index], propPath);
       return s => {
         if (paths.some (isPrefix (indexedPropPath))) {
-          const key = JSON.stringify (indexedPropPath);
-          if (!(hasOwnProperty.call (valuesByPath, key))) return s;
-          if (!(isEmpty (valuesByPath[key]))) return f (s);
+          const selector = JSON.stringify (indexedPropPath);
+          if (!(hasOwnProperty.call (valuesByPath, selector))) return s;
+          if (!(isEmpty (valuesByPath[selector]))) return f (s);
         }
         return _ (s);
       };
@@ -251,20 +251,20 @@ const typeVarConstraintViolation = (
   //  If we apply an ‘a -> a -> a -> a’ function to Left ('x'), Right (1),
   //  and Right (null) we'd like to avoid underlining the first argument
   //  position, since Left ('x') is compatible with the other ‘a’ values.
-  const key = JSON.stringify (Z.concat ([index], propPath));
-  const values = Z.chain (({path, value}) => path === key ? [value] : [], valuesAtPath);
+  const selector = JSON.stringify (Z.concat ([index], propPath));
+  const values = Z.chain (r => r.selector === selector ? [r.value] : [], valuesAtPath);
 
   const {name} = propPath.reduce ((t, prop) => t.blah[prop].type, typeInfo.types[index]);
 
   const valuesByPath = reduce
-    (acc => ({path, value}) => {
-       const [index, ...propPath] = JSON.parse (path);
+    (acc => r => {
+       const [index, ...propPath] = JSON.parse (r.selector);
        const {name: name_} = propPath.reduce ((t, prop) => t.blah[prop].type, typeInfo.types[index]);
        if (name_ === name) {
-         if (!(path in acc)) {
-           acc[path] = [];
+         if (!(r.selector in acc)) {
+           acc[r.selector] = [];
          }
-         acc[path].push (value);
+         acc[r.selector].push (r.value);
        }
        return acc;
      })
@@ -274,10 +274,10 @@ const typeVarConstraintViolation = (
   //  Note: Sorting these keys lexicographically is not "correct", but it
   //  does the right thing for indexes less than 10.
   const keys = Z.filter (k => {
-    const values_ = Z.chain (({path, value}) => path === k ? [value] : [], valuesAtPath);
+    const values_ = Z.chain (r => r.selector === k ? [r.value] : [], valuesAtPath);
     return (
       //  Keep X, the position at which the violation was observed.
-      k === key ||
+      k === selector ||
       //  Keep positions whose values are incompatible with the values at X.
       isEmpty (determineActualTypesStrict (env, Z.concat (values, values_)))
     );
@@ -767,8 +767,8 @@ const TypeVariable = name => Object.assign (Object.create (Type$prototype), {
   _test: K (K (true)),
   format: outer => K (outer (name)),
   new: cont => env => typeInfo => index => path => value => mappings => _values => {
-    const key = JSON.stringify ([index, ...path]);
-    const values = cons ({path: key, value: value}) (_values);
+    const selector = JSON.stringify ([index, ...path]);
+    const values = cons ({selector, value}) (_values);
 
     if (Object.prototype.hasOwnProperty.call (typeInfo.constraints, name)) {
       for (let idx = 0; idx < typeInfo.constraints[name].length; idx += 1) {
@@ -866,8 +866,8 @@ const UnaryTypeVariable = name => $1 => Object.assign (Object.create (Type$proto
          (inner ('$1') (show ($1)))
   ),
   new: cont => env => typeInfo => index => path => value => mappings => _values => {
-    const key = JSON.stringify ([index, ...path]);
-    const values = (cons ({path: key, value: value})) (_values);
+    const selector = JSON.stringify ([index, ...path]);
+    const values = (cons ({selector, value})) (_values);
 
     const neueNeueTypeVarMap = name_ => (
       name_ === name
@@ -962,7 +962,7 @@ const BinaryTypeVariable = name => $1 => $2 => Object.assign (Object.create (Typ
       : mappings (name_)
     );
 
-    const key = JSON.stringify ([index, ...path]);
+    const selector = JSON.stringify ([index, ...path]);
 
     const values = reduce
       (values => type => (
@@ -1003,7 +1003,7 @@ const BinaryTypeVariable = name => $1 => $2 => Object.assign (Object.create (Typ
 
     return cont (value)
                 (neueNeueTypeVarMap)
-                (cons ({path: key, value: value}) (values));
+                (cons ({selector, value}) (values));
   },
 });
 
@@ -1543,7 +1543,7 @@ const Fn = $1 => $2 => (
                          $1.new
                            (value => mappings_ => values => {
                               mappings = mappings_;
-                              $values.head = {path: JSON.stringify ([index, ...path, '$1']), value};
+                              $values.head = {selector: JSON.stringify ([index, ...path, '$1']), value};
                               $values.tail = clone ($values);
                               return value;
                             })
@@ -1560,7 +1560,7 @@ const Fn = $1 => $2 => (
                                      (() => $2.new
                                               (value => mappings_ => values => {
                                                  mappings = mappings_;
-                                                 $values.head = {path: JSON.stringify ([index, ...path, '$2']), value};
+                                                 $values.head = {selector: JSON.stringify ([index, ...path, '$2']), value};
                                                  $values.tail = clone ($values);
                                                  return value;
                                                })
