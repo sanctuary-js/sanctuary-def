@@ -868,25 +868,7 @@ const UnaryTypeVariable = name => $1 => Object.assign (Object.create (Type$proto
   new: cont => env => typeInfo => index => path => value => _mappings => values => {
     const mappings = name_ => {
       const types = _mappings (name_);
-      return (
-        name_ === name
-        ? Z.chain (
-            t => (
-              t.arity === 2 ? Z.lift2 (
-                fromBinaryType (t),
-                Z.filter (isConsistent, expandUnknown (env) ([]) (value) (t.blah.$1.extract) (t.blah.$1.type)),
-                Z.filter (isConsistent, expandUnknown (env) ([]) (value) (t.blah.$2.extract) (t.blah.$2.type))
-              ) :
-              t.arity === 1 ? Z.map (
-                fromUnaryType (t),
-                Z.filter (isConsistent, expandUnknown (env) ([]) (value) (t.blah.$1.extract) (t.blah.$1.type))
-              ) :
-              [t]
-            ),
-            Z.filter (t => test (env) (t) (value), types)
-          )
-        : types
-      );
+      return name_ === name ? Z.filter (type => test (env) (type) (value), types) : types;
     };
 
     const types = mappings (name);
