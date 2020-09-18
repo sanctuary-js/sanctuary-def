@@ -955,11 +955,10 @@ const BinaryTypeVariable = name => $1 => $2 => Object.assign (Object.create (Typ
          (inner ('$2') (show ($2)))
   ),
   new: cont => env => typeInfo => index => path => value => _mappings => values => {
-    const mappings = name_ => (
-      name_ === name
-      ? Z.filter (t => test (env) (t) (value), _mappings (name))
-      : _mappings (name_)
-    );
+    const mappings = name_ => {
+      const types = _mappings (name_);
+      return name_ === name ? Z.filter (type => test (env) (type) (value), types) : types;
+    };
 
     const types = mappings (name);
     if (types.length === 0) {
