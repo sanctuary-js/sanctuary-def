@@ -954,7 +954,7 @@ const BinaryTypeVariable = name => $1 => $2 => Object.assign (Object.create (Typ
          (parenthesize (outer))
          (inner ('$2') (show ($2)))
   ),
-  new: cont => env => typeInfo => index => path => value => _mappings => _values => {
+  new: cont => env => typeInfo => index => path => value => _mappings => values => {
     const mappings = name_ => (
       name_ === name
       ? Z.filter (t => test (env) (t) (value), _mappings (name))
@@ -999,7 +999,7 @@ const BinaryTypeVariable = name => $1 => $2 => Object.assign (Object.create (Typ
                         (type.blah.$2.extract (value))
                     ))
                    (cons ({selector: JSON.stringify ([index, ...path]), value})
-                         (_values))
+                         (values))
                    (types));
   },
 });
