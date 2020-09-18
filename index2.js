@@ -1754,49 +1754,47 @@ const create = opts => {
 
     return types
     .slice (0, -1)
-    .reduceRight (
-      (cont, input, index) => mappings => values => f => {
-        const wrapped = (_x, ...rest) => {
-          if (rest.length > 0) {
-            throw invalidArgumentsCount (typeInfo, index, 1, [_x, ...rest]);
-          }
-          if (Z.all (t => t._test (opts.env) (_x), ancestors (input))) {
-            return input.new
-              (value => mappings => values => cont (mappings) (values) (f (value)))
-              (opts.env)
-              (typeInfo)
-              (index)
-              ([])
-              (_x)
-              (mappings)
-              (values);
-          } else {
-            throw invalidValue (opts.env, typeInfo, index, [], _x);
-          }
-        };
-        const signature = typeSignature (typeInfo);
-        wrapped[inspect] = wrapped.toString = () => signature;
-        return wrapped;
-      },
-      mappings => values => value => {
-        const index = types.length - 1;
-        if (Z.all (t => t._test (opts.env) (value), ancestors (types[index]))) {
-          // Could we model a type variable map as a function that takes the name
-          // of a type variable as input and returns an array of key-value pairs?
-          return types[index].new
-            (value => mappings => values => value)
-            (opts.env)
-            (typeInfo)
-            (index)
-            ([])
-            (value)
-            (mappings)
-            (values);
-        } else {
-          throw invalidValue (opts.env, typeInfo, index, [], value);
-        }
-      }
-    ) (name => (arity => Z.filter (t => t.arity >= arity, opts.env))
+    .reduceRight
+      ((cont, input, index) => mappings => values => f => {
+         const wrapped = (_x, ...rest) => {
+           if (rest.length > 0) {
+             throw invalidArgumentsCount (typeInfo, index, 1, [_x, ...rest]);
+           }
+           if (Z.all (t => t._test (opts.env) (_x), ancestors (input))) {
+             return input.new
+               (value => mappings => values => cont (mappings) (values) (f (value)))
+               (opts.env)
+               (typeInfo)
+               (index)
+               ([])
+               (_x)
+               (mappings)
+               (values);
+           } else {
+             throw invalidValue (opts.env, typeInfo, index, [], _x);
+           }
+         };
+         const signature = typeSignature (typeInfo);
+         wrapped[inspect] = wrapped.toString = () => signature;
+         return wrapped;
+       },
+       mappings => values => value => {
+         const index = types.length - 1;
+         if (Z.all (t => t._test (opts.env) (value), ancestors (types[index]))) {
+           return types[index].new
+             (value => mappings => values => value)
+             (opts.env)
+             (typeInfo)
+             (index)
+             ([])
+             (value)
+             (mappings)
+             (values);
+         } else {
+           throw invalidValue (opts.env, typeInfo, index, [], value);
+         }
+       })
+      (name => (arity => Z.filter (t => t.arity >= arity, opts.env))
                ((Z.foldMap (Object, typeVarNames, types))[name]))
       (nil)
       (impl);
