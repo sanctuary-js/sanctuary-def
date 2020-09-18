@@ -968,39 +968,39 @@ const BinaryTypeVariable = name => $1 => $2 => Object.assign (Object.create (Typ
 
     return cont (value)
                 (mappings)
-                (cons ({selector: JSON.stringify ([index, ...path]), value})
-                      (reduce
-                         (values => type => (
-                            reduce
-                              (values => value => (
-                                 $2.new
-                                   (value => mappings => values => values)
-                                   (env)
-                                   (typeInfo)
-                                   (index)
-                                   ([...path, '$2'])
-                                   (value)
-                                   (mappings)
-                                   (values)
-                               ))
-                              (reduce
-                                 (values => value => (
-                                    $1.new
-                                      (value => mappings => values => values)
-                                      (env)
-                                      (typeInfo)
-                                      (index)
-                                      ([...path, '$1'])
-                                      (value)
-                                      (mappings)
-                                      (values)
-                                  ))
-                                 (values)
-                                 (type.blah.$1.extract (value)))
-                              (type.blah.$2.extract (value))
-                          ))
-                         (_values)
-                         (types)));
+                (reduce
+                   (values => type => (
+                      reduce
+                        (values => value => (
+                           $2.new
+                             (value => mappings => values => values)
+                             (env)
+                             (typeInfo)
+                             (index)
+                             ([...path, '$2'])
+                             (value)
+                             (mappings)
+                             (values)
+                         ))
+                        (reduce
+                           (values => value => (
+                              $1.new
+                                (value => mappings => values => values)
+                                (env)
+                                (typeInfo)
+                                (index)
+                                ([...path, '$1'])
+                                (value)
+                                (mappings)
+                                (values)
+                            ))
+                           (values)
+                           (type.blah.$1.extract (value)))
+                        (type.blah.$2.extract (value))
+                    ))
+                   (cons ({selector: JSON.stringify ([index, ...path]), value})
+                         (_values))
+                   (types));
   },
 });
 
