@@ -19,7 +19,6 @@ const $ = module.exports = {};
 
 const nil = {tail: null};
 const cons = head => tail => ({head, tail});
-const clone = list => list.tail == null ? {tail: null} : {head: list.head, tail: list.tail};
 const toArray = list => {
   const result = [];
   for (let xs = list; xs.tail != null; xs = xs.tail) result.push (xs.head);
@@ -766,9 +765,10 @@ const TypeVariable = name => Object.assign (Object.create (Type$prototype), {
   blah: {},
   _test: K (K (true)),
   format: outer => K (outer (name)),
-  new: cont => env => typeInfo => index => path => value => _mappings => _values => {
-    const values = cons ({selector: JSON.stringify ([index, ...path]), value})
-                        (_values);
+  new: cont => env => typeInfo => index => path => value => _mappings => proxy => {
+    proxy.values =
+      cons ({selector: JSON.stringify ([index, ...path]), value})
+           (proxy.values);
 
     if (Object.prototype.hasOwnProperty.call (typeInfo.constraints, name)) {
       for (let idx = 0; idx < typeInfo.constraints[name].length; idx += 1) {
@@ -806,14 +806,14 @@ const TypeVariable = name => Object.assign (Object.create (Type$prototype), {
          const mappings$1 = reduce
            (mappings => value => (
               t.blah.$1.type.new
-                (value => mappings => values => mappings)
+                (value => mappings => proxy => mappings)
                 (env)
                 (typeInfo)
                 (index)
                 ([...path, '$1'])
                 (value)
                 (mappings)
-                (values)
+                (proxy)
             ))
            (mappings)
            (t.blah.$1.extract (value));
@@ -822,14 +822,14 @@ const TypeVariable = name => Object.assign (Object.create (Type$prototype), {
          const mappings$2 = reduce
            (mappings => value => (
               t.blah.$2.type.new
-                (value => mappings => values => mappings)
+                (value => mappings => proxy => mappings)
                 (env)
                 (typeInfo)
                 (index)
                 ([...path, '$2'])
                 (value)
                 (mappings)
-                (values)
+                (proxy)
             ))
            (mappings$1)
            (t.blah.$2.extract (value));
@@ -839,9 +839,9 @@ const TypeVariable = name => Object.assign (Object.create (Type$prototype), {
       (mappings (name));
 
     if ((mappings_ (name)).length > 0) {
-      return cont (value) (mappings) (values);
+      return cont (value) (mappings) (proxy);
     } else if (Z.any (t => test (env) (t) (value), env)) {
-      throw typeVarConstraintViolation (env, typeInfo, index, path, values);
+      throw typeVarConstraintViolation (env, typeInfo, index, path, proxy.values);
     } else {
       throw unrecognizedValue (env, typeInfo, index, path, value);
     }
@@ -865,11 +865,15 @@ const UnaryTypeVariable = name => $1 => Object.assign (Object.create (Type$proto
          (parenthesize (outer))
          (inner ('$1') (show ($1)))
   ),
-  new: cont => env => typeInfo => index => path => value => _mappings => values => {
+  new: cont => env => typeInfo => index => path => value => _mappings => proxy => {
     const mappings = name_ => {
       const types = _mappings (name_);
       return name_ === name ? Z.filter (type => test (env) (type) (value), types) : types;
     };
+
+    proxy.values =
+      cons ({selector: JSON.stringify ([index, ...path]), value})
+           (proxy.values);
 
     const types = mappings (name);
     if (types.length === 0) {
@@ -895,24 +899,23 @@ const UnaryTypeVariable = name => $1 => Object.assign (Object.create (Type$proto
     return cont (value)
                 (mappings)
                 (reduce
-                   (values => type => (
+                   (proxy => type => (
                       reduce
                         (values => value => (
                            $1.new
-                             (value => mappings => values => values)
+                             (value => mappings => proxy => proxy)
                              (env)
                              (typeInfo)
                              (index)
                              ([...path, `$${type.arity}`])
                              (value)
                              (mappings)
-                             (values)
+                             (proxy)
                          ))
-                        (values)
+                        (proxy)
                         (type.blah[`$${type.arity}`].extract (value))
                     ))
-                   (cons ({selector: JSON.stringify ([index, ...path]), value})
-                         (values))
+                   (proxy)
                    (types));
   },
 });
@@ -939,11 +942,15 @@ const BinaryTypeVariable = name => $1 => $2 => Object.assign (Object.create (Typ
          (parenthesize (outer))
          (inner ('$2') (show ($2)))
   ),
-  new: cont => env => typeInfo => index => path => value => _mappings => values => {
+  new: cont => env => typeInfo => index => path => value => _mappings => proxy => {
     const mappings = name_ => {
       const types = _mappings (name_);
       return name_ === name ? Z.filter (type => test (env) (type) (value), types) : types;
     };
+
+    proxy.values =
+      cons ({selector: JSON.stringify ([index, ...path]), value})
+           (proxy.values);
 
     const types = mappings (name);
     if (types.length === 0) {
@@ -953,37 +960,36 @@ const BinaryTypeVariable = name => $1 => $2 => Object.assign (Object.create (Typ
     return cont (value)
                 (mappings)
                 (reduce
-                   (values => type => (
+                   (proxy => type => (
                       reduce
-                        (values => value => (
+                        (proxy => value => (
                            $2.new
-                             (value => mappings => values => values)
+                             (value => mappings => proxy => proxy)
                              (env)
                              (typeInfo)
                              (index)
                              ([...path, '$2'])
                              (value)
                              (mappings)
-                             (values)
+                             (proxy)
                          ))
                         (reduce
-                           (values => value => (
+                           (proxy => value => (
                               $1.new
-                                (value => mappings => values => values)
+                                (value => mappings => proxy => proxy)
                                 (env)
                                 (typeInfo)
                                 (index)
                                 ([...path, '$1'])
                                 (value)
                                 (mappings)
-                                (values)
+                                (proxy)
                             ))
-                           (values)
+                           (proxy)
                            (type.blah.$1.extract (value)))
                         (type.blah.$2.extract (value))
                     ))
-                   (cons ({selector: JSON.stringify ([index, ...path]), value})
-                         (values))
+                   (proxy)
                    (types));
   },
 });
@@ -1512,9 +1518,9 @@ const Fn = $1 => $2 => (
   Object.assign (
     Function_ ([$1, $2]),
     {
-      new: cont => env => typeInfo => index => path => value => _mappings => values => {
+      new: cont => env => typeInfo => index => path => value => _mappings => _proxy => {
         let mappings = _mappings;
-        const $values = clone (values);
+        const proxy = _proxy;
         return cont ((...args) => {
                        if (args.length !== 1) {
                          throw invalidArgumentsLength (typeInfo, index, 1, args);
@@ -1522,10 +1528,8 @@ const Fn = $1 => $2 => (
                        const [arg] = args;
                        if (Z.all (t => t._test (env) (arg), ancestors ($1))) {
                          $1.new
-                           (value => mappings_ => values => {
+                           (value => mappings_ => proxy => {
                               mappings = mappings_;
-                              $values.head = {selector: JSON.stringify ([index, ...path, '$1']), value};
-                              $values.tail = clone ($values);
                               return value;
                             })
                            (env)
@@ -1534,15 +1538,13 @@ const Fn = $1 => $2 => (
                            ([...path, '$1'])
                            (arg)
                            (mappings)
-                           ($values);
+                           (proxy);
                          const y = value (arg);
                          return bool (Z.all (t => t._test (env) (y), ancestors ($2)))
                                      (() => { throw invalidValue (env, typeInfo, index, [...path, '$2'], y); })
                                      (() => $2.new
-                                              (value => mappings_ => values => {
+                                              (value => mappings_ => proxy => {
                                                  mappings = mappings_;
-                                                 $values.head = {selector: JSON.stringify ([index, ...path, '$2']), value};
-                                                 $values.tail = clone ($values);
                                                  return value;
                                                })
                                               (env)
@@ -1551,13 +1553,13 @@ const Fn = $1 => $2 => (
                                               ([...path, '$2'])
                                               (y)
                                               (mappings)
-                                              ($values));
+                                              (proxy));
                        } else {
                          throw invalidValue (env, typeInfo, index, [...path, '$1'], arg);
                        }
                      })
                     (name => mappings (name))
-                    ($values);
+                    (proxy);
       },
     }
   )
@@ -1737,7 +1739,7 @@ const create = opts => {
         const value = impl ();
         if (Z.all (t => t._test (opts.env) (value), ancestors (types[0]))) {
           return types[0].new
-            (value => mappings => values => value)
+            (value => mappings => proxy => value)
             (opts.env)
             (typeInfo)
             (0)
@@ -1755,21 +1757,21 @@ const create = opts => {
     return types
     .slice (0, -1)
     .reduceRight
-      ((cont, input, index) => mappings => values => f => {
+      ((cont, input, index) => mappings => proxy => f => {
          const wrapped = (_x, ...rest) => {
            if (rest.length > 0) {
              throw invalidArgumentsCount (typeInfo, index, 1, [_x, ...rest]);
            }
            if (Z.all (t => t._test (opts.env) (_x), ancestors (input))) {
              return input.new
-               (value => mappings => values => cont (mappings) (values) (f (value)))
+               (value => mappings => proxy => cont (mappings) (proxy) (f (value)))
                (opts.env)
                (typeInfo)
                (index)
                ([])
                (_x)
                (mappings)
-               (values);
+               ({values: proxy.values});
            } else {
              throw invalidValue (opts.env, typeInfo, index, [], _x);
            }
@@ -1778,25 +1780,25 @@ const create = opts => {
          wrapped[inspect] = wrapped.toString = () => signature;
          return wrapped;
        },
-       mappings => values => value => {
+       mappings => proxy => value => {
          const index = types.length - 1;
          if (Z.all (t => t._test (opts.env) (value), ancestors (types[index]))) {
            return types[index].new
-             (value => mappings => values => value)
+             (value => mappings => proxy => value)
              (opts.env)
              (typeInfo)
              (index)
              ([])
              (value)
              (mappings)
-             (values);
+             ({values: proxy.values});
          } else {
            throw invalidValue (opts.env, typeInfo, index, [], value);
          }
        })
       (name => (arity => Z.filter (t => t.arity >= arity, opts.env))
                ((Z.foldMap (Object, typeVarNames, types))[name]))
-      (nil)
+      ({values: nil})
       (impl);
   };
   return def ('def') ({}) (defTypes) (def);
