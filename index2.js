@@ -628,10 +628,10 @@ const NullaryType = name => url => supertypes => test => Object.assign (Object.c
   blah: {},
   _test: env => test,
   format: outer => K (outer (name)),
-  new: cont => env => typeInfo => index => path => value => (
+  new: cont => env => typeInfo => index => path => value => mappings => proxy => (
     bool (test (value))
          (() => { throw invalidValue (env, typeInfo, index, path, value); })
-         (() => cont (value))
+         (() => cont (value) (mappings) (proxy))
   ),
 });
 
@@ -652,7 +652,7 @@ const UnaryType = name => url => supertypes => test => _1 => $1 => Object.assign
          (parenthesize (outer))
          (inner ('$1') (show ($1)))
   ),
-  new: cont => env => typeInfo => index => path => value => (
+  new: cont => env => typeInfo => index => path => value => mappings => proxy => (
     reduceRight
       (cont => value => mappings => (
          bool (Z.all (t => t._test (env) (value), ancestors ($1)))
@@ -668,6 +668,8 @@ const UnaryType = name => url => supertypes => test => _1 => $1 => Object.assign
        ))
       (cont (value))
       (_1 (value))
+      (mappings)
+      (proxy)
   ),
 });
 
@@ -702,7 +704,7 @@ const BinaryType = name => url => supertypes => test => _1 => _2 => $1 => $2 => 
          (parenthesize (outer))
          (inner ('$2') (show ($2)))
   ),
-  new: cont => env => typeInfo => index => path => value => (
+  new: cont => env => typeInfo => index => path => value => mappings => proxy => (
     reduceRight
       (cont => value => (
          bool (Z.all (t => t._test (env) (value), ancestors ($1)))
@@ -730,6 +732,8 @@ const BinaryType = name => url => supertypes => test => _1 => _2 => $1 => $2 => 
          (cont (value))
          (_2 (value)))
       (_1 (value))
+      (mappings)
+      (proxy)
   ),
 });
 
