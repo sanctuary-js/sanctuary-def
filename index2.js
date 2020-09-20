@@ -244,9 +244,8 @@ const typeVarConstraintViolation = (
   typeInfo,       // :: TypeInfo
   index,          // :: Integer
   propPath,       // :: PropPath
-  values_
+  valuesAtPath
 ) => {
-  const valuesAtPath = Z.reverse (toArray (values_));
   //  If we apply an ‘a -> a -> a -> a’ function to Left ('x'), Right (1),
   //  and Right (null) we'd like to avoid underlining the first argument
   //  position, since Left ('x') is compatible with the other ‘a’ values.
@@ -841,7 +840,18 @@ const TypeVariable = name => Object.assign (Object.create (Type$prototype), {
     if ((mappings_ (name)).length > 0) {
       return cont (value) (mappings) (proxy);
     } else if (Z.any (t => test (env) (t) (value), env)) {
-      throw typeVarConstraintViolation (env, typeInfo, index, path, proxy.values);
+      const values = [];
+      let p = proxy;
+      //  Find rightmost proxy to avoid having to look in both directions.
+      while (p.right != null) p = p.right;
+      //  Enumerate proxies from rightmost to leftmost.
+      while (p != null) {
+        for (let list = p.values; list.tail != null; list = list.tail) {
+          values.push (list.head);
+        }
+        p = p.left;
+      }
+      throw typeVarConstraintViolation (env, typeInfo, index, path, Z.reverse (values));
     } else {
       throw unrecognizedValue (env, typeInfo, index, path, value);
     }
@@ -1518,9 +1528,8 @@ const Fn = $1 => $2 => (
   Object.assign (
     Function_ ([$1, $2]),
     {
-      new: cont => env => typeInfo => index => path => value => _mappings => _proxy => {
+      new: cont => env => typeInfo => index => path => value => _mappings => proxy => {
         let mappings = _mappings;
-        const proxy = _proxy;
         return cont ((...args) => {
                        if (args.length !== 1) {
                          throw invalidArgumentsLength (typeInfo, index, 1, args);
@@ -1771,7 +1780,7 @@ const create = opts => {
                ([])
                (_x)
                (mappings)
-               ({values: proxy.values});
+               (proxy.right = {values: nil, left: proxy, right: null});
            } else {
              throw invalidValue (opts.env, typeInfo, index, [], _x);
            }
@@ -1791,14 +1800,14 @@ const create = opts => {
              ([])
              (value)
              (mappings)
-             ({values: proxy.values});
+             ({values: nil, left: proxy, right: null});
          } else {
            throw invalidValue (opts.env, typeInfo, index, [], value);
          }
        })
       (name => (arity => Z.filter (t => t.arity >= arity, opts.env))
                ((Z.foldMap (Object, typeVarNames, types))[name]))
-      ({values: nil})
+      ({values: nil, left: null, right: null})
       (impl);
   };
   return def ('def') ({}) (defTypes) (def);

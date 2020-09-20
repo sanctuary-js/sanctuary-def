@@ -2765,25 +2765,25 @@ See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Number for in
 
     eq (map (s => s.length) (['foo', 'bar'])) ([3, 3]);
 
-///     throws (() => { map (s => s.length) (['foo', 'bar', 'baz', 'quux']); })
-///            (new TypeError (`Type-variable constraint violation
-/// 
-/// map :: (a -> b) -> Array a -> Array b
-///         ^                ^
-///         1                2
-/// 
-/// 1)  "foo" :: String
-///     "bar" :: String
-///     "baz" :: String
-///     null :: Null
-/// 
-/// 2)  "foo" :: String
-///     "bar" :: String
-///     "baz" :: String
-///     "quux" :: String
-/// 
-/// Since there is no type of which all the above values are members, the type-variable constraint has been violated.
-/// `));
+    throws (() => { map (s => s.length) (['foo', 'bar', 'baz', 'quux']); })
+           (new TypeError (`Type-variable constraint violation
+
+map :: (a -> b) -> Array a -> Array b
+        ^                ^
+        1                2
+
+1)  "foo" :: String
+    "bar" :: String
+    "baz" :: String
+    null :: Null
+
+2)  "foo" :: String
+    "bar" :: String
+    "baz" :: String
+    "quux" :: String
+
+Since there is no type of which all the above values are members, the type-variable constraint has been violated.
+`));
 
     throws (() => { map (s => s === 'baz' ? null : s.length) (['foo', 'bar', 'baz']); })
            (new TypeError (`Type-variable constraint violation
@@ -2870,12 +2870,14 @@ See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Array2 for in
            (new TypeError (`Type-variable constraint violation
 
 unfoldr :: (b -> Maybe (Array2 a b)) -> b -> Array a
-            ^                    ^
-            1                    2
+            ^                    ^      ^
+            1                    2      3
 
 1)  1 :: Number
 
 2)  "XXX" :: String
+
+3)  1 :: Number
 
 Since there is no type of which all the above values are members, the type-variable constraint has been violated.
 `));
@@ -3822,5 +3824,43 @@ suite ('interoperability', () => {
                   $.Array ($.NullaryType ('X') ('http://x.org/') ([]) (x => true))))
        (false);
   });
+
+});
+
+suite ('TK', () => {
+
+//test ('TK', () => {
+//  const concat = def ('concat') ({}) ([a, a, a]) (x => y => Z.concat (x, y));
+//  console.log ('----------------------------------------------------------');
+//  const prefix = concat ('prefix:');
+//  console.log ('----------------------------------------------------------');
+//  console.log (prefix ('foo'));
+//  console.log ('----------------------------------------------------------');
+//  console.log (prefix ('bar'));
+//  console.log ('----------------------------------------------------------');
+//  console.log (concat ('abc') ('xyz'));
+//  console.log ('----------------------------------------------------------');
+//  console.log (prefix ('baz'));
+//  console.log (prefix ('baz'));
+//  console.log ('----------------------------------------------------------');
+//  console.log (prefix (123));
+//});
+
+//test ('TK', () => {
+//  //    map :: (a -> b) -> Array a -> Array b
+//  const map =
+//  def ('map')
+//      ({})
+//      ([$.Fn (a) (b), $.Array (a), $.Array (b)])
+//      (f => xs => {
+//         const result = [];
+//         for (let idx = 0; idx < xs.length; idx += 1) {
+//           result.push (f (idx === 3 ? null : xs[idx]));
+//         }
+//         return result;
+//       });
+
+//  map (s => s === 'bar' ? null : s.length) (['foo', 'bar', 'baz', 'quux']);
+//});
 
 });
