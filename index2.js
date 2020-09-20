@@ -392,7 +392,7 @@ const _determineActualTypes = (
     }
     const expandUnknown2 = expandUnknown4 (seen$) (value);
     return Z.chain (t => (
-      validate (env) (t) (value) != null ?
+      validate (env) ('TK:mappings') (t) (value) != null ?
         [] :
       t.type === 'UNARY' ?
         Z.map (fromUnaryType (t),
@@ -446,7 +446,7 @@ const satisfactoryTypes = (
   const recur = satisfactoryTypes;
 
   for (let idx = 0; idx < values.length; idx += 1) {
-    const result = validate (env) (expType) (values[idx]);
+    const result = validate (env) ('TK:mappings') (expType) (values[idx]);
     if (result != null) {
       return Left (null);
     }
@@ -558,15 +558,15 @@ const extract = key => type => x => {
   );
 };
 
-const validate = env => type => x => {
-  if (!(Z.all (t => t._test (env) (x), ancestors (type)))) {
+const validate = env => mappings => type => x => {
+  if (!(Z.all (t => t._test (env) (mappings) (x), ancestors (type)))) {
     return {value: x, propPath: []};
   }
   for (const k of Object.keys (type.blah)) {
     const t = type.blah[k].type;
     const ys = extract (k) (type) (x);
     for (const y of ys) {
-      const result = validate (env) (t) (y);
+      const result = validate (env) (mappings) (t) (y);
       if (result != null) {
         return {value: result.value, propPath: Z.prepend (k, result.propPath)};
       }
@@ -581,7 +581,7 @@ $.Unknown = Object.assign (Object.create (Type$prototype), {
   supertypes: [],
   arity: 0,
   blah: {},
-  _test: K (K (true)),
+  _test: env => mappings => value => true,
   format: outer => K (outer ('Unknown')),
 });
 
@@ -592,7 +592,7 @@ const Unchecked = s => Object.assign (Object.create (Type$prototype), {
   supertypes: [],
   arity: 0,
   blah: {},
-  _test: K (K (true)),
+  _test: env => mappings => value => true,
   format: outer => K (outer (s)),
   new: cont => env => typeInfo => index => path => cont,
 });
@@ -604,7 +604,7 @@ $.Inconsistent = Object.assign (Object.create (Type$prototype), {
   supertypes: [],
   arity: 0,
   blah: {},
-  _test: K (K (false)),
+  _test: env => mappings => value => false,
   format: outer => K (outer ('???')),
 });
 
@@ -615,7 +615,7 @@ $.NoArguments = Object.assign (Object.create (Type$prototype), {
   supertypes: [],
   arity: 0,
   blah: {},
-  _test: K (K (true)),
+  _test: env => mappings => value => true,
   format: outer => K (outer ('()')),
 });
 
@@ -626,7 +626,7 @@ const NullaryType = name => url => supertypes => test => Object.assign (Object.c
   supertypes: supertypes,
   arity: 0,
   blah: {},
-  _test: env => test,
+  _test: env => mappings => value => test (value),
   format: outer => K (outer (name)),
   new: cont => env => typeInfo => index => path => value => mappings => proxy => (
     bool (test (value))
@@ -644,7 +644,7 @@ const UnaryType = name => url => supertypes => test => _1 => $1 => Object.assign
   blah: {
     $1: {type: $1, extract: _1},
   },
-  _test: K (test),
+  _test: env => mappings => value => test (value),
   format: outer => inner => (
     outer (name) +
     outer (' ') +
@@ -655,7 +655,7 @@ const UnaryType = name => url => supertypes => test => _1 => $1 => Object.assign
   new: cont => env => typeInfo => index => path => value => mappings => proxy => (
     reduceRight
       (cont => value => mappings => (
-         bool (Z.all (t => t._test (env) (value), ancestors ($1)))
+         bool (Z.all (t => t._test (env) (mappings) (value), ancestors ($1)))
               (() => { throw invalidValue (env, typeInfo, index, [...path, '$1'], value); })
               (() => $1.new
                        (value => cont)
@@ -678,7 +678,7 @@ const fromUnaryType = t => (
   UnaryType (t.name)
             (t.url)
             (t.supertypes)
-            (t._test ([]))
+            (t._test ([]) ('TK:mappings'))
             (t.blah.$1.extract)
 );
 
@@ -692,7 +692,7 @@ const BinaryType = name => url => supertypes => test => _1 => _2 => $1 => $2 => 
     $1: {type: $1, extract: _1},
     $2: {type: $2, extract: _2},
   },
-  _test: K (test),
+  _test: env => mappings => value => test (value),
   format: outer => inner => (
     outer (name) +
     outer (' ') +
@@ -707,7 +707,7 @@ const BinaryType = name => url => supertypes => test => _1 => _2 => $1 => $2 => 
   new: cont => env => typeInfo => index => path => value => mappings => proxy => (
     reduceRight
       (cont => value => (
-         bool (Z.all (t => t._test (env) (value), ancestors ($1)))
+         bool (Z.all (t => t._test (env) (mappings) (value), ancestors ($1)))
               (() => { throw invalidValue (env, typeInfo, index, [...path, '$1'], value); })
               (() => $1.new
                        (value => cont)
@@ -719,7 +719,7 @@ const BinaryType = name => url => supertypes => test => _1 => _2 => $1 => $2 => 
        ))
       (reduceRight
          (cont => value => (
-            bool (Z.all (t => t._test (env) (value), ancestors ($2)))
+            bool (Z.all (t => t._test (env) (mappings) (value), ancestors ($2)))
                  (() => { throw invalidValue (env, typeInfo, index, [...path, '$2'], value); })
                  (() => $2.new
                           (value => cont)
@@ -742,7 +742,7 @@ const fromBinaryType = t => (
   BinaryType (t.name)
              (t.url)
              (t.supertypes)
-             (t._test ([]))
+             (t._test ([]) ('TK:mappings'))
              (t.blah.$1.extract)
              (t.blah.$2.extract)
 );
@@ -754,7 +754,7 @@ const EnumType = name => url => members => Object.assign (Object.create (Type$pr
   supertypes: [],
   arity: 0,
   blah: {},
-  _test: env => x => memberOf (members) (x),
+  _test: env => mappings => x => memberOf (members) (x),
   format: outer => K (outer (name)),
   new: cont => env => typeInfo => index => path => cont,
 });
@@ -766,7 +766,7 @@ const TypeVariable = name => Object.assign (Object.create (Type$prototype), {
   supertypes: [],
   arity: 0,
   blah: {},
-  _test: K (K (true)),
+  _test: env => mappings => value => true,
   format: outer => K (outer (name)),
   new: cont => env => typeInfo => index => path => value => _mappings => proxy => {
     proxy.values =
@@ -871,7 +871,7 @@ const UnaryTypeVariable = name => $1 => Object.assign (Object.create (Type$proto
   blah: {
     $1: {type: $1, extract: K ([])},
   },
-  _test: K (K (true)),
+  _test: env => mappings => value => true,
   format: outer => inner => (
     outer (name) +
     outer (' ') +
@@ -882,14 +882,36 @@ const UnaryTypeVariable = name => $1 => Object.assign (Object.create (Type$proto
   new: cont => env => typeInfo => index => path => value => _mappings => proxy => {
     const mappings = name_ => {
       const types = _mappings (name_);
-      return name_ === name ? Z.filter (type => test (env) (type) (value), types) : types;
+      return name_ === name
+             ? Z.chain (
+                 type => {
+                   if (test (env) (type) (value)) {
+                     switch (type.arity) {
+                       case 2:
+                         return [fromBinaryType (type) (type.blah.$1.type) ($1)];
+                       case 1:
+                         return [fromUnaryType (type) ($1)];
+                       default:
+                         return [];
+                     }
+                   } else {
+                     return [];
+                   }
+                 },
+                 types
+               )
+             : types;
     };
+
+    console.log ('mappings ("a"):', show (mappings ('a')));
+    console.log ('mappings ("f"):', show (mappings ('f')));
 
     proxy.values =
       cons ({selector: JSON.stringify ([index, ...path]), value})
            (proxy.values);
 
     const types = mappings (name);
+    console.log ('types:', show (types));
     if (types.length === 0) {
       throw invalidValue (env, typeInfo, index, path, value);
     }
@@ -916,6 +938,8 @@ const UnaryTypeVariable = name => $1 => Object.assign (Object.create (Type$proto
                    (proxy => type => (
                       reduce
                         (values => value => (
+                           console.log ('value:', show (value)),
+                           console.log ('$1:', show ($1)),
                            $1.new
                              (value => mappings => proxy => proxy)
                              (env)
@@ -944,7 +968,7 @@ const BinaryTypeVariable = name => $1 => $2 => Object.assign (Object.create (Typ
     $1: {type: $1, extract: K ([])},
     $2: {type: $2, extract: K ([])},
   },
-  _test: K (K (true)),
+  _test: env => mappings => value => true,
   format: outer => inner => (
     outer (name) +
     outer (' ') +
@@ -1021,7 +1045,7 @@ const Function_ = types => Object.assign (Object.create (Type$prototype), {
     },
     {}
   ),
-  _test: K (K (true)),
+  _test: env => mappings => value => true,
   format: outer => inner => (
     when (types.length !== 2)
          (parenthesize (outer))
@@ -1037,7 +1061,7 @@ const Function_ = types => Object.assign (Object.create (Type$prototype), {
   new: cont => env => typeInfo => index => path => value => mappings => values => (
     cont ((...args) => {
             const returnValue = value (...args);
-            if (Z.all (t => t._test (env) (returnValue), ancestors (types[types.length - 1]))) {
+            if (Z.all (t => t._test (env) (mappings) (returnValue), ancestors (types[types.length - 1]))) {
               return types[types.length - 1].new
                 (value => mappings => values => value)
                 (env)
@@ -1047,7 +1071,7 @@ const Function_ = types => Object.assign (Object.create (Type$prototype), {
                 (returnValue)
                 (mappings)
                 (args.reduce ((values, arg, idx) => {
-                   if (Z.all (t => t._test (env) (arg), ancestors (types[idx]))) {
+                   if (Z.all (t => t._test (env) (mappings) (arg), ancestors (types[idx]))) {
                      return types[idx].new
                        (value => mappings => values => values)
                        (env)
@@ -1081,7 +1105,7 @@ const RecordType = fields => {
       (blah, k) => (blah[k] = {type: fields[k], extract: x => [x[k]]}, blah),
       {}
     ),
-    _test: env => x => {
+    _test: env => mappings => x => {
       if (x == null) return false;
       const missing = {};
       keys.forEach (k => { missing[k] = k; });
@@ -1102,7 +1126,7 @@ const RecordType = fields => {
     new: cont => env => typeInfo => index => path => value => (
       reduceRight
         (cont => key => mappings => (
-           bool (Z.all (t => t._test (env) (value[key]), ancestors (fields[key])))
+           bool (Z.all (t => t._test (env) (mappings) (value[key]), ancestors (fields[key])))
                 (() => { throw invalidValue (env, typeInfo, index, [...path, key], value[key]); })
                 (() => fields[key].new
                          (value => cont)
@@ -1132,19 +1156,19 @@ const NamedRecordType = name => url => supertypes => fields => {
       (blah, k) => (blah[k] = {type: fields[k], extract: x => [x[k]]}, blah),
       {}
     ),
-    _test: env => x => {
+    _test: env => mappings => x => {
       if (x == null) return false;
       const missing = {};
       keys.forEach (k => { missing[k] = k; });
       for (const k in x) delete missing[k];
       if (!(isEmpty (missing))) return false;
-      return keys.every (k => fields[k]._test (env) (x[k]));
+      return keys.every (k => fields[k]._test (env) (mappings) (x[k]));
     },
     format: outer => K (outer (name)),
-    new: cont => env => typeInfo => index => path => value => (
+    new: cont => env => typeInfo => index => path => value => mappings => (
       reduceRight
         (cont => key => (
-           bool (Z.all (t => t._test (env) (value[key]), ancestors (fields[key])))
+           bool (Z.all (t => t._test (env) (mappings) (value[key]), ancestors (fields[key])))
                 (() => { throw new Error ('TK'); })
                 (() => fields[key].new
                          (value => cont)
@@ -1156,6 +1180,7 @@ const NamedRecordType = name => url => supertypes => fields => {
          ))
         (cont (value))
         (keys)
+        (mappings)
     ),
   });
 };
@@ -1539,7 +1564,7 @@ const Fn = $1 => $2 => (
                          throw invalidArgumentsLength (typeInfo, index, 1, args);
                        }
                        const [arg] = args;
-                       if (Z.all (t => t._test (env) (arg), ancestors ($1))) {
+                       if (Z.all (t => t._test (env) (mappings) (arg), ancestors ($1))) {
                          $1.new
                            (value => mappings_ => proxy => {
                               mappings = mappings_;
@@ -1553,7 +1578,7 @@ const Fn = $1 => $2 => (
                            (mappings)
                            (proxy);
                          const y = value (arg);
-                         return bool (Z.all (t => t._test (env) (y), ancestors ($2)))
+                         return bool (Z.all (t => t._test (env) (mappings) (y), ancestors ($2)))
                                      (() => { throw invalidValue (env, typeInfo, index, [...path, '$2'], y); })
                                      (() => $2.new
                                               (value => mappings_ => proxy => {
@@ -1750,7 +1775,7 @@ const create = opts => {
         }
 
         const value = impl ();
-        if (Z.all (t => t._test (opts.env) (value), ancestors (types[0]))) {
+        if (Z.all (t => t._test (opts.env) ('TK:mappings') (value), ancestors (types[0]))) {
           return types[0].new
             (value => mappings => proxy => value)
             (opts.env)
@@ -1775,7 +1800,7 @@ const create = opts => {
            if (rest.length > 0) {
              throw invalidArgumentsCount (typeInfo, index, 1, [_x, ...rest]);
            }
-           if (Z.all (t => t._test (opts.env) (_x), ancestors (input))) {
+           if (Z.all (t => t._test (opts.env) (mappings) (_x), ancestors (input))) {
              return input.new
                (value => mappings => proxy => cont (mappings) (proxy) (f (value)))
                (opts.env)
@@ -1795,7 +1820,7 @@ const create = opts => {
        },
        mappings => proxy => value => {
          const index = types.length - 1;
-         if (Z.all (t => t._test (opts.env) (value), ancestors (types[index]))) {
+         if (Z.all (t => t._test (opts.env) (mappings) (value), ancestors (types[index]))) {
            return types[index].new
              (value => mappings => proxy => value)
              (opts.env)

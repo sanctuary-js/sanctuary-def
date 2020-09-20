@@ -3863,4 +3863,40 @@ suite ('TK', () => {
 //  map (s => s === 'bar' ? null : s.length) (['foo', 'bar', 'baz', 'quux']);
 //});
 
+///   test ('TK', () => {
+///     //    sort :: (Ord a, Applicative f, Foldable f, Monoid (f a)) => f a -> f a
+///     const sort =
+///     def ('sort')
+///         ({a: [Z.Ord], f: [Z.Applicative, Z.Foldable, Z.Monoid]})
+///         ([f (a), f (a)])
+///         (m => {
+///            const M = m.constructor;
+///            return Z.reduce (
+///              (m, x) => Z.concat (m, Z.of (M, x)),
+///              Z.empty (M),
+///              Z.reduce ((xs, x) => {
+///                let idx = 0;
+///                while (idx < xs.length && Z.lte (xs[idx], x)) idx += 1;
+///                xs.splice (idx, 0, x);
+///                return xs;
+///              }, [], m)
+///            );
+///          });
+/// 
+/// /// eq (sort (['foo', 'bar', 'baz'])) (['bar', 'baz', 'foo']);
+/// 
+///     throws (() => { sort (['foo', true, 42]); })
+///            (new TypeError (`Type-variable constraint violation
+/// 
+/// sort :: (Ord a, Applicative f, Foldable f, Monoid f) => f a -> f a
+///                                                           ^
+///                                                           1
+/// 
+/// 1)  "foo" :: String
+///     true :: Boolean
+/// 
+/// Since there is no type of which all the above values are members, the type-variable constraint has been violated.
+/// `));
+///   });
+
 });
