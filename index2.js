@@ -510,11 +510,6 @@ const satisfactoryTypes = (
   }
 };
 
-const test = env => t => x => {
-  const typeInfo = {name: 'name', constraints: {}, types: [t]};
-  return (satisfactoryTypes (env, typeInfo, {}, t, 0, [], [x])).isRight;
-};
-
 const Type$prototype = {
   '@@type': 'sanctuary-def/Type@1',
   '@@show': function() {
@@ -790,7 +785,7 @@ const TypeVariable = name => Object.assign (Object.create (Type$prototype), {
             ) :
             [t]
           ),
-          Z.filter (t => test (env) (t) (value), _mappings (name))
+          Z.filter (t => (satisfactoryTypes (env, {name: 'name', constraints: {}, types: [t]}, {}, t, 0, [], [value])).isRight, _mappings (name))
         )
       : _mappings (name_)
     );
@@ -838,7 +833,7 @@ const TypeVariable = name => Object.assign (Object.create (Type$prototype), {
 
     if ((mappings_ (name)).length > 0) {
       return resolve (value) (mappings) (proxy);
-    } else if (Z.any (t => test (env) (t) (value), env)) {
+    } else if (Z.any (t => (satisfactoryTypes (env, {name: 'name', constraints: {}, types: [t]}, {}, t, 0, [], [value])).isRight, env)) {
       const values = [];
       let p = proxy;
       //  Find rightmost proxy to avoid having to look in both directions.
@@ -880,7 +875,7 @@ const UnaryTypeVariable = name => $1 => Object.assign (Object.create (Type$proto
       return name_ === name
              ? Z.chain (
                  type => {
-                   if (test (env) (type) (value)) {
+                   if ((satisfactoryTypes (env, {name: 'name', constraints: {}, types: [type]}, {}, type, 0, [], [value])).isRight) {
                      switch (type.arity) {
                        case 2:
                          return [fromBinaryType (type) (type.blah.$1.type) ($1)];
@@ -977,7 +972,7 @@ const BinaryTypeVariable = name => $1 => $2 => Object.assign (Object.create (Typ
   new: reject => resolve => env => typeInfo => index => path => value => _mappings => proxy => {
     const mappings = name_ => {
       const types = _mappings (name_);
-      return name_ === name ? Z.filter (type => test (env) (type) (value), types) : types;
+      return name_ === name ? Z.filter (type => (satisfactoryTypes (env, {name: 'name', constraints: {}, types: [type]}, {}, type, 0, [], [value])).isRight, types) : types;
     };
 
     proxy.values =
@@ -1894,7 +1889,10 @@ $.Nullable = def ('Nullable') ({}) ([$.Type, $.Type]) (Nullable);
 
 $.Pair = def ('Pair') ({}) ([$.Type, $.Type, $.Type]) (Pair);
 
-$.test = def ('test') ({}) ([$.Array ($.Type), $.Type, $.Any, $.Boolean]) (test);
+$.test = def ('test') ({}) ([$.Array ($.Type), $.Type, $.Any, $.Boolean]) (env => t => x => {
+  const typeInfo = {name: 'name', constraints: {}, types: [t]};
+  return (satisfactoryTypes (env, typeInfo, {}, t, 0, [], [x])).isRight;
+});
 
 $.EnumType = def ('EnumType') ({}) ([$.String, $.String, $.Array ($.Any), $.Type]) (EnumType);
 
