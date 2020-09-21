@@ -770,25 +770,27 @@ const TypeVariable = name => Object.assign (Object.create (Type$prototype), {
       }
     }
 
-    const mappings = name_ => (
-      name_ === name
-      ? Z.chain (
-          t => (
-            t.arity === 2 ? Z.lift2 (
-              fromBinaryType (t),
-              Z.filter (isConsistent, expandUnknown (env) ([]) (value) (t.blah.$1.extract) (t.blah.$1.type)),
-              Z.filter (isConsistent, expandUnknown (env) ([]) (value) (t.blah.$2.extract) (t.blah.$2.type))
-            ) :
-            t.arity === 1 ? Z.map (
-              fromUnaryType (t),
-              Z.filter (isConsistent, expandUnknown (env) ([]) (value) (t.blah.$1.extract) (t.blah.$1.type))
-            ) :
-            [t]
-          ),
-          Z.filter (t => (satisfactoryTypes (env, {name: 'name', constraints: {}, types: [t]}, {}, t, 0, [], [value])).isRight, _mappings (name))
-        )
-      : _mappings (name_)
-    );
+    const mappings = {
+      types: name_ => (
+        name_ === name
+        ? Z.chain (
+            t => (
+              t.arity === 2 ? Z.lift2 (
+                fromBinaryType (t),
+                Z.filter (isConsistent, expandUnknown (env) ([]) (value) (t.blah.$1.extract) (t.blah.$1.type)),
+                Z.filter (isConsistent, expandUnknown (env) ([]) (value) (t.blah.$2.extract) (t.blah.$2.type))
+              ) :
+              t.arity === 1 ? Z.map (
+                fromUnaryType (t),
+                Z.filter (isConsistent, expandUnknown (env) ([]) (value) (t.blah.$1.extract) (t.blah.$1.type))
+              ) :
+              [t]
+            ),
+            Z.filter (t => (satisfactoryTypes (env, {name: 'name', constraints: {}, types: [t]}, {}, t, 0, [], [value])).isRight, _mappings.types (name))
+          )
+        : _mappings.types (name_)
+      ),
+    };
 
     const mappings_ = reduce
       (mappings => t => {
@@ -829,9 +831,9 @@ const TypeVariable = name => Object.assign (Object.create (Type$prototype), {
          if (t.arity === 2) return mappings$2;
        })
       (mappings)
-      (mappings (name));
+      (mappings.types (name));
 
-    if ((mappings_ (name)).length > 0) {
+    if ((mappings_.types (name)).length > 0) {
       return resolve (value) (mappings) (proxy);
     } else if (Z.any (t => (satisfactoryTypes (env, {name: 'name', constraints: {}, types: [t]}, {}, t, 0, [], [value])).isRight, env)) {
       const values = [];
@@ -870,37 +872,39 @@ const UnaryTypeVariable = name => $1 => Object.assign (Object.create (Type$proto
          (inner ('$1') (show ($1)))
   ),
   new: reject => resolve => env => typeInfo => index => path => value => _mappings => proxy => {
-    const mappings = name_ => {
-      const types = _mappings (name_);
-      return name_ === name
-             ? Z.chain (
-                 type => {
-                   if ((satisfactoryTypes (env, {name: 'name', constraints: {}, types: [type]}, {}, type, 0, [], [value])).isRight) {
-                     switch (type.arity) {
-                       case 2:
-                         return [fromBinaryType (type) (type.blah.$1.type) ($1)];
-                       case 1:
-                         return [fromUnaryType (type) ($1)];
-                       default:
-                         return [];
+    const mappings = {
+      types: name_ => {
+        const types = _mappings.types (name_);
+        return name_ === name
+               ? Z.chain (
+                   type => {
+                     if ((satisfactoryTypes (env, {name: 'name', constraints: {}, types: [type]}, {}, type, 0, [], [value])).isRight) {
+                       switch (type.arity) {
+                         case 2:
+                           return [fromBinaryType (type) (type.blah.$1.type) ($1)];
+                         case 1:
+                           return [fromUnaryType (type) ($1)];
+                         default:
+                           return [];
+                       }
+                     } else {
+                       return [];
                      }
-                   } else {
-                     return [];
-                   }
-                 },
-                 types
-               )
-             : types;
+                   },
+                   types
+                 )
+               : types;
+      },
     };
 
-    console.log ('mappings ("a"):', show (mappings ('a')));
-    console.log ('mappings ("f"):', show (mappings ('f')));
+    console.log ('mappings.types ("a"):', show (mappings.types ('a')));
+    console.log ('mappings.types ("f"):', show (mappings.types ('f')));
 
     proxy.values =
       cons ({selector: JSON.stringify ([index, ...path]), value})
            (proxy.values);
 
-    const types = mappings (name);
+    const types = mappings.types (name);
     console.log ('types:', show (types));
     if (types.length === 0) {
       return reject (invalidValue (env, typeInfo, index, path, value));
@@ -970,16 +974,18 @@ const BinaryTypeVariable = name => $1 => $2 => Object.assign (Object.create (Typ
          (inner ('$2') (show ($2)))
   ),
   new: reject => resolve => env => typeInfo => index => path => value => _mappings => proxy => {
-    const mappings = name_ => {
-      const types = _mappings (name_);
-      return name_ === name ? Z.filter (type => (satisfactoryTypes (env, {name: 'name', constraints: {}, types: [type]}, {}, type, 0, [], [value])).isRight, types) : types;
+    const mappings = {
+      types: name_ => {
+        const types = _mappings.types (name_);
+        return name_ === name ? Z.filter (type => (satisfactoryTypes (env, {name: 'name', constraints: {}, types: [type]}, {}, type, 0, [], [value])).isRight, types) : types;
+      },
     };
 
     proxy.values =
       cons ({selector: JSON.stringify ([index, ...path]), value})
            (proxy.values);
 
-    const types = mappings (name);
+    const types = mappings.types (name);
     if (types.length === 0) {
       return reject (invalidValue (env, typeInfo, index, path, value));
     }
@@ -1595,7 +1601,7 @@ const Fn = $1 => $2 => (
                             return reject (invalidValue (env, typeInfo, index, [...path, '$1'], arg));
                           }
                         })
-                       (name => mappings (name))
+                       (mappings)
                        (proxy);
       },
     }
@@ -1783,7 +1789,7 @@ const create = opts => {
             (0)
             ([])
             (value)
-            (name => { throw new Error ('XXX'); })
+            ({types: name => { throw new Error ('XXX'); }})
             (nil);
         }
       };
@@ -1836,8 +1842,8 @@ const create = opts => {
            throw invalidValue (opts.env, typeInfo, index, [], value);
          }
        })
-      (name => (arity => Z.filter (t => t.arity >= arity, opts.env))
-               ((Z.foldMap (Object, typeVarNames, types))[name]))
+      ({types: name => (arity => Z.filter (t => t.arity >= arity, opts.env))
+                       ((Z.foldMap (Object, typeVarNames, types))[name])})
       ({values: nil, left: null, right: null})
       (impl);
   };
