@@ -1237,17 +1237,33 @@ const NamedRecordType = name => url => supertypes => fields => {
       return keys.every (k => fields[k].test (value[k]));
     },
     format: outer => K (outer (name)),
-    new: reject => resolve => env => typeInfo => index => path => value => mappings => {
+    new: reject => resolve => env => typeInfo => index => path => value => mappings => proxy => {
       if (value == null) {
         reject (invalidValue (env, typeInfo, index, path, value));
       } else {
         const missing = {};
         keys.forEach (k => { missing[k] = k; });
         for (const k in value) delete missing[k];
-        if (Z.size (missing) > 0 ||
-            keys.some (k => !(fields[k].test (value[k])))) {
+        if (Z.size (missing) > 0) {
           reject (invalidValue (env, typeInfo, index, path, value));
         } else {
+          try {
+            keys.forEach (key => {
+              fields[key].new
+                (error => { throw error; })
+                (value => mappings => proxy => value)
+                (env)
+                (typeInfo)
+                (index)
+                ([...path, key])
+                (value[key])
+                (mappings)
+                (proxy)
+            });
+          } catch (error) {
+            reject (invalidValue (env, typeInfo, index, path, value));
+            return;
+          }
           return reduceRight
                    (cont => key => (
                       fields[key].new
@@ -1261,7 +1277,8 @@ const NamedRecordType = name => url => supertypes => fields => {
                     ))
                    (resolve (value))
                    (keys)
-                   (mappings);
+                   (mappings)
+                   (proxy);
         }
       }
     },
