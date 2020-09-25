@@ -390,7 +390,7 @@ const _determineActualTypes = (
     }
     const expandUnknown2 = expandUnknown4 (seen$) (value);
     return Z.chain (t => (
-      validate (env) (typeInfo) (index) (path) (value) (t) != null ?
+      validate (env) (typeInfo) (index) (path) (mappings) (value) (t) != null ?
         [] :
       t.type === 'UNARY' ?
         Z.map (fromUnaryType (t),
@@ -439,12 +439,13 @@ const satisfactoryTypes = (
   expType,        // :: Type
   index,          // :: Integer
   propPath,       // :: PropPath
+  mappings,
   values          // :: Array Any
 ) => {
   const recur = satisfactoryTypes;
 
   for (let idx = 0; idx < values.length; idx += 1) {
-    const result = validate (env) (typeInfo) (index) (propPath) (values[idx]) (expType);
+    const result = validate (env) (typeInfo) (index) (propPath) (mappings) (values[idx]) (expType);
     if (result != null) {
       return Left (null);
     }
@@ -465,6 +466,7 @@ const satisfactoryTypes = (
                expType.blah.$1.type,
                index,
                Z.concat (propPath, ['$1']),
+               mappings,
                Z.chain (extract ('$1') (expType), values))
       );
 
@@ -488,6 +490,7 @@ const satisfactoryTypes = (
                    expType.blah.$2.type,
                    index,
                    Z.concat (propPath, ['$2']),
+                   mappings,
                    Z.chain (extract ('$2') (expType), values))
           );
         },
@@ -497,6 +500,7 @@ const satisfactoryTypes = (
                expType.blah.$1.type,
                index,
                Z.concat (propPath, ['$1']),
+               mappings,
                Z.chain (extract ('$1') (expType), values))
       );
 
@@ -509,6 +513,7 @@ const satisfactoryTypes = (
                  expType.blah[k].type,
                  index,
                  Z.concat (propPath, [k]),
+                 mappings,
                  Z.chain (extract (k) (expType), values))
         ), e)
       ), Right ({typeVarMap: typeVarMap, types: [expType]}), Object.keys (expType.blah));
@@ -551,7 +556,7 @@ const extract = key => type => x => {
   );
 };
 
-const validate = env => typeInfo => index => path => value => type => {
+const validate = env => typeInfo => index => path => mappings => value => type => {
 //ancestors (type)
 //.forEach (type => {
 //  type.new
@@ -573,7 +578,7 @@ const validate = env => typeInfo => index => path => value => type => {
     const t = type.blah[k].type;
     const ys = extract (k) (type) (value);
     for (const y of ys) {
-      const result = validate (env) (typeInfo) (index) (path) (y) (t);
+      const result = validate (env) (typeInfo) (index) (path) (mappings) (y) (t);
       if (result != null) {
         return {value: result.value, propPath: Z.prepend (k, result.propPath)};
       }
@@ -862,7 +867,7 @@ const TypeVariable = name => Object.assign (Object.create (Type$prototype), {
               ) :
               [t]
             ),
-            Z.filter (t => (satisfactoryTypes (env, {name: 'name', constraints: {}, types: [t]}, {}, t, 0, [], [value])).isRight, _mappings.types (name))
+            Z.filter (t => (satisfactoryTypes (env, {name: 'name', constraints: {}, types: [t]}, {}, t, 0, [], _mappings, [value])).isRight, _mappings.types (name))
           )
         : _mappings.types (name_)
       ),
@@ -911,7 +916,7 @@ const TypeVariable = name => Object.assign (Object.create (Type$prototype), {
 
     if ((mappings_.types (name)).length > 0) {
       return resolve (value) (mappings) (proxy);
-    } else if (Z.any (t => (satisfactoryTypes (env, {name: 'name', constraints: {}, types: [t]}, {}, t, 0, [], [value])).isRight, env)) {
+    } else if (Z.any (t => (satisfactoryTypes (env, {name: 'name', constraints: {}, types: [t]}, {}, t, 0, [], mappings_, [value])).isRight, env)) {
       const values = [];
       let p = proxy;
       //  Find rightmost proxy to avoid having to look in both directions.
@@ -954,7 +959,7 @@ const UnaryTypeVariable = name => $1 => Object.assign (Object.create (Type$proto
         return name_ === name
                ? Z.chain (
                    type => {
-                     if ((satisfactoryTypes (env, {name: 'name', constraints: {}, types: [type]}, {}, type, 0, [], [value])).isRight) {
+                     if ((satisfactoryTypes (env, {name: 'name', constraints: {}, types: [type]}, {}, type, 0, [], _mappings, [value])).isRight) {
                        switch (type.arity) {
                          case 2:
                            return [fromBinaryType (type) (type.blah.$1.type) ($1)];
@@ -1054,7 +1059,7 @@ const BinaryTypeVariable = name => $1 => $2 => Object.assign (Object.create (Typ
     const mappings = {
       types: name_ => {
         const types = _mappings.types (name_);
-        return name_ === name ? Z.filter (type => (satisfactoryTypes (env, {name: 'name', constraints: {}, types: [type]}, {}, type, 0, [], [value])).isRight, types) : types;
+        return name_ === name ? Z.filter (type => (satisfactoryTypes (env, {name: 'name', constraints: {}, types: [type]}, {}, type, 0, [], _mappings, [value])).isRight, types) : types;
       },
     };
 
@@ -2015,7 +2020,11 @@ $.Pair = def ('Pair') ({}) ([$.Type, $.Type, $.Type]) (Pair);
 
 $.test = def ('test') ({}) ([$.Array ($.Type), $.Type, $.Any, $.Boolean]) (env => t => x => {
   const typeInfo = {name: 'name', constraints: {}, types: [t]};
-  return (satisfactoryTypes (env, typeInfo, {}, t, 0, [], [x])).isRight;
+  const mappings = {
+    types: name => (arity => Z.filter (t => t.arity >= arity, env))
+                   ((Z.foldMap (Object, typeVarNames, types))[name]),
+  };
+  return (satisfactoryTypes (env, typeInfo, {}, t, 0, [], mappings, [x])).isRight;
 });
 
 $.EnumType = def ('EnumType') ({}) ([$.String, $.String, $.Array ($.Any), $.Type]) (EnumType);
