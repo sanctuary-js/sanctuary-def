@@ -385,7 +385,7 @@ const _determineActualTypes = (
     }
     const expandUnknown2 = expandUnknown4 (seen$) (value);
     return Z.chain (t => (
-      validate (env) (typeInfo) (index) (path) (t) (value) != null ?
+      validate (env) (typeInfo) (index) (path) (value) (t) != null ?
         [] :
       t.type === 'UNARY' ?
         Z.map (fromUnaryType (t),
@@ -439,7 +439,7 @@ const satisfactoryTypes = (
   const recur = satisfactoryTypes;
 
   for (let idx = 0; idx < values.length; idx += 1) {
-    const result = validate (env) (typeInfo) (index) (propPath) (expType) (values[idx]);
+    const result = validate (env) (typeInfo) (index) (propPath) (values[idx]) (expType);
     if (result != null) {
       return Left (null);
     }
@@ -546,7 +546,7 @@ const extract = key => type => x => {
   );
 };
 
-const validate = env => typeInfo => index => path => type => x => {
+const validate = env => typeInfo => index => path => value => type => {
 //ancestors (type)
 //.forEach (type => {
 //  type.new
@@ -560,15 +560,15 @@ const validate = env => typeInfo => index => path => type => x => {
 //    (mappings)
 //    (proxy);
 //});
-  if (!(Z.all (t => t.test (x), ancestors (type)) &&
-        type.test (x))) {
-    return {value: x, propPath: []};
+  if (!(Z.all (t => t.test (value), ancestors (type)) &&
+        type.test (value))) {
+    return {value, propPath: []};
   }
   for (const k of Object.keys (type.blah)) {
     const t = type.blah[k].type;
-    const ys = extract (k) (type) (x);
+    const ys = extract (k) (type) (value);
     for (const y of ys) {
-      const result = validate (env) (typeInfo) (index) (path) (t) (y);
+      const result = validate (env) (typeInfo) (index) (path) (y) (t);
       if (result != null) {
         return {value: result.value, propPath: Z.prepend (k, result.propPath)};
       }
