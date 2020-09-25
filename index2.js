@@ -569,6 +569,7 @@ $.Unknown = Object.assign (Object.create (Type$prototype), {
   blah: {},
   test: K (true),
   format: outer => K (outer ('Unknown')),
+  new: reject => resolve => env => typeInfo => index => path => resolve,
 });
 
 const Unchecked = s => Object.assign (Object.create (Type$prototype), {
@@ -614,11 +615,28 @@ const NullaryType = name => url => supertypes => test => Object.assign (Object.c
   blah: {},
   test,
   format: outer => K (outer (name)),
-  new: reject => resolve => env => typeInfo => index => path => value => mappings => proxy => (
-    Z.all (t => t.test (value), supertypes) && test (value)
-    ? resolve (value) (mappings) (proxy)
-    : reject (invalidValue (env, typeInfo, index, path, value))
-  ),
+  new: reject => resolve => env => typeInfo => index => path => value => mappings => proxy => {
+    try {
+      supertypes.forEach (type => {
+        type.new
+          (error => { throw error; })
+          (value => mappings => proxy => value)
+          (env)
+          (typeInfo)
+          (index)
+          (path)
+          (value)
+          (mappings)
+          (proxy);
+      });
+    } catch (error) {
+      reject (error);
+      return;
+    }
+    return test (value)
+           ? resolve (value) (mappings) (proxy)
+           : reject (invalidValue (env, typeInfo, index, path, value));
+  },
 });
 
 const UnaryType = name => url => supertypes => test => _1 => $1 => Object.assign (Object.create (Type$prototype), {
@@ -638,26 +656,43 @@ const UnaryType = name => url => supertypes => test => _1 => $1 => Object.assign
          (parenthesize (outer))
          (inner ('$1') (show ($1)))
   ),
-  new: reject => resolve => env => typeInfo => index => path => value => mappings => proxy => (
-    Z.all (t => t.test (value), supertypes) && test (value)
-    ? reduceRight
-        (resolve => value => mappings => (
-           $1.new
-             (reject)
-             (value => resolve)
-             (env)
-             (typeInfo)
-             (index)
-             ([...path, '$1'])
-             (value)
-             (mappings)
-         ))
-        (resolve (value))
-        (_1 (value))
-        (mappings)
-        (proxy)
-    : reject (invalidValue (env, typeInfo, index, path, value))
-  ),
+  new: reject => resolve => env => typeInfo => index => path => value => mappings => proxy => {
+    try {
+      supertypes.forEach (type => {
+        type.new
+          (error => { throw error; })
+          (value => mappings => proxy => value)
+          (env)
+          (typeInfo)
+          (index)
+          (path)
+          (value)
+          (mappings)
+          (proxy);
+      });
+    } catch (error) {
+      reject (error);
+      return;
+    }
+    return test (value)
+           ? reduceRight
+               (resolve => value => mappings => (
+                  $1.new
+                    (reject)
+                    (value => resolve)
+                    (env)
+                    (typeInfo)
+                    (index)
+                    ([...path, '$1'])
+                    (value)
+                    (mappings)
+                ))
+               (resolve (value))
+               (_1 (value))
+               (mappings)
+               (proxy)
+           : reject (invalidValue (env, typeInfo, index, path, value));
+  },
 });
 
 //  fromUnaryType :: Type -> Type -> Type
@@ -691,37 +726,54 @@ const BinaryType = name => url => supertypes => test => _1 => _2 => $1 => $2 => 
          (parenthesize (outer))
          (inner ('$2') (show ($2)))
   ),
-  new: reject => resolve => env => typeInfo => index => path => value => mappings => proxy => (
-    Z.all (t => t.test (value), supertypes) && test (value)
-    ? reduceRight
-        (cont => value => (
-           $1.new
-             (reject)
-             (value => cont)
-             (env)
-             (typeInfo)
-             (index)
-             ([...path, '$1'])
-             (value)
-         ))
-        (reduceRight
-           (cont => value => (
-              $2.new
-                (reject)
-                (value => cont)
-                (env)
-                (typeInfo)
-                (index)
-                ([...path, '$2'])
-                (value)
-            ))
-           (resolve (value))
-           (_2 (value)))
-        (_1 (value))
-        (mappings)
-        (proxy)
-    : reject (invalidValue (env, typeInfo, index, path, value))
-  ),
+  new: reject => resolve => env => typeInfo => index => path => value => mappings => proxy => {
+    try {
+      supertypes.forEach (type => {
+        type.new
+          (error => { throw error; })
+          (value => mappings => proxy => value)
+          (env)
+          (typeInfo)
+          (index)
+          (path)
+          (value)
+          (mappings)
+          (proxy);
+      });
+    } catch (error) {
+      reject (error);
+      return;
+    }
+    return test (value)
+           ? reduceRight
+               (cont => value => (
+                  $1.new
+                    (reject)
+                    (value => cont)
+                    (env)
+                    (typeInfo)
+                    (index)
+                    ([...path, '$1'])
+                    (value)
+                ))
+               (reduceRight
+                  (cont => value => (
+                     $2.new
+                       (reject)
+                       (value => cont)
+                       (env)
+                       (typeInfo)
+                       (index)
+                       ([...path, '$2'])
+                       (value)
+                   ))
+                  (resolve (value))
+                  (_2 (value)))
+               (_1 (value))
+               (mappings)
+               (proxy)
+           : reject (invalidValue (env, typeInfo, index, path, value));
+  },
 });
 
 //    fromBinaryType :: (Type -> Type -> Type) -> Type -> Type -> Type
