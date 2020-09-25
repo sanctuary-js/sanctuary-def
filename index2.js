@@ -197,7 +197,7 @@ const typeClassConstraintViolation = (
                ),
                formatType6 (Z.concat ([index], propPath))) +
     '\n' +
-    showValuesAndTypes (env, typeInfo, index, [value], 1) + '\n\n' +
+    showValuesAndTypes (env, typeInfo, index, propPath, [value], 1) + '\n\n' +
     q (typeInfo.name) + ' requires ' +
     q (expType.name) + ' to satisfy the ' +
     stripNamespace (typeClass) + ' type-class constraint; ' +
@@ -267,7 +267,7 @@ const typeVarConstraintViolation = (
       //  Keep X, the position at which the violation was observed.
       k === selector ||
       //  Keep positions whose values are incompatible with the values at X.
-      isEmpty (determineActualTypesStrict (env, typeInfo, index, Z.concat (values, values_)))
+      isEmpty (determineActualTypesStrict (env, typeInfo, index, propPath, Z.concat (values, values_)))
     );
   }, (Object.keys (valuesByPath)).sort ());
 
@@ -285,7 +285,7 @@ const typeVarConstraintViolation = (
       return isEmpty (values) ? st : {
         idx: st.idx + 1,
         s: st.s +
-           showValuesAndTypes (env, typeInfo, index, values, st.idx + 1) +
+           showValuesAndTypes (env, typeInfo, index, propPath, values, st.idx + 1) +
            '\n\n',
       };
     }, {idx: 0, s: ''}, keys)).s +
@@ -310,7 +310,7 @@ const unrecognizedValue = (
   return new TypeError (trimTrailingSpaces (
     'Unrecognized value\n\n' +
     underlinedTypeVars + '\n' +
-    showValuesAndTypes (env, typeInfo, index, [value], 1) + '\n\n' +
+    showValuesAndTypes (env, typeInfo, index, propPath, [value], 1) + '\n\n' +
     toMarkdownList (
       'The environment is empty! ' +
       'Polymorphic functions require a non-empty environment.\n',
@@ -341,7 +341,7 @@ const invalidValue = (
   return new TypeError (trimTrailingSpaces (
     'Invalid value\n\n' +
     underlinedTypeVars + '\n' +
-    showValuesAndTypes (env, typeInfo, index, [value], 1) + '\n\n' +
+    showValuesAndTypes (env, typeInfo, index, propPath, [value], 1) + '\n\n' +
     'The value at position 1 is not a member of ' +
     q (show (t)) + '.\n' +
     see (t.arity >= 1 ? 'type constructor' : 'type', t)
@@ -355,9 +355,9 @@ const invalidValue = (
 //  -> (a -> Array b)
 //  -> Type
 //  -> Array Type
-const expandUnknown = env => typeInfo => index => seen => value => extractor => type => (
+const expandUnknown = env => typeInfo => index => path => seen => value => extractor => type => (
   type.type === 'UNKNOWN' ?
-  _determineActualTypes (env, typeInfo, index, seen, extractor (value)) :
+  _determineActualTypes (env, typeInfo, index, path, seen, extractor (value)) :
   [type]
 );
 
@@ -366,10 +366,11 @@ const _determineActualTypes = (
   env,            // :: Array Type
   typeInfo,
   index,
+  path,
   seen,           // :: Array Object
   values          // :: Array Any
 ) => {
-  const expandUnknown4 = expandUnknown (env) (index) (typeInfo);
+  const expandUnknown4 = expandUnknown (env) (index) (path) (typeInfo);
 
   function refine(types, value) {
     let seen$;
@@ -412,15 +413,15 @@ const isConsistent = t => (
 );
 
 //    determineActualTypesStrict :: (Array Type, Array Any) -> Array Type
-const determineActualTypesStrict = (env, typeInfo, index, values) => (
+const determineActualTypesStrict = (env, typeInfo, index, path, values) => (
   Z.filter (isConsistent,
-            _determineActualTypes (env, typeInfo, index, [], values))
+            _determineActualTypes (env, typeInfo, index, path, [], values))
 );
 
 //    determineActualTypesLoose :: (Array Type, Array Any) -> Array Type
-const determineActualTypesLoose = (env, typeInfo, index, values) => (
+const determineActualTypesLoose = (env, typeInfo, index, path, values) => (
   Z.reject (t => t.type === 'INCONSISTENT',
-            _determineActualTypes (env, typeInfo, index, [], values))
+            _determineActualTypes (env, typeInfo, index, path, [], values))
 );
 
 //  satisfactoryTypes :: ... -> Either (() -> Error)
@@ -847,12 +848,12 @@ const TypeVariable = name => Object.assign (Object.create (Type$prototype), {
             t => (
               t.arity === 2 ? Z.lift2 (
                 fromBinaryType (t),
-                Z.filter (isConsistent, expandUnknown (env) (typeInfo) (index) ([]) (value) (t.blah.$1.extract) (t.blah.$1.type)),
-                Z.filter (isConsistent, expandUnknown (env) (typeInfo) (index) ([]) (value) (t.blah.$2.extract) (t.blah.$2.type))
+                Z.filter (isConsistent, expandUnknown (env) (typeInfo) (index) (path) ([]) (value) (t.blah.$1.extract) (t.blah.$1.type)),
+                Z.filter (isConsistent, expandUnknown (env) (typeInfo) (index) (path) ([]) (value) (t.blah.$2.extract) (t.blah.$2.type))
               ) :
               t.arity === 1 ? Z.map (
                 fromUnaryType (t),
-                Z.filter (isConsistent, expandUnknown (env) (typeInfo) (index) ([]) (value) (t.blah.$1.extract) (t.blah.$1.type))
+                Z.filter (isConsistent, expandUnknown (env) (typeInfo) (index) (path) ([]) (value) (t.blah.$1.extract) (t.blah.$1.type))
               ) :
               [t]
             ),
@@ -1830,6 +1831,7 @@ const showValuesAndTypes = (
   env,            // :: Array Type
   typeInfo,       // :: TypeInfo
   index,
+  path,
   values,         // :: Array Any
   pos             // :: Integer
 ) => {
@@ -1839,7 +1841,7 @@ const showValuesAndTypes = (
     ' :: ' +
     joinWith (', ',
               or (Z.map (showType,
-                         determineActualTypesLoose (env, typeInfo, index, [x])),
+                         determineActualTypesLoose (env, typeInfo, index, path, [x])),
                   ['(no types)']))
   ), values));
 };
