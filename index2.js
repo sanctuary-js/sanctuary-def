@@ -567,7 +567,7 @@ $.Unknown = Object.assign (Object.create (Type$prototype), {
   supertypes: [],
   arity: 0,
   blah: {},
-  _test: value => true,
+  _test: K (true),
   format: outer => K (outer ('Unknown')),
 });
 
@@ -578,7 +578,7 @@ const Unchecked = s => Object.assign (Object.create (Type$prototype), {
   supertypes: [],
   arity: 0,
   blah: {},
-  _test: value => true,
+  _test: K (true),
   format: outer => K (outer (s)),
   new: reject => resolve => env => typeInfo => index => path => resolve,
 });
@@ -590,7 +590,7 @@ $.Inconsistent = Object.assign (Object.create (Type$prototype), {
   supertypes: [],
   arity: 0,
   blah: {},
-  _test: value => false,
+  _test: K (false),
   format: outer => K (outer ('???')),
 });
 
@@ -601,7 +601,7 @@ $.NoArguments = Object.assign (Object.create (Type$prototype), {
   supertypes: [],
   arity: 0,
   blah: {},
-  _test: value => true,
+  _test: K (true),
   format: outer => K (outer ('()')),
 });
 
@@ -612,7 +612,7 @@ const NullaryType = name => url => supertypes => test => Object.assign (Object.c
   supertypes: supertypes,
   arity: 0,
   blah: {},
-  _test: value => test (value),
+  _test: test,
   format: outer => K (outer (name)),
   new: reject => resolve => env => typeInfo => index => path => value => mappings => proxy => (
     Z.all (t => t._test (value), supertypes) && test (value)
@@ -630,7 +630,7 @@ const UnaryType = name => url => supertypes => test => _1 => $1 => Object.assign
   blah: {
     $1: {type: $1, extract: _1},
   },
-  _test: value => test (value),
+  _test: test,
   format: outer => inner => (
     outer (name) +
     outer (' ') +
@@ -679,7 +679,7 @@ const BinaryType = name => url => supertypes => test => _1 => _2 => $1 => $2 => 
     $1: {type: $1, extract: _1},
     $2: {type: $2, extract: _2},
   },
-  _test: value => test (value),
+  _test: test,
   format: outer => inner => (
     outer (name) +
     outer (' ') +
@@ -741,7 +741,7 @@ const EnumType = name => url => members => Object.assign (Object.create (Type$pr
   supertypes: [],
   arity: 0,
   blah: {},
-  _test: x => memberOf (members) (x),
+  _test: memberOf (members),
   format: outer => K (outer (name)),
   new: reject => resolve => env => typeInfo => index => path => value => mappings => proxy => (
     memberOf (members) (value)
@@ -757,7 +757,7 @@ const TypeVariable = name => Object.assign (Object.create (Type$prototype), {
   supertypes: [],
   arity: 0,
   blah: {},
-  _test: value => true,
+  _test: K (true),
   format: outer => K (outer (name)),
   new: reject => resolve => env => typeInfo => index => path => value => _mappings => proxy => {
     proxy.values =
@@ -866,7 +866,7 @@ const UnaryTypeVariable = name => $1 => Object.assign (Object.create (Type$proto
   blah: {
     $1: {type: $1, extract: K ([])},
   },
-  _test: value => true,
+  _test: K (true),
   format: outer => inner => (
     outer (name) +
     outer (' ') +
@@ -964,7 +964,7 @@ const BinaryTypeVariable = name => $1 => $2 => Object.assign (Object.create (Typ
     $1: {type: $1, extract: K ([])},
     $2: {type: $2, extract: K ([])},
   },
-  _test: value => true,
+  _test: K (true),
   format: outer => inner => (
     outer (name) +
     outer (' ') +
@@ -1045,7 +1045,7 @@ const Function_ = types => Object.assign (Object.create (Type$prototype), {
     },
     {}
   ),
-  _test: value => true,
+  _test: K (true),
   format: outer => inner => (
     when (types.length !== 2)
          (parenthesize (outer))
@@ -1102,11 +1102,11 @@ const RecordType = fields => {
       (blah, k) => (blah[k] = {type: fields[k], extract: x => [x[k]]}, blah),
       {}
     ),
-    _test: x => {
-      if (x == null) return false;
+    _test: value => {
+      if (value == null) return false;
       const missing = {};
       keys.forEach (k => { missing[k] = k; });
-      for (const k in x) delete missing[k];
+      for (const k in value) delete missing[k];
       return isEmpty (missing);
     },
     format: outer => inner => {
