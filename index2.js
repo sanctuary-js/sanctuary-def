@@ -186,6 +186,7 @@ const typeClassConstraintViolation = (
   typeClass,      // :: TypeClass
   index,          // :: Integer
   propPath,       // :: PropPath
+  mappings,
   value           // :: Any
 ) => {
   const expType = resolvePropPath (typeInfo.types[index], propPath);
@@ -197,7 +198,7 @@ const typeClassConstraintViolation = (
                ),
                formatType6 (Z.concat ([index], propPath))) +
     '\n' +
-    showValuesAndTypes (env, typeInfo, index, propPath, [value], 1) + '\n\n' +
+    showValuesAndTypes (env, typeInfo, index, propPath, mappings, [value], 1) + '\n\n' +
     q (typeInfo.name) + ' requires ' +
     q (expType.name) + ' to satisfy the ' +
     stripNamespace (typeClass) + ' type-class constraint; ' +
@@ -234,6 +235,7 @@ const typeVarConstraintViolation = (
   typeInfo,       // :: TypeInfo
   index,          // :: Integer
   propPath,       // :: PropPath
+  mappings,
   valuesAtPath
 ) => {
   //  If we apply an ‘a -> a -> a -> a’ function to Left ('x'), Right (1),
@@ -267,7 +269,7 @@ const typeVarConstraintViolation = (
       //  Keep X, the position at which the violation was observed.
       k === selector ||
       //  Keep positions whose values are incompatible with the values at X.
-      isEmpty (determineActualTypesStrict (env, typeInfo, index, propPath, Z.concat (values, values_)))
+      isEmpty (determineActualTypesStrict (env, typeInfo, index, propPath, mappings, Z.concat (values, values_)))
     );
   }, (Object.keys (valuesByPath)).sort ());
 
@@ -285,7 +287,7 @@ const typeVarConstraintViolation = (
       return isEmpty (values) ? st : {
         idx: st.idx + 1,
         s: st.s +
-           showValuesAndTypes (env, typeInfo, index, propPath, values, st.idx + 1) +
+           showValuesAndTypes (env, typeInfo, index, propPath, mappings, values, st.idx + 1) +
            '\n\n',
       };
     }, {idx: 0, s: ''}, keys)).s +
@@ -300,6 +302,7 @@ const unrecognizedValue = (
   typeInfo,       // :: TypeInfo
   index,          // :: Integer
   propPath,       // :: PropPath
+  mappings,
   value           // :: Any
 ) => {
   const underlinedTypeVars =
@@ -310,7 +313,7 @@ const unrecognizedValue = (
   return new TypeError (trimTrailingSpaces (
     'Unrecognized value\n\n' +
     underlinedTypeVars + '\n' +
-    showValuesAndTypes (env, typeInfo, index, propPath, [value], 1) + '\n\n' +
+    showValuesAndTypes (env, typeInfo, index, propPath, mappings, [value], 1) + '\n\n' +
     toMarkdownList (
       'The environment is empty! ' +
       'Polymorphic functions require a non-empty environment.\n',
@@ -329,6 +332,7 @@ const invalidValue = (
   typeInfo,       // :: TypeInfo
   index,          // :: Integer
   propPath,       // :: PropPath
+  mappings,
   value           // :: Any
 ) => {
   const t = resolvePropPath (typeInfo.types[index], propPath);
@@ -341,7 +345,7 @@ const invalidValue = (
   return new TypeError (trimTrailingSpaces (
     'Invalid value\n\n' +
     underlinedTypeVars + '\n' +
-    showValuesAndTypes (env, typeInfo, index, propPath, [value], 1) + '\n\n' +
+    showValuesAndTypes (env, typeInfo, index, propPath, mappings, [value], 1) + '\n\n' +
     'The value at position 1 is not a member of ' +
     q (show (t)) + '.\n' +
     see (t.arity >= 1 ? 'type constructor' : 'type', t)
@@ -355,9 +359,9 @@ const invalidValue = (
 //  -> (a -> Array b)
 //  -> Type
 //  -> Array Type
-const expandUnknown = env => typeInfo => index => path => seen => value => extractor => type => (
+const expandUnknown = env => typeInfo => index => path => mappings => seen => value => extractor => type => (
   type.type === 'UNKNOWN' ?
-  _determineActualTypes (env, typeInfo, index, path, seen, extractor (value)) :
+  _determineActualTypes (env, typeInfo, index, path, mappings, seen, extractor (value)) :
   [type]
 );
 
@@ -367,10 +371,11 @@ const _determineActualTypes = (
   typeInfo,
   index,
   path,
+  mappings,
   seen,           // :: Array Object
   values          // :: Array Any
 ) => {
-  const expandUnknown4 = expandUnknown (env) (index) (path) (typeInfo);
+  const expandUnknown4 = expandUnknown (env) (typeInfo) (index) (path) (mappings);
 
   function refine(types, value) {
     let seen$;
@@ -413,15 +418,15 @@ const isConsistent = t => (
 );
 
 //    determineActualTypesStrict :: (Array Type, Array Any) -> Array Type
-const determineActualTypesStrict = (env, typeInfo, index, path, values) => (
+const determineActualTypesStrict = (env, typeInfo, index, path, mappings, values) => (
   Z.filter (isConsistent,
-            _determineActualTypes (env, typeInfo, index, path, [], values))
+            _determineActualTypes (env, typeInfo, index, path, mappings, [], values))
 );
 
 //    determineActualTypesLoose :: (Array Type, Array Any) -> Array Type
-const determineActualTypesLoose = (env, typeInfo, index, path, values) => (
+const determineActualTypesLoose = (env, typeInfo, index, path, mappings, values) => (
   Z.reject (t => t.type === 'INCONSISTENT',
-            _determineActualTypes (env, typeInfo, index, path, [], values))
+            _determineActualTypes (env, typeInfo, index, path, mappings, [], values))
 );
 
 //  satisfactoryTypes :: ... -> Either (() -> Error)
@@ -651,7 +656,7 @@ const NullaryType = name => url => supertypes => test => Object.assign (Object.c
     }
     return test (value)
            ? resolve (value) (mappings) (proxy)
-           : reject (invalidValue (env, typeInfo, index, path, value));
+           : reject (invalidValue (env, typeInfo, index, path, mappings, value));
   },
 });
 
@@ -707,7 +712,7 @@ const UnaryType = name => url => supertypes => test => _1 => $1 => Object.assign
                (_1 (value))
                (mappings)
                (proxy)
-           : reject (invalidValue (env, typeInfo, index, path, value));
+           : reject (invalidValue (env, typeInfo, index, path, mappings, value));
   },
 });
 
@@ -788,7 +793,7 @@ const BinaryType = name => url => supertypes => test => _1 => _2 => $1 => $2 => 
                (_1 (value))
                (mappings)
                (proxy)
-           : reject (invalidValue (env, typeInfo, index, path, value));
+           : reject (invalidValue (env, typeInfo, index, path, mappings, value));
   },
 });
 
@@ -814,7 +819,7 @@ const EnumType = name => url => members => Object.assign (Object.create (Type$pr
   new: reject => resolve => env => typeInfo => index => path => value => mappings => proxy => (
     memberOf (members) (value)
     ? resolve (value) (mappings) (proxy)
-    : reject (invalidValue (env, typeInfo, index, path, value))
+    : reject (invalidValue (env, typeInfo, index, path, mappings, value))
   ),
 });
 
@@ -836,7 +841,7 @@ const TypeVariable = name => Object.assign (Object.create (Type$prototype), {
       for (let idx = 0; idx < typeInfo.constraints[name].length; idx += 1) {
         const typeClass = typeInfo.constraints[name][idx];
         if (!(typeClass.test (value))) {
-          return reject (typeClassConstraintViolation (env, typeInfo, typeClass, index, path, value));
+          return reject (typeClassConstraintViolation (env, typeInfo, typeClass, index, path, _mappings, value));
         }
       }
     }
@@ -848,12 +853,12 @@ const TypeVariable = name => Object.assign (Object.create (Type$prototype), {
             t => (
               t.arity === 2 ? Z.lift2 (
                 fromBinaryType (t),
-                Z.filter (isConsistent, expandUnknown (env) (typeInfo) (index) (path) ([]) (value) (t.blah.$1.extract) (t.blah.$1.type)),
-                Z.filter (isConsistent, expandUnknown (env) (typeInfo) (index) (path) ([]) (value) (t.blah.$2.extract) (t.blah.$2.type))
+                Z.filter (isConsistent, expandUnknown (env) (typeInfo) (index) (path) (mappings) ([]) (value) (t.blah.$1.extract) (t.blah.$1.type)),
+                Z.filter (isConsistent, expandUnknown (env) (typeInfo) (index) (path) (mappings) ([]) (value) (t.blah.$2.extract) (t.blah.$2.type))
               ) :
               t.arity === 1 ? Z.map (
                 fromUnaryType (t),
-                Z.filter (isConsistent, expandUnknown (env) (typeInfo) (index) (path) ([]) (value) (t.blah.$1.extract) (t.blah.$1.type))
+                Z.filter (isConsistent, expandUnknown (env) (typeInfo) (index) (path) (mappings) ([]) (value) (t.blah.$1.extract) (t.blah.$1.type))
               ) :
               [t]
             ),
@@ -918,9 +923,9 @@ const TypeVariable = name => Object.assign (Object.create (Type$prototype), {
         }
         p = p.left;
       }
-      return reject (typeVarConstraintViolation (env, typeInfo, index, path, Z.reverse (values)));
+      return reject (typeVarConstraintViolation (env, typeInfo, index, path, mappings, Z.reverse (values)));
     } else {
-      return reject (unrecognizedValue (env, typeInfo, index, path, value));
+      return reject (unrecognizedValue (env, typeInfo, index, path, mappings, value));
     }
   },
 });
@@ -978,7 +983,7 @@ const UnaryTypeVariable = name => $1 => Object.assign (Object.create (Type$proto
     const types = mappings.types (name);
     console.log ('types:', show (types));
     if (types.length === 0) {
-      return reject (invalidValue (env, typeInfo, index, path, value));
+      return reject (invalidValue (env, typeInfo, index, path, mappings, value));
     }
 
     if (Object.prototype.hasOwnProperty.call (typeInfo.constraints, name)) {
@@ -991,6 +996,7 @@ const UnaryTypeVariable = name => $1 => Object.assign (Object.create (Type$proto
             typeClass,
             index,
             path,
+            mappings,
             value
           ));
         }
@@ -1058,7 +1064,7 @@ const BinaryTypeVariable = name => $1 => $2 => Object.assign (Object.create (Typ
 
     const types = mappings.types (name);
     if (types.length === 0) {
-      return reject (invalidValue (env, typeInfo, index, path, value));
+      return reject (invalidValue (env, typeInfo, index, path, mappings, value));
     }
 
     return resolve (value)
@@ -1201,15 +1207,15 @@ const RecordType = fields => {
       }, keys);
       return wrap (outer ('{')) (outer (' }')) (joinWith (outer (','), reprs));
     },
-    new: reject => resolve => env => typeInfo => index => path => value => {
+    new: reject => resolve => env => typeInfo => index => path => value => mappings => proxy => {
       if (value == null) {
-        reject (invalidValue (env, typeInfo, index, path, value));
+        reject (invalidValue (env, typeInfo, index, path, mappings, value));
       } else {
         const missing = {};
         keys.forEach (k => { missing[k] = k; });
         for (const k in value) delete missing[k];
         if (Z.size (missing) > 0) {
-          reject (invalidValue (env, typeInfo, index, path, value));
+          reject (invalidValue (env, typeInfo, index, path, mappings, value));
         } else {
           return reduceRight
                    (cont => key => mappings => (
@@ -1224,7 +1230,9 @@ const RecordType = fields => {
                         (mappings)
                     ))
                    (resolve (value))
-                   (keys);
+                   (keys)
+                   (mappings)
+                   (proxy);
         }
       }
     },
@@ -1255,13 +1263,13 @@ const NamedRecordType = name => url => supertypes => fields => {
     format: outer => K (outer (name)),
     new: reject => resolve => env => typeInfo => index => path => value => mappings => proxy => {
       if (value == null) {
-        reject (invalidValue (env, typeInfo, index, path, value));
+        reject (invalidValue (env, typeInfo, index, path, mappings, value));
       } else {
         const missing = {};
         keys.forEach (k => { missing[k] = k; });
         for (const k in value) delete missing[k];
         if (Z.size (missing) > 0) {
-          reject (invalidValue (env, typeInfo, index, path, value));
+          reject (invalidValue (env, typeInfo, index, path, mappings, value));
         } else {
           try {
             keys.forEach (key => {
@@ -1277,7 +1285,7 @@ const NamedRecordType = name => url => supertypes => fields => {
                 (proxy)
             });
           } catch (error) {
-            reject (invalidValue (env, typeInfo, index, path, value));
+            reject (invalidValue (env, typeInfo, index, path, mappings, value));
             return;
           }
           return reduceRight
@@ -1832,6 +1840,7 @@ const showValuesAndTypes = (
   typeInfo,       // :: TypeInfo
   index,
   path,
+  mappings,
   values,         // :: Array Any
   pos             // :: Integer
 ) => {
@@ -1841,7 +1850,7 @@ const showValuesAndTypes = (
     ' :: ' +
     joinWith (', ',
               or (Z.map (showType,
-                         determineActualTypesLoose (env, typeInfo, index, path, [x])),
+                         determineActualTypesLoose (env, typeInfo, index, path, mappings, [x])),
                   ['(no types)']))
   ), values));
 };
