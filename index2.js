@@ -544,8 +544,8 @@ const extract = key => type => x => {
 };
 
 const validate = env => mappings => type => x => {
-  if (!(Z.all (t => t._test (env) (mappings) (x), ancestors (type)) &&
-        type._test (env) (mappings) (x))) {
+  if (!(Z.all (t => t._test (env) (x), ancestors (type)) &&
+        type._test (env) (x))) {
     return {value: x, propPath: []};
   }
   for (const k of Object.keys (type.blah)) {
@@ -567,7 +567,7 @@ $.Unknown = Object.assign (Object.create (Type$prototype), {
   supertypes: [],
   arity: 0,
   blah: {},
-  _test: env => mappings => value => true,
+  _test: env => value => true,
   format: outer => K (outer ('Unknown')),
 });
 
@@ -578,7 +578,7 @@ const Unchecked = s => Object.assign (Object.create (Type$prototype), {
   supertypes: [],
   arity: 0,
   blah: {},
-  _test: env => mappings => value => true,
+  _test: env => value => true,
   format: outer => K (outer (s)),
   new: reject => resolve => env => typeInfo => index => path => resolve,
 });
@@ -590,7 +590,7 @@ $.Inconsistent = Object.assign (Object.create (Type$prototype), {
   supertypes: [],
   arity: 0,
   blah: {},
-  _test: env => mappings => value => false,
+  _test: env => value => false,
   format: outer => K (outer ('???')),
 });
 
@@ -601,7 +601,7 @@ $.NoArguments = Object.assign (Object.create (Type$prototype), {
   supertypes: [],
   arity: 0,
   blah: {},
-  _test: env => mappings => value => true,
+  _test: env => value => true,
   format: outer => K (outer ('()')),
 });
 
@@ -612,10 +612,10 @@ const NullaryType = name => url => supertypes => test => Object.assign (Object.c
   supertypes: supertypes,
   arity: 0,
   blah: {},
-  _test: env => mappings => value => test (value),
+  _test: env => value => test (value),
   format: outer => K (outer (name)),
   new: reject => resolve => env => typeInfo => index => path => value => mappings => proxy => (
-    Z.all (t => t._test (env) (mappings) (value), supertypes) && test (value)
+    Z.all (t => t._test (env) (value), supertypes) && test (value)
     ? resolve (value) (mappings) (proxy)
     : reject (invalidValue (env, typeInfo, index, path, value))
   ),
@@ -630,7 +630,7 @@ const UnaryType = name => url => supertypes => test => _1 => $1 => Object.assign
   blah: {
     $1: {type: $1, extract: _1},
   },
-  _test: env => mappings => value => test (value),
+  _test: env => value => test (value),
   format: outer => inner => (
     outer (name) +
     outer (' ') +
@@ -639,7 +639,7 @@ const UnaryType = name => url => supertypes => test => _1 => $1 => Object.assign
          (inner ('$1') (show ($1)))
   ),
   new: reject => resolve => env => typeInfo => index => path => value => mappings => proxy => (
-    Z.all (t => t._test (env) (mappings) (value), supertypes) && test (value)
+    Z.all (t => t._test (env) (value), supertypes) && test (value)
     ? reduceRight
         (resolve => value => mappings => (
            $1.new
@@ -665,7 +665,7 @@ const fromUnaryType = t => (
   UnaryType (t.name)
             (t.url)
             (t.supertypes)
-            (t._test ([]) ('TK:mappings'))
+            (t._test ([]))
             (t.blah.$1.extract)
 );
 
@@ -679,7 +679,7 @@ const BinaryType = name => url => supertypes => test => _1 => _2 => $1 => $2 => 
     $1: {type: $1, extract: _1},
     $2: {type: $2, extract: _2},
   },
-  _test: env => mappings => value => test (value),
+  _test: env => value => test (value),
   format: outer => inner => (
     outer (name) +
     outer (' ') +
@@ -692,7 +692,7 @@ const BinaryType = name => url => supertypes => test => _1 => _2 => $1 => $2 => 
          (inner ('$2') (show ($2)))
   ),
   new: reject => resolve => env => typeInfo => index => path => value => mappings => proxy => (
-    Z.all (t => t._test (env) (mappings) (value), supertypes) && test (value)
+    Z.all (t => t._test (env) (value), supertypes) && test (value)
     ? reduceRight
         (cont => value => (
            $1.new
@@ -729,7 +729,7 @@ const fromBinaryType = t => (
   BinaryType (t.name)
              (t.url)
              (t.supertypes)
-             (t._test ([]) ('TK:mappings'))
+             (t._test ([]))
              (t.blah.$1.extract)
              (t.blah.$2.extract)
 );
@@ -741,7 +741,7 @@ const EnumType = name => url => members => Object.assign (Object.create (Type$pr
   supertypes: [],
   arity: 0,
   blah: {},
-  _test: env => mappings => x => memberOf (members) (x),
+  _test: env => x => memberOf (members) (x),
   format: outer => K (outer (name)),
   new: reject => resolve => env => typeInfo => index => path => value => mappings => proxy => (
     memberOf (members) (value)
@@ -757,7 +757,7 @@ const TypeVariable = name => Object.assign (Object.create (Type$prototype), {
   supertypes: [],
   arity: 0,
   blah: {},
-  _test: env => mappings => value => true,
+  _test: env => value => true,
   format: outer => K (outer (name)),
   new: reject => resolve => env => typeInfo => index => path => value => _mappings => proxy => {
     proxy.values =
@@ -866,7 +866,7 @@ const UnaryTypeVariable = name => $1 => Object.assign (Object.create (Type$proto
   blah: {
     $1: {type: $1, extract: K ([])},
   },
-  _test: env => mappings => value => true,
+  _test: env => value => true,
   format: outer => inner => (
     outer (name) +
     outer (' ') +
@@ -964,7 +964,7 @@ const BinaryTypeVariable = name => $1 => $2 => Object.assign (Object.create (Typ
     $1: {type: $1, extract: K ([])},
     $2: {type: $2, extract: K ([])},
   },
-  _test: env => mappings => value => true,
+  _test: env => value => true,
   format: outer => inner => (
     outer (name) +
     outer (' ') +
@@ -1045,7 +1045,7 @@ const Function_ = types => Object.assign (Object.create (Type$prototype), {
     },
     {}
   ),
-  _test: env => mappings => value => true,
+  _test: env => value => true,
   format: outer => inner => (
     when (types.length !== 2)
          (parenthesize (outer))
@@ -1059,7 +1059,7 @@ const Function_ = types => Object.assign (Object.create (Type$prototype), {
     inner (`$${types.length}`) (show (types[types.length - 1]))
   ),
   new: reject => resolve => env => typeInfo => index => path => value => mappings => values => (
-    $.AnyFunction._test (env) (mappings) (value)
+    $.AnyFunction._test (env) (value)
     ? resolve ((...args) => (
                  types[types.length - 1].new
                    (reject)
@@ -1102,7 +1102,7 @@ const RecordType = fields => {
       (blah, k) => (blah[k] = {type: fields[k], extract: x => [x[k]]}, blah),
       {}
     ),
-    _test: env => mappings => x => {
+    _test: env => x => {
       if (x == null) return false;
       const missing = {};
       keys.forEach (k => { missing[k] = k; });
@@ -1163,13 +1163,13 @@ const NamedRecordType = name => url => supertypes => fields => {
       (blah, k) => (blah[k] = {type: fields[k], extract: x => [x[k]]}, blah),
       {}
     ),
-    _test: env => mappings => x => {
+    _test: env => x => {
       if (x == null) return false;
       const missing = {};
       keys.forEach (k => { missing[k] = k; });
       for (const k in x) delete missing[k];
       if (!(isEmpty (missing))) return false;
-      return keys.every (k => fields[k]._test (env) (mappings) (x[k]));
+      return keys.every (k => fields[k]._test (env) (x[k]));
     },
     format: outer => K (outer (name)),
     new: reject => resolve => env => typeInfo => index => path => value => mappings => {
@@ -1180,7 +1180,7 @@ const NamedRecordType = name => url => supertypes => fields => {
         keys.forEach (k => { missing[k] = k; });
         for (const k in value) delete missing[k];
         if (Z.size (missing) > 0 ||
-            keys.some (k => !(fields[k]._test (env) (mappings) (value[k])))) {
+            keys.some (k => !(fields[k]._test (env) (value[k])))) {
           reject (invalidValue (env, typeInfo, index, path, value));
         } else {
           return reduceRight
@@ -1576,7 +1576,7 @@ const Fn = $1 => $2 => (
     Function_ ([$1, $2]),
     {
       new: reject => resolve => env => typeInfo => index => path => value => _mappings => proxy => {
-        if (!($.AnyFunction._test (env) (_mappings) (value))) {
+        if (!($.AnyFunction._test (env) (value))) {
           reject (invalidValue (env, typeInfo, index, path, value));
           return;
         }
