@@ -1628,8 +1628,19 @@ const Fn = $1 => $2 => (
     Function_ ([$1, $2]),
     {
       new: reject => resolve => env => typeInfo => index => path => value => _mappings => proxy => {
-        if (!($.AnyFunction.test (value))) {
-          reject (invalidValue (env, typeInfo, index, path, value));
+        try {
+          $.AnyFunction.new
+            (error => { throw error; })
+            (value => mappings => proxy => value)
+            (env)
+            (typeInfo)
+            (index)
+            (path)
+            (value)
+            (_mappings)
+            (proxy);
+        } catch (error) {
+          reject (error);
           return;
         }
         let mappings = _mappings;
