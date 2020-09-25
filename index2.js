@@ -1110,35 +1110,48 @@ const Function_ = types => Object.assign (Object.create (Type$prototype), {
     outer (' -> ') +
     inner (`$${types.length}`) (show (types[types.length - 1]))
   ),
-  new: reject => resolve => env => typeInfo => index => path => value => mappings => values => (
-    $.AnyFunction.test (value)
-    ? resolve ((...args) => (
-                 types[types.length - 1].new
-                   (reject)
-                   (value => mappings => values => value)
-                   (env)
-                   (typeInfo)
-                   (index)
-                   ([...path, `$${types.length}`])
-                   (value (...args))
-                   (mappings)
-                   (args.reduce ((values, arg, idx) => (
-                      types[idx].new
+  new: reject => resolve => env => typeInfo => index => path => value => mappings => proxy => {
+    try {
+      $.AnyFunction.new
+        (error => { throw error; })
+        (value => mappings => proxy => value)
+        (env)
+        (typeInfo)
+        (index)
+        (path)
+        (value)
+        (mappings)
+        (proxy);
+    } catch (error) {
+      reject (error);
+      return;
+    }
+    return resolve ((...args) => (
+                      types[types.length - 1].new
                         (reject)
-                        (value => mappings => values => values)
+                        (value => mappings => values => value)
                         (env)
                         (typeInfo)
                         (index)
-                        ([...path, `$${idx + 1}`])
-                        (arg)
+                        ([...path, `$${types.length}`])
+                        (value (...args))
                         (mappings)
-                        (values)
-                    ), values))
-               ))
-              (mappings)
-              (values)
-    : reject (invalidValue (env, typeInfo, index, path, value))
-  ),
+                        (args.reduce ((proxy, arg, idx) => (
+                           types[idx].new
+                             (reject)
+                             (value => mappings => proxy => proxy)
+                             (env)
+                             (typeInfo)
+                             (index)
+                             ([...path, `$${idx + 1}`])
+                             (arg)
+                             (mappings)
+                             (proxy)
+                         ), proxy))
+                    ))
+                   (mappings)
+                   (proxy);
+  },
 });
 
 const RecordType = fields => {
