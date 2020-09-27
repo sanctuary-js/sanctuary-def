@@ -416,17 +416,33 @@ const _determineActualTypes = (
     }
     const expandUnknown2 = expandUnknown4 (seen$) (value);
     return Z.chain (t => (
-      validate (env) (typeInfo) (index) (path) (mappings) (proxy) (value) (t) != null ?
-        [] :
-      t._type === 'UnaryType' ?
-        Z.map (fromUnaryType (t),
-               expandUnknown2 (extract ('$1') (t)) (t.blah.$1.type)) :
-      t._type === 'BinaryType' ?
-        Z.lift2 (fromBinaryType (t),
-                 expandUnknown2 (extract ('$1') (t)) (t.blah.$1.type),
-                 expandUnknown2 (extract ('$2') (t)) (t.blah.$2.type)) :
-      // else
-        [t]
+      validate (env) (typeInfo) (index) (path) (mappings) (proxy) (value) (t) != null ? [] : cata ({
+        NoArguments: [$.NoArguments],
+        Unchecked: [$.Unchecked],
+        Inconsistent: [$.Inconsistent],
+        NullaryType: name => url => supertypes => test2 => [NullaryType (name) (url) (supertypes) (test2)],
+        EnumType: name => url => members => [EnumType (name) (url) (members)],
+        UnaryType: name => url => supertypes => test2 => _1 => $1 => (
+          Z.map (
+            $1 => UnaryType (name) (url) (supertypes) (test2) (_1) ($1),
+            expandUnknown2 (_1) ($1)
+          )
+        ),
+        BinaryType: name => url => supertypes => test2 => _1 => _2 => $1 => $2 => (
+          Z.lift2 (
+            $1 => $2 => BinaryType (name) (url) (supertypes) (test2) (_1) (_2) ($1) ($2),
+            expandUnknown2 (_1) ($1),
+            expandUnknown2 (_2) ($2)
+          )
+        ),
+        Function: types => [Function_ (types)],
+        RecordType: fields => [RecordType (fields)],
+        NamedRecordType: name => url => supertypes => fields => [NamedRecordType (name) (url) (supertypes) (fields)],
+        TypeVariable: name => [TypeVariable (name)],
+        UnaryTypeVariable: name => $1 => [UnaryTypeVariable (name) ($1)],
+        BinaryTypeVariable: name => $1 => $2 => [BinaryTypeVariable (name) ($1) ($2)],
+        Unknown: [$.Unknown],
+      }) (t)
     ), types);
   }
 
