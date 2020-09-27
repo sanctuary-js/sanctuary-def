@@ -1008,18 +1008,42 @@ const TypeVariable = name => Object.assign (Object.create (Type$prototype), {
       types: name_ => (
         name_ === name
         ? Z.chain (
-            t => (
-              t.arity === 2 ? Z.lift2 (
-                fromBinaryType (t),
-                Z.filter (isConsistent, expandUnknown (env) (typeInfo) (index) (path) (mappings) (proxy) ([]) (value) (t.blah.$1.extract) (t.blah.$1.type)),
-                Z.filter (isConsistent, expandUnknown (env) (typeInfo) (index) (path) (mappings) (proxy) ([]) (value) (t.blah.$2.extract) (t.blah.$2.type))
-              ) :
-              t.arity === 1 ? Z.map (
-                fromUnaryType (t),
-                Z.filter (isConsistent, expandUnknown (env) (typeInfo) (index) (path) (mappings) (proxy) ([]) (value) (t.blah.$1.extract) (t.blah.$1.type))
-              ) :
-              [t]
-            ),
+            cata ({
+              NoArguments: [$.NoArguments],
+              Unchecked: [$.Unchecked],
+              Inconsistent: [$.Inconsistent],
+              NullaryType: name => url => supertypes => test2 => [NullaryType (name) (url) (supertypes) (test2)],
+              EnumType: name => url => members => [EnumType (name) (url) (members)],
+              UnaryType: name => url => supertypes => test2 => _1 => $1 => (
+                Z.map (
+                  UnaryType (name) (url) (supertypes) (test2) (_1),
+                  Z.filter (
+                    isConsistent,
+                    expandUnknown (env) (typeInfo) (index) (path) (mappings) (proxy) ([]) (value) (_1) ($1)
+                  )
+                )
+              ),
+              BinaryType: name => url => supertypes => test2 => _1 => _2 => $1 => $2 => (
+                Z.lift2 (
+                  BinaryType (name) (url) (supertypes) (test2) (_1) (_2),
+                  Z.filter (
+                    isConsistent,
+                    expandUnknown (env) (typeInfo) (index) (path) (mappings) (proxy) ([]) (value) (_1) ($1)
+                  ),
+                  Z.filter (
+                    isConsistent,
+                    expandUnknown (env) (typeInfo) (index) (path) (mappings) (proxy) ([]) (value) (_2) ($2)
+                  )
+                )
+              ),
+              Function: types => [Function_ (types)],
+              RecordType: fields => [RecordType (fields)],
+              NamedRecordType: name => url => supertypes => fields => [NamedRecordType (name) (url) (supertypes) (fields)],
+              TypeVariable: name => [TypeVariable (name)],
+              UnaryTypeVariable: name => $1 => [UnaryTypeVariable (name) ($1)],
+              BinaryTypeVariable: name => $1 => $2 => [BinaryTypeVariable (name) ($1) ($2)],
+              Unknown: [$.Unknown],
+            }),
             Z.filter (t => (satisfactoryTypes (env, {name: 'name', constraints: {}, types: [t]}, {}, t, 0, [], _mappings, proxy, [value])).isRight, _mappings.types (name))
           )
         : _mappings.types (name_)
