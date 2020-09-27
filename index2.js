@@ -711,6 +711,21 @@ const supertypes = cata ({
   Unknown: [],
 });
 
+//    test2 :: Type -> Any -> Boolean
+const test2 = cata ({
+  NullaryType: _ => _ => _ => test2 => test2,
+  EnumType: _ => _ => _ => TK,
+  UnaryType: _ => _ => _ => test2 => _ => _ => test2,
+  BinaryType: _ => _ => _ => test2 => _ => _ => _ => _ => test2,
+  Function: _ => _ => true,
+  RecordType: _ => TK,
+  NamedRecordType: _ => _ => _ => _ => TK,
+  TypeVariable: _ => TK,
+  UnaryTypeVariable: _ => _ => TK,
+  BinaryTypeVariable: _ => _ => _ => TK,
+  Unknown: _ => TK,
+});
+
 const NullaryType = name => url => supertypes => test2 => Object.assign (Object.create (Type$prototype), {
   cata: f => f (name) (url) (supertypes) (test2),
   type: 'NULLARY',
