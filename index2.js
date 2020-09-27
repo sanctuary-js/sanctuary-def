@@ -583,10 +583,23 @@ const validate = env => typeInfo => index => path => mappings => proxy => value 
 //    (mappings)
 //    (proxy);
 //});
-  if (!(Z.all (t => t.test (value), ancestors (type)) &&
-        type.test (value))) {
+  if (!(Z.all (t => t.test (value), ancestors (type)))) {
     return {value, propPath: []};
   }
+
+  if (
+    type.new
+      (thunk => true)
+      (value => mappings => proxy => false)
+      (env)
+      (typeInfo)
+      (index)
+      (path)
+      (value)
+      (mappings)
+      (proxy)
+  ) return {value, propPath: []};
+
   for (const k of Object.keys (type.blah)) {
     const t = type.blah[k].type;
     const ys = extract (k) (type) (value);
@@ -1228,13 +1241,13 @@ const RecordType = fields => {
     },
     new: reject => resolve => env => typeInfo => index => path => value => mappings => proxy => {
       if (value == null) {
-        reject (() => invalidValue (env, typeInfo, index, path, mappings, proxy, value));
+        return reject (() => invalidValue (env, typeInfo, index, path, mappings, proxy, value));
       } else {
         const missing = {};
         keys.forEach (k => { missing[k] = k; });
         for (const k in value) delete missing[k];
         if (Z.size (missing) > 0) {
-          reject (() => invalidValue (env, typeInfo, index, path, mappings, proxy, value));
+          return reject (() => invalidValue (env, typeInfo, index, path, mappings, proxy, value));
         } else {
           return reduceRight
                    (cont => key => mappings => (
@@ -1282,13 +1295,13 @@ const NamedRecordType = name => url => supertypes => fields => {
     format: outer => K (outer (name)),
     new: reject => resolve => env => typeInfo => index => path => value => mappings => proxy => {
       if (value == null) {
-        reject (() => invalidValue (env, typeInfo, index, path, mappings, proxy, value));
+        return reject (() => invalidValue (env, typeInfo, index, path, mappings, proxy, value));
       } else {
         const missing = {};
         keys.forEach (k => { missing[k] = k; });
         for (const k in value) delete missing[k];
         if (Z.size (missing) > 0) {
-          reject (() => invalidValue (env, typeInfo, index, path, mappings, proxy, value));
+          return reject (() => invalidValue (env, typeInfo, index, path, mappings, proxy, value));
         } else {
           try {
             keys.forEach (key => {
