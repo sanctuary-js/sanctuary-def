@@ -595,14 +595,50 @@ const Type$prototype = {
     return this.format (I) (K (I));
   },
   'fantasy-land/equals': function(other) {
-    return (
-      Z.equals (this.type, other.type) &&
-      Z.equals (name (this), name (other)) &&
-      Z.equals (url (this), url (other)) &&
-      Z.equals (supertypes (this), supertypes (other)) &&
-      Z.equals (Object.keys (this.blah), Object.keys (other.blah)) &&
-      Z.all (k => Z.equals (this.blah[k].type, other.blah[k].type), Object.keys (this.blah))
-    );
+    return cata ({
+      NoArguments: cataDefault (false) ({
+        NoArguments: true,
+      }),
+      Unchecked: cataDefault (false) ({
+        Unchecked: true,
+      }),
+      Inconsistent: cataDefault (false) ({
+        Inconsistent: true,
+      }),
+      NullaryType: name1 => url1 => supertypes1 => test21 => cataDefault (false) ({
+        NullaryType: name2 => url2 => supertypes2 => test22 => name1 === name2 && url1 === url2 && Z.equals (supertypes1, supertypes2),
+      }),
+      EnumType: name1 => url1 => members1 => cataDefault (false) ({
+        EnumType: name2 => url2 => members2 => name1 === name2 && url1 === url2 && Z.equals (members1, members2),
+      }),
+      UnaryType: name1 => url1 => supertypes1 => test21 => _11 => $11 => cataDefault (false) ({
+        UnaryType: name2 => url2 => supertypes2 => test22 => _12 => $12 => name1 === name2 && url1 === url2 && Z.equals (supertypes1, supertypes2) && Z.equals ($11, $12),
+      }),
+      BinaryType: name1 => url1 => supertypes1 => test21 => _11 => _21 => $11 => $21 => cataDefault (false) ({
+        BinaryType: name2 => url2 => supertypes2 => test22 => _12 => _22 => $12 => $22 => name1 === name2 && url1 === url2 && Z.equals (supertypes1, supertypes2) && Z.equals ($11, $12) && Z.equals ($21, $22),
+      }),
+      Function: types1 => cataDefault (false) ({
+        Function: types2 => Z.equals (types1, types2),
+      }),
+      RecordType: fields1 => cataDefault (false) ({
+        RecordType: fields2 => Z.equals (fields1, fields2),
+      }),
+      NamedRecordType: name1 => url1 => supertypes1 => fields1 => cataDefault (false) ({
+        NamedRecordType: name2 => url2 => supertypes2 => fields2 => name1 === name2 && url1 === url2 && Z.equals (supertypes1, supertypes2) && Z.equals (fields1, fields2),
+      }),
+      TypeVariable: name1 => cataDefault (false) ({
+        TypeVariable: name2 => name1 === name2,
+      }),
+      UnaryTypeVariable: name1 => $11 => cataDefault (false) ({
+        UnaryTypeVariable: name2 => $12 => name1 === name2 && Z.equals ($11, $12),
+      }),
+      BinaryTypeVariable: name => $1 => $2 => cataDefault (false) ({
+        BinaryTypeVariable: name => $1 => $2 => name1 === name2 && Z.equals ($11, $12) && Z.equals ($21, $22),
+      }),
+      Unknown: cataDefault (false) ({
+        Unknown: true,
+      }),
+    }) (this) (other);
   },
 };
 
