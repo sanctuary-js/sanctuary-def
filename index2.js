@@ -737,21 +737,12 @@ const url = cataDefault ('') ({
 });
 
 //    supertypes :: Type -> Array Type
-const supertypes = cata ({
-  NoArguments: [],
-  Unchecked: [],
-  Inconsistent: [],
+const supertypes = cataDefault ([]) ({
   NullaryType: _ => _ => supertypes => _ => supertypes,
-  EnumType: _ => _ => _ => [],
   UnaryType: _ => _ => supertypes => _ => _ => _ => supertypes,
   BinaryType: _ => _ => supertypes => _ => _ => _ => _ => _ => supertypes,
   Function: _ => [$.AnyFunction],
-  RecordType: _ => [],
   NamedRecordType: _ => _ => supertypes => _ => supertypes,
-  TypeVariable: _ => [],
-  UnaryTypeVariable: _ => _ => [],
-  BinaryTypeVariable: _ => _ => _ => [],
-  Unknown: [],
 });
 
 const NullaryType = name => url => supertypes => test2 => Object.assign (Object.create (Type$prototype), {
