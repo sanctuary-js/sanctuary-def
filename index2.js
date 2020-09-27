@@ -682,11 +682,7 @@ const cata = cases => type => {
         case 'RecordType':
           return type.cata (cases.RecordType);
         case 'NamedRecordType':
-          return cases.NamedRecordType
-                   (type.name)
-                   (type.url)
-                   (type.supertypes)
-                   (type.fields);
+          return type.cata (cases.NamedRecordType);
       }
     case 'VARIABLE':
       switch (type._type) {
@@ -1371,6 +1367,7 @@ const RecordType = fields => {
 const NamedRecordType = name => url => supertypes => fields => {
   const keys = (Object.keys (fields)).sort ();
   return Object.assign (Object.create (Type$prototype), {
+    cata: f => f (name) (url) (supertypes) (fields),
     type: 'RECORD',
     _type: 'NamedRecordType',
     name: name,
