@@ -665,11 +665,12 @@ $.NoArguments = Object.assign (Object.create (Type$prototype), {
 const cata = cases => type => {
   switch (type.type) {
     case 'NULLARY':
-      return cases.NullaryType
-               (type.name)
-               (type.url)
-               (type.supertypes)
-               (type.test2);
+      switch (type._type) {
+        case 'NullaryType':
+          return type.cata (cases.NullaryType);
+        case 'EnumType':
+          return type.cata (cases.EnumType);
+      }
     case 'UNARY':
       return cases.UnaryType
                (type.name)
@@ -728,6 +729,7 @@ const cata = cases => type => {
 //    name :: Type -> String
 const name = cata ({
   NullaryType: name => _ => _ => _ => name,
+  EnumType: name => _ => _ => name,
   UnaryType: name => _ => _ => _ => _ => _ => name,
   BinaryType: name => _ => _ => _ => _ => _ => _ => _ => name,
   Function: _ => '',
@@ -742,6 +744,7 @@ const name = cata ({
 //    url :: Type -> String
 const url = cata ({
   NullaryType: _ => url => _ => _ => url,
+  EnumType: _ => url => _ => url,
   UnaryType: _ => url => _ => _ => _ => _ => url,
   BinaryType: _ => url => _ => _ => _ => _ => _ => _ => url,
   Function: _ => '',
@@ -756,6 +759,7 @@ const url = cata ({
 //    supertypes :: Type -> Array Type
 const supertypes = cata ({
   NullaryType: _ => _ => supertypes => _ => supertypes,
+  EnumType: _ => _ => _ => [],
   UnaryType: _ => _ => supertypes => _ => _ => _ => supertypes,
   BinaryType: _ => _ => supertypes => _ => _ => _ => _ => _ => supertypes,
   Function: _ => [$.AnyFunction],
@@ -768,7 +772,9 @@ const supertypes = cata ({
 });
 
 const NullaryType = name => url => supertypes => test2 => Object.assign (Object.create (Type$prototype), {
+  cata: f => f (name) (url) (supertypes) (test2),
   type: 'NULLARY',
+  _type: 'NullaryType',
   name: name,
   url: url,
   supertypes: supertypes,
@@ -948,7 +954,9 @@ const fromBinaryType = t => $1 => $2 => (
 );
 
 const EnumType = name => url => members => Object.assign (Object.create (Type$prototype), {
+  cata: f => f (name) (url) (members),
   type: 'NULLARY',
+  _type: 'EnumType',
   name: name,
   url: url,
   supertypes: [],
