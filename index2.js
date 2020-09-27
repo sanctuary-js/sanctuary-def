@@ -211,7 +211,7 @@ const typeClassConstraintViolation = (
     '\n' +
     showValuesAndTypes (env, typeInfo, index, propPath, mappings, proxy, [value], 1) + '\n\n' +
     q (typeInfo.name) + ' requires ' +
-    q (expType.name) + ' to satisfy the ' +
+    q (name (expType)) + ' to satisfy the ' +
     stripNamespace (typeClass) + ' type-class constraint; ' +
     'the value at position 1 does not.\n' +
     see ('type class', typeClass)
@@ -362,7 +362,7 @@ const invalidValue = (
     showValuesAndTypes (env, typeInfo, index, propPath, mappings, proxy, [value], 1) + '\n\n' +
     'The value at position 1 is not a member of ' +
     q (show (t)) + '.\n' +
-    see2 (t.arity >= 1 ? 'type constructor' : 'type', t.name, url (t))
+    see2 (t.arity >= 1 ? 'type constructor' : 'type', name (t), url (t))
   ));
 };
 
@@ -734,6 +734,19 @@ const url = type => cata ({
   TypeVariable: _ => '',
   UnaryTypeVariable: _ => _ => '',
   BinaryTypeVariable: _ => _ => _ => '',
+}) (type);
+
+//    name :: Type -> String
+const name = type => cata ({
+  NullaryType: name => _ => _ => _ => name,
+  UnaryType: name => _ => _ => _ => _ => _ => name,
+  BinaryType: name => _ => _ => _ => _ => _ => _ => _ => name,
+  Function: _ => '',
+  RecordType: _ => '',
+  NamedRecordType: name => _ => _ => _ => name,
+  TypeVariable: name => name,
+  UnaryTypeVariable: name => _ => name,
+  BinaryTypeVariable: name => _ => _ => name,
 }) (type);
 
 const NullaryType = name => url => supertypes => test2 => Object.assign (Object.create (Type$prototype), {
@@ -1904,7 +1917,7 @@ const label = label => s => {
 //    typeVarNames :: Type -> StrMap Integer
 const typeVarNames = t => {
   const names = {};
-  if (t.type === 'VARIABLE') names[t.name] = t.arity;
+  if (t.type === 'VARIABLE') names[name (t)] = t.arity;
   for (const v of Object.values (t.blah)) {
     Object.assign (names, typeVarNames (v.type));
   }
