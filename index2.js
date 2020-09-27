@@ -450,22 +450,17 @@ const _determineActualTypes = (
 
 const cata = cases => type => type.cata (cases[type._type]);
 
+const cataDefault = x => cases => type => Object.prototype.hasOwnProperty.call (cases, type._type) ? type.cata (cases[type._type]) : x;
+
 //    isConsistent :: Type -> Boolean
-const isConsistent = cata ({
-  NoArguments: true,
-  Unchecked: true,
+const isConsistent = cataDefault (true) ({
+  UnaryType: _ => _ => _ => _ => _ => $1 => (
+    isConsistent ($1)
+  ),
+  BinaryType: _ => _ => _ => _ => _ => _ => $1 => $2 => (
+    isConsistent ($1) && isConsistent ($2)
+  ),
   Inconsistent: false,
-  NullaryType: _ => _ => _ => _ => true,
-  EnumType: _ => _ => _ => true,
-  UnaryType: _ => _ => _ => _ => _ => $1 => isConsistent ($1),
-  BinaryType: _ => _ => _ => _ => _ => _ => $1 => $2 => isConsistent ($1) && isConsistent ($2),
-  Function: _ => true,
-  RecordType: _ => true,
-  NamedRecordType: _ => _ => _ => _ => true,
-  TypeVariable: _ => true,
-  UnaryTypeVariable: _ => _ => true,
-  BinaryTypeVariable: _ => _ => _ => true,
-  Unknown: true,
 });
 
 //    determineActualTypesStrict :: (Array Type, Array Any) -> Array Type
