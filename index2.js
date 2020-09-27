@@ -726,7 +726,7 @@ const cata = cases => type => {
 };
 
 //    name :: Type -> String
-const name = type => cata ({
+const name = cata ({
   NullaryType: name => _ => _ => _ => name,
   UnaryType: name => _ => _ => _ => _ => _ => name,
   BinaryType: name => _ => _ => _ => _ => _ => _ => _ => name,
@@ -737,10 +737,10 @@ const name = type => cata ({
   UnaryTypeVariable: name => _ => name,
   BinaryTypeVariable: name => _ => _ => name,
   Unknown: '',
-}) (type);
+});
 
 //    url :: Type -> String
-const url = type => cata ({
+const url = cata ({
   NullaryType: _ => url => _ => _ => url,
   UnaryType: _ => url => _ => _ => _ => _ => url,
   BinaryType: _ => url => _ => _ => _ => _ => _ => _ => url,
@@ -751,7 +751,7 @@ const url = type => cata ({
   UnaryTypeVariable: _ => _ => '',
   BinaryTypeVariable: _ => _ => _ => '',
   Unknown: '',
-}) (type);
+});
 
 const NullaryType = name => url => supertypes => test2 => Object.assign (Object.create (Type$prototype), {
   type: 'NULLARY',
