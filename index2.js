@@ -359,7 +359,7 @@ const invalidValue = (
     showValuesAndTypes (env, typeInfo, index, propPath, mappings, proxy, [value], 1) + '\n\n' +
     'The value at position 1 is not a member of ' +
     q (show (t)) + '.\n' +
-    see2 (t.arity >= 1 ? 'type constructor' : 'type', name (t), url (t))
+    see2 (arity (t) >= 1 ? 'type constructor' : 'type', name (t), url (t))
   ));
 };
 
@@ -673,7 +673,6 @@ $.Unknown = Object.assign (Object.create (Type$prototype), {
   name: '',
   url: '',
   supertypes: [],
-  arity: 0,
   blah: {},
   format: outer => K (outer ('Unknown')),
   new: reject => resolve => env => typeInfo => index => path => resolve,
@@ -685,7 +684,6 @@ const Unchecked = s => Object.assign (Object.create (Type$prototype), {
   name: '',
   url: '',
   supertypes: [],
-  arity: 0,
   blah: {},
   format: outer => K (outer (s)),
   new: reject => resolve => env => typeInfo => index => path => resolve,
@@ -698,7 +696,6 @@ $.Inconsistent = Object.assign (Object.create (Type$prototype), {
   name: '',
   url: '',
   supertypes: [],
-  arity: 0,
   blah: {},
   format: outer => K (outer ('???')),
 });
@@ -710,9 +707,17 @@ $.NoArguments = Object.assign (Object.create (Type$prototype), {
   name: '',
   url: '',
   supertypes: [],
-  arity: 0,
   blah: {},
   format: outer => K (outer ('()')),
+});
+
+//    arity :: Type -> Integer
+const arity = cataDefault (0) ({
+  UnaryType: _ => _ => _ => _ => _ => _ => 1,
+  BinaryType: _ => _ => _ => _ => _ => _ => _ => _ => 2,
+  UnaryTypeVariable: _ => _ => 1,
+  BinaryTypeVariable: _ => _ => _ => 2,
+  Function: types => types.length,
 });
 
 //    name :: Type -> String
@@ -751,7 +756,6 @@ const NullaryType = name => url => supertypes => test2 => Object.assign (Object.
   name: name,
   url: url,
   supertypes: supertypes,
-  arity: 0,
   blah: {},
   test2,
   format: outer => K (outer (name)),
@@ -785,7 +789,6 @@ const UnaryType = name => url => supertypes => test2 => _1 => $1 => Object.assig
   name: name,
   url: url,
   supertypes: supertypes,
-  arity: 1,
   blah: {
     $1: {type: $1, extract: _1},
   },
@@ -793,7 +796,7 @@ const UnaryType = name => url => supertypes => test2 => _1 => $1 => Object.assig
   format: outer => inner => (
     outer (name) +
     outer (' ') +
-    when ($1.arity > 0)
+    when (arity ($1) > 0)
          (parenthesize (outer))
          (inner ('$1') (show ($1)))
   ),
@@ -842,7 +845,6 @@ const BinaryType = name => url => supertypes => test2 => _1 => _2 => $1 => $2 =>
   name: name,
   url: url,
   supertypes: supertypes,
-  arity: 2,
   blah: {
     $1: {type: $1, extract: _1},
     $2: {type: $2, extract: _2},
@@ -851,11 +853,11 @@ const BinaryType = name => url => supertypes => test2 => _1 => _2 => $1 => $2 =>
   format: outer => inner => (
     outer (name) +
     outer (' ') +
-    when ($1.arity > 0)
+    when (arity ($1) > 0)
          (parenthesize (outer))
          (inner ('$1') (show ($1))) +
     outer (' ') +
-    when ($2.arity > 0)
+    when (arity ($2) > 0)
          (parenthesize (outer))
          (inner ('$2') (show ($2)))
   ),
@@ -915,7 +917,6 @@ const EnumType = name => url => members => Object.assign (Object.create (Type$pr
   name: name,
   url: url,
   supertypes: [],
-  arity: 0,
   blah: {},
   format: outer => K (outer (name)),
   new: reject => resolve => env => typeInfo => index => path => value => mappings => proxy => (
@@ -932,7 +933,6 @@ const TypeVariable = name => Object.assign (Object.create (Type$prototype), {
   name: name,
   url: '',
   supertypes: [],
-  arity: 0,
   blah: {},
   format: outer => K (outer (name)),
   new: reject => resolve => env => typeInfo => index => path => value => _mappings => proxy => {
@@ -997,7 +997,7 @@ const TypeVariable = name => Object.assign (Object.create (Type$prototype), {
 
     const mappings_ = reduce
       (mappings => t => {
-         if (t.arity === 0) return mappings;
+         if (arity (t) === 0) return mappings;
 
          const mappings$1 = reduce
            (mappings => value => (
@@ -1014,7 +1014,7 @@ const TypeVariable = name => Object.assign (Object.create (Type$prototype), {
             ))
            (mappings)
            (t.blah.$1.extract (value));
-         if (t.arity === 1) return mappings$1;
+         if (arity (t) === 1) return mappings$1;
 
          const mappings$2 = reduce
            (mappings => value => (
@@ -1031,7 +1031,7 @@ const TypeVariable = name => Object.assign (Object.create (Type$prototype), {
             ))
            (mappings$1)
            (t.blah.$2.extract (value));
-         if (t.arity === 2) return mappings$2;
+         if (arity (t) === 2) return mappings$2;
        })
       (mappings)
       (mappings.types (name));
@@ -1064,14 +1064,13 @@ const UnaryTypeVariable = name => $1 => Object.assign (Object.create (Type$proto
   name: name,
   url: '',
   supertypes: [],
-  arity: 1,
   blah: {
     $1: {type: $1, extract: K ([])},
   },
   format: outer => inner => (
     outer (name) +
     outer (' ') +
-    when ($1.arity > 0)
+    when (arity ($1) > 0)
          (parenthesize (outer))
          (inner ('$1') (show ($1)))
   ),
@@ -1154,13 +1153,13 @@ const UnaryTypeVariable = name => $1 => Object.assign (Object.create (Type$proto
                                 (env)
                                 (typeInfo)
                                 (index)
-                                ([...path, `$${type.arity}`])
+                                ([...path, `$${arity (type)}`])
                                 (value)
                                 (mappings)
                                 (proxy)
                             ))
                            (proxy)
-                           (type.blah[`$${type.arity}`].extract (value))
+                           (type.blah[`$${arity (type)}`].extract (value))
                        ))
                       (proxy)
                       (types));
@@ -1174,7 +1173,6 @@ const BinaryTypeVariable = name => $1 => $2 => Object.assign (Object.create (Typ
   name: name,
   url: '',
   supertypes: [],
-  arity: 2,
   blah: {
     $1: {type: $1, extract: K ([])},
     $2: {type: $2, extract: K ([])},
@@ -1182,11 +1180,11 @@ const BinaryTypeVariable = name => $1 => $2 => Object.assign (Object.create (Typ
   format: outer => inner => (
     outer (name) +
     outer (' ') +
-    when ($1.arity > 0)
+    when (arity ($1) > 0)
          (parenthesize (outer))
          (inner ('$1') (show ($1))) +
     outer (' ') +
-    when ($2.arity > 0)
+    when (arity ($2) > 0)
          (parenthesize (outer))
          (inner ('$2') (show ($2)))
   ),
@@ -1252,7 +1250,6 @@ const Function_ = types => Object.assign (Object.create (Type$prototype), {
   name: '',
   url: '',
   supertypes: [$.AnyFunction],
-  arity: types.length,
   blah: types.reduce (
     (blah, t, idx) => {
       blah[`$${idx + 1}`] = {type: t, extract: K ([])};
@@ -1325,7 +1322,6 @@ const RecordType = fields => {
     name: '',
     url: '',
     supertypes: [],
-    arity: 0,
     blah: keys.reduce (
       // eslint-disable-next-line no-sequences
       (blah, k) => (blah[k] = {type: fields[k], extract: x => [x[k]]}, blah),
@@ -1383,7 +1379,6 @@ const NamedRecordType = name => url => supertypes => fields => {
     name: name,
     url: url,
     supertypes: supertypes,
-    arity: 0,
     blah: keys.reduce (
       // eslint-disable-next-line no-sequences
       (blah, k) => (blah[k] = {type: fields[k], extract: x => [x[k]]}, blah),
@@ -2097,7 +2092,7 @@ const create = opts => {
            (mappings)
            ({values: nil, left: proxy, right: null});
        })
-      ({types: name => (arity => Z.filter (t => t.arity >= arity, opts.env))
+      ({types: name => (arity_ => Z.filter (t => arity (t) >= arity_, opts.env))
                        ((Z.foldMap (Object, typeVarNames, types))[name])})
       ({values: nil, left: null, right: null})
       (impl);
@@ -2153,7 +2148,7 @@ $.Pair = def ('Pair') ({}) ([$.Type, $.Type, $.Type]) (Pair);
 $.test = def ('test') ({}) ([$.Array ($.Type), $.Type, $.Any, $.Boolean]) (env => t => x => {
   const typeInfo = {name: 'name', constraints: {}, types: [t]};
   const mappings = {
-    types: name => (arity => Z.filter (t => t.arity >= arity, env))
+    types: name => (arity_ => Z.filter (t => arity (t) >= arity_, env))
                    ((Z.foldMap (Object, typeVarNames, typeInfo.types))[name]),
   };
   const proxy = {values: nil, left: null, right: null};
