@@ -680,8 +680,7 @@ const cata = cases => type => {
     case 'RECORD':
       switch (type._type) {
         case 'RecordType':
-          return cases.RecordType
-                   (type.fields);
+          return type.cata (cases.RecordType);
         case 'NamedRecordType':
           return cases.NamedRecordType
                    (type.name)
@@ -1314,6 +1313,7 @@ const Function_ = types => Object.assign (Object.create (Type$prototype), {
 const RecordType = fields => {
   const keys = (Object.keys (fields)).sort ();
   return Object.assign (Object.create (Type$prototype), {
+    cata: f => f (fields),
     type: 'RECORD',
     _type: 'RecordType',
     name: '',
