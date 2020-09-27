@@ -689,9 +689,7 @@ const cata = cases => type => {
         case 'TypeVariable':
           return type.cata (cases.TypeVariable);
         case 'UnaryTypeVariable':
-          return cases.UnaryTypeVariable
-                   (type.name)
-                   (type.blah.$1.type);
+          return type.cata (cases.UnaryTypeVariable);
         case 'BinaryTypeVariable':
           return cases.BinaryTypeVariable
                    (type.name)
@@ -1060,6 +1058,7 @@ const TypeVariable = name => Object.assign (Object.create (Type$prototype), {
 });
 
 const UnaryTypeVariable = name => $1 => Object.assign (Object.create (Type$prototype), {
+  cata: f => f (name) ($1),
   type: 'VARIABLE',
   _type: 'UnaryTypeVariable',
   name: name,
