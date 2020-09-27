@@ -424,13 +424,13 @@ const _determineActualTypes = (
         EnumType: name => url => members => [EnumType (name) (url) (members)],
         UnaryType: name => url => supertypes => test2 => _1 => $1 => (
           Z.map (
-            $1 => UnaryType (name) (url) (supertypes) (test2) (_1) ($1),
+            UnaryType (name) (url) (supertypes) (test2) (_1),
             expandUnknown2 (_1) ($1)
           )
         ),
         BinaryType: name => url => supertypes => test2 => _1 => _2 => $1 => $2 => (
           Z.lift2 (
-            $1 => $2 => BinaryType (name) (url) (supertypes) (test2) (_1) (_2) ($1) ($2),
+            BinaryType (name) (url) (supertypes) (test2) (_1) (_2),
             expandUnknown2 (_1) ($1),
             expandUnknown2 (_2) ($2)
           )
