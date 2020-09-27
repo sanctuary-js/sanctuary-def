@@ -674,15 +674,7 @@ const cata = cases => type => {
     case 'UNARY':
       return type.cata (cases.UnaryType);
     case 'BINARY':
-      return cases.BinaryType
-               (type.name)
-               (type.url)
-               (type.supertypes)
-               (type.test2)
-               (type.blah.$1.extract)
-               (type.blah.$2.extract)
-               (type.blah.$1.type)
-               (type.blah.$2.type);
+      return type.cata (cases.BinaryType);
     case 'FUNCTION':
       return cases.Function
                ([type.blah.$1.type, type.blah.$2.type]);
@@ -867,6 +859,7 @@ const fromUnaryType = t => $1 => (
 );
 
 const BinaryType = name => url => supertypes => test2 => _1 => _2 => $1 => $2 => Object.assign (Object.create (Type$prototype), {
+  cata: f => f (name) (url) (supertypes) (test2) (_1) (_2) ($1) ($2),
   type: 'BINARY',
   name: name,
   url: url,
