@@ -676,8 +676,7 @@ const cata = cases => type => {
     case 'BINARY':
       return type.cata (cases.BinaryType);
     case 'FUNCTION':
-      return cases.Function
-               ([type.blah.$1.type, type.blah.$2.type]);
+      return type.cata (cases.Function);
     case 'RECORD':
       switch (type._type) {
         case 'RecordType':
@@ -1243,6 +1242,7 @@ const BinaryTypeVariable = name => $1 => $2 => Object.assign (Object.create (Typ
 });
 
 const Function_ = types => Object.assign (Object.create (Type$prototype), {
+  cata: f => f (types),
   type: 'FUNCTION',
   name: '',
   url: '',
