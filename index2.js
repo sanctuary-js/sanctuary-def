@@ -655,14 +655,14 @@ $.NoArguments = Object.assign (Object.create (Type$prototype), {
   format: outer => K (outer ('()')),
 });
 
-const NullaryType = name => url => supertypes => test => Object.assign (Object.create (Type$prototype), {
+const NullaryType = name => url => supertypes => test2 => Object.assign (Object.create (Type$prototype), {
   type: 'NULLARY',
   name: name,
   url: url,
   supertypes: supertypes,
   arity: 0,
   blah: {},
-  test,
+  test2,
   format: outer => K (outer (name)),
   new: reject => resolve => env => typeInfo => index => path => value => mappings => proxy => {
     try {
@@ -682,13 +682,13 @@ const NullaryType = name => url => supertypes => test => Object.assign (Object.c
       reject (() => error);
       return;
     }
-    return test (value)
+    return test2 (value)
            ? resolve (value) (mappings) (proxy)
            : reject (() => invalidValue (env, typeInfo, index, path, mappings, proxy, value));
   },
 });
 
-const UnaryType = name => url => supertypes => test => _1 => $1 => Object.assign (Object.create (Type$prototype), {
+const UnaryType = name => url => supertypes => test2 => _1 => $1 => Object.assign (Object.create (Type$prototype), {
   type: 'UNARY',
   name: name,
   url: url,
@@ -697,7 +697,7 @@ const UnaryType = name => url => supertypes => test => _1 => $1 => Object.assign
   blah: {
     $1: {type: $1, extract: _1},
   },
-  test,
+  test2,
   format: outer => inner => (
     outer (name) +
     outer (' ') +
@@ -723,7 +723,7 @@ const UnaryType = name => url => supertypes => test => _1 => $1 => Object.assign
       reject (() => error);
       return;
     }
-    return test (value)
+    return test2 (value)
            ? reduceRight
                (resolve => value => mappings => (
                   $1.new
@@ -749,11 +749,11 @@ const fromUnaryType = t => (
   UnaryType (t.name)
             (t.url)
             (t.supertypes)
-            (t.test)
+            (t.test2)
             (t.blah.$1.extract)
 );
 
-const BinaryType = name => url => supertypes => test => _1 => _2 => $1 => $2 => Object.assign (Object.create (Type$prototype), {
+const BinaryType = name => url => supertypes => test2 => _1 => _2 => $1 => $2 => Object.assign (Object.create (Type$prototype), {
   type: 'BINARY',
   name: name,
   url: url,
@@ -763,7 +763,7 @@ const BinaryType = name => url => supertypes => test => _1 => _2 => $1 => $2 => 
     $1: {type: $1, extract: _1},
     $2: {type: $2, extract: _2},
   },
-  test,
+  test2,
   format: outer => inner => (
     outer (name) +
     outer (' ') +
@@ -793,7 +793,7 @@ const BinaryType = name => url => supertypes => test => _1 => _2 => $1 => $2 => 
       reject (() => error);
       return;
     }
-    return test (value)
+    return test2 (value)
            ? reduceRight
                (cont => value => (
                   $1.new
@@ -830,7 +830,7 @@ const fromBinaryType = t => (
   BinaryType (t.name)
              (t.url)
              (t.supertypes)
-             (t.test)
+             (t.test2)
              (t.blah.$1.extract)
              (t.blah.$2.extract)
 );
@@ -1144,7 +1144,7 @@ const Function_ = types => Object.assign (Object.create (Type$prototype), {
     },
     {}
   ),
-  test: K (true),
+  test2: K (true),
   format: outer => inner => (
     when (types.length !== 2)
          (parenthesize (outer))
@@ -2055,8 +2055,8 @@ def ('UnaryType')
       Unchecked ('(Any -> Boolean)'),
       Unchecked ('(t a -> f a)'),
       Unchecked ('Type -> Type')])
-    (name => url => supertypes => test => _1 => (
-       def (name) ({}) ([$.Type, $.Type]) (UnaryType (name) (url) (supertypes) (test) (_1))));
+    (name => url => supertypes => test2 => _1 => (
+       def (name) ({}) ([$.Type, $.Type]) (UnaryType (name) (url) (supertypes) (test2) (_1))));
 
 $.BinaryType =
 def ('BinaryType')
@@ -2068,5 +2068,5 @@ def ('BinaryType')
       Unchecked ('(t a b -> f a)'),
       Unchecked ('(t a b -> f b)'),
       Unchecked ('Type -> Type -> Type')])
-    (name => url => supertypes => test => _1 => _2 => (
-       def (name) ({}) ([$.Type, $.Type, $.Type]) (BinaryType (name) (url) (supertypes) (test) (_1) (_2))));
+    (name => url => supertypes => test2 => _1 => _2 => (
+       def (name) ({}) ([$.Type, $.Type, $.Type]) (BinaryType (name) (url) (supertypes) (test2) (_1) (_2))));
