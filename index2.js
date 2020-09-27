@@ -428,6 +428,8 @@ const cata = cases => type => type.cata (cases[type._type]);
 
 //    isConsistent :: Type -> Boolean
 const isConsistent = cata ({
+  NoArguments: true,
+  Unchecked: true,
   Inconsistent: false,
   NullaryType: _ => _ => _ => _ => true,
   EnumType: _ => _ => _ => true,
@@ -645,7 +647,8 @@ $.Unknown = Object.assign (Object.create (Type$prototype), {
 });
 
 const Unchecked = s => Object.assign (Object.create (Type$prototype), {
-  type: 'NULLARY',
+  cata: x => x,
+  _type: 'Unchecked',
   name: '',
   url: '',
   supertypes: [],
@@ -668,7 +671,9 @@ $.Inconsistent = Object.assign (Object.create (Type$prototype), {
 });
 
 $.NoArguments = Object.assign (Object.create (Type$prototype), {
+  cata: x => x,
   type: 'NO_ARGUMENTS',
+  _type: 'NoArguments',
   name: '',
   url: '',
   supertypes: [],
@@ -679,6 +684,8 @@ $.NoArguments = Object.assign (Object.create (Type$prototype), {
 
 //    name :: Type -> String
 const name = cata ({
+  NoArguments: '',
+  Unchecked: '',
   Inconsistent: '',
   NullaryType: name => _ => _ => _ => name,
   EnumType: name => _ => _ => name,
@@ -695,6 +702,8 @@ const name = cata ({
 
 //    url :: Type -> String
 const url = cata ({
+  NoArguments: '',
+  Unchecked: '',
   Inconsistent: '',
   NullaryType: _ => url => _ => _ => url,
   EnumType: _ => url => _ => url,
@@ -711,6 +720,8 @@ const url = cata ({
 
 //    supertypes :: Type -> Array Type
 const supertypes = cata ({
+  NoArguments: [],
+  Unchecked: [],
   Inconsistent: [],
   NullaryType: _ => _ => supertypes => _ => supertypes,
   EnumType: _ => _ => _ => [],
@@ -727,6 +738,8 @@ const supertypes = cata ({
 
 //    test2 :: Type -> Any -> Boolean
 const test2 = cata ({
+  NoArguments: _ => TK,
+  Unchecked: _ => TK,
   Inconsistent: _ => TK,
   NullaryType: _ => _ => _ => test2 => test2,
   EnumType: _ => _ => _ => TK,
@@ -743,7 +756,6 @@ const test2 = cata ({
 
 const NullaryType = name => url => supertypes => test2 => Object.assign (Object.create (Type$prototype), {
   cata: f => f (name) (url) (supertypes) (test2),
-  type: 'NULLARY',
   _type: 'NullaryType',
   name: name,
   url: url,
@@ -778,7 +790,6 @@ const NullaryType = name => url => supertypes => test2 => Object.assign (Object.
 
 const UnaryType = name => url => supertypes => test2 => _1 => $1 => Object.assign (Object.create (Type$prototype), {
   cata: f => f (name) (url) (supertypes) (test2) (_1) ($1),
-  type: 'UNARY',
   _type: 'UnaryType',
   name: name,
   url: url,
@@ -845,7 +856,6 @@ const fromUnaryType = t => $1 => (
 
 const BinaryType = name => url => supertypes => test2 => _1 => _2 => $1 => $2 => Object.assign (Object.create (Type$prototype), {
   cata: f => f (name) (url) (supertypes) (test2) (_1) (_2) ($1) ($2),
-  type: 'BINARY',
   _type: 'BinaryType',
   name: name,
   url: url,
@@ -929,7 +939,6 @@ const fromBinaryType = t => $1 => $2 => (
 
 const EnumType = name => url => members => Object.assign (Object.create (Type$prototype), {
   cata: f => f (name) (url) (members),
-  type: 'NULLARY',
   _type: 'EnumType',
   name: name,
   url: url,
@@ -1922,14 +1931,22 @@ const label = label => s => {
 };
 
 //    typeVarNames :: Type -> StrMap Integer
-const typeVarNames = t => {
-  const names = {};
-  if (t.type === 'VARIABLE') names[name (t)] = t.arity;
-  for (const v of Object.values (t.blah)) {
-    Object.assign (names, typeVarNames (v.type));
-  }
-  return names;
-};
+const typeVarNames = cata ({
+  NoArguments: {},
+  Unchecked: {},
+  Inconsistent: {},
+  NullaryType: _ => _ => _ => _ => ({}),
+  EnumType: _ => _ => _ => ({}),
+  UnaryType: _ => _ => _ => _ => _ => $1 => typeVarNames ($1),
+  BinaryType: _ => _ => _ => _ => _ => _ => $1 => $2 => Z.concat (typeVarNames ($1), typeVarNames ($2)),
+  Function: types => Z.foldMap (Object, typeVarNames, types),
+  RecordType: fields => Z.foldMap (Object, typeVarNames, fields),
+  NamedRecordType: _ => _ => _ => fields => Z.foldMap (Object, typeVarNames, fields),
+  TypeVariable: name => ({[name]: 0}),
+  UnaryTypeVariable: name => $1 => Z.concat ({[name]: 1}, typeVarNames ($1)),
+  BinaryTypeVariable: name => $1 => $2 => Z.concat ({[name]: 2}, Z.concat (typeVarNames ($1), typeVarNames ($2))),
+  Unknown: {},
+});
 
 //    showTypeWith :: Array Type -> Type -> String
 const showTypeWith = types => {
