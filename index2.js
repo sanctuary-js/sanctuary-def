@@ -407,10 +407,10 @@ const _determineActualTypes = (
     return Z.chain (t => (
       validate (env) (typeInfo) (index) (path) (mappings) (proxy) (value) (t) != null ?
         [] :
-      t.type === 'UNARY' ?
+      t._type === 'UnaryType' ?
         Z.map (fromUnaryType (t),
                expandUnknown2 (extract ('$1') (t)) (t.blah.$1.type)) :
-      t.type === 'BINARY' ?
+      t._type === 'BinaryType' ?
         Z.lift2 (fromBinaryType (t),
                  expandUnknown2 (extract ('$1') (t)) (t.blah.$1.type),
                  expandUnknown2 (extract ('$2') (t)) (t.blah.$2.type)) :
@@ -477,9 +477,9 @@ const satisfactoryTypes = (
     }
   }
 
-  switch (expType.type) {
+  switch (expType._type) {
 
-    case 'UNARY':
+    case 'UnaryType':
       return Z.map (
         result => ({
           typeVarMap: result.typeVarMap,
@@ -497,7 +497,7 @@ const satisfactoryTypes = (
                Z.chain (extract ('$1') (expType), values))
       );
 
-    case 'BINARY':
+    case 'BinaryType':
       return Z.chain (
         result => {
           const $1s = result.types;
@@ -533,7 +533,8 @@ const satisfactoryTypes = (
                Z.chain (extract ('$1') (expType), values))
       );
 
-    case 'RECORD':
+    case 'RecordType':
+    case 'NamedRecordType':
       return Z.reduce ((e, k) => (
         Z.chain (r => (
           recur (env,
