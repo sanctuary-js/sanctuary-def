@@ -373,11 +373,22 @@ const invalidValue = (
 //  -> (a -> Array b)
 //  -> Type
 //  -> Array Type
-const expandUnknown = env => typeInfo => index => path => mappings => proxy => seen => value => extractor => type => (
-  type.type === 'UNKNOWN' ?
-  _determineActualTypes (env, typeInfo, index, path, mappings, proxy, seen, extractor (value)) :
-  [type]
-);
+const expandUnknown = env => typeInfo => index => path => mappings => proxy => seen => value => extractor => cata ({
+  NoArguments: [$.NoArguments],
+  Unchecked: [$.Unchecked],
+  Inconsistent: [$.Inconsistent],
+  NullaryType: name => url => supertypes => test2 => [NullaryType (name) (url) (supertypes) (test2)],
+  EnumType: name => url => members => [EnumType (name) (url) (members)],
+  UnaryType: name => url => supertypes => test2 => _1 => $1 => [UnaryType (name) (url) (supertypes) (test2) (_1) ($1)],
+  BinaryType: name => url => supertypes => test2 => _1 => _2 => $1 => $2 => [BinaryType (name) (url) (supertypes) (test2) (_1) (_2) ($1) ($2)],
+  Function: types => [Function_ (types)],
+  RecordType: fields => [RecordType (fields)],
+  NamedRecordType: name => url => supertypes => fields => [NamedRecordType (name) (url) (supertypes) (fields)],
+  TypeVariable: name => [TypeVariable (name)],
+  UnaryTypeVariable: name => $1 => [UnaryTypeVariable (name) ($1)],
+  BinaryTypeVariable: name => $1 => $2 => [BinaryTypeVariable (name) ($1) ($2)],
+  Unknown: _determineActualTypes (env, typeInfo, index, path, mappings, proxy, seen, extractor (value)),
+});
 
 //    _determineActualTypes :: ... -> Array Type
 const _determineActualTypes = (
