@@ -655,6 +655,45 @@ $.NoArguments = Object.assign (Object.create (Type$prototype), {
   format: outer => K (outer ('()')),
 });
 
+const cata = cases => type => {
+  switch (type.type) {
+    case 'NULLARY':
+      return cases.NullaryType
+               (type.name)
+               (type.url)
+               (type.supertypes)
+               (type.test2);
+    case 'UNARY':
+      return cases.UnaryType
+               (type.name)
+               (type.url)
+               (type.supertypes)
+               (type.test2)
+               (type.blah.$1.extract)
+               (type.blah.$1.type);
+    case 'BINARY':
+      return cases.BinaryType
+               (type.name)
+               (type.url)
+               (type.supertypes)
+               (type.test2)
+               (type.blah.$1.extract)
+               (type.blah.$2.extract)
+               (type.blah.$1.type)
+               (type.blah.$2.type);
+    case 'FUNCTION':
+      if (type.arity !== 2) {
+        throw new Error ('Expected unary function');
+      }
+      return cases.Fn
+               (type.blah.$1.type)
+               (type.blah.$2.type);
+    default:
+      console.log ('type:', show (type));
+      TK;
+  }
+};
+
 const NullaryType = name => url => supertypes => test2 => Object.assign (Object.create (Type$prototype), {
   type: 'NULLARY',
   name: name,
@@ -745,12 +784,12 @@ const UnaryType = name => url => supertypes => test2 => _1 => $1 => Object.assig
 });
 
 //  fromUnaryType :: Type -> Type -> Type
-const fromUnaryType = t => (
-  UnaryType (t.name)
-            (t.url)
-            (t.supertypes)
-            (t.test2)
-            (t.blah.$1.extract)
+const fromUnaryType = t => $1 => (
+  cata ({
+    UnaryType: name => url => supertypes => test2 => _1 => _ => (
+      UnaryType (name) (url) (supertypes) (test2) (_1) ($1)
+    ),
+  }) (t)
 );
 
 const BinaryType = name => url => supertypes => test2 => _1 => _2 => $1 => $2 => Object.assign (Object.create (Type$prototype), {
@@ -826,13 +865,13 @@ const BinaryType = name => url => supertypes => test2 => _1 => _2 => $1 => $2 =>
 });
 
 //    fromBinaryType :: (Type -> Type -> Type) -> Type -> Type -> Type
-const fromBinaryType = t => (
-  BinaryType (t.name)
-             (t.url)
-             (t.supertypes)
-             (t.test2)
-             (t.blah.$1.extract)
-             (t.blah.$2.extract)
+const fromBinaryType = t => $1 => $2 => (
+  cata ({
+    BinaryType: name => url => supertypes => test2 => _1 => _2 => _ => _ => (
+      BinaryType (name) (url) (supertypes) (test2) (_1) (_2) ($1) ($2)
+    ),
+    Fn: _ => _ => Fn ($1) ($2),
+  }) (t)
 );
 
 const EnumType = name => url => members => Object.assign (Object.create (Type$prototype), {
