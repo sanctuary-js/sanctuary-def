@@ -20,9 +20,6 @@ const $ = module.exports = {};
 const nil = {tail: null};
 const cons = head => tail => ({head, tail});
 
-//    either :: (a -> c) -> (b -> c) -> Either a b -> c
-const either = f => g => either => (either.isLeft ? f : g) (either.value);
-
 //    reduce :: Foldable f => (b -> a -> b) -> b -> f a -> b
 const reduce = f => b => foldable => (
   Z.reduce ((b, a) => f (b) (a), b, foldable)
@@ -1456,7 +1453,7 @@ const NamedRecordType = name => url => supertypes => fields => {
                 ([...path, key])
                 (value[key])
                 (mappings)
-                (proxy)
+                (proxy);
             });
           } catch (error) {
             return reject (() => invalidValue (env, typeInfo, index, path, mappings, proxy, value));
@@ -2199,7 +2196,7 @@ $.test = def ('test') ({}) ([$.Array ($.Type), $.Type, $.Any, $.Boolean]) (env =
   const typeInfo = {name: 'name', constraints: {}, types: [t]};
   const mappings = {
     types: name => (arity => Z.filter (t => t.arity >= arity, env))
-                   ((Z.foldMap (Object, typeVarNames, types))[name]),
+                   ((Z.foldMap (Object, typeVarNames, typeInfo.types))[name]),
   };
   const proxy = {values: nil, left: null, right: null};
   return (satisfactoryTypes (env, typeInfo, {}, t, 0, [], mappings, proxy, [x])).isRight;
