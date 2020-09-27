@@ -20,6 +20,9 @@ const $ = module.exports = {};
 const nil = {tail: null};
 const cons = head => tail => ({head, tail});
 
+//    either :: (a -> c) -> (b -> c) -> Either a b -> c
+const either = f => g => either => (either.isLeft ? f : g) (either.value);
+
 //    reduce :: Foldable f => (b -> a -> b) -> b -> f a -> b
 const reduce = f => b => foldable => (
   Z.reduce ((b, a) => f (b) (a), b, foldable)
@@ -570,7 +573,7 @@ const validate = env => typeInfo => index => path => mappings => proxy => value 
 //ancestors (type)
 //.forEach (type => {
 //  type.new
-//    (error => { throw error; })
+//    (thunk => { throw thunk (); })
 //    (value => mappings => proxy => value)
 //    (env)
 //    (typeInfo)
@@ -655,7 +658,7 @@ const NullaryType = name => url => supertypes => test => Object.assign (Object.c
     try {
       supertypes.forEach (type => {
         type.new
-          (error => { throw error; })
+          (thunk => { throw thunk (); })
           (value => mappings => proxy => value)
           (env)
           (typeInfo)
@@ -666,12 +669,12 @@ const NullaryType = name => url => supertypes => test => Object.assign (Object.c
           (proxy);
       });
     } catch (error) {
-      reject (error);
+      reject (() => error);
       return;
     }
     return test (value)
            ? resolve (value) (mappings) (proxy)
-           : reject (invalidValue (env, typeInfo, index, path, mappings, proxy, value));
+           : reject (() => invalidValue (env, typeInfo, index, path, mappings, proxy, value));
   },
 });
 
@@ -696,7 +699,7 @@ const UnaryType = name => url => supertypes => test => _1 => $1 => Object.assign
     try {
       supertypes.forEach (type => {
         type.new
-          (error => { throw error; })
+          (thunk => { throw thunk (); })
           (value => mappings => proxy => value)
           (env)
           (typeInfo)
@@ -707,7 +710,7 @@ const UnaryType = name => url => supertypes => test => _1 => $1 => Object.assign
           (proxy);
       });
     } catch (error) {
-      reject (error);
+      reject (() => error);
       return;
     }
     return test (value)
@@ -727,7 +730,7 @@ const UnaryType = name => url => supertypes => test => _1 => $1 => Object.assign
                (_1 (value))
                (mappings)
                (proxy)
-           : reject (invalidValue (env, typeInfo, index, path, mappings, proxy, value));
+           : reject (() => invalidValue (env, typeInfo, index, path, mappings, proxy, value));
   },
 });
 
@@ -766,7 +769,7 @@ const BinaryType = name => url => supertypes => test => _1 => _2 => $1 => $2 => 
     try {
       supertypes.forEach (type => {
         type.new
-          (error => { throw error; })
+          (thunk => { throw thunk (); })
           (value => mappings => proxy => value)
           (env)
           (typeInfo)
@@ -777,7 +780,7 @@ const BinaryType = name => url => supertypes => test => _1 => _2 => $1 => $2 => 
           (proxy);
       });
     } catch (error) {
-      reject (error);
+      reject (() => error);
       return;
     }
     return test (value)
@@ -808,7 +811,7 @@ const BinaryType = name => url => supertypes => test => _1 => _2 => $1 => $2 => 
                (_1 (value))
                (mappings)
                (proxy)
-           : reject (invalidValue (env, typeInfo, index, path, mappings, proxy, value));
+           : reject (() => invalidValue (env, typeInfo, index, path, mappings, proxy, value));
   },
 });
 
@@ -834,7 +837,7 @@ const EnumType = name => url => members => Object.assign (Object.create (Type$pr
   new: reject => resolve => env => typeInfo => index => path => value => mappings => proxy => (
     memberOf (members) (value)
     ? resolve (value) (mappings) (proxy)
-    : reject (invalidValue (env, typeInfo, index, path, mappings, proxy, value))
+    : reject (() => invalidValue (env, typeInfo, index, path, mappings, proxy, value))
   ),
 });
 
@@ -856,7 +859,7 @@ const TypeVariable = name => Object.assign (Object.create (Type$prototype), {
       for (let idx = 0; idx < typeInfo.constraints[name].length; idx += 1) {
         const typeClass = typeInfo.constraints[name][idx];
         if (!(typeClass.test (value))) {
-          return reject (typeClassConstraintViolation (env, typeInfo, typeClass, index, path, _mappings, proxy, value));
+          return reject (() => typeClassConstraintViolation (env, typeInfo, typeClass, index, path, _mappings, proxy, value));
         }
       }
     }
@@ -938,9 +941,9 @@ const TypeVariable = name => Object.assign (Object.create (Type$prototype), {
         }
         p = p.left;
       }
-      return reject (typeVarConstraintViolation (env, typeInfo, index, path, mappings, proxy, Z.reverse (values)));
+      return reject (() => typeVarConstraintViolation (env, typeInfo, index, path, mappings, proxy, Z.reverse (values)));
     } else {
-      return reject (unrecognizedValue (env, typeInfo, index, path, mappings, proxy, value));
+      return reject (() => unrecognizedValue (env, typeInfo, index, path, mappings, proxy, value));
     }
   },
 });
@@ -998,14 +1001,14 @@ const UnaryTypeVariable = name => $1 => Object.assign (Object.create (Type$proto
     const types = mappings.types (name);
     console.log ('types:', show (types));
     if (types.length === 0) {
-      return reject (invalidValue (env, typeInfo, index, path, mappings, proxy, value));
+      return reject (() => invalidValue (env, typeInfo, index, path, mappings, proxy, value));
     }
 
     if (Object.prototype.hasOwnProperty.call (typeInfo.constraints, name)) {
       for (let idx = 0; idx < typeInfo.constraints[name].length; idx += 1) {
         const typeClass = typeInfo.constraints[name][idx];
         if (!typeClass.test (value)) {
-          return reject (typeClassConstraintViolation (
+          return reject (() => typeClassConstraintViolation (
             env,
             typeInfo,
             typeClass,
@@ -1080,7 +1083,7 @@ const BinaryTypeVariable = name => $1 => $2 => Object.assign (Object.create (Typ
 
     const types = mappings.types (name);
     if (types.length === 0) {
-      return reject (invalidValue (env, typeInfo, index, path, mappings, proxy, value));
+      return reject (() => invalidValue (env, typeInfo, index, path, mappings, proxy, value));
     }
 
     return resolve (value)
@@ -1151,7 +1154,7 @@ const Function_ = types => Object.assign (Object.create (Type$prototype), {
   new: reject => resolve => env => typeInfo => index => path => value => mappings => proxy => {
     try {
       $.AnyFunction.new
-        (error => { throw error; })
+        (thunk => { throw thunk (); })
         (value => mappings => proxy => value)
         (env)
         (typeInfo)
@@ -1161,7 +1164,7 @@ const Function_ = types => Object.assign (Object.create (Type$prototype), {
         (mappings)
         (proxy);
     } catch (error) {
-      reject (error);
+      reject (() => error);
       return;
     }
     return resolve ((...args) => (
@@ -1225,13 +1228,13 @@ const RecordType = fields => {
     },
     new: reject => resolve => env => typeInfo => index => path => value => mappings => proxy => {
       if (value == null) {
-        reject (invalidValue (env, typeInfo, index, path, mappings, proxy, value));
+        reject (() => invalidValue (env, typeInfo, index, path, mappings, proxy, value));
       } else {
         const missing = {};
         keys.forEach (k => { missing[k] = k; });
         for (const k in value) delete missing[k];
         if (Z.size (missing) > 0) {
-          reject (invalidValue (env, typeInfo, index, path, mappings, proxy, value));
+          reject (() => invalidValue (env, typeInfo, index, path, mappings, proxy, value));
         } else {
           return reduceRight
                    (cont => key => mappings => (
@@ -1279,18 +1282,18 @@ const NamedRecordType = name => url => supertypes => fields => {
     format: outer => K (outer (name)),
     new: reject => resolve => env => typeInfo => index => path => value => mappings => proxy => {
       if (value == null) {
-        reject (invalidValue (env, typeInfo, index, path, mappings, proxy, value));
+        reject (() => invalidValue (env, typeInfo, index, path, mappings, proxy, value));
       } else {
         const missing = {};
         keys.forEach (k => { missing[k] = k; });
         for (const k in value) delete missing[k];
         if (Z.size (missing) > 0) {
-          reject (invalidValue (env, typeInfo, index, path, mappings, proxy, value));
+          reject (() => invalidValue (env, typeInfo, index, path, mappings, proxy, value));
         } else {
           try {
             keys.forEach (key => {
               fields[key].new
-                (error => { throw error; })
+                (thunk => { throw thunk (); })
                 (value => mappings => proxy => value)
                 (env)
                 (typeInfo)
@@ -1301,7 +1304,7 @@ const NamedRecordType = name => url => supertypes => fields => {
                 (proxy)
             });
           } catch (error) {
-            reject (invalidValue (env, typeInfo, index, path, mappings, proxy, value));
+            reject (() => invalidValue (env, typeInfo, index, path, mappings, proxy, value));
             return;
           }
           return reduceRight
@@ -1700,7 +1703,7 @@ const Fn = $1 => $2 => (
       new: reject => resolve => env => typeInfo => index => path => value => _mappings => proxy => {
         try {
           $.AnyFunction.new
-            (error => { throw error; })
+            (thunk => { throw thunk (); })
             (value => mappings => proxy => value)
             (env)
             (typeInfo)
@@ -1710,7 +1713,7 @@ const Fn = $1 => $2 => (
             (_mappings)
             (proxy);
         } catch (error) {
-          reject (error);
+          reject (() => error);
           return;
         }
         let mappings = _mappings;
@@ -1741,7 +1744,7 @@ const Fn = $1 => $2 => (
                                         (proxy)))
                               (mappings)
                               (proxy)
-                          : reject (invalidArgumentsLength (typeInfo, index, 1, args))
+                          : reject (() => invalidArgumentsLength (typeInfo, index, 1, args))
                         ))
                        (mappings)
                        (proxy);
@@ -1926,7 +1929,7 @@ const create = opts => {
         }
 
         return types[0].new
-          (error => { throw error; })
+          (thunk => { throw thunk (); })
           (value => mappings => proxy => value)
           (opts.env)
           (typeInfo)
@@ -1950,7 +1953,7 @@ const create = opts => {
              throw invalidArgumentsCount (typeInfo, index, 1, [_x, ...rest]);
            }
            return input.new
-             (error => { throw error; })
+             (thunk => { throw thunk (); })
              (value => mappings => proxy => cont (mappings) (proxy) (f (value)))
              (opts.env)
              (typeInfo)
@@ -1967,7 +1970,7 @@ const create = opts => {
        mappings => proxy => value => {
          const index = types.length - 1;
          return types[index].new
-           (error => { throw error; })
+           (thunk => { throw thunk (); })
            (value => mappings => proxy => value)
            (opts.env)
            (typeInfo)
