@@ -687,8 +687,7 @@ const cata = cases => type => {
     case 'VARIABLE':
       switch (type._type) {
         case 'TypeVariable':
-          return cases.TypeVariable
-                   (type.name);
+          return type.cata (cases.TypeVariable);
         case 'UnaryTypeVariable':
           return cases.UnaryTypeVariable
                    (type.name)
@@ -953,6 +952,7 @@ const EnumType = name => url => members => Object.assign (Object.create (Type$pr
 });
 
 const TypeVariable = name => Object.assign (Object.create (Type$prototype), {
+  cata: f => f (name),
   type: 'VARIABLE',
   _type: 'TypeVariable',
   name: name,
