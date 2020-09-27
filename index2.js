@@ -501,17 +501,7 @@ const satisfactoryTypes = (
     }
   }
 
-  return cata ({
-    NoArguments: Right ({typeVarMap: typeVarMap, types: [expType]}),
-    Unchecked: Right ({typeVarMap: typeVarMap, types: [expType]}),
-    Inconsistent: Right ({typeVarMap: typeVarMap, types: [expType]}),
-    NullaryType: name => url => supertypes => test2 => Right ({typeVarMap: typeVarMap, types: [expType]}),
-    EnumType: name => url => members => Right ({typeVarMap: typeVarMap, types: [expType]}),
-    Function: types => Right ({typeVarMap: typeVarMap, types: [expType]}),
-    TypeVariable: name => Right ({typeVarMap: typeVarMap, types: [expType]}),
-    UnaryTypeVariable: name => $1 => Right ({typeVarMap: typeVarMap, types: [expType]}),
-    BinaryTypeVariable: name => $1 => $2 => Right ({typeVarMap: typeVarMap, types: [expType]}),
-    Unknown: Right ({typeVarMap: typeVarMap, types: [expType]}),
+  return cataDefault (Right ({typeVarMap: typeVarMap, types: [expType]})) ({
     UnaryType: name => url => supertypes => test2 => _1 => $1 => (
       Z.map (
         result => ({
