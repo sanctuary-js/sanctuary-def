@@ -506,7 +506,7 @@ const satisfactoryTypes = (
       Z.map (
         result => ({
           typeVarMap: result.typeVarMap,
-          types: Z.map (fromUnaryType (expType),
+          types: Z.map (UnaryType (name) (url) (supertypes) (test2) (_1),
                         or (result.types, [$1])),
         }),
         recur (env,
@@ -529,7 +529,7 @@ const satisfactoryTypes = (
               const $2s = result.types;
               return {
                 typeVarMap: result.typeVarMap,
-                types: Z.lift2 (fromBinaryType (expType),
+                types: Z.lift2 (BinaryType (name) (url) (supertypes) (test2) (_1) (_2),
                                 or ($1s, [$1]),
                                 or ($2s, [$2])),
               };
@@ -836,15 +836,6 @@ const UnaryType = name => url => supertypes => test2 => _1 => $1 => Object.assig
   },
 });
 
-//  fromUnaryType :: Type -> Type -> Type
-const fromUnaryType = t => $1 => (
-  cata ({
-    UnaryType: name => url => supertypes => test2 => _1 => _ => (
-      UnaryType (name) (url) (supertypes) (test2) (_1) ($1)
-    ),
-  }) (t)
-);
-
 const BinaryType = name => url => supertypes => test2 => _1 => _2 => $1 => $2 => Object.assign (Object.create (Type$prototype), {
   cata: f => f (name) (url) (supertypes) (test2) (_1) (_2) ($1) ($2),
   _type: 'BinaryType',
@@ -917,16 +908,6 @@ const BinaryType = name => url => supertypes => test2 => _1 => _2 => $1 => $2 =>
            : reject (() => invalidValue (env, typeInfo, index, path, mappings, proxy, value));
   },
 });
-
-//    fromBinaryType :: (Type -> Type -> Type) -> Type -> Type -> Type
-const fromBinaryType = t => $1 => $2 => (
-  cata ({
-    BinaryType: name => url => supertypes => test2 => _1 => _2 => _ => _ => (
-      BinaryType (name) (url) (supertypes) (test2) (_1) (_2) ($1) ($2)
-    ),
-    Function: _ => Fn ($1) ($2),
-  }) (t)
-);
 
 const EnumType = name => url => members => Object.assign (Object.create (Type$prototype), {
   cata: f => f (name) (url) (members),
