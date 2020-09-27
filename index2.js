@@ -182,6 +182,13 @@ const see = (label, record) => (
   ' for information about the ' + record.name + ' ' + label + '.\n'
 );
 
+//    see2 :: (String, String, Nullable String) -> String
+const see2 = (label, name, url) => (
+  url == null || url === '' ?
+  '' :
+  '\nSee ' + url + ' for information about the ' + name + ' ' + label + '.\n'
+);
+
 //    typeClassConstraintViolation :: ... -> Error
 const typeClassConstraintViolation = (
   env,            // :: Array Type
@@ -355,7 +362,7 @@ const invalidValue = (
     showValuesAndTypes (env, typeInfo, index, propPath, mappings, proxy, [value], 1) + '\n\n' +
     'The value at position 1 is not a member of ' +
     q (show (t)) + '.\n' +
-    see (t.arity >= 1 ? 'type constructor' : 'type', t)
+    see2 (t.arity >= 1 ? 'type constructor' : 'type', t.name, url (t))
   ));
 };
 
@@ -682,17 +689,52 @@ const cata = cases => type => {
                (type.blah.$1.type)
                (type.blah.$2.type);
     case 'FUNCTION':
-      if (type.arity !== 2) {
-        throw new Error ('Expected unary function');
+      return cases.Function
+               ([type.blah.$1.type, type.blah.$2.type]);
+    case 'RECORD':
+      switch (type._type) {
+        case 'RecordType':
+          return cases.RecordType
+                   (type.fields);
+        case 'NamedRecordType':
+          return cases.NamedRecordType
+                   (type.name)
+                   (type.url)
+                   (type.supertypes)
+                   (type.fields);
       }
-      return cases.Fn
-               (type.blah.$1.type)
-               (type.blah.$2.type);
-    default:
-      console.log ('type:', show (type));
-      TK;
+    case 'VARIABLE':
+      switch (type._type) {
+        case 'TypeVariable':
+          return cases.TypeVariable
+                   (type.name);
+        case 'UnaryTypeVariable':
+          return cases.UnaryTypeVariable
+                   (type.name)
+                   (type.blah.$1.type);
+        case 'BinaryTypeVariable':
+          return cases.BinaryTypeVariable
+                   (type.name)
+                   (type.blah.$1.type)
+                   (type.blah.$2.type);
+      }
   }
+  console.log ('type:', show (type));
+  throw new Error (show (type));
 };
+
+//    url :: Type -> String
+const url = type => cata ({
+  NullaryType: _ => url => _ => _ => url,
+  UnaryType: _ => url => _ => _ => _ => _ => url,
+  BinaryType: _ => url => _ => _ => _ => _ => _ => _ => url,
+  Function: _ => '',
+  RecordType: _ => '',
+  NamedRecordType: _ => url => _ => _ => url,
+  TypeVariable: _ => '',
+  UnaryTypeVariable: _ => _ => '',
+  BinaryTypeVariable: _ => _ => _ => '',
+}) (type);
 
 const NullaryType = name => url => supertypes => test2 => Object.assign (Object.create (Type$prototype), {
   type: 'NULLARY',
@@ -870,7 +912,7 @@ const fromBinaryType = t => $1 => $2 => (
     BinaryType: name => url => supertypes => test2 => _1 => _2 => _ => _ => (
       BinaryType (name) (url) (supertypes) (test2) (_1) (_2) ($1) ($2)
     ),
-    Fn: _ => _ => Fn ($1) ($2),
+    Function: _ => Fn ($1) ($2),
   }) (t)
 );
 
@@ -891,6 +933,7 @@ const EnumType = name => url => members => Object.assign (Object.create (Type$pr
 
 const TypeVariable = name => Object.assign (Object.create (Type$prototype), {
   type: 'VARIABLE',
+  _type: 'TypeVariable',
   name: name,
   url: '',
   supertypes: [],
@@ -997,6 +1040,7 @@ const TypeVariable = name => Object.assign (Object.create (Type$prototype), {
 
 const UnaryTypeVariable = name => $1 => Object.assign (Object.create (Type$prototype), {
   type: 'VARIABLE',
+  _type: 'UnaryTypeVariable',
   name: name,
   url: '',
   supertypes: [],
@@ -1095,6 +1139,7 @@ const UnaryTypeVariable = name => $1 => Object.assign (Object.create (Type$proto
 
 const BinaryTypeVariable = name => $1 => $2 => Object.assign (Object.create (Type$prototype), {
   type: 'VARIABLE',
+  _type: 'BinaryTypeVariable',
   name: name,
   url: '',
   supertypes: [],
@@ -1243,6 +1288,7 @@ const RecordType = fields => {
   const keys = (Object.keys (fields)).sort ();
   return Object.assign (Object.create (Type$prototype), {
     type: 'RECORD',
+    _type: 'RecordType',
     name: '',
     url: '',
     supertypes: [],
@@ -1299,6 +1345,7 @@ const NamedRecordType = name => url => supertypes => fields => {
   const keys = (Object.keys (fields)).sort ();
   return Object.assign (Object.create (Type$prototype), {
     type: 'RECORD',
+    _type: 'NamedRecordType',
     name: name,
     url: url,
     supertypes: supertypes,
