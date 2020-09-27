@@ -664,34 +664,7 @@ $.NoArguments = Object.assign (Object.create (Type$prototype), {
   format: outer => K (outer ('()')),
 });
 
-const cata = cases => type => {
-  switch (type._type) {
-    case 'NullaryType':
-      return type.cata (cases.NullaryType);
-    case 'EnumType':
-      return type.cata (cases.EnumType);
-    case 'UnaryType':
-      return type.cata (cases.UnaryType);
-    case 'BinaryType':
-      return type.cata (cases.BinaryType);
-    case 'Function':
-      return type.cata (cases.Function);
-    case 'RecordType':
-      return type.cata (cases.RecordType);
-    case 'NamedRecordType':
-      return type.cata (cases.NamedRecordType);
-    case 'TypeVariable':
-      return type.cata (cases.TypeVariable);
-    case 'UnaryTypeVariable':
-      return type.cata (cases.UnaryTypeVariable);
-    case 'BinaryTypeVariable':
-      return type.cata (cases.BinaryTypeVariable);
-    case 'Unknown':
-      return type.cata (cases.Unknown);
-  }
-  console.log ('type:', show (type));
-  throw new Error (show (type));
-};
+const cata = cases => type => type.cata (cases[type._type]);
 
 //    name :: Type -> String
 const name = cata ({
