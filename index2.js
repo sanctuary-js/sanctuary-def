@@ -716,21 +716,15 @@ $.NoArguments = Object.assign (Object.create (Type$prototype), {
 });
 
 //    name :: Type -> String
-const name = cata ({
-  NoArguments: '',
-  Unchecked: '',
-  Inconsistent: '',
+const name = cataDefault ('') ({
   NullaryType: name => _ => _ => _ => name,
   EnumType: name => _ => _ => name,
   UnaryType: name => _ => _ => _ => _ => _ => name,
   BinaryType: name => _ => _ => _ => _ => _ => _ => _ => name,
-  Function: _ => '',
-  RecordType: _ => '',
   NamedRecordType: name => _ => _ => _ => name,
   TypeVariable: name => name,
   UnaryTypeVariable: name => _ => name,
   BinaryTypeVariable: name => _ => _ => name,
-  Unknown: '',
 });
 
 //    url :: Type -> String
