@@ -553,7 +553,7 @@ const Type$prototype = {
       Z.equals (this.type, other.type) &&
       Z.equals (name (this), name (other)) &&
       Z.equals (url (this), url (other)) &&
-      Z.equals (this.supertypes, other.supertypes) &&
+      Z.equals (supertypes (this), supertypes (other)) &&
       Z.equals (Object.keys (this.blah), Object.keys (other.blah)) &&
       Z.all (k => Z.equals (this.blah[k].type, other.blah[k].type), Object.keys (this.blah))
     );
@@ -562,7 +562,7 @@ const Type$prototype = {
 
 //    ancestors :: Type -> Array Type
 const ancestors = type => (
-  Z.concat (Z.chain (ancestors, type.supertypes), type.supertypes)
+  Z.concat (Z.chain (ancestors, supertypes (type)), supertypes (type))
 );
 
 //    extract :: String -> Type -> Any -> Array Any
@@ -751,6 +751,20 @@ const url = cata ({
   UnaryTypeVariable: _ => _ => '',
   BinaryTypeVariable: _ => _ => _ => '',
   Unknown: '',
+});
+
+//    supertypes :: Type -> Array Type
+const supertypes = cata ({
+  NullaryType: _ => _ => supertypes => _ => supertypes,
+  UnaryType: _ => _ => supertypes => _ => _ => _ => supertypes,
+  BinaryType: _ => _ => supertypes => _ => _ => _ => _ => _ => supertypes,
+  Function: _ => [$.AnyFunction],
+  RecordType: _ => [],
+  NamedRecordType: _ => _ => supertypes => _ => supertypes,
+  TypeVariable: _ => [],
+  UnaryTypeVariable: _ => _ => [],
+  BinaryTypeVariable: _ => _ => _ => [],
+  Unknown: [],
 });
 
 const NullaryType = name => url => supertypes => test2 => Object.assign (Object.create (Type$prototype), {
