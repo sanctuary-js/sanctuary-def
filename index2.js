@@ -728,21 +728,12 @@ const name = cataDefault ('') ({
 });
 
 //    url :: Type -> String
-const url = cata ({
-  NoArguments: '',
-  Unchecked: '',
-  Inconsistent: '',
+const url = cataDefault ('') ({
   NullaryType: _ => url => _ => _ => url,
   EnumType: _ => url => _ => url,
   UnaryType: _ => url => _ => _ => _ => _ => url,
   BinaryType: _ => url => _ => _ => _ => _ => _ => _ => url,
-  Function: _ => '',
-  RecordType: _ => '',
   NamedRecordType: _ => url => _ => _ => url,
-  TypeVariable: _ => '',
-  UnaryTypeVariable: _ => _ => '',
-  BinaryTypeVariable: _ => _ => _ => '',
-  Unknown: '',
 });
 
 //    supertypes :: Type -> Array Type
