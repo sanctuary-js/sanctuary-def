@@ -141,7 +141,7 @@ function underline(
   // :: Integer -> (String -> String) -> Type -> PropPath -> String -> String
 ) {
   const st = typeInfo.types.reduce ((st, t, index) => {
-    const f = B (when (t.type === 'FUNCTION')
+    const f = B (when (t._type === 'Function')
                       (parenthesize (_)))
                 (B (f => _underline (t, [], f))
                    (formatType5 (index)));
@@ -1242,7 +1242,6 @@ const BinaryTypeVariable = name => $1 => $2 => Object.assign (Object.create (Typ
 
 const Function_ = types => Object.assign (Object.create (Type$prototype), {
   cata: f => f (types),
-  type: 'FUNCTION',
   _type: 'Function',
   name: '',
   url: '',
@@ -1261,7 +1260,7 @@ const Function_ = types => Object.assign (Object.create (Type$prototype), {
          (parenthesize (outer))
          (types
           .slice (0, -1)
-          .map ((t, idx) => when (t.type === 'FUNCTION')
+          .map ((t, idx) => when (t._type === 'Function')
                                  (parenthesize (outer))
                                  (inner (`$${idx + 1}`) (show (t))))
           .join (outer (', '))) +
@@ -1953,7 +1952,7 @@ const showTypeWith = types => {
   const names = Object.keys (Z.foldMap (Object, typeVarNames, types));
   return t => {
     let code = 'a'.charCodeAt (0);
-    return when (t.type === 'FUNCTION')
+    return when (t._type === 'Function')
                 (parenthesize (I))
                 ((show (t)).replace (/\bUnknown\b/g, () => {
                    let name;
