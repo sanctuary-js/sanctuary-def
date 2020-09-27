@@ -480,6 +480,8 @@ const determineActualTypesLoose = (env, typeInfo, index, path, mappings, proxy, 
             _determineActualTypes (env, typeInfo, index, path, mappings, proxy, [], values))
 );
 
+const toArray = foldable => Z.reduce ((xs, x) => (xs.push (x), xs), [], foldable);
+
 //  satisfactoryTypes :: ... -> Either (() -> Error)
 //                                     { typeVarMap :: TypeVarMap
 //                                     , types :: Array Type }
@@ -503,28 +505,37 @@ const satisfactoryTypes = (
     }
   }
 
-  switch (expType._type) {
-
-    case 'UnaryType':
-      return Z.map (
+  return cata ({
+    NoArguments: Right ({typeVarMap: typeVarMap, types: [expType]}),
+    Unchecked: Right ({typeVarMap: typeVarMap, types: [expType]}),
+    Inconsistent: Right ({typeVarMap: typeVarMap, types: [expType]}),
+    NullaryType: name => url => supertypes => test2 => Right ({typeVarMap: typeVarMap, types: [expType]}),
+    EnumType: name => url => members => Right ({typeVarMap: typeVarMap, types: [expType]}),
+    Function: types => Right ({typeVarMap: typeVarMap, types: [expType]}),
+    TypeVariable: name => Right ({typeVarMap: typeVarMap, types: [expType]}),
+    UnaryTypeVariable: name => $1 => Right ({typeVarMap: typeVarMap, types: [expType]}),
+    BinaryTypeVariable: name => $1 => $2 => Right ({typeVarMap: typeVarMap, types: [expType]}),
+    Unknown: Right ({typeVarMap: typeVarMap, types: [expType]}),
+    UnaryType: name => url => supertypes => test2 => _1 => $1 => (
+      Z.map (
         result => ({
           typeVarMap: result.typeVarMap,
           types: Z.map (fromUnaryType (expType),
-                        or (result.types, [expType.blah.$1.type])),
+                        or (result.types, [$1])),
         }),
         recur (env,
                typeInfo,
                typeVarMap,
-               expType.blah.$1.type,
+               $1,
                index,
                Z.concat (propPath, ['$1']),
                mappings,
                proxy,
-               Z.chain (extract ('$1') (expType), values))
-      );
-
-    case 'BinaryType':
-      return Z.chain (
+               Z.chain (B (toArray) (_1), values))
+      )
+    ),
+    BinaryType: name => url => supertypes => test2 => _1 => _2 => $1 => $2 => (
+      Z.chain (
         result => {
           const $1s = result.types;
           return Z.map (
@@ -533,51 +544,63 @@ const satisfactoryTypes = (
               return {
                 typeVarMap: result.typeVarMap,
                 types: Z.lift2 (fromBinaryType (expType),
-                                or ($1s, [expType.blah.$1.type]),
-                                or ($2s, [expType.blah.$2.type])),
+                                or ($1s, [$1]),
+                                or ($2s, [$2])),
               };
             },
             recur (env,
                    typeInfo,
                    result.typeVarMap,
-                   expType.blah.$2.type,
+                   $2,
                    index,
                    Z.concat (propPath, ['$2']),
                    mappings,
                    proxy,
-                   Z.chain (extract ('$2') (expType), values))
+                   Z.chain (B (toArray) (_2), values))
           );
         },
         recur (env,
                typeInfo,
                typeVarMap,
-               expType.blah.$1.type,
+               $1,
                index,
                Z.concat (propPath, ['$1']),
                mappings,
                proxy,
-               Z.chain (extract ('$1') (expType), values))
-      );
-
-    case 'RecordType':
-    case 'NamedRecordType':
-      return Z.reduce ((e, k) => (
+               Z.chain (B (toArray) (_1), values))
+      )
+    ),
+    RecordType: fields => (
+      Z.reduce ((e, k) => (
         Z.chain (r => (
           recur (env,
                  typeInfo,
                  r.typeVarMap,
-                 expType.blah[k].type,
+                 fields[k],
                  index,
                  Z.concat (propPath, [k]),
                  mappings,
                  proxy,
                  Z.chain (extract (k) (expType), values))
         ), e)
-      ), Right ({typeVarMap: typeVarMap, types: [expType]}), Object.keys (expType.blah));
-
-    default:
-      return Right ({typeVarMap: typeVarMap, types: [expType]});
-  }
+      ), Right ({typeVarMap: typeVarMap, types: [expType]}), Object.keys (fields))
+    ),
+    NamedRecordType: _ => _ => _ => fields => (
+      Z.reduce ((e, k) => (
+        Z.chain (r => (
+          recur (env,
+                 typeInfo,
+                 r.typeVarMap,
+                 fields[k],
+                 index,
+                 Z.concat (propPath, [k]),
+                 mappings,
+                 proxy,
+                 Z.chain (extract (k) (expType), values))
+        ), e)
+      ), Right ({typeVarMap: typeVarMap, types: [expType]}), Object.keys (fields))
+    ),
+  }) (expType);
 };
 
 const Type$prototype = {
