@@ -645,7 +645,9 @@ const Unchecked = s => Object.assign (Object.create (Type$prototype), {
 });
 
 $.Inconsistent = Object.assign (Object.create (Type$prototype), {
+  cata: x => x,
   type: 'INCONSISTENT',
+  _type: 'Inconsistent',
   name: '',
   url: '',
   supertypes: [],
@@ -668,6 +670,7 @@ const cata = cases => type => type.cata (cases[type._type]);
 
 //    name :: Type -> String
 const name = cata ({
+  Inconsistent: '',
   NullaryType: name => _ => _ => _ => name,
   EnumType: name => _ => _ => name,
   UnaryType: name => _ => _ => _ => _ => _ => name,
@@ -683,6 +686,7 @@ const name = cata ({
 
 //    url :: Type -> String
 const url = cata ({
+  Inconsistent: '',
   NullaryType: _ => url => _ => _ => url,
   EnumType: _ => url => _ => url,
   UnaryType: _ => url => _ => _ => _ => _ => url,
@@ -698,6 +702,7 @@ const url = cata ({
 
 //    supertypes :: Type -> Array Type
 const supertypes = cata ({
+  Inconsistent: [],
   NullaryType: _ => _ => supertypes => _ => supertypes,
   EnumType: _ => _ => _ => [],
   UnaryType: _ => _ => supertypes => _ => _ => _ => supertypes,
@@ -713,6 +718,7 @@ const supertypes = cata ({
 
 //    test2 :: Type -> Any -> Boolean
 const test2 = cata ({
+  Inconsistent: _ => TK,
   NullaryType: _ => _ => _ => test2 => test2,
   EnumType: _ => _ => _ => TK,
   UnaryType: _ => _ => _ => test2 => _ => _ => test2,
