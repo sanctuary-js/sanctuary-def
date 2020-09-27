@@ -725,20 +725,6 @@ const cata = cases => type => {
   throw new Error (show (type));
 };
 
-//    url :: Type -> String
-const url = type => cata ({
-  NullaryType: _ => url => _ => _ => url,
-  UnaryType: _ => url => _ => _ => _ => _ => url,
-  BinaryType: _ => url => _ => _ => _ => _ => _ => _ => url,
-  Function: _ => '',
-  RecordType: _ => '',
-  NamedRecordType: _ => url => _ => _ => url,
-  TypeVariable: _ => '',
-  UnaryTypeVariable: _ => _ => '',
-  BinaryTypeVariable: _ => _ => _ => '',
-  Unknown: '',
-}) (type);
-
 //    name :: Type -> String
 const name = type => cata ({
   NullaryType: name => _ => _ => _ => name,
@@ -750,6 +736,20 @@ const name = type => cata ({
   TypeVariable: name => name,
   UnaryTypeVariable: name => _ => name,
   BinaryTypeVariable: name => _ => _ => name,
+  Unknown: '',
+}) (type);
+
+//    url :: Type -> String
+const url = type => cata ({
+  NullaryType: _ => url => _ => _ => url,
+  UnaryType: _ => url => _ => _ => _ => _ => url,
+  BinaryType: _ => url => _ => _ => _ => _ => _ => _ => url,
+  Function: _ => '',
+  RecordType: _ => '',
+  NamedRecordType: _ => url => _ => _ => url,
+  TypeVariable: _ => '',
+  UnaryTypeVariable: _ => _ => '',
+  BinaryTypeVariable: _ => _ => _ => '',
   Unknown: '',
 }) (type);
 
