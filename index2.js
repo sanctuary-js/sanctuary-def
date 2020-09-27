@@ -621,6 +621,7 @@ const validate = env => typeInfo => index => path => mappings => proxy => value 
 };
 
 $.Unknown = Object.assign (Object.create (Type$prototype), {
+  cata: x => x,
   type: 'UNKNOWN',
   name: '',
   url: '',
@@ -691,13 +692,10 @@ const cata = cases => type => {
         case 'UnaryTypeVariable':
           return type.cata (cases.UnaryTypeVariable);
         case 'BinaryTypeVariable':
-          return cases.BinaryTypeVariable
-                   (type.name)
-                   (type.blah.$1.type)
-                   (type.blah.$2.type);
+          return type.cata (cases.BinaryTypeVariable);
       }
     case 'UNKNOWN':
-      return cases.Unknown;
+      return type.cata (cases.Unknown);
   }
   console.log ('type:', show (type));
   throw new Error (show (type));
@@ -1158,6 +1156,7 @@ const UnaryTypeVariable = name => $1 => Object.assign (Object.create (Type$proto
 });
 
 const BinaryTypeVariable = name => $1 => $2 => Object.assign (Object.create (Type$prototype), {
+  cata: f => f (name) ($1) ($2),
   type: 'VARIABLE',
   _type: 'BinaryTypeVariable',
   name: name,
