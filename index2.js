@@ -570,22 +570,23 @@ const extract = key => type => x => {
 };
 
 const validate = env => typeInfo => index => path => mappings => proxy => value => type => {
-//ancestors (type)
-//.forEach (type => {
-//  type.new
-//    (thunk => { throw thunk (); })
-//    (value => mappings => proxy => value)
-//    (env)
-//    (typeInfo)
-//    (index)
-//    (path)
-//    (value)
-//    (mappings)
-//    (proxy);
-//});
-  if (!(Z.all (t => t.test (value), ancestors (type)))) {
-    return {value, propPath: []};
-  }
+  if (
+    Z.any (
+      type => (
+        type.new
+          (thunk => true)
+          (value => mappings => proxy => false)
+          (env)
+          (typeInfo)
+          (index)
+          (path)
+          (value)
+          (mappings)
+          (proxy)
+      ),
+      ancestors (type)
+    )
+  ) return {value, propPath: []};
 
   if (
     type.new
@@ -1317,8 +1318,7 @@ const NamedRecordType = name => url => supertypes => fields => {
                 (proxy)
             });
           } catch (error) {
-            reject (() => invalidValue (env, typeInfo, index, path, mappings, proxy, value));
-            return;
+            return reject (() => invalidValue (env, typeInfo, index, path, mappings, proxy, value));
           }
           return reduceRight
                    (cont => key => (
