@@ -623,6 +623,7 @@ const validate = env => typeInfo => index => path => mappings => proxy => value 
 $.Unknown = Object.assign (Object.create (Type$prototype), {
   cata: x => x,
   type: 'UNKNOWN',
+  _type: 'Unknown',
   name: '',
   url: '',
   supertypes: [],
@@ -664,37 +665,28 @@ $.NoArguments = Object.assign (Object.create (Type$prototype), {
 });
 
 const cata = cases => type => {
-  switch (type.type) {
-    case 'NULLARY':
-      switch (type._type) {
-        case 'NullaryType':
-          return type.cata (cases.NullaryType);
-        case 'EnumType':
-          return type.cata (cases.EnumType);
-      }
-    case 'UNARY':
+  switch (type._type) {
+    case 'NullaryType':
+      return type.cata (cases.NullaryType);
+    case 'EnumType':
+      return type.cata (cases.EnumType);
+    case 'UnaryType':
       return type.cata (cases.UnaryType);
-    case 'BINARY':
+    case 'BinaryType':
       return type.cata (cases.BinaryType);
-    case 'FUNCTION':
+    case 'Function':
       return type.cata (cases.Function);
-    case 'RECORD':
-      switch (type._type) {
-        case 'RecordType':
-          return type.cata (cases.RecordType);
-        case 'NamedRecordType':
-          return type.cata (cases.NamedRecordType);
-      }
-    case 'VARIABLE':
-      switch (type._type) {
-        case 'TypeVariable':
-          return type.cata (cases.TypeVariable);
-        case 'UnaryTypeVariable':
-          return type.cata (cases.UnaryTypeVariable);
-        case 'BinaryTypeVariable':
-          return type.cata (cases.BinaryTypeVariable);
-      }
-    case 'UNKNOWN':
+    case 'RecordType':
+      return type.cata (cases.RecordType);
+    case 'NamedRecordType':
+      return type.cata (cases.NamedRecordType);
+    case 'TypeVariable':
+      return type.cata (cases.TypeVariable);
+    case 'UnaryTypeVariable':
+      return type.cata (cases.UnaryTypeVariable);
+    case 'BinaryTypeVariable':
+      return type.cata (cases.BinaryTypeVariable);
+    case 'Unknown':
       return type.cata (cases.Unknown);
   }
   console.log ('type:', show (type));
@@ -784,6 +776,7 @@ const NullaryType = name => url => supertypes => test2 => Object.assign (Object.
 const UnaryType = name => url => supertypes => test2 => _1 => $1 => Object.assign (Object.create (Type$prototype), {
   cata: f => f (name) (url) (supertypes) (test2) (_1) ($1),
   type: 'UNARY',
+  _type: 'UnaryType',
   name: name,
   url: url,
   supertypes: supertypes,
@@ -850,6 +843,7 @@ const fromUnaryType = t => $1 => (
 const BinaryType = name => url => supertypes => test2 => _1 => _2 => $1 => $2 => Object.assign (Object.create (Type$prototype), {
   cata: f => f (name) (url) (supertypes) (test2) (_1) (_2) ($1) ($2),
   type: 'BINARY',
+  _type: 'BinaryType',
   name: name,
   url: url,
   supertypes: supertypes,
@@ -1237,6 +1231,7 @@ const BinaryTypeVariable = name => $1 => $2 => Object.assign (Object.create (Typ
 const Function_ = types => Object.assign (Object.create (Type$prototype), {
   cata: f => f (types),
   type: 'FUNCTION',
+  _type: 'Function',
   name: '',
   url: '',
   supertypes: [$.AnyFunction],
