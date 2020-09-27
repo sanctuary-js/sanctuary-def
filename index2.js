@@ -202,7 +202,7 @@ const typeClassConstraintViolation = (
     'Type-class constraint violation\n\n' +
     underline (typeInfo,
                tvn => tc => (
-                 tvn === expType.name && tc.name === typeClass.name ? r ('^') : _
+                 tvn === name (expType) && tc.name === typeClass.name ? r ('^') : _
                ),
                formatType6 (Z.concat ([index], propPath))) +
     '\n' +
@@ -471,7 +471,7 @@ const determineActualTypesStrict = (env, typeInfo, index, path, mappings, proxy,
 
 //    determineActualTypesLoose :: (Array Type, Array Any) -> Array Type
 const determineActualTypesLoose = (env, typeInfo, index, path, mappings, proxy, values) => (
-  Z.reject (t => t.type === 'INCONSISTENT',
+  Z.reject (t => t._type === 'Inconsistent',
             _determineActualTypes (env, typeInfo, index, path, mappings, proxy, [], values))
 );
 
@@ -668,11 +668,7 @@ const validate = env => typeInfo => index => path => mappings => proxy => value 
 
 $.Unknown = Object.assign (Object.create (Type$prototype), {
   cata: x => x,
-  type: 'UNKNOWN',
   _type: 'Unknown',
-  name: '',
-  url: '',
-  supertypes: [],
   blah: {},
   format: outer => K (outer ('Unknown')),
   new: reject => resolve => env => typeInfo => index => path => resolve,
@@ -681,9 +677,6 @@ $.Unknown = Object.assign (Object.create (Type$prototype), {
 const Unchecked = s => Object.assign (Object.create (Type$prototype), {
   cata: x => x,
   _type: 'Unchecked',
-  name: '',
-  url: '',
-  supertypes: [],
   blah: {},
   format: outer => K (outer (s)),
   new: reject => resolve => env => typeInfo => index => path => resolve,
@@ -691,22 +684,14 @@ const Unchecked = s => Object.assign (Object.create (Type$prototype), {
 
 $.Inconsistent = Object.assign (Object.create (Type$prototype), {
   cata: x => x,
-  type: 'INCONSISTENT',
   _type: 'Inconsistent',
-  name: '',
-  url: '',
-  supertypes: [],
   blah: {},
   format: outer => K (outer ('???')),
 });
 
 $.NoArguments = Object.assign (Object.create (Type$prototype), {
   cata: x => x,
-  type: 'NO_ARGUMENTS',
   _type: 'NoArguments',
-  name: '',
-  url: '',
-  supertypes: [],
   blah: {},
   format: outer => K (outer ('()')),
 });
@@ -753,9 +738,6 @@ const supertypes = cataDefault ([]) ({
 const NullaryType = name => url => supertypes => test2 => Object.assign (Object.create (Type$prototype), {
   cata: f => f (name) (url) (supertypes) (test2),
   _type: 'NullaryType',
-  name: name,
-  url: url,
-  supertypes: supertypes,
   blah: {},
   test2,
   format: outer => K (outer (name)),
@@ -786,9 +768,6 @@ const NullaryType = name => url => supertypes => test2 => Object.assign (Object.
 const UnaryType = name => url => supertypes => test2 => _1 => $1 => Object.assign (Object.create (Type$prototype), {
   cata: f => f (name) (url) (supertypes) (test2) (_1) ($1),
   _type: 'UnaryType',
-  name: name,
-  url: url,
-  supertypes: supertypes,
   blah: {
     $1: {type: $1, extract: _1},
   },
@@ -842,9 +821,6 @@ const UnaryType = name => url => supertypes => test2 => _1 => $1 => Object.assig
 const BinaryType = name => url => supertypes => test2 => _1 => _2 => $1 => $2 => Object.assign (Object.create (Type$prototype), {
   cata: f => f (name) (url) (supertypes) (test2) (_1) (_2) ($1) ($2),
   _type: 'BinaryType',
-  name: name,
-  url: url,
-  supertypes: supertypes,
   blah: {
     $1: {type: $1, extract: _1},
     $2: {type: $2, extract: _2},
@@ -914,9 +890,6 @@ const BinaryType = name => url => supertypes => test2 => _1 => _2 => $1 => $2 =>
 const EnumType = name => url => members => Object.assign (Object.create (Type$prototype), {
   cata: f => f (name) (url) (members),
   _type: 'EnumType',
-  name: name,
-  url: url,
-  supertypes: [],
   blah: {},
   format: outer => K (outer (name)),
   new: reject => resolve => env => typeInfo => index => path => value => mappings => proxy => (
@@ -928,11 +901,8 @@ const EnumType = name => url => members => Object.assign (Object.create (Type$pr
 
 const TypeVariable = name => Object.assign (Object.create (Type$prototype), {
   cata: f => f (name),
-  type: 'VARIABLE',
   _type: 'TypeVariable',
-  name: name,
-  url: '',
-  supertypes: [],
+  name: name,  // XXX: Remove this
   blah: {},
   format: outer => K (outer (name)),
   new: reject => resolve => env => typeInfo => index => path => value => _mappings => proxy => {
@@ -1059,11 +1029,7 @@ const TypeVariable = name => Object.assign (Object.create (Type$prototype), {
 
 const UnaryTypeVariable = name => $1 => Object.assign (Object.create (Type$prototype), {
   cata: f => f (name) ($1),
-  type: 'VARIABLE',
   _type: 'UnaryTypeVariable',
-  name: name,
-  url: '',
-  supertypes: [],
   blah: {
     $1: {type: $1, extract: K ([])},
   },
@@ -1168,11 +1134,7 @@ const UnaryTypeVariable = name => $1 => Object.assign (Object.create (Type$proto
 
 const BinaryTypeVariable = name => $1 => $2 => Object.assign (Object.create (Type$prototype), {
   cata: f => f (name) ($1) ($2),
-  type: 'VARIABLE',
   _type: 'BinaryTypeVariable',
-  name: name,
-  url: '',
-  supertypes: [],
   blah: {
     $1: {type: $1, extract: K ([])},
     $2: {type: $2, extract: K ([])},
@@ -1247,9 +1209,6 @@ const BinaryTypeVariable = name => $1 => $2 => Object.assign (Object.create (Typ
 const Function_ = types => Object.assign (Object.create (Type$prototype), {
   cata: f => f (types),
   _type: 'Function',
-  name: '',
-  url: '',
-  supertypes: [$.AnyFunction],
   blah: types.reduce (
     (blah, t, idx) => {
       blah[`$${idx + 1}`] = {type: t, extract: K ([])};
@@ -1317,11 +1276,7 @@ const RecordType = fields => {
   const keys = (Object.keys (fields)).sort ();
   return Object.assign (Object.create (Type$prototype), {
     cata: f => f (fields),
-    type: 'RECORD',
     _type: 'RecordType',
-    name: '',
-    url: '',
-    supertypes: [],
     blah: keys.reduce (
       // eslint-disable-next-line no-sequences
       (blah, k) => (blah[k] = {type: fields[k], extract: x => [x[k]]}, blah),
@@ -1374,11 +1329,7 @@ const NamedRecordType = name => url => supertypes => fields => {
   const keys = (Object.keys (fields)).sort ();
   return Object.assign (Object.create (Type$prototype), {
     cata: f => f (name) (url) (supertypes) (fields),
-    type: 'RECORD',
     _type: 'NamedRecordType',
-    name: name,
-    url: url,
-    supertypes: supertypes,
     blah: keys.reduce (
       // eslint-disable-next-line no-sequences
       (blah, k) => (blah[k] = {type: fields[k], extract: x => [x[k]]}, blah),
