@@ -672,13 +672,7 @@ const cata = cases => type => {
           return type.cata (cases.EnumType);
       }
     case 'UNARY':
-      return cases.UnaryType
-               (type.name)
-               (type.url)
-               (type.supertypes)
-               (type.test2)
-               (type.blah.$1.extract)
-               (type.blah.$1.type);
+      return type.cata (cases.UnaryType);
     case 'BINARY':
       return cases.BinaryType
                (type.name)
@@ -807,6 +801,7 @@ const NullaryType = name => url => supertypes => test2 => Object.assign (Object.
 });
 
 const UnaryType = name => url => supertypes => test2 => _1 => $1 => Object.assign (Object.create (Type$prototype), {
+  cata: f => f (name) (url) (supertypes) (test2) (_1) ($1),
   type: 'UNARY',
   name: name,
   url: url,
