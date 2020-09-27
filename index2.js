@@ -480,6 +480,7 @@ const determineActualTypesLoose = (env, typeInfo, index, path, mappings, proxy, 
             _determineActualTypes (env, typeInfo, index, path, mappings, proxy, [], values))
 );
 
+// eslint-disable-next-line no-sequences
 const toArray = foldable => Z.reduce ((xs, x) => (xs.push (x), xs), [], foldable);
 
 //  satisfactoryTypes :: ... -> Either (() -> Error)
