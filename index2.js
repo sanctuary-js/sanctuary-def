@@ -1115,20 +1115,30 @@ const UnaryTypeVariable = name => $1 => Object.assign (Object.create (Type$proto
         const types = _mappings.types (name_);
         return name_ === name
                ? Z.chain (
-                   type => {
-                     if ((satisfactoryTypes (env, {name: 'name', constraints: {}, types: [type]}, {}, type, 0, [], _mappings, proxy, [value])).isRight) {
-                       switch (type.arity) {
-                         case 2:
-                           return [fromBinaryType (type) (type.blah.$1.type) ($1)];
-                         case 1:
-                           return [fromUnaryType (type) ($1)];
-                         default:
-                           return [];
-                       }
-                     } else {
-                       return [];
-                     }
-                   },
+                   type => (
+                     satisfactoryTypes (env, {name: 'name', constraints: {}, types: [type]}, {}, type, 0, [], _mappings, proxy, [value]).isRight ?
+                     cata ({
+                       NoArguments: [],
+                       Unchecked: [],
+                       Inconsistent: [],
+                       NullaryType: _ => _ => _ => _ => [],
+                       EnumType: _ => _ => _ => [],
+                       UnaryType: name => url => supertypes => test2 => _1 => _ => (
+                         [UnaryType (name) (url) (supertypes) (test2) (_1) ($1)]
+                       ),
+                       BinaryType: name => url => supertypes => test2 => _1 => _2 => $1_ => _ => (
+                         [BinaryType (name) (url) (supertypes) (test2) (_1) (_2) ($1_) ($1)]
+                       ),
+                       Function: types => [Function_ (types)],
+                       RecordType: _ => [],
+                       NamedRecordType: _ => _ => _ => _ => [],
+                       TypeVariable: _ => [],
+                       UnaryTypeVariable: name => $1 => [],
+                       BinaryTypeVariable: name => $1 => $2 => [],
+                       Unknown: [],
+                     }) (type) :
+                     []
+                   ),
                    types
                  )
                : types;
