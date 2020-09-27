@@ -551,8 +551,8 @@ const Type$prototype = {
   'fantasy-land/equals': function(other) {
     return (
       Z.equals (this.type, other.type) &&
-      Z.equals (this.name, other.name) &&
-      Z.equals (this.url, other.url) &&
+      Z.equals (name (this), name (other)) &&
+      Z.equals (url (this), url (other)) &&
       Z.equals (this.supertypes, other.supertypes) &&
       Z.equals (Object.keys (this.blah), Object.keys (other.blah)) &&
       Z.all (k => Z.equals (this.blah[k].type, other.blah[k].type), Object.keys (this.blah))
@@ -718,6 +718,8 @@ const cata = cases => type => {
                    (type.blah.$1.type)
                    (type.blah.$2.type);
       }
+    case 'UNKNOWN':
+      return cases.Unknown;
   }
   console.log ('type:', show (type));
   throw new Error (show (type));
@@ -734,6 +736,7 @@ const url = type => cata ({
   TypeVariable: _ => '',
   UnaryTypeVariable: _ => _ => '',
   BinaryTypeVariable: _ => _ => _ => '',
+  Unknown: '',
 }) (type);
 
 //    name :: Type -> String
@@ -747,6 +750,7 @@ const name = type => cata ({
   TypeVariable: name => name,
   UnaryTypeVariable: name => _ => name,
   BinaryTypeVariable: name => _ => _ => name,
+  Unknown: '',
 }) (type);
 
 const NullaryType = name => url => supertypes => test2 => Object.assign (Object.create (Type$prototype), {
