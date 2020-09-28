@@ -1892,7 +1892,7 @@ const showTypeWith = types => {
   const names = Object.keys (Z.foldMap (Object, typeVarNames, types));
   return t => {
     let code = 'a'.charCodeAt (0);
-    return when (t._type === 'Function')
+    return when (cataDefault (false) ({Function: _ => true}) (t))
                 (parenthesize (I))
                 ((show (t)).replace (/\bUnknown\b/g, () => {
                    let name;
