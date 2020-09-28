@@ -123,7 +123,7 @@ function _underline(
   propPath,       // :: PropPath
   formatType3     // :: Type -> Array String -> String -> String
 ) {
-  return formatType3 (t) (propPath) (t.format (_) (k => (
+  return formatType3 (t) (propPath) (format (t) (_) (k => (
     K (_underline (innerType (k) (t),
                    Z.concat (propPath, [k]),
                    formatType3))
@@ -603,7 +603,7 @@ const satisfactoryTypes = (
 const Type$prototype = {
   '@@type': 'sanctuary-def/Type@1',
   '@@show': function() {
-    return this.format (I) (K (I));
+    return format (this) (I) (K (I));
   },
   'fantasy-land/equals': function(other) {
     return cata ({
@@ -729,27 +729,23 @@ const validate = env => typeInfo => index => path => mappings => proxy => value 
 $.Unknown = Object.assign (Object.create (Type$prototype), {
   cata: x => x,
   _type: 'Unknown',
-  format: outer => K (outer ('Unknown')),
   new: reject => resolve => env => typeInfo => index => path => resolve,
 });
 
 const Unchecked = s => Object.assign (Object.create (Type$prototype), {
-  cata: x => x,
+  cata: f => f (s),
   _type: 'Unchecked',
-  format: outer => K (outer (s)),
   new: reject => resolve => env => typeInfo => index => path => resolve,
 });
 
 $.Inconsistent = Object.assign (Object.create (Type$prototype), {
   cata: x => x,
   _type: 'Inconsistent',
-  format: outer => K (outer ('???')),
 });
 
 $.NoArguments = Object.assign (Object.create (Type$prototype), {
   cata: x => x,
   _type: 'NoArguments',
-  format: outer => K (outer ('()')),
 });
 
 //    arity :: Type -> Integer
@@ -791,11 +787,82 @@ const supertypes = cataDefault ([]) ({
   NamedRecordType: _ => _ => supertypes => _ => supertypes,
 });
 
+//    format :: Type -> String
+const format = cata ({
+  NoArguments: outer => inner => outer ('()'),
+  Unchecked: s => outer => inner => outer (s),
+  Inconsistent: outer => inner => outer ('???'),
+  NullaryType: name => _ => _ => _ => outer => inner => outer (name),
+  EnumType: name => _ => _ => outer => inner => outer (name),
+  UnaryType: name => url => supertypes => test2 => _1 => $1 => outer => inner => (
+    outer (name) +
+    outer (' ') +
+    when (arity ($1) > 0)
+         (parenthesize (outer))
+         (inner ('$1') (show ($1)))
+  ),
+  BinaryType: name => url => supertypes => test2 => _1 => _2 => $1 => $2 => outer => inner => (
+    outer (name) +
+    outer (' ') +
+    when (arity ($1) > 0)
+         (parenthesize (outer))
+         (inner ('$1') (show ($1))) +
+    outer (' ') +
+    when (arity ($2) > 0)
+         (parenthesize (outer))
+         (inner ('$2') (show ($2)))
+  ),
+  Function: types => outer => inner => (
+    when (types.length !== 2)
+         (parenthesize (outer))
+         (types
+          .slice (0, -1)
+          .map ((t, idx) => when (t._type === 'Function')
+                                 (parenthesize (outer))
+                                 (inner (`$${idx + 1}`) (show (t))))
+          .join (outer (', '))) +
+    outer (' -> ') +
+    inner (`$${types.length}`) (show (types[types.length - 1]))
+  ),
+  RecordType: fields => outer => inner => {
+    const keys = (Object.keys (fields)).sort ();
+    if (isEmpty (keys)) return outer ('{}');
+    const reprs = Z.map (k => {
+      const t = fields[k];
+      return outer (' ') +
+             outer (/^(?!\d)[$\w]+$/.test (k) ? k : show (k)) +
+             outer (' :: ') +
+             inner (k) (show (t));
+    }, keys);
+    return wrap (outer ('{')) (outer (' }')) (joinWith (outer (','), reprs));
+  },
+  NamedRecordType: name => _ => _ => _ => outer => inner => outer (name),
+  TypeVariable: name => outer => inner => outer (name),
+  UnaryTypeVariable: name => $1 => outer => inner => (
+    outer (name) +
+    outer (' ') +
+    when (arity ($1) > 0)
+         (parenthesize (outer))
+         (inner ('$1') (show ($1)))
+  ),
+  BinaryTypeVariable: name => $1 => $2 => outer => inner => (
+    outer (name) +
+    outer (' ') +
+    when (arity ($1) > 0)
+         (parenthesize (outer))
+         (inner ('$1') (show ($1))) +
+    outer (' ') +
+    when (arity ($2) > 0)
+         (parenthesize (outer))
+         (inner ('$2') (show ($2)))
+  ),
+  Unknown: outer => inner => outer ('Unknown'),
+});
+
 const NullaryType = name => url => supertypes => test2 => Object.assign (Object.create (Type$prototype), {
   cata: f => f (name) (url) (supertypes) (test2),
   _type: 'NullaryType',
   test2,
-  format: outer => K (outer (name)),
   new: reject => resolve => env => typeInfo => index => path => value => mappings => proxy => {
     try {
       supertypes.forEach (type => {
@@ -824,13 +891,6 @@ const UnaryType = name => url => supertypes => test2 => _1 => $1 => Object.assig
   cata: f => f (name) (url) (supertypes) (test2) (_1) ($1),
   _type: 'UnaryType',
   test2,
-  format: outer => inner => (
-    outer (name) +
-    outer (' ') +
-    when (arity ($1) > 0)
-         (parenthesize (outer))
-         (inner ('$1') (show ($1)))
-  ),
   new: reject => resolve => env => typeInfo => index => path => value => mappings => proxy => {
     try {
       supertypes.forEach (type => {
@@ -874,17 +934,6 @@ const BinaryType = name => url => supertypes => test2 => _1 => _2 => $1 => $2 =>
   cata: f => f (name) (url) (supertypes) (test2) (_1) (_2) ($1) ($2),
   _type: 'BinaryType',
   test2,
-  format: outer => inner => (
-    outer (name) +
-    outer (' ') +
-    when (arity ($1) > 0)
-         (parenthesize (outer))
-         (inner ('$1') (show ($1))) +
-    outer (' ') +
-    when (arity ($2) > 0)
-         (parenthesize (outer))
-         (inner ('$2') (show ($2)))
-  ),
   new: reject => resolve => env => typeInfo => index => path => value => mappings => proxy => {
     try {
       supertypes.forEach (type => {
@@ -938,7 +987,6 @@ const BinaryType = name => url => supertypes => test2 => _1 => _2 => $1 => $2 =>
 const EnumType = name => url => members => Object.assign (Object.create (Type$prototype), {
   cata: f => f (name) (url) (members),
   _type: 'EnumType',
-  format: outer => K (outer (name)),
   new: reject => resolve => env => typeInfo => index => path => value => mappings => proxy => (
     memberOf (members) (value)
     ? resolve (value) (mappings) (proxy)
@@ -950,7 +998,6 @@ const TypeVariable = name => Object.assign (Object.create (Type$prototype), {
   cata: f => f (name),
   _type: 'TypeVariable',
   name: name,  // XXX: Remove this
-  format: outer => K (outer (name)),
   new: reject => resolve => env => typeInfo => index => path => value => _mappings => proxy => {
     proxy.values =
       cons ({selector: JSON.stringify ([index, ...path]), value})
@@ -971,7 +1018,7 @@ const TypeVariable = name => Object.assign (Object.create (Type$prototype), {
         ? Z.chain (
             cata ({
               NoArguments: [$.NoArguments],
-              Unchecked: [$.Unchecked],
+              Unchecked: s => [$.Unchecked (s)],
               Inconsistent: [$.Inconsistent],
               NullaryType: name => url => supertypes => test2 => [NullaryType (name) (url) (supertypes) (test2)],
               EnumType: name => url => members => [EnumType (name) (url) (members)],
@@ -1035,13 +1082,6 @@ const TypeVariable = name => Object.assign (Object.create (Type$prototype), {
 const UnaryTypeVariable = name => $1 => Object.assign (Object.create (Type$prototype), {
   cata: f => f (name) ($1),
   _type: 'UnaryTypeVariable',
-  format: outer => inner => (
-    outer (name) +
-    outer (' ') +
-    when (arity ($1) > 0)
-         (parenthesize (outer))
-         (inner ('$1') (show ($1)))
-  ),
   new: reject => resolve => env => typeInfo => index => path => value => _mappings => proxy => {
     const mappings = {
       types: name_ => {
@@ -1052,7 +1092,7 @@ const UnaryTypeVariable = name => $1 => Object.assign (Object.create (Type$proto
                      satisfactoryTypes (env, {name: 'name', constraints: {}, types: [type]}, {}, type, 0, [], _mappings, proxy, [value]).isRight ?
                      cata ({
                        NoArguments: [],
-                       Unchecked: [],
+                       Unchecked: _ => [],
                        Inconsistent: [],
                        NullaryType: _ => _ => _ => _ => [],
                        EnumType: _ => _ => _ => [],
@@ -1137,17 +1177,6 @@ const UnaryTypeVariable = name => $1 => Object.assign (Object.create (Type$proto
 const BinaryTypeVariable = name => $1 => $2 => Object.assign (Object.create (Type$prototype), {
   cata: f => f (name) ($1) ($2),
   _type: 'BinaryTypeVariable',
-  format: outer => inner => (
-    outer (name) +
-    outer (' ') +
-    when (arity ($1) > 0)
-         (parenthesize (outer))
-         (inner ('$1') (show ($1))) +
-    outer (' ') +
-    when (arity ($2) > 0)
-         (parenthesize (outer))
-         (inner ('$2') (show ($2)))
-  ),
   new: reject => resolve => env => typeInfo => index => path => value => _mappings => proxy => {
     const mappings = {
       types: name_ => {
@@ -1210,18 +1239,6 @@ const Function_ = types => Object.assign (Object.create (Type$prototype), {
   cata: f => f (types),
   _type: 'Function',
   test2: K (true),
-  format: outer => inner => (
-    when (types.length !== 2)
-         (parenthesize (outer))
-         (types
-          .slice (0, -1)
-          .map ((t, idx) => when (t._type === 'Function')
-                                 (parenthesize (outer))
-                                 (inner (`$${idx + 1}`) (show (t))))
-          .join (outer (', '))) +
-    outer (' -> ') +
-    inner (`$${types.length}`) (show (types[types.length - 1]))
-  ),
   new: reject => resolve => env => typeInfo => index => path => value => mappings => proxy => {
     try {
       $.AnyFunction.new
@@ -1270,17 +1287,6 @@ const RecordType = fields => {
   return Object.assign (Object.create (Type$prototype), {
     cata: f => f (fields),
     _type: 'RecordType',
-    format: outer => inner => {
-      if (isEmpty (keys)) return outer ('{}');
-      const reprs = Z.map (k => {
-        const t = fields[k];
-        return outer (' ') +
-               outer (/^(?!\d)[$\w]+$/.test (k) ? k : show (k)) +
-               outer (' :: ') +
-               inner (k) (show (t));
-      }, keys);
-      return wrap (outer ('{')) (outer (' }')) (joinWith (outer (','), reprs));
-    },
     new: reject => resolve => env => typeInfo => index => path => value => mappings => proxy => {
       if (value == null) {
         return reject (() => invalidValue (env, typeInfo, index, path, mappings, proxy, value));
@@ -1318,7 +1324,6 @@ const NamedRecordType = name => url => supertypes => fields => {
   return Object.assign (Object.create (Type$prototype), {
     cata: f => f (name) (url) (supertypes) (fields),
     _type: 'NamedRecordType',
-    format: outer => K (outer (name)),
     new: reject => resolve => env => typeInfo => index => path => value => mappings => proxy => {
       if (value == null) {
         return reject (() => invalidValue (env, typeInfo, index, path, mappings, proxy, value));
@@ -1826,7 +1831,7 @@ const invalidArgumentsLength = (
       typeInfo,
       K (K (_)),
       index_ => f => t => propPath => s => (
-        index_ === index ? t.format (_) (k => k === '$1' ? f : _) : _ (s)
+        index_ === index ? format (t) (_) (k => k === '$1' ? f : _) : _ (s)
       )
     ) + '\n' +
     'Expected ' + numArgs (numArgsExpected) +
@@ -1867,7 +1872,7 @@ const label = label => s => {
 //    typeVarNames :: Type -> StrMap Integer
 const typeVarNames = cata ({
   NoArguments: {},
-  Unchecked: {},
+  Unchecked: _ => ({}),
   Inconsistent: {},
   NullaryType: _ => _ => _ => _ => ({}),
   EnumType: _ => _ => _ => ({}),
