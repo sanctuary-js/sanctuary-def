@@ -817,9 +817,7 @@ const format = cata ({
          (parenthesize (outer))
          (types
           .slice (0, -1)
-          .map ((t, idx) => when (cataDefault (false) ({Function: _ => true}) (t))
-                                 (parenthesize (outer))
-                                 (inner (`$${idx + 1}`) (show (t))))
+          .map ((t, idx) => cataDefault (I) ({Function: _ => parenthesize (outer)}) (t) (inner (`$${idx + 1}`) (show (t))))
           .join (outer (', '))) +
     outer (' -> ') +
     inner (`$${types.length}`) (show (types[types.length - 1]))
