@@ -1889,15 +1889,17 @@ const showTypeWith = types => {
   const names = Object.keys (Z.foldMap (Object, typeVarNames, types));
   return t => {
     let code = 'a'.charCodeAt (0);
-    return when (cataDefault (false) ({Function: _ => true}) (t))
-                (parenthesize (I))
-                ((show (t)).replace (/\bUnknown\b/g, () => {
-                   let name;
-                   // eslint-disable-next-line no-plusplus
-                   do name = String.fromCharCode (code++);
-                   while (names.indexOf (name) >= 0);
-                   return name;
-                 }));
+    return cataDefault (I)
+                       ({Function: _ => parenthesize (I)})
+                       (t)
+                       (show (t)
+                        .replace (/\bUnknown\b/g, () => {
+                          let name;
+                          // eslint-disable-next-line no-plusplus
+                          do name = String.fromCharCode (code++);
+                          while (names.indexOf (name) >= 0);
+                          return name;
+                        }));
   };
 };
 
