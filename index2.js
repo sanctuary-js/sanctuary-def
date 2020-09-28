@@ -1165,36 +1165,38 @@ const BinaryTypeVariable = name => $1 => $2 => Object.assign (Object.create (Typ
     return resolve (value)
                    (mappings)
                    (reduce
-                      (proxy => type => (
-                         reduce
-                           (proxy => value => (
-                              $2.new
-                                (reject)
-                                (value => mappings => proxy => proxy)
-                                (env)
-                                (typeInfo)
-                                (index)
-                                ([...path, '$2'])
-                                (value)
-                                (mappings)
-                                (proxy)
-                            ))
-                           (reduce
-                              (proxy => value => (
-                                 $1.new
-                                   (reject)
-                                   (value => mappings => proxy => proxy)
-                                   (env)
-                                   (typeInfo)
-                                   (index)
-                                   ([...path, '$1'])
-                                   (value)
-                                   (mappings)
-                                   (proxy)
-                               ))
-                              (proxy)
-                              (type.blah.$1.extract (value)))
-                           (type.blah.$2.extract (value))
+                      (proxy => (
+                         cataDefault (proxy) ({
+                           BinaryType: name => url => supertypes => test2 => _1 => _2 => _ => _ => (
+                             reduce (proxy => value => (
+                                       $2.new
+                                         (reject)
+                                         (value => mappings => proxy => proxy)
+                                         (env)
+                                         (typeInfo)
+                                         (index)
+                                         ([...path, '$2'])
+                                         (value)
+                                         (mappings)
+                                         (proxy)
+                                     ))
+                                    (reduce (proxy => value => (
+                                               $1.new
+                                                 (reject)
+                                                 (value => mappings => proxy => proxy)
+                                                 (env)
+                                                 (typeInfo)
+                                                 (index)
+                                                 ([...path, '$1'])
+                                                 (value)
+                                                 (mappings)
+                                                 (proxy)
+                                             ))
+                                            (proxy)
+                                            (_1 (value)))
+                                    (_2 (value))
+                           ),
+                         })
                        ))
                       (proxy)
                       (types));
