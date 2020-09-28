@@ -659,15 +659,12 @@ const ancestors = type => (
 );
 
 //    extract :: String -> Type -> Any -> Array Any
-const extract = key => type => x => {
-  const foldable = type.blah[key].extract (x);
-  return (
-    Array.isArray (foldable)
-    ? foldable
-    // eslint-disable-next-line no-sequences
-    : Z.reduce ((xs, x) => (xs.push (x), xs), [], foldable)
-  );
-};
+const extract = key => cataDefault (value => []) ({
+  UnaryType: _ => _ => _ => _ => _1 => _ => value => key === '$1' ? toArray (_1 (value)) : TK,
+  BinaryType: _ => _ => _ => _ => _1 => _2 => _ => _ => value => key === '$1' ? toArray (_1 (value)) : key === '$2' ? toArray (_2 (value)) : TK,
+  RecordType: _ => value => [value[key]],
+  NamedRecordType: _ => _ => _ => _ => value => [value[key]],
+});
 
 const validate = env => typeInfo => index => path => mappings => proxy => value => type => {
   if (
@@ -816,7 +813,7 @@ const UnaryType = name => url => supertypes => test2 => _1 => $1 => Object.assig
   cata: f => f (name) (url) (supertypes) (test2) (_1) ($1),
   _type: 'UnaryType',
   blah: {
-    $1: {type: $1, extract: _1},
+    $1: {type: $1},
   },
   test2,
   format: outer => inner => (
@@ -869,8 +866,8 @@ const BinaryType = name => url => supertypes => test2 => _1 => _2 => $1 => $2 =>
   cata: f => f (name) (url) (supertypes) (test2) (_1) (_2) ($1) ($2),
   _type: 'BinaryType',
   blah: {
-    $1: {type: $1, extract: _1},
-    $2: {type: $2, extract: _2},
+    $1: {type: $1},
+    $2: {type: $2},
   },
   test2,
   format: outer => inner => (
@@ -1037,7 +1034,7 @@ const UnaryTypeVariable = name => $1 => Object.assign (Object.create (Type$proto
   cata: f => f (name) ($1),
   _type: 'UnaryTypeVariable',
   blah: {
-    $1: {type: $1, extract: K ([])},
+    $1: {type: $1},
   },
   format: outer => inner => (
     outer (name) +
@@ -1131,7 +1128,7 @@ const UnaryTypeVariable = name => $1 => Object.assign (Object.create (Type$proto
                                 (proxy)
                             ))
                            (proxy)
-                           (type.blah[`$${arity (type)}`].extract (value))
+                           (extract (`$${arity (type)}`) (type) (value))
                        ))
                       (proxy)
                       (types));
@@ -1142,8 +1139,8 @@ const BinaryTypeVariable = name => $1 => $2 => Object.assign (Object.create (Typ
   cata: f => f (name) ($1) ($2),
   _type: 'BinaryTypeVariable',
   blah: {
-    $1: {type: $1, extract: K ([])},
-    $2: {type: $2, extract: K ([])},
+    $1: {type: $1},
+    $2: {type: $2},
   },
   format: outer => inner => (
     outer (name) +
@@ -1219,7 +1216,7 @@ const Function_ = types => Object.assign (Object.create (Type$prototype), {
   _type: 'Function',
   blah: types.reduce (
     (blah, t, idx) => {
-      blah[`$${idx + 1}`] = {type: t, extract: K ([])};
+      blah[`$${idx + 1}`] = {type: t};
       return blah;
     },
     {}
@@ -1287,7 +1284,7 @@ const RecordType = fields => {
     _type: 'RecordType',
     blah: keys.reduce (
       // eslint-disable-next-line no-sequences
-      (blah, k) => (blah[k] = {type: fields[k], extract: x => [x[k]]}, blah),
+      (blah, k) => (blah[k] = {type: fields[k]}, blah),
       {}
     ),
     format: outer => inner => {
@@ -1340,7 +1337,7 @@ const NamedRecordType = name => url => supertypes => fields => {
     _type: 'NamedRecordType',
     blah: keys.reduce (
       // eslint-disable-next-line no-sequences
-      (blah, k) => (blah[k] = {type: fields[k], extract: x => [x[k]]}, blah),
+      (blah, k) => (blah[k] = {type: fields[k]}, blah),
       {}
     ),
     format: outer => K (outer (name)),
