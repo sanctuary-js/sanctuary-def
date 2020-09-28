@@ -138,7 +138,7 @@ function underline(
   // :: Integer -> (String -> String) -> Type -> PropPath -> String -> String
 ) {
   const st = typeInfo.types.reduce ((st, t, index) => {
-    const f = B (when (t._type === 'Function')
+    const f = B (when (cataDefault (false) ({Function: _ => true}) (t))
                       (parenthesize (_)))
                 (B (f => _underline (t, [], f))
                    (formatType5 (index)));
