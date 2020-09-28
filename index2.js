@@ -813,7 +813,7 @@ const UnaryType = name => url => supertypes => test2 => _1 => $1 => Object.assig
   cata: f => f (name) (url) (supertypes) (test2) (_1) ($1),
   _type: 'UnaryType',
   blah: {
-    $1: {type: $1},
+    $1: $1,
   },
   test2,
   format: outer => inner => (
@@ -866,8 +866,8 @@ const BinaryType = name => url => supertypes => test2 => _1 => _2 => $1 => $2 =>
   cata: f => f (name) (url) (supertypes) (test2) (_1) (_2) ($1) ($2),
   _type: 'BinaryType',
   blah: {
-    $1: {type: $1},
-    $2: {type: $2},
+    $1: $1,
+    $2: $2,
   },
   test2,
   format: outer => inner => (
@@ -1034,7 +1034,7 @@ const UnaryTypeVariable = name => $1 => Object.assign (Object.create (Type$proto
   cata: f => f (name) ($1),
   _type: 'UnaryTypeVariable',
   blah: {
-    $1: {type: $1},
+    $1: $1,
   },
   format: outer => inner => (
     outer (name) +
@@ -1139,8 +1139,8 @@ const BinaryTypeVariable = name => $1 => $2 => Object.assign (Object.create (Typ
   cata: f => f (name) ($1) ($2),
   _type: 'BinaryTypeVariable',
   blah: {
-    $1: {type: $1},
-    $2: {type: $2},
+    $1: $1,
+    $2: $2,
   },
   format: outer => inner => (
     outer (name) +
@@ -1216,7 +1216,7 @@ const Function_ = types => Object.assign (Object.create (Type$prototype), {
   _type: 'Function',
   blah: types.reduce (
     (blah, t, idx) => {
-      blah[`$${idx + 1}`] = {type: t};
+      blah[`$${idx + 1}`] = t;
       return blah;
     },
     {}
@@ -1284,7 +1284,7 @@ const RecordType = fields => {
     _type: 'RecordType',
     blah: keys.reduce (
       // eslint-disable-next-line no-sequences
-      (blah, k) => (blah[k] = {type: fields[k]}, blah),
+      (blah, k) => (blah[k] = fields[k], blah),
       {}
     ),
     format: outer => inner => {
@@ -1337,7 +1337,7 @@ const NamedRecordType = name => url => supertypes => fields => {
     _type: 'NamedRecordType',
     blah: keys.reduce (
       // eslint-disable-next-line no-sequences
-      (blah, k) => (blah[k] = {type: fields[k]}, blah),
+      (blah, k) => (blah[k] = fields[k], blah),
       {}
     ),
     format: outer => K (outer (name)),
