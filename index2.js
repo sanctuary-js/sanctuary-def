@@ -817,7 +817,7 @@ const format = cata ({
          (parenthesize (outer))
          (types
           .slice (0, -1)
-          .map ((t, idx) => when (t._type === 'Function')
+          .map ((t, idx) => when (cataDefault (false) ({Function: _ => true}) (t))
                                  (parenthesize (outer))
                                  (inner (`$${idx + 1}`) (show (t))))
           .join (outer (', '))) +
