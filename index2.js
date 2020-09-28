@@ -1001,50 +1001,9 @@ const TypeVariable = name => Object.assign (Object.create (Type$prototype), {
       ),
     };
 
-    const mappings_ = reduce
-      (mappings => t => {
-         if (arity (t) === 0) return mappings;
-
-         const mappings$1 = reduce
-           (mappings => value => (
-              t.blah.$1.type.new
-                (reject)
-                (value => mappings => proxy => mappings)
-                (env)
-                (typeInfo)
-                (index)
-                ([...path, '$1'])
-                (value)
-                (mappings)
-                (proxy)
-            ))
-           (mappings)
-           (t.blah.$1.extract (value));
-         if (arity (t) === 1) return mappings$1;
-
-         const mappings$2 = reduce
-           (mappings => value => (
-              t.blah.$2.type.new
-                (reject)
-                (value => mappings => proxy => mappings)
-                (env)
-                (typeInfo)
-                (index)
-                ([...path, '$2'])
-                (value)
-                (mappings)
-                (proxy)
-            ))
-           (mappings$1)
-           (t.blah.$2.extract (value));
-         if (arity (t) === 2) return mappings$2;
-       })
-      (mappings)
-      (mappings.types (name));
-
-    if ((mappings_.types (name)).length > 0) {
+    if ((mappings.types (name)).length > 0) {
       return resolve (value) (mappings) (proxy);
-    } else if (Z.any (t => (satisfactoryTypes (env, {name: 'name', constraints: {}, types: [t]}, {}, t, 0, [], mappings_, proxy, [value])).isRight, env)) {
+    } else if (Z.any (t => (satisfactoryTypes (env, {name: 'name', constraints: {}, types: [t]}, {}, t, 0, [], mappings, proxy, [value])).isRight, env)) {
       const values = [];
       let p = proxy;
       //  Find rightmost proxy to avoid having to look in both directions.
