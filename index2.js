@@ -124,7 +124,7 @@ function _underline(
   formatType3     // :: Type -> Array String -> String -> String
 ) {
   return formatType3 (t) (propPath) (t.format (_) (k => (
-    K (_underline (t.blah[k].type,
+    K (_underline (innerType (k) (t),
                    Z.concat (propPath, [k]),
                    formatType3))
   )));
@@ -158,7 +158,7 @@ function underline(
 
 //  resolvePropPath :: (Type, Array String) -> Type
 function resolvePropPath(t, propPath) {
-  return Z.reduce ((t, prop) => t.blah[prop].type, t, propPath);
+  return Z.reduce ((t, prop) => innerType (prop) (t), t, propPath);
 }
 
 //  formatType6 ::
@@ -237,6 +237,21 @@ const underlineTypeVars = (typeInfo, valuesByPath) => {
   );
 };
 
+const cata = cases => type => type.cata (cases[type._type]);
+
+const cataDefault = x => cases => type => Object.prototype.hasOwnProperty.call (cases, type._type) ? type.cata (cases[type._type]) : x;
+
+//    innerType :: String -> Type -> Type
+const innerType = prop => cata ({
+  UnaryType: name => url => supertypes => test2 => _1 => $1 => prop === '$1' ? $1 : TK,
+  BinaryType: name => url => supertypes => test2 => _1 => _2 => $1 => $2 => prop === '$1' ? $1 : prop === '$2' ? $2 : TK,
+  UnaryTypeVariable: name => $1 => prop === '$1' ? $1 : TK,
+  BinaryTypeVariable: name => $1 => $2 => prop === '$1' ? $1 : prop === '$2' ? $2 : TK,
+  RecordType: fields => fields[prop],
+  NamedRecordType: _ => _ => _ => fields => fields[prop],
+  Function: types => prop === '$1' ? types[0] : prop === '$2' ? types[1] : prop === '$3' ? types[2] : TK,
+});
+
 //    typeVarConstraintViolation :: ... -> Error
 const typeVarConstraintViolation = (
   env,            // :: Array Type
@@ -253,12 +268,12 @@ const typeVarConstraintViolation = (
   const selector = JSON.stringify (Z.concat ([index], propPath));
   const values = Z.chain (r => r.selector === selector ? [r.value] : [], valuesAtPath);
 
-  const {name} = propPath.reduce ((t, prop) => t.blah[prop].type, typeInfo.types[index]);
+  const {name} = propPath.reduce ((t, prop) => innerType (prop) (t), typeInfo.types[index]);
 
   const valuesByPath = reduce
     (acc => r => {
        const [index, ...propPath] = JSON.parse (r.selector);
-       const {name: name_} = propPath.reduce ((t, prop) => t.blah[prop].type, typeInfo.types[index]);
+       const {name: name_} = propPath.reduce ((t, prop) => innerType (prop) (t), typeInfo.types[index]);
        if (name_ === name) {
          if (!(r.selector in acc)) {
            acc[r.selector] = [];
@@ -447,10 +462,6 @@ const _determineActualTypes = (
     [$.Unknown] :
     or (Z.reduce (refine, env, values), [$.Inconsistent]);
 };
-
-const cata = cases => type => type.cata (cases[type._type]);
-
-const cataDefault = x => cases => type => Object.prototype.hasOwnProperty.call (cases, type._type) ? type.cata (cases[type._type]) : x;
 
 //    isConsistent :: Type -> Boolean
 const isConsistent = cataDefault (true) ({
@@ -691,7 +702,7 @@ const validate = env => typeInfo => index => path => mappings => proxy => value 
   ) return {value, propPath: []};
 
   for (const k of Object.keys (type.blah)) {
-    const t = type.blah[k].type;
+    const t = innerType (k) (type);
     const ys = extract (k) (type) (value);
     for (const y of ys) {
       const result = validate (env) (typeInfo) (index) (path) (mappings) (proxy) (y) (t);
