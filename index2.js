@@ -698,22 +698,37 @@ const validate = env => typeInfo => index => path => mappings => proxy => value 
       (proxy)
   ) return {value, propPath: []};
 
-  for (const k of type.blah) {
-    const t = innerType (k) (type);
-    const ys = extract (k) (type) (value);
-    for (const y of ys) {
-      const result = validate (env) (typeInfo) (index) (path) (mappings) (proxy) (y) (t);
-      if (result != null) {
-        return {value: result.value, propPath: Z.prepend (k, result.propPath)};
+  return cataDefault (null) ({
+    UnaryType: name => url => supertypes => test2 => _1 => $1 => {
+      for (const x of toArray (_1 (value))) {
+        const result = validate (env) (typeInfo) (index) (path) (mappings) (proxy) (x) ($1);
+        if (result != null) {
+          return {value: result.value, propPath: Z.prepend ('$1', result.propPath)};
+        }
       }
-    }
-  }
+      return null;
+    },
+    BinaryType: name => url => supertypes => test2 => _1 => _2 => $1 => $2 => {
+      for (const x of toArray (_1 (value))) {
+        const result = validate (env) (typeInfo) (index) (path) (mappings) (proxy) (x) ($1);
+        if (result != null) {
+          return {value: result.value, propPath: Z.prepend ('$1', result.propPath)};
+        }
+      }
+      for (const x of toArray (_2 (value))) {
+        const result = validate (env) (typeInfo) (index) (path) (mappings) (proxy) (x) ($2);
+        if (result != null) {
+          return {value: result.value, propPath: Z.prepend ('$2', result.propPath)};
+        }
+      }
+      return null;
+    },
+  }) (type);
 };
 
 $.Unknown = Object.assign (Object.create (Type$prototype), {
   cata: x => x,
   _type: 'Unknown',
-  blah: [],
   format: outer => K (outer ('Unknown')),
   new: reject => resolve => env => typeInfo => index => path => resolve,
 });
@@ -721,7 +736,6 @@ $.Unknown = Object.assign (Object.create (Type$prototype), {
 const Unchecked = s => Object.assign (Object.create (Type$prototype), {
   cata: x => x,
   _type: 'Unchecked',
-  blah: [],
   format: outer => K (outer (s)),
   new: reject => resolve => env => typeInfo => index => path => resolve,
 });
@@ -729,14 +743,12 @@ const Unchecked = s => Object.assign (Object.create (Type$prototype), {
 $.Inconsistent = Object.assign (Object.create (Type$prototype), {
   cata: x => x,
   _type: 'Inconsistent',
-  blah: [],
   format: outer => K (outer ('???')),
 });
 
 $.NoArguments = Object.assign (Object.create (Type$prototype), {
   cata: x => x,
   _type: 'NoArguments',
-  blah: [],
   format: outer => K (outer ('()')),
 });
 
@@ -782,7 +794,6 @@ const supertypes = cataDefault ([]) ({
 const NullaryType = name => url => supertypes => test2 => Object.assign (Object.create (Type$prototype), {
   cata: f => f (name) (url) (supertypes) (test2),
   _type: 'NullaryType',
-  blah: [],
   test2,
   format: outer => K (outer (name)),
   new: reject => resolve => env => typeInfo => index => path => value => mappings => proxy => {
@@ -812,7 +823,6 @@ const NullaryType = name => url => supertypes => test2 => Object.assign (Object.
 const UnaryType = name => url => supertypes => test2 => _1 => $1 => Object.assign (Object.create (Type$prototype), {
   cata: f => f (name) (url) (supertypes) (test2) (_1) ($1),
   _type: 'UnaryType',
-  blah: ['$1'],
   test2,
   format: outer => inner => (
     outer (name) +
@@ -863,7 +873,6 @@ const UnaryType = name => url => supertypes => test2 => _1 => $1 => Object.assig
 const BinaryType = name => url => supertypes => test2 => _1 => _2 => $1 => $2 => Object.assign (Object.create (Type$prototype), {
   cata: f => f (name) (url) (supertypes) (test2) (_1) (_2) ($1) ($2),
   _type: 'BinaryType',
-  blah: ['$1', '$2'],
   test2,
   format: outer => inner => (
     outer (name) +
@@ -929,7 +938,6 @@ const BinaryType = name => url => supertypes => test2 => _1 => _2 => $1 => $2 =>
 const EnumType = name => url => members => Object.assign (Object.create (Type$prototype), {
   cata: f => f (name) (url) (members),
   _type: 'EnumType',
-  blah: [],
   format: outer => K (outer (name)),
   new: reject => resolve => env => typeInfo => index => path => value => mappings => proxy => (
     memberOf (members) (value)
@@ -942,7 +950,6 @@ const TypeVariable = name => Object.assign (Object.create (Type$prototype), {
   cata: f => f (name),
   _type: 'TypeVariable',
   name: name,  // XXX: Remove this
-  blah: [],
   format: outer => K (outer (name)),
   new: reject => resolve => env => typeInfo => index => path => value => _mappings => proxy => {
     proxy.values =
@@ -1028,7 +1035,6 @@ const TypeVariable = name => Object.assign (Object.create (Type$prototype), {
 const UnaryTypeVariable = name => $1 => Object.assign (Object.create (Type$prototype), {
   cata: f => f (name) ($1),
   _type: 'UnaryTypeVariable',
-  blah: ['$1'],
   format: outer => inner => (
     outer (name) +
     outer (' ') +
@@ -1131,7 +1137,6 @@ const UnaryTypeVariable = name => $1 => Object.assign (Object.create (Type$proto
 const BinaryTypeVariable = name => $1 => $2 => Object.assign (Object.create (Type$prototype), {
   cata: f => f (name) ($1) ($2),
   _type: 'BinaryTypeVariable',
-  blah: ['$1', '$2'],
   format: outer => inner => (
     outer (name) +
     outer (' ') +
@@ -1204,13 +1209,6 @@ const BinaryTypeVariable = name => $1 => $2 => Object.assign (Object.create (Typ
 const Function_ = types => Object.assign (Object.create (Type$prototype), {
   cata: f => f (types),
   _type: 'Function',
-  blah: types.reduce (
-    (blah, t, idx) => {
-      blah.push (`$${idx + 1}`);
-      return blah;
-    },
-    []
-  ),
   test2: K (true),
   format: outer => inner => (
     when (types.length !== 2)
@@ -1272,7 +1270,6 @@ const RecordType = fields => {
   return Object.assign (Object.create (Type$prototype), {
     cata: f => f (fields),
     _type: 'RecordType',
-    blah: keys,
     format: outer => inner => {
       if (isEmpty (keys)) return outer ('{}');
       const reprs = Z.map (k => {
@@ -1321,7 +1318,6 @@ const NamedRecordType = name => url => supertypes => fields => {
   return Object.assign (Object.create (Type$prototype), {
     cata: f => f (name) (url) (supertypes) (fields),
     _type: 'NamedRecordType',
-    blah: keys,
     format: outer => K (outer (name)),
     new: reject => resolve => env => typeInfo => index => path => value => mappings => proxy => {
       if (value == null) {
