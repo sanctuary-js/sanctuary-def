@@ -482,7 +482,7 @@ const determineActualTypesStrict = (env, typeInfo, index, path, mappings, proxy,
 
 //    determineActualTypesLoose :: (Array Type, Array Any) -> Array Type
 const determineActualTypesLoose = (env, typeInfo, index, path, mappings, proxy, values) => (
-  Z.reject (t => t._type === 'Inconsistent',
+  Z.reject (cataDefault (false) ({Inconsistent: true}),
             _determineActualTypes (env, typeInfo, index, path, mappings, proxy, [], values))
 );
 
