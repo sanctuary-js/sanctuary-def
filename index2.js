@@ -236,9 +236,27 @@ const underlineTypeVars = (typeInfo, valuesByPath) => {
   );
 };
 
+//    always :: a -> Type -> Cases a
+const always = x => ({
+  NoArguments:                                                                      x,
+  Unchecked:          s =>                                                          x,
+  Inconsistent:                                                                     x,
+  NullaryType:        name => url => supertypes => test2 =>                         x,
+  EnumType:           name => url => members =>                                     x,
+  UnaryType:          name => url => supertypes => test2 => _1 =>       $1 =>       x,
+  BinaryType:         name => url => supertypes => test2 => _1 => _2 => $1 => $2 => x,
+  Function:                                                             types =>    x,
+  RecordType:                                      fields =>                        x,
+  NamedRecordType:    name => url => supertypes => fields =>                        x,
+  TypeVariable:       name =>                                                       x,
+  UnaryTypeVariable:  name =>                                           $1 =>       x,
+  BinaryTypeVariable: name =>                                           $1 => $2 => x,
+  Unknown:                                                                          x,
+});
+
 const cata = cases => type => type.cata (cases);
 
-const cataDefault = x => cases => type => Object.prototype.hasOwnProperty.call (cases, type._type) ? type.cata (cases) : x;
+const cataDefault = x => cases => cata (Z.concat (always (x), cases));
 
 //    innerType :: String -> Type -> Type
 const innerType = prop => cata ({
@@ -727,24 +745,20 @@ const validate = env => typeInfo => index => path => mappings => proxy => value 
 
 $.Unknown = Object.assign (Object.create (Type$prototype), {
   cata: cases => cases.Unknown,
-  _type: 'Unknown',
   new: reject => resolve => env => typeInfo => index => path => resolve,
 });
 
 const Unchecked = s => Object.assign (Object.create (Type$prototype), {
   cata: cases => cases.Unchecked (s),
-  _type: 'Unchecked',
   new: reject => resolve => env => typeInfo => index => path => resolve,
 });
 
 $.Inconsistent = Object.assign (Object.create (Type$prototype), {
   cata: cases => cases.Inconsistent,
-  _type: 'Inconsistent',
 });
 
 $.NoArguments = Object.assign (Object.create (Type$prototype), {
   cata: cases => cases.NoArguments,
-  _type: 'NoArguments',
 });
 
 //    arity :: Type -> Integer
@@ -858,7 +872,6 @@ const format = cata ({
 
 const NullaryType = name => url => supertypes => test2 => Object.assign (Object.create (Type$prototype), {
   cata: cases => cases.NullaryType (name) (url) (supertypes) (test2),
-  _type: 'NullaryType',
   test2,
   new: reject => resolve => env => typeInfo => index => path => value => mappings => proxy => {
     try {
@@ -886,7 +899,6 @@ const NullaryType = name => url => supertypes => test2 => Object.assign (Object.
 
 const UnaryType = name => url => supertypes => test2 => _1 => $1 => Object.assign (Object.create (Type$prototype), {
   cata: cases => cases.UnaryType (name) (url) (supertypes) (test2) (_1) ($1),
-  _type: 'UnaryType',
   test2,
   new: reject => resolve => env => typeInfo => index => path => value => mappings => proxy => {
     try {
@@ -929,7 +941,6 @@ const UnaryType = name => url => supertypes => test2 => _1 => $1 => Object.assig
 
 const BinaryType = name => url => supertypes => test2 => _1 => _2 => $1 => $2 => Object.assign (Object.create (Type$prototype), {
   cata: cases => cases.BinaryType (name) (url) (supertypes) (test2) (_1) (_2) ($1) ($2),
-  _type: 'BinaryType',
   test2,
   new: reject => resolve => env => typeInfo => index => path => value => mappings => proxy => {
     try {
@@ -983,7 +994,6 @@ const BinaryType = name => url => supertypes => test2 => _1 => _2 => $1 => $2 =>
 
 const EnumType = name => url => members => Object.assign (Object.create (Type$prototype), {
   cata: cases => cases.EnumType (name) (url) (members),
-  _type: 'EnumType',
   new: reject => resolve => env => typeInfo => index => path => value => mappings => proxy => (
     memberOf (members) (value)
     ? resolve (value) (mappings) (proxy)
@@ -993,7 +1003,6 @@ const EnumType = name => url => members => Object.assign (Object.create (Type$pr
 
 const TypeVariable = name => Object.assign (Object.create (Type$prototype), {
   cata: cases => cases.TypeVariable (name),
-  _type: 'TypeVariable',
   name: name,  // XXX: Remove this
   new: reject => resolve => env => typeInfo => index => path => value => _mappings => proxy => {
     proxy.values =
@@ -1078,7 +1087,6 @@ const TypeVariable = name => Object.assign (Object.create (Type$prototype), {
 
 const UnaryTypeVariable = name => $1 => Object.assign (Object.create (Type$prototype), {
   cata: cases => cases.UnaryTypeVariable (name) ($1),
-  _type: 'UnaryTypeVariable',
   new: reject => resolve => env => typeInfo => index => path => value => _mappings => proxy => {
     const mappings = {
       types: name_ => {
@@ -1173,7 +1181,6 @@ const UnaryTypeVariable = name => $1 => Object.assign (Object.create (Type$proto
 
 const BinaryTypeVariable = name => $1 => $2 => Object.assign (Object.create (Type$prototype), {
   cata: cases => cases.BinaryTypeVariable (name) ($1) ($2),
-  _type: 'BinaryTypeVariable',
   new: reject => resolve => env => typeInfo => index => path => value => _mappings => proxy => {
     const mappings = {
       types: name_ => {
@@ -1234,7 +1241,6 @@ const BinaryTypeVariable = name => $1 => $2 => Object.assign (Object.create (Typ
 
 const Function_ = types => Object.assign (Object.create (Type$prototype), {
   cata: cases => cases.Function (types),
-  _type: 'Function',
   test2: K (true),
   new: reject => resolve => env => typeInfo => index => path => value => mappings => proxy => {
     try {
@@ -1283,7 +1289,6 @@ const RecordType = fields => {
   const keys = (Object.keys (fields)).sort ();
   return Object.assign (Object.create (Type$prototype), {
     cata: cases => cases.RecordType (fields),
-    _type: 'RecordType',
     new: reject => resolve => env => typeInfo => index => path => value => mappings => proxy => {
       if (value == null) {
         return reject (() => invalidValue (env, typeInfo, index, path, mappings, proxy, value));
@@ -1320,7 +1325,6 @@ const NamedRecordType = name => url => supertypes => fields => {
   const keys = (Object.keys (fields)).sort ();
   return Object.assign (Object.create (Type$prototype), {
     cata: cases => cases.NamedRecordType (name) (url) (supertypes) (fields),
-    _type: 'NamedRecordType',
     new: reject => resolve => env => typeInfo => index => path => value => mappings => proxy => {
       if (value == null) {
         return reject (() => invalidValue (env, typeInfo, index, path, mappings, proxy, value));
