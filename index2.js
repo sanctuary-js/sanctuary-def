@@ -285,13 +285,13 @@ const typeVarConstraintViolation = (
   const selector = JSON.stringify (Z.concat ([index], propPath));
   const values = Z.chain (r => r.selector === selector ? [r.value] : [], valuesAtPath);
 
-  const {name} = propPath.reduce ((t, prop) => innerType (prop) (t), typeInfo.types[index]);
+  const name1 = name (propPath.reduce ((t, prop) => innerType (prop) (t), typeInfo.types[index]));
 
   const valuesByPath = reduce
     (acc => r => {
        const [index, ...propPath] = JSON.parse (r.selector);
-       const {name: name_} = propPath.reduce ((t, prop) => innerType (prop) (t), typeInfo.types[index]);
-       if (name_ === name) {
+       const name2 = name (propPath.reduce ((t, prop) => innerType (prop) (t), typeInfo.types[index]));
+       if (name2 === name1) {
          if (!(r.selector in acc)) {
            acc[r.selector] = [];
          }
@@ -1003,7 +1003,6 @@ const EnumType = name => url => members => Object.assign (Object.create (Type$pr
 
 const TypeVariable = name => Object.assign (Object.create (Type$prototype), {
   cata: cases => cases.TypeVariable (name),
-  name: name,  // XXX: Remove this
   new: reject => resolve => env => typeInfo => index => path => value => _mappings => proxy => {
     proxy.values =
       cons ({selector: JSON.stringify ([index, ...path]), value})
@@ -1241,7 +1240,6 @@ const BinaryTypeVariable = name => $1 => $2 => Object.assign (Object.create (Typ
 
 const Function_ = types => Object.assign (Object.create (Type$prototype), {
   cata: cases => cases.Function (types),
-  test2: K (true),
   new: reject => resolve => env => typeInfo => index => path => value => mappings => proxy => {
     try {
       $.AnyFunction.new
