@@ -872,7 +872,6 @@ const format = cata ({
 
 const NullaryType = name => url => supertypes => test2 => Object.assign (Object.create (Type$prototype), {
   cata: cases => cases.NullaryType (name) (url) (supertypes) (test2),
-  test2,
   new: reject => resolve => env => typeInfo => index => path => value => mappings => proxy => {
     try {
       supertypes.forEach (type => {
@@ -899,7 +898,6 @@ const NullaryType = name => url => supertypes => test2 => Object.assign (Object.
 
 const UnaryType = name => url => supertypes => test2 => _1 => $1 => Object.assign (Object.create (Type$prototype), {
   cata: cases => cases.UnaryType (name) (url) (supertypes) (test2) (_1) ($1),
-  test2,
   new: reject => resolve => env => typeInfo => index => path => value => mappings => proxy => {
     try {
       supertypes.forEach (type => {
@@ -941,7 +939,6 @@ const UnaryType = name => url => supertypes => test2 => _1 => $1 => Object.assig
 
 const BinaryType = name => url => supertypes => test2 => _1 => _2 => $1 => $2 => Object.assign (Object.create (Type$prototype), {
   cata: cases => cases.BinaryType (name) (url) (supertypes) (test2) (_1) (_2) ($1) ($2),
-  test2,
   new: reject => resolve => env => typeInfo => index => path => value => mappings => proxy => {
     try {
       supertypes.forEach (type => {
