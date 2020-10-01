@@ -1015,12 +1015,12 @@ const neue = reject => resolve => env => typeInfo => index => path => cata ({
     } catch (error) {
       return reject (() => error);
     }
+    let mappings2 = mappings;
     return resolve ((...args) => {
                       const n = types.length - 1;
                       if (args.length !== n) {
-                        throw invalidArgumentsCount (typeInfo, index, n, args);
+                        throw invalidArgumentsLength (typeInfo, index, n, args);
                       }
-                      let mappings2 = mappings;
                       args.forEach ((arg, idx) => {
                         neue
                           (reject)
@@ -1031,7 +1031,7 @@ const neue = reject => resolve => env => typeInfo => index => path => cata ({
                           ([...path, `$${idx + 1}`])
                           (types[idx])
                           (arg)
-                          (mappings)
+                          (mappings2)
                           (proxy)
                       });
                       return neue
@@ -1043,10 +1043,10 @@ const neue = reject => resolve => env => typeInfo => index => path => cata ({
                         ([...path, `$${types.length}`])
                         (types[n])
                         (value (...args))
-                        (mappings)
+                        (mappings2)
                         (proxy);
                     })
-                   (mappings)
+                   (mappings2)
                    (proxy);
   },
   RecordType: fields => value => mappings => proxy => {
@@ -2467,13 +2467,14 @@ const create = opts => {
            if (rest.length > 0) {
              throw invalidArgumentsCount (typeInfo, index, 1, [_x, ...rest]);
            }
-           return input.new
+           return neue
              (thunk => { throw thunk (); })
              (value => mappings => proxy => cont (mappings) (proxy) (f (value)))
              (opts.env)
              (typeInfo)
              (index)
              ([])
+             (input)
              (_x)
              (mappings)
              (proxy.right = {values: nil, left: proxy, right: null});
