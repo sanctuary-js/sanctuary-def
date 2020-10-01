@@ -745,21 +745,15 @@ const validate = env => typeInfo => index => path => mappings => proxy => value 
   }) (type);
 };
 
-$.Unknown = Object.assign (Object.create (Type$prototype), {
-  cata: cases => cases.Unknown,
-});
+const Constructor = cata => Object.assign (Object.create (Type$prototype), {cata});
 
-const Unchecked = s => Object.assign (Object.create (Type$prototype), {
-  cata: cases => cases.Unchecked (s),
-});
+$.Unknown = Constructor (cases => cases.Unknown);
 
-$.Inconsistent = Object.assign (Object.create (Type$prototype), {
-  cata: cases => cases.Inconsistent,
-});
+const Unchecked = s => Constructor (cases => cases.Unchecked (s));
 
-$.NoArguments = Object.assign (Object.create (Type$prototype), {
-  cata: cases => cases.NoArguments,
-});
+$.Inconsistent = Constructor (cases => cases.Inconsistent);
+
+$.NoArguments = Constructor (cases => cases.NoArguments);
 
 //    arity :: Type -> Integer
 const arity = cataDefault (0) ({
@@ -1359,45 +1353,25 @@ const neue = reject => resolve => env => typeInfo => index => path => cata ({
   Unknown: resolve,
 });
 
-const NullaryType = name => url => supertypes => test2 => Object.assign (Object.create (Type$prototype), {
-  cata: cases => cases.NullaryType (name) (url) (supertypes) (test2),
-});
+const NullaryType = name => url => supertypes => test2 => Constructor (cases => cases.NullaryType (name) (url) (supertypes) (test2));
 
-const UnaryType = name => url => supertypes => test2 => _1 => $1 => Object.assign (Object.create (Type$prototype), {
-  cata: cases => cases.UnaryType (name) (url) (supertypes) (test2) (_1) ($1),
-});
+const UnaryType = name => url => supertypes => test2 => _1 => $1 => Constructor (cases => cases.UnaryType (name) (url) (supertypes) (test2) (_1) ($1));
 
-const BinaryType = name => url => supertypes => test2 => _1 => _2 => $1 => $2 => Object.assign (Object.create (Type$prototype), {
-  cata: cases => cases.BinaryType (name) (url) (supertypes) (test2) (_1) (_2) ($1) ($2),
-});
+const BinaryType = name => url => supertypes => test2 => _1 => _2 => $1 => $2 => Constructor (cases => cases.BinaryType (name) (url) (supertypes) (test2) (_1) (_2) ($1) ($2));
 
-const EnumType = name => url => members => Object.assign (Object.create (Type$prototype), {
-  cata: cases => cases.EnumType (name) (url) (members),
-});
+const EnumType = name => url => members => Constructor (cases => cases.EnumType (name) (url) (members));
 
-const TypeVariable = name => Object.assign (Object.create (Type$prototype), {
-  cata: cases => cases.TypeVariable (name),
-});
+const TypeVariable = name => Constructor (cases => cases.TypeVariable (name));
 
-const UnaryTypeVariable = name => $1 => Object.assign (Object.create (Type$prototype), {
-  cata: cases => cases.UnaryTypeVariable (name) ($1),
-});
+const UnaryTypeVariable = name => $1 => Constructor (cases => cases.UnaryTypeVariable (name) ($1));
 
-const BinaryTypeVariable = name => $1 => $2 => Object.assign (Object.create (Type$prototype), {
-  cata: cases => cases.BinaryTypeVariable (name) ($1) ($2),
-});
+const BinaryTypeVariable = name => $1 => $2 => Constructor (cases => cases.BinaryTypeVariable (name) ($1) ($2));
 
-const Function_ = types => Object.assign (Object.create (Type$prototype), {
-  cata: cases => cases.Function (types),
-});
+const Function_ = types => Constructor (cases => cases.Function (types));
 
-const RecordType = fields => Object.assign (Object.create (Type$prototype), {
-  cata: cases => cases.RecordType (fields),
-});
+const RecordType = fields => Constructor (cases => cases.RecordType (fields));
 
-const NamedRecordType = name => url => supertypes => fields => Object.assign (Object.create (Type$prototype), {
-  cata: cases => cases.NamedRecordType (name) (url) (supertypes) (fields),
-});
+const NamedRecordType = name => url => supertypes => fields => Constructor (cases => cases.NamedRecordType (name) (url) (supertypes) (fields));
 
 $.Void = (
   NullaryType ('Void')
