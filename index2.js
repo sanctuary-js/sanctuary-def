@@ -1013,8 +1013,12 @@ const neue = reject => resolve => env => typeInfo => index => path => value => m
     } catch (error) {
       return reject (() => error);
     }
-    return resolve ((...args) => (
-                      neue
+    return resolve ((...args) => {
+                      const n = types.length - 1;
+                      if (args.length !== n) {
+                        throw invalidArgumentsCount (typeInfo, index, n, args);
+                      }
+                      return neue
                         (reject)
                         (value => mappings => values => value)
                         (env)
@@ -1035,8 +1039,8 @@ const neue = reject => resolve => env => typeInfo => index => path => value => m
                              (mappings)
                              (proxy)
                          ), proxy))
-                        (types[types.length - 1])
-                    ))
+                        (types[n]);
+                    })
                    (mappings)
                    (proxy);
   },
@@ -1737,32 +1741,37 @@ const Function_ = types => Object.assign (Object.create (Type$prototype), {
     } catch (error) {
       return reject (() => error);
     }
-    return resolve ((...args) => (
-                      neue
+    let mappings2 = mappings;
+    return resolve ((...args) => {
+                      const n = types.length - 1;
+                      if (args.length !== n) {
+                        throw invalidArgumentsLength (typeInfo, index, n, args);
+                      }
+                      args.forEach ((arg, idx) => {
+                        types[idx].new
+                          (reject)
+                          (value => mappings => proxy => { mappings2 = mappings; return value; })
+                          (env)
+                          (typeInfo)
+                          (index)
+                          ([...path, `$${idx + 1}`])
+                          (arg)
+                          (mappings2)
+                          (proxy)
+                      });
+                      return neue
                         (reject)
-                        (value => mappings => values => value)
+                        (value => mappings => values => { mappings2 = mappings; return value; })
                         (env)
                         (typeInfo)
                         (index)
                         ([...path, `$${types.length}`])
                         (value (...args))
-                        (mappings)
-                        (args.reduce ((proxy, arg, idx) => (
-                           neue
-                             (reject)
-                             (value => mappings => proxy => proxy)
-                             (env)
-                             (typeInfo)
-                             (index)
-                             ([...path, `$${idx + 1}`])
-                             (arg)
-                             (mappings)
-                             (proxy)
-                             (types[idx])
-                         ), proxy))
-                        (types[types.length - 1])
-                    ))
-                   (mappings)
+                        (mappings2)
+                        (proxy)
+                        (types[n]);
+                    })
+                   (mappings2)
                    (proxy);
   },
 });
@@ -2222,62 +2231,7 @@ const Array2 = (
              (xs => [xs[1]])
 );
 
-const Fn = $1 => $2 => (
-  Object.assign (
-    Function_ ([$1, $2]),
-    {
-      new: reject => resolve => env => typeInfo => index => path => value => _mappings => proxy => {
-        try {
-          $.AnyFunction.new
-            (thunk => { throw thunk (); })
-            (value => mappings => proxy => value)
-            (env)
-            (typeInfo)
-            (index)
-            (path)
-            (value)
-            (_mappings)
-            (proxy);
-        } catch (error) {
-          reject (() => error);
-          return;
-        }
-        let mappings = _mappings;
-        return resolve ((...args) => (
-                          args.length === 1
-                          ? $2.new
-                              (reject)
-                              (value => mappings_ => proxy => {
-                                 mappings = mappings_;
-                                 return value;
-                               })
-                              (env)
-                              (typeInfo)
-                              (index)
-                              ([...path, '$2'])
-                              (value ($1.new
-                                        (reject)
-                                        (value => mappings_ => proxy => {
-                                           mappings = mappings_;
-                                           return value;
-                                         })
-                                        (env)
-                                        (typeInfo)
-                                        (index)
-                                        ([...path, '$1'])
-                                        (args[0])
-                                        (mappings)
-                                        (proxy)))
-                              (mappings)
-                              (proxy)
-                          : reject (() => invalidArgumentsLength (typeInfo, index, 1, args))
-                        ))
-                       (mappings)
-                       (proxy);
-      },
-    }
-  )
-);
+const Fn = $1 => $2 => Function_ ([$1, $2]);
 
 const Predicate = $1 => $.Fn ($1) ($.Boolean);
 
