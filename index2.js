@@ -1018,33 +1018,37 @@ const neue = reject => resolve => env => typeInfo => index => path => value => m
                       if (args.length !== n) {
                         throw invalidArgumentsCount (typeInfo, index, n, args);
                       }
+                      let mappings2 = mappings;
+                      args.forEach ((arg, idx) => {
+                        neue
+                          (reject)
+                          (value => mappings => proxy => { mappings2 = mappings; })
+                          (env)
+                          (typeInfo)
+                          (index)
+                          ([...path, `$${idx + 1}`])
+                          (arg)
+                          (mappings)
+                          (proxy)
+                          (types[idx])
+                      });
                       return neue
                         (reject)
-                        (value => mappings => values => value)
+                        (value => mappings => values => { mappings2 = mappings; return value; })
                         (env)
                         (typeInfo)
                         (index)
                         ([...path, `$${types.length}`])
                         (value (...args))
                         (mappings)
-                        (args.reduce ((proxy, arg, idx) => (
-                           types[idx].new
-                             (reject)
-                             (value => mappings => proxy => proxy)
-                             (env)
-                             (typeInfo)
-                             (index)
-                             ([...path, `$${idx + 1}`])
-                             (arg)
-                             (mappings)
-                             (proxy)
-                         ), proxy))
+                        (proxy)
                         (types[n]);
                     })
                    (mappings)
                    (proxy);
   },
   RecordType: fields => {
+    const keys = (Object.keys (fields)).sort ();
     if (value == null) {
       return reject (() => invalidValue (env, typeInfo, index, path, mappings, proxy, value));
     } else {
@@ -1076,6 +1080,7 @@ const neue = reject => resolve => env => typeInfo => index => path => value => m
     }
   },
   NamedRecordType: name => url => supertypes => fields => {
+    const keys = (Object.keys (fields)).sort ();
     if (value == null) {
       return reject (() => invalidValue (env, typeInfo, index, path, mappings, proxy, value));
     } else {
@@ -1447,7 +1452,7 @@ const BinaryType = name => url => supertypes => test2 => _1 => _2 => $1 => $2 =>
     }
     return test2 (value)
            ? reduceRight
-               (cont => value => (
+               (cont => value => mappings => proxy => (
                   $1.new
                     (reject)
                     (value => cont)
@@ -1456,9 +1461,11 @@ const BinaryType = name => url => supertypes => test2 => _1 => _2 => $1 => $2 =>
                     (index)
                     ([...path, '$1'])
                     (value)
+                    (mappings)
+                    (proxy)
                 ))
                (reduceRight
-                  (cont => value => (
+                  (cont => value => mappings => proxy => (
                      $2.new
                        (reject)
                        (value => cont)
@@ -1467,6 +1474,8 @@ const BinaryType = name => url => supertypes => test2 => _1 => _2 => $1 => $2 =>
                        (index)
                        ([...path, '$2'])
                        (value)
+                       (mappings)
+                       (proxy)
                    ))
                   (resolve (value))
                   (_2 (value)))
@@ -1644,7 +1653,7 @@ const UnaryTypeVariable = name => $1 => Object.assign (Object.create (Type$proto
                       (proxy => type => (
                          reduce
                            (values => value => (
-                              $1.new
+                              neue
                                 (reject)
                                 (value => mappings => proxy => proxy)
                                 (env)
@@ -1654,6 +1663,7 @@ const UnaryTypeVariable = name => $1 => Object.assign (Object.create (Type$proto
                                 (value)
                                 (mappings)
                                 (proxy)
+                                ($1)
                             ))
                            (proxy)
                            (extract (`$${arity (type)}`) (type) (value))
@@ -1689,7 +1699,7 @@ const BinaryTypeVariable = name => $1 => $2 => Object.assign (Object.create (Typ
                          cataDefault (proxy) ({
                            BinaryType: name => url => supertypes => test2 => _1 => _2 => _ => _ => (
                              reduce (proxy => value => (
-                                       $2.new
+                                       neue
                                          (reject)
                                          (value => mappings => proxy => proxy)
                                          (env)
@@ -1699,9 +1709,10 @@ const BinaryTypeVariable = name => $1 => $2 => Object.assign (Object.create (Typ
                                          (value)
                                          (mappings)
                                          (proxy)
+                                         ($2)
                                      ))
                                     (reduce (proxy => value => (
-                                               $1.new
+                                               neue
                                                  (reject)
                                                  (value => mappings => proxy => proxy)
                                                  (env)
@@ -1711,6 +1722,7 @@ const BinaryTypeVariable = name => $1 => $2 => Object.assign (Object.create (Typ
                                                  (value)
                                                  (mappings)
                                                  (proxy)
+                                                 ($1)
                                              ))
                                             (proxy)
                                             (_1 (value)))
@@ -1748,7 +1760,7 @@ const Function_ = types => Object.assign (Object.create (Type$prototype), {
                         throw invalidArgumentsLength (typeInfo, index, n, args);
                       }
                       args.forEach ((arg, idx) => {
-                        types[idx].new
+                        neue
                           (reject)
                           (value => mappings => proxy => { mappings2 = mappings; return value; })
                           (env)
@@ -1758,6 +1770,7 @@ const Function_ = types => Object.assign (Object.create (Type$prototype), {
                           (arg)
                           (mappings2)
                           (proxy)
+                          (types[idx])
                       });
                       return neue
                         (reject)
@@ -1791,8 +1804,8 @@ const RecordType = fields => {
           return reject (() => invalidValue (env, typeInfo, index, path, mappings, proxy, value));
         } else {
           return reduceRight
-                   (cont => key => mappings => (
-                      fields[key].new
+                   (cont => key => mappings => proxy => (
+                      neue
                         (reject)
                         (value => cont)
                         (env)
@@ -1801,6 +1814,8 @@ const RecordType = fields => {
                         ([...path, key])
                         (value[key])
                         (mappings)
+                        (proxy)
+                        (fields[key])
                     ))
                    (resolve (value))
                    (keys)
@@ -1828,7 +1843,7 @@ const NamedRecordType = name => url => supertypes => fields => {
         } else {
           try {
             keys.forEach (key => {
-              fields[key].new
+              neue
                 (thunk => { throw thunk (); })
                 (value => mappings => proxy => value)
                 (env)
@@ -1837,14 +1852,15 @@ const NamedRecordType = name => url => supertypes => fields => {
                 ([...path, key])
                 (value[key])
                 (mappings)
-                (proxy);
+                (proxy)
+                (fields[key]);
             });
           } catch (error) {
             return reject (() => invalidValue (env, typeInfo, index, path, mappings, proxy, value));
           }
           return reduceRight
-                   (cont => key => (
-                      fields[key].new
+                   (cont => key => mappings => proxy => (
+                      neue
                         (reject)
                         (value => cont)
                         (env)
@@ -1852,6 +1868,9 @@ const NamedRecordType = name => url => supertypes => fields => {
                         (index)
                         ([...path, key])
                         (value[key])
+                        (mappings)
+                        (proxy)
+                        (fields[key])
                     ))
                    (resolve (value))
                    (keys)
