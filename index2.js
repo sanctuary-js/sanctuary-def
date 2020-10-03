@@ -1095,47 +1095,43 @@ const neue = reject => resolve => env => typeInfo => index => path => cata ({
     }
 
     const mappings2 = name_ => (
-      name_ === name
-      ? Z.chain (
-          cata ({
-            NoArguments: [$.NoArguments],
-            Unchecked: s => [$.Unchecked (s)],
-            Inconsistent: [$.Inconsistent],
-            NullaryType: name => url => supertypes => test2 => [NullaryType (name) (url) (supertypes) (test2)],
-            EnumType: name => url => members => [EnumType (name) (url) (members)],
-            UnaryType: name => url => supertypes => test2 => _1 => $1 => (
-              Z.map (
-                UnaryType (name) (url) (supertypes) (test2) (_1),
-                Z.filter (
-                  isConsistent,
-                  expandUnknown (env) (typeInfo) (index) (path) (mappings2) (proxy) ([]) (value) (_1) ($1)
-                )
-              )
-            ),
-            BinaryType: name => url => supertypes => test2 => _1 => _2 => $1 => $2 => (
-              Z.lift2 (
-                BinaryType (name) (url) (supertypes) (test2) (_1) (_2),
-                Z.filter (
-                  isConsistent,
-                  expandUnknown (env) (typeInfo) (index) (path) (mappings2) (proxy) ([]) (value) (_1) ($1)
-                ),
-                Z.filter (
-                  isConsistent,
-                  expandUnknown (env) (typeInfo) (index) (path) (mappings2) (proxy) ([]) (value) (_2) ($2)
-                )
-              )
-            ),
-            Function: types => [Function_ (types)],
-            RecordType: fields => [RecordType (fields)],
-            NamedRecordType: name => url => supertypes => fields => [NamedRecordType (name) (url) (supertypes) (fields)],
-            TypeVariable: name => [TypeVariable (name)],
-            UnaryTypeVariable: name => $1 => [UnaryTypeVariable (name) ($1)],
-            BinaryTypeVariable: name => $1 => $2 => [BinaryTypeVariable (name) ($1) ($2)],
-            Unknown: [$.Unknown],
-          }),
-          Z.filter (t => (satisfactoryTypes (env, {name: 'name', constraints: {}, types: [t]}, {}, t, 0, [], mappings, proxy, [value])).isRight, mappings (name))
-        )
-      : mappings (name_)
+      when (name_ === name)
+           (types => Z.chain (cata ({NoArguments: [$.NoArguments],
+                                     Unchecked: s => [$.Unchecked (s)],
+                                     Inconsistent: [$.Inconsistent],
+                                     NullaryType: name => url => supertypes => test2 => [NullaryType (name) (url) (supertypes) (test2)],
+                                     EnumType: name => url => members => [EnumType (name) (url) (members)],
+                                     UnaryType: name => url => supertypes => test2 => _1 => $1 => (
+                                       Z.map (
+                                         UnaryType (name) (url) (supertypes) (test2) (_1),
+                                         Z.filter (
+                                           isConsistent,
+                                           expandUnknown (env) (typeInfo) (index) (path) (mappings2) (proxy) ([]) (value) (_1) ($1)
+                                         )
+                                       )
+                                     ),
+                                     BinaryType: name => url => supertypes => test2 => _1 => _2 => $1 => $2 => (
+                                       Z.lift2 (
+                                         BinaryType (name) (url) (supertypes) (test2) (_1) (_2),
+                                         Z.filter (
+                                           isConsistent,
+                                           expandUnknown (env) (typeInfo) (index) (path) (mappings2) (proxy) ([]) (value) (_1) ($1)
+                                         ),
+                                         Z.filter (
+                                           isConsistent,
+                                           expandUnknown (env) (typeInfo) (index) (path) (mappings2) (proxy) ([]) (value) (_2) ($2)
+                                         )
+                                       )
+                                     ),
+                                     Function: types => [Function_ (types)],
+                                     RecordType: fields => [RecordType (fields)],
+                                     NamedRecordType: name => url => supertypes => fields => [NamedRecordType (name) (url) (supertypes) (fields)],
+                                     TypeVariable: name => [TypeVariable (name)],
+                                     UnaryTypeVariable: name => $1 => [UnaryTypeVariable (name) ($1)],
+                                     BinaryTypeVariable: name => $1 => $2 => [BinaryTypeVariable (name) ($1) ($2)],
+                                     Unknown: [$.Unknown]}),
+                              Z.filter (t => (satisfactoryTypes (env, {name: 'name', constraints: {}, types: [t]}, {}, t, 0, [], mappings, proxy, [value])).isRight, types)))
+           (mappings (name_))
     );
 
     if ((mappings2 (name)).length > 0) {
