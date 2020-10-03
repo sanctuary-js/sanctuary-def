@@ -120,12 +120,12 @@ const stripNamespace = typeClass => (
 //  _underline :: ... -> String
 function _underline(
   t,              // :: Type
-  propPath,       // :: PropPath
+  path,           // :: Array String
   formatType3     // :: Type -> Array String -> String -> String
 ) {
-  return formatType3 (t) (propPath) (format (t) (_) (k => (
+  return formatType3 (t) (path) (format (t) (_) (k => (
     K (_underline (innerType (k) (t),
-                   Z.concat (propPath, [k]),
+                   Z.concat (path, [k]),
                    formatType3))
   )));
 }
@@ -135,7 +135,7 @@ function underline(
   typeInfo,               // :: TypeInfo
   underlineConstraint,    // :: String -> TypeClass -> String -> String
   formatType5
-  // :: Integer -> (String -> String) -> Type -> PropPath -> String -> String
+  // :: Integer -> (String -> String) -> Type -> Array String -> String -> String
 ) {
   const st = typeInfo.types.reduce ((st, t, index) => {
     const f = B (cataDefault (I) ({Function: types => parenthesize (_)}) (t))
@@ -156,15 +156,15 @@ function underline(
 }
 
 //  resolvePropPath :: (Type, Array String) -> Type
-function resolvePropPath(t, propPath) {
-  return Z.reduce ((t, prop) => innerType (prop) (t), t, propPath);
+function resolvePropPath(t, path) {
+  return Z.reduce ((t, prop) => innerType (prop) (t), t, path);
 }
 
 //  formatType6 ::
-//    PropPath -> Integer -> (String -> String) ->
-//      Type -> PropPath -> String -> String
-const formatType6 = indexedPropPath => index_ => f => t => propPath_ => {
-  const indexedPropPath_ = Z.concat ([index_], propPath_);
+//    Array String -> Integer -> (String -> String) ->
+//      Type -> Array String -> String -> String
+const formatType6 = indexedPropPath => index_ => f => t => path => {
+  const indexedPropPath_ = Z.concat ([index_], path);
   const p = isPrefix (indexedPropPath_) (indexedPropPath);
   const q = isPrefix (indexedPropPath) (indexedPropPath_);
   return p && q ? f : p ? I : _;
@@ -193,8 +193,8 @@ const underlineTypeVars = (typeInfo, valuesByPath) => {
   return underline (
     typeInfo,
     K (K (_)),
-    index => f => t => propPath => {
-      const indexedPropPath = Z.concat ([index], propPath);
+    index => f => t => path => {
+      const indexedPropPath = Z.concat ([index], path);
       return s => {
         if (paths.some (isPrefix (indexedPropPath))) {
           const selector = JSON.stringify (indexedPropPath);
@@ -360,7 +360,7 @@ const satisfactoryTypes = (
   typeVarMap,     // :: TypeVarMap
   expType,        // :: Type
   index,          // :: Integer
-  propPath,       // :: PropPath
+  path,           // :: Array String
   mappings,
   proxy,
   values          // :: Array Any
@@ -368,7 +368,7 @@ const satisfactoryTypes = (
   const recur = satisfactoryTypes;
 
   for (let idx = 0; idx < values.length; idx += 1) {
-    const result = validate (env) (typeInfo) (index) (propPath) (mappings) (proxy) (values[idx]) (expType);
+    const result = validate (env) (typeInfo) (index) (path) (mappings) (proxy) (values[idx]) (expType);
     if (result != null) {
       return Left (null);
     }
@@ -387,7 +387,7 @@ const satisfactoryTypes = (
                typeVarMap,
                $1,
                index,
-               Z.concat (propPath, ['$1']),
+               Z.concat (path, ['$1']),
                mappings,
                proxy,
                Z.chain (B (toArray) (_1), values))
@@ -412,7 +412,7 @@ const satisfactoryTypes = (
                    result.typeVarMap,
                    $2,
                    index,
-                   Z.concat (propPath, ['$2']),
+                   Z.concat (path, ['$2']),
                    mappings,
                    proxy,
                    Z.chain (B (toArray) (_2), values))
@@ -423,7 +423,7 @@ const satisfactoryTypes = (
                typeVarMap,
                $1,
                index,
-               Z.concat (propPath, ['$1']),
+               Z.concat (path, ['$1']),
                mappings,
                proxy,
                Z.chain (B (toArray) (_1), values))
@@ -437,7 +437,7 @@ const satisfactoryTypes = (
                  r.typeVarMap,
                  fields[k],
                  index,
-                 Z.concat (propPath, [k]),
+                 Z.concat (path, [k]),
                  mappings,
                  proxy,
                  Z.chain (extract (k) (expType), values))
@@ -452,7 +452,7 @@ const satisfactoryTypes = (
                  r.typeVarMap,
                  fields[k],
                  index,
-                 Z.concat (propPath, [k]),
+                 Z.concat (path, [k]),
                  mappings,
                  proxy,
                  Z.chain (extract (k) (expType), values))
@@ -546,7 +546,7 @@ const validate = env => typeInfo => index => path => mappings => proxy => value 
       ),
       ancestors (type)
     )
-  ) return {value, propPath: []};
+  ) return {value, path: []};
 
   if (
     neue
@@ -560,14 +560,14 @@ const validate = env => typeInfo => index => path => mappings => proxy => value 
       (value)
       (mappings)
       (proxy)
-  ) return {value, propPath: []};
+  ) return {value, path: []};
 
   return cataDefault (null) ({
     UnaryType: name => url => supertypes => test2 => _1 => $1 => {
       for (const x of toArray (_1 (value))) {
         const result = validate (env) (typeInfo) (index) (path) (mappings) (proxy) (x) ($1);
         if (result != null) {
-          return {value: result.value, propPath: Z.prepend ('$1', result.propPath)};
+          return {value: result.value, path: Z.prepend ('$1', result.path)};
         }
       }
       return null;
@@ -576,13 +576,13 @@ const validate = env => typeInfo => index => path => mappings => proxy => value 
       for (const x of toArray (_1 (value))) {
         const result = validate (env) (typeInfo) (index) (path) (mappings) (proxy) (x) ($1);
         if (result != null) {
-          return {value: result.value, propPath: Z.prepend ('$1', result.propPath)};
+          return {value: result.value, path: Z.prepend ('$1', result.path)};
         }
       }
       for (const x of toArray (_2 (value))) {
         const result = validate (env) (typeInfo) (index) (path) (mappings) (proxy) (x) ($2);
         if (result != null) {
-          return {value: result.value, propPath: Z.prepend ('$2', result.propPath)};
+          return {value: result.value, path: Z.prepend ('$2', result.path)};
         }
       }
       return null;
@@ -720,35 +720,35 @@ const UnrecognizedValue = env => typeInfo => index => path => mappings => proxy 
 //    toError :: $Error -> Error
 const toError = error => error ({
 
-  InvalidValue: env => typeInfo => index => propPath => mappings => proxy => value => {
-    const t = resolvePropPath (typeInfo.types[index], propPath);
+  InvalidValue: env => typeInfo => index => path => mappings => proxy => value => {
+    const t = resolvePropPath (typeInfo.types[index], path);
 
     const underlinedTypeVars =
     underline (typeInfo,
                K (K (_)),
-               formatType6 (Z.concat ([index], propPath)));
+               formatType6 (Z.concat ([index], path)));
 
     return new TypeError (trimTrailingSpaces (
       'Invalid value\n\n' +
       underlinedTypeVars + '\n' +
-      showValuesAndTypes (env, typeInfo, index, propPath, mappings, proxy, [value], 1) + '\n\n' +
+      showValuesAndTypes (env, typeInfo, index, path, mappings, proxy, [value], 1) + '\n\n' +
       'The value at position 1 is not a member of ' +
       q (show (t)) + '.\n' +
       see2 (arity (t) >= 1 ? 'type constructor' : 'type', name (t), url (t))
     ));
   },
 
-  TypeClassConstraintViolation: env => typeInfo => typeClass => index => propPath => mappings => proxy => value => {
-    const expType = resolvePropPath (typeInfo.types[index], propPath);
+  TypeClassConstraintViolation: env => typeInfo => typeClass => index => path => mappings => proxy => value => {
+    const expType = resolvePropPath (typeInfo.types[index], path);
     return new TypeError (trimTrailingSpaces (
       'Type-class constraint violation\n\n' +
       underline (typeInfo,
                  tvn => tc => (
                    tvn === name (expType) && tc.name === typeClass.name ? r ('^') : _
                  ),
-                 formatType6 (Z.concat ([index], propPath))) +
+                 formatType6 (Z.concat ([index], path))) +
       '\n' +
-      showValuesAndTypes (env, typeInfo, index, propPath, mappings, proxy, [value], 1) + '\n\n' +
+      showValuesAndTypes (env, typeInfo, index, path, mappings, proxy, [value], 1) + '\n\n' +
       q (typeInfo.name) + ' requires ' +
       q (name (expType)) + ' to satisfy the ' +
       stripNamespace (typeClass) + ' type-class constraint; ' +
@@ -757,19 +757,19 @@ const toError = error => error ({
     ));
   },
 
-  TypeVarConstraintViolation: env => typeInfo => index => propPath => mappings => proxy => valuesAtPath => {
+  TypeVarConstraintViolation: env => typeInfo => index => path => mappings => proxy => valuesAtPath => {
     //  If we apply an ‘a -> a -> a -> a’ function to Left ('x'), Right (1),
     //  and Right (null) we'd like to avoid underlining the first argument
     //  position, since Left ('x') is compatible with the other ‘a’ values.
-    const selector = JSON.stringify (Z.concat ([index], propPath));
+    const selector = JSON.stringify (Z.concat ([index], path));
     const values = Z.chain (r => r.selector === selector ? [r.value] : [], valuesAtPath);
 
-    const name1 = name (propPath.reduce ((t, prop) => innerType (prop) (t), typeInfo.types[index]));
+    const name1 = name (path.reduce ((t, prop) => innerType (prop) (t), typeInfo.types[index]));
 
     const valuesByPath = reduce
       (acc => r => {
-         const [index, ...propPath] = JSON.parse (r.selector);
-         const name2 = name (propPath.reduce ((t, prop) => innerType (prop) (t), typeInfo.types[index]));
+         const [index, ...path] = JSON.parse (r.selector);
+         const name2 = name (path.reduce ((t, prop) => innerType (prop) (t), typeInfo.types[index]));
          if (name2 === name1) {
            if (!(r.selector in acc)) {
              acc[r.selector] = [];
@@ -789,7 +789,7 @@ const toError = error => error ({
         //  Keep X, the position at which the violation was observed.
         k === selector ||
         //  Keep positions whose values are incompatible with the values at X.
-        isEmpty (determineActualTypesStrict (env, typeInfo, index, propPath, mappings, proxy, Z.concat (values, values_)))
+        isEmpty (determineActualTypesStrict (env, typeInfo, index, path, mappings, proxy, Z.concat (values, values_)))
       );
     }, (Object.keys (valuesByPath)).sort ());
 
@@ -807,7 +807,7 @@ const toError = error => error ({
         return isEmpty (values) ? st : {
           idx: st.idx + 1,
           s: st.s +
-             showValuesAndTypes (env, typeInfo, index, propPath, mappings, proxy, values, st.idx + 1) +
+             showValuesAndTypes (env, typeInfo, index, path, mappings, proxy, values, st.idx + 1) +
              '\n\n',
         };
       }, {idx: 0, s: ''}, keys)).s +
@@ -816,16 +816,16 @@ const toError = error => error ({
     ));
   },
 
-  UnrecognizedValue: env => typeInfo => index => propPath => mappings => proxy => value => {
+  UnrecognizedValue: env => typeInfo => index => path => mappings => proxy => value => {
     const underlinedTypeVars =
     underline (typeInfo,
                K (K (_)),
-               formatType6 (Z.concat ([index], propPath)));
+               formatType6 (Z.concat ([index], path)));
 
     return new TypeError (trimTrailingSpaces (
       'Unrecognized value\n\n' +
       underlinedTypeVars + '\n' +
-      showValuesAndTypes (env, typeInfo, index, propPath, mappings, proxy, [value], 1) + '\n\n' +
+      showValuesAndTypes (env, typeInfo, index, path, mappings, proxy, [value], 1) + '\n\n' +
       toMarkdownList (
         'The environment is empty! ' +
         'Polymorphic functions require a non-empty environment.\n',
@@ -1726,7 +1726,7 @@ const invalidArgumentsLength = (
     underline (
       typeInfo,
       K (K (_)),
-      index_ => f => t => propPath => s => (
+      index_ => f => t => path => s => (
         index_ === index ? format (t) (_) (k => k === '$1' ? f : _) : _ (s)
       )
     ) + '\n' +
