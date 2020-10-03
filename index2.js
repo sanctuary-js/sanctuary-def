@@ -1158,38 +1158,35 @@ const neue = reject => resolve => env => typeInfo => index => path => cata ({
     }
   },
   UnaryTypeVariable: name => $1 => value => mappings => proxy => {
-    const mappings2 = name_ => {
-      const types = mappings (name_);
-      return name_ === name
-             ? Z.chain (
-                 type => (
-                   satisfactoryTypes (env, {name: 'name', constraints: {}, types: [type]}, {}, type, 0, [], mappings, proxy, [value]).isRight ?
-                   cata ({
-                     NoArguments: [],
-                     Unchecked: _ => [],
-                     Inconsistent: [],
-                     NullaryType: _ => _ => _ => _ => [],
-                     EnumType: _ => _ => _ => [],
-                     UnaryType: name => url => supertypes => test2 => _1 => _ => (
-                       [UnaryType (name) (url) (supertypes) (test2) (_1) ($1)]
-                     ),
-                     BinaryType: name => url => supertypes => test2 => _1 => _2 => $1_ => _ => (
-                       [BinaryType (name) (url) (supertypes) (test2) (_1) (_2) ($1_) ($1)]
-                     ),
-                     Function: types => [Function_ (types)],
-                     RecordType: _ => [],
-                     NamedRecordType: _ => _ => _ => _ => [],
-                     TypeVariable: _ => [],
-                     UnaryTypeVariable: name => $1 => [],
-                     BinaryTypeVariable: name => $1 => $2 => [],
-                     Unknown: [],
-                   }) (type) :
-                   []
-                 ),
-                 types
-               )
-             : types;
-    };
+    const mappings2 = name_ => (
+      when (name_ === name)
+           (types => Z.chain (type => (
+                                satisfactoryTypes (env, {name: 'name', constraints: {}, types: [type]}, {}, type, 0, [], mappings, proxy, [value]).isRight ?
+                                cata ({
+                                  NoArguments: [],
+                                  Unchecked: _ => [],
+                                  Inconsistent: [],
+                                  NullaryType: _ => _ => _ => _ => [],
+                                  EnumType: _ => _ => _ => [],
+                                  UnaryType: name => url => supertypes => test2 => _1 => _ => (
+                                    [UnaryType (name) (url) (supertypes) (test2) (_1) ($1)]
+                                  ),
+                                  BinaryType: name => url => supertypes => test2 => _1 => _2 => $1_ => _ => (
+                                    [BinaryType (name) (url) (supertypes) (test2) (_1) (_2) ($1_) ($1)]
+                                  ),
+                                  Function: types => [Function_ (types)],
+                                  RecordType: _ => [],
+                                  NamedRecordType: _ => _ => _ => _ => [],
+                                  TypeVariable: _ => [],
+                                  UnaryTypeVariable: name => $1 => [],
+                                  BinaryTypeVariable: name => $1 => $2 => [],
+                                  Unknown: [],
+                                }) (type) :
+                                []
+                              ),
+                              types))
+           (mappings (name_))
+    );
 
     proxy.values =
       cons ({selector: JSON.stringify ([index, ...path]), value})
@@ -1234,10 +1231,11 @@ const neue = reject => resolve => env => typeInfo => index => path => cata ({
                       (types));
   },
   BinaryTypeVariable: name => $1 => $2 => value => mappings => proxy => {
-    const mappings2 = name_ => {
-      const types = mappings (name_);
-      return name_ === name ? Z.filter (type => (satisfactoryTypes (env, {name: 'name', constraints: {}, types: [type]}, {}, type, 0, [], mappings, proxy, [value])).isRight, types) : types;
-    };
+    const mappings2 = name_ => (
+      when (name_ === name)
+           (types => Z.filter (type => (satisfactoryTypes (env, {name: 'name', constraints: {}, types: [type]}, {}, type, 0, [], mappings, proxy, [value])).isRight, types))
+           (mappings (name_))
+    );
 
     proxy.values =
       cons ({selector: JSON.stringify ([index, ...path]), value})
