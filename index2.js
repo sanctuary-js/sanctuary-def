@@ -709,18 +709,18 @@ const format = cata ({
   Unknown: outer => inner => outer ('Unknown'),
 });
 
-const InvalidValue = env => index => path => mappings => proxy => value => cases => cases.InvalidValue (env) (index) (path) (mappings) (proxy) (value);
+const InvalidValue = index => path => mappings => proxy => value => cases => cases.InvalidValue (index) (path) (mappings) (proxy) (value);
 
-const TypeClassConstraintViolation = env => typeClass => index => path => mappings => proxy => value => cases => cases.TypeClassConstraintViolation (env) (typeClass) (index) (path) (mappings) (proxy) (value);
+const TypeClassConstraintViolation = typeClass => index => path => mappings => proxy => value => cases => cases.TypeClassConstraintViolation (typeClass) (index) (path) (mappings) (proxy) (value);
 
-const TypeVarConstraintViolation = env => index => path => mappings => proxy => values => cases => cases.TypeVarConstraintViolation (env) (index) (path) (mappings) (proxy) (values);
+const TypeVarConstraintViolation = index => path => mappings => proxy => values => cases => cases.TypeVarConstraintViolation (index) (path) (mappings) (proxy) (values);
 
-const UnrecognizedValue = env => index => path => mappings => proxy => value => cases => cases.UnrecognizedValue (env) (index) (path) (mappings) (proxy) (value);
+const UnrecognizedValue = index => path => mappings => proxy => value => cases => cases.UnrecognizedValue (index) (path) (mappings) (proxy) (value);
 
-//    toError :: TypeInfo -> $Error -> Error
-const toError = typeInfo => error => error ({
+//    toError :: Array Type -> TypeInfo -> $Error -> Error
+const toError = env => typeInfo => error => error ({
 
-  InvalidValue: env => index => path => mappings => proxy => value => {
+  InvalidValue: index => path => mappings => proxy => value => {
     const t = resolvePropPath (typeInfo.types[index], path);
 
     const underlinedTypeVars =
@@ -738,7 +738,7 @@ const toError = typeInfo => error => error ({
     ));
   },
 
-  TypeClassConstraintViolation: env => typeClass => index => path => mappings => proxy => value => {
+  TypeClassConstraintViolation: typeClass => index => path => mappings => proxy => value => {
     const expType = resolvePropPath (typeInfo.types[index], path);
     return new TypeError (trimTrailingSpaces (
       'Type-class constraint violation\n\n' +
@@ -757,7 +757,7 @@ const toError = typeInfo => error => error ({
     ));
   },
 
-  TypeVarConstraintViolation: env => index => path => mappings => proxy => valuesAtPath => {
+  TypeVarConstraintViolation: index => path => mappings => proxy => valuesAtPath => {
     //  If we apply an ‘a -> a -> a -> a’ function to Left ('x'), Right (1),
     //  and Right (null) we'd like to avoid underlining the first argument
     //  position, since Left ('x') is compatible with the other ‘a’ values.
@@ -816,7 +816,7 @@ const toError = typeInfo => error => error ({
     ));
   },
 
-  UnrecognizedValue: env => index => path => mappings => proxy => value => {
+  UnrecognizedValue: index => path => mappings => proxy => value => {
     const underlinedTypeVars =
     underline (typeInfo,
                K (K (_)),
@@ -861,7 +861,7 @@ const neue = reject => resolve => env => typeInfo => index => path => cata ({
       (value => mappings => proxy =>
          test2 (value)
          ? resolve (value) (mappings) (proxy)
-         : reject (InvalidValue (env) (index) (path) (mappings) (proxy) (value)))
+         : reject (InvalidValue (index) (path) (mappings) (proxy) (value)))
       (supertypes)
       (value)
       (mappings)
@@ -870,7 +870,7 @@ const neue = reject => resolve => env => typeInfo => index => path => cata ({
   EnumType: name => url => members => value => mappings => proxy => (
     memberOf (members) (value)
     ? resolve (value) (mappings) (proxy)
-    : reject (InvalidValue (env) (index) (path) (mappings) (proxy) (value))
+    : reject (InvalidValue (index) (path) (mappings) (proxy) (value))
   ),
   UnaryType: name => url => supertypes => test2 => _1 => $1 => value => mappings => proxy => (
     reduce
@@ -906,7 +906,7 @@ const neue = reject => resolve => env => typeInfo => index => path => cata ({
              (_1 (value))
              (mappings)
              (proxy)
-         : reject (InvalidValue (env) (index) (path) (mappings) (proxy) (value)))
+         : reject (InvalidValue (index) (path) (mappings) (proxy) (value)))
       (supertypes)
       (value)
       (mappings)
@@ -961,7 +961,7 @@ const neue = reject => resolve => env => typeInfo => index => path => cata ({
              (_1 (value))
              (mappings)
              (proxy)
-         : reject (InvalidValue (env) (index) (path) (mappings) (proxy) (value)))
+         : reject (InvalidValue (index) (path) (mappings) (proxy) (value)))
       (supertypes)
       (value)
       (mappings)
@@ -1016,13 +1016,13 @@ const neue = reject => resolve => env => typeInfo => index => path => cata ({
   RecordType: fields => value => mappings => proxy => {
     const keys = (Object.keys (fields)).sort ();
     if (value == null) {
-      return reject (InvalidValue (env) (index) (path) (mappings) (proxy) (value));
+      return reject (InvalidValue (index) (path) (mappings) (proxy) (value));
     } else {
       const missing = {};
       keys.forEach (k => { missing[k] = k; });
       for (const k in value) delete missing[k];
       if (Z.size (missing) > 0) {
-        return reject (InvalidValue (env) (index) (path) (mappings) (proxy) (value));
+        return reject (InvalidValue (index) (path) (mappings) (proxy) (value));
       } else {
         return reduceRight
                  (cont => key => mappings => proxy => (
@@ -1048,21 +1048,21 @@ const neue = reject => resolve => env => typeInfo => index => path => cata ({
   NamedRecordType: name => url => supertypes => fields => value => mappings => proxy => {
     const keys = (Object.keys (fields)).sort ();
     if (value == null) {
-      return reject (InvalidValue (env) (index) (path) (mappings) (proxy) (value));
+      return reject (InvalidValue (index) (path) (mappings) (proxy) (value));
     } else {
       const missing = {};
       keys.forEach (k => { missing[k] = k; });
       for (const k in value) delete missing[k];
       if (Z.size (missing) > 0) {
-        return reject (InvalidValue (env) (index) (path) (mappings) (proxy) (value));
+        return reject (InvalidValue (index) (path) (mappings) (proxy) (value));
       } else {
         return reduceRight
                  (cont => key => mappings => proxy => (
                     neue
-                      (error => reject (error ({InvalidValue: env => index => path => mappings => proxy => _value => InvalidValue (env) (index) (path) (mappings) (proxy) (value),
-                                                TypeClassConstraintViolation: env => typeClass => index => path => mappings => proxy => _value => TypeClassConstraintViolation (env) (typeClass) (index) (path) (mappings) (proxy) (value),
-                                                TypeVarConstraintViolation: env => index => path => mappings => proxy => values => TypeVarConstraintViolation (env) (index) (path) (mappings) (proxy) ([value]),
-                                                UnrecognizedValue: env => index => path => mappings => proxy => _value => UnrecognizedValue (env) (index) (path) (mappings) (proxy) (value)})))
+                      (error => reject (error ({InvalidValue: index => path => mappings => proxy => _value => InvalidValue (index) (path) (mappings) (proxy) (value),
+                                                TypeClassConstraintViolation: typeClass => index => path => mappings => proxy => _value => TypeClassConstraintViolation (typeClass) (index) (path) (mappings) (proxy) (value),
+                                                TypeVarConstraintViolation: index => path => mappings => proxy => values => TypeVarConstraintViolation (index) (path) (mappings) (proxy) ([value]),
+                                                UnrecognizedValue: index => path => mappings => proxy => _value => UnrecognizedValue (index) (path) (mappings) (proxy) (value)})))
                       (value => cont)
                       (env)
                       (typeInfo)
@@ -1089,7 +1089,7 @@ const neue = reject => resolve => env => typeInfo => index => path => cata ({
       for (let idx = 0; idx < typeInfo.constraints[name].length; idx += 1) {
         const typeClass = typeInfo.constraints[name][idx];
         if (!(typeClass.test (value))) {
-          return reject (TypeClassConstraintViolation (env) (typeClass) (index) (path) (mappings) (proxy) (value));
+          return reject (TypeClassConstraintViolation (typeClass) (index) (path) (mappings) (proxy) (value));
         }
       }
     }
@@ -1154,9 +1154,9 @@ const neue = reject => resolve => env => typeInfo => index => path => cata ({
         }
         p = p.left;
       }
-      return reject (TypeVarConstraintViolation (env) (index) (path) (mappings2) (proxy) (Z.reverse (values)));
+      return reject (TypeVarConstraintViolation (index) (path) (mappings2) (proxy) (Z.reverse (values)));
     } else {
-      return reject (UnrecognizedValue (env) (index) (path) (mappings2) (proxy) (value));
+      return reject (UnrecognizedValue (index) (path) (mappings2) (proxy) (value));
     }
   },
   UnaryTypeVariable: name => $1 => value => mappings => proxy => {
@@ -1205,14 +1205,14 @@ const neue = reject => resolve => env => typeInfo => index => path => cata ({
     const types = mappings2.types (name);
     console.log ('types:', show (types));
     if (types.length === 0) {
-      return reject (InvalidValue (env) (index) (path) (mappings2) (proxy) (value));
+      return reject (InvalidValue (index) (path) (mappings2) (proxy) (value));
     }
 
     if (Object.prototype.hasOwnProperty.call (typeInfo.constraints, name)) {
       for (let idx = 0; idx < typeInfo.constraints[name].length; idx += 1) {
         const typeClass = typeInfo.constraints[name][idx];
         if (!typeClass.test (value)) {
-          return reject (TypeClassConstraintViolation (env) (typeClass) (index) (path) (mappings2) (proxy) (value));
+          return reject (TypeClassConstraintViolation (typeClass) (index) (path) (mappings2) (proxy) (value));
         }
       }
     }
@@ -1255,7 +1255,7 @@ const neue = reject => resolve => env => typeInfo => index => path => cata ({
 
     const types = mappings2.types (name);
     if (types.length === 0) {
-      return reject (InvalidValue (env) (index) (path) (mappings2) (proxy) (value));
+      return reject (InvalidValue (index) (path) (mappings2) (proxy) (value));
     }
 
     return resolve (value)
@@ -1878,7 +1878,7 @@ const create = opts => {
         }
 
         return neue
-          (error => { throw toError (typeInfo) (error); })
+          (error => { throw toError (opts.env) (typeInfo) (error); })
           (value => mappings => proxy => value)
           (opts.env)
           (typeInfo)
@@ -1903,7 +1903,7 @@ const create = opts => {
              throw invalidArgumentsCount (typeInfo, index, 1, [_x, ...rest]);
            }
            return neue
-             (error => { throw toError (typeInfo) (error); })
+             (error => { throw toError (opts.env) (typeInfo) (error); })
              (value => mappings => proxy => cont (mappings) (proxy) (f (value)))
              (opts.env)
              (typeInfo)
@@ -1921,7 +1921,7 @@ const create = opts => {
        mappings => proxy => value => {
          const index = types.length - 1;
          return neue
-           (error => { throw toError (typeInfo) (error); })
+           (error => { throw toError (opts.env) (typeInfo) (error); })
            (value => mappings => proxy => value)
            (opts.env)
            (typeInfo)
