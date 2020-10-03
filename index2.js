@@ -839,6 +839,14 @@ const TypeVarConstraintViolation = env => typeInfo => index => path => mappings 
 
 const UnrecognizedValue = env => typeInfo => index => path => mappings => proxy => value => cases => cases.UnrecognizedValue (env) (typeInfo) (index) (path) (mappings) (proxy) (value);
 
+//    toError :: $Error -> Error
+const toError = error => error ({
+  InvalidValue: invalidValue,
+  TypeClassConstraintViolation: typeClassConstraintViolation,
+  TypeVarConstraintViolation: typeVarConstraintViolation,
+  UnrecognizedValue: unrecognizedValue,
+});
+
 const neue = reject => resolve => env => typeInfo => index => path => cata ({
   NoArguments: resolve,
   Unchecked: s => resolve,
@@ -1877,14 +1885,7 @@ const create = opts => {
         }
 
         return neue
-          (error => {
-             throw error ({
-               InvalidValue: invalidValue,
-               TypeClassConstraintViolation: typeClassConstraintViolation,
-               TypeVarConstraintViolation: typeVarConstraintViolation,
-               UnrecognizedValue: unrecognizedValue,
-             });
-           })
+          (error => { throw toError (error); })
           (value => mappings => proxy => value)
           (opts.env)
           (typeInfo)
@@ -1909,14 +1910,7 @@ const create = opts => {
              throw invalidArgumentsCount (typeInfo, index, 1, [_x, ...rest]);
            }
            return neue
-             (error => {
-                throw error ({
-                  InvalidValue: invalidValue,
-                  TypeClassConstraintViolation: typeClassConstraintViolation,
-                  TypeVarConstraintViolation: typeVarConstraintViolation,
-                  UnrecognizedValue: unrecognizedValue,
-                });
-              })
+             (error => { throw toError (error); })
              (value => mappings => proxy => cont (mappings) (proxy) (f (value)))
              (opts.env)
              (typeInfo)
@@ -1934,14 +1928,7 @@ const create = opts => {
        mappings => proxy => value => {
          const index = types.length - 1;
          return neue
-           (error => {
-              throw error ({
-                InvalidValue: invalidValue,
-                TypeClassConstraintViolation: typeClassConstraintViolation,
-                TypeVarConstraintViolation: typeVarConstraintViolation,
-                UnrecognizedValue: unrecognizedValue,
-              });
-            })
+           (error => { throw toError (error); })
            (value => mappings => proxy => value)
            (opts.env)
            (typeInfo)
