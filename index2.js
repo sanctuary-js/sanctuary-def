@@ -988,7 +988,7 @@ const neue = reject => resolve => env => typeInfo => index => path => cata ({
                         (types[idx])
                         (arg)
                         (mappings2)
-                        (proxy)
+                        (proxy);
                     });
                     return neue
                       (reject)
