@@ -185,17 +185,8 @@ const see2 = (label, name, url) => (
   '\nSee ' + url + ' for information about the ' + name + ' ' + label + '.\n'
 );
 
-//    $typeClassConstraintViolation :: ... -> Error
-const $typeClassConstraintViolation = (
-  env,            // :: Array Type
-  typeInfo,       // :: TypeInfo
-  typeClass,      // :: TypeClass
-  index,          // :: Integer
-  propPath,       // :: PropPath
-  mappings,
-  proxy,
-  value           // :: Any
-) => {
+//    typeClassConstraintViolation :: ... -> Error
+const typeClassConstraintViolation = env => typeInfo => typeClass => index => propPath => mappings => proxy => value => {
   const expType = resolvePropPath (typeInfo.types[index], propPath);
   return new TypeError (trimTrailingSpaces (
     'Type-class constraint violation\n\n' +
@@ -269,16 +260,8 @@ const innerType = prop => cata ({
   Function: types => prop === '$1' ? types[0] : prop === '$2' ? types[1] : prop === '$3' ? types[2] : TK,
 });
 
-//    $typeVarConstraintViolation :: ... -> Error
-const $typeVarConstraintViolation = (
-  env,            // :: Array Type
-  typeInfo,       // :: TypeInfo
-  index,          // :: Integer
-  propPath,       // :: PropPath
-  mappings,
-  proxy,
-  valuesAtPath
-) => {
+//    typeVarConstraintViolation :: ... -> Error
+const typeVarConstraintViolation = env => typeInfo => index => propPath => mappings => proxy => valuesAtPath => {
   //  If we apply an ‘a -> a -> a -> a’ function to Left ('x'), Right (1),
   //  and Right (null) we'd like to avoid underlining the first argument
   //  position, since Left ('x') is compatible with the other ‘a’ values.
@@ -337,16 +320,8 @@ const $typeVarConstraintViolation = (
   ));
 };
 
-//    $unrecognizedValue :: ... -> Error
-const $unrecognizedValue = (
-  env,            // :: Array Type
-  typeInfo,       // :: TypeInfo
-  index,          // :: Integer
-  propPath,       // :: PropPath
-  mappings,
-  proxy,
-  value           // :: Any
-) => {
+//    unrecognizedValue :: ... -> Error
+const unrecognizedValue = env => typeInfo => index => propPath => mappings => proxy => value => {
   const underlinedTypeVars =
   underline (typeInfo,
              K (K (_)),
@@ -368,16 +343,8 @@ const $unrecognizedValue = (
   ));
 };
 
-//    $invalidValue :: ... -> Error
-const $invalidValue = (
-  env,            // :: Array Type
-  typeInfo,       // :: TypeInfo
-  index,          // :: Integer
-  propPath,       // :: PropPath
-  mappings,
-  proxy,
-  value           // :: Any
-) => {
+//    invalidValue :: ... -> Error
+const invalidValue = env => typeInfo => index => propPath => mappings => proxy => value => {
   const t = resolvePropPath (typeInfo.types[index], propPath);
 
   const underlinedTypeVars =
@@ -1912,10 +1879,10 @@ const create = opts => {
         return neue
           (error => {
              throw error ({
-               InvalidValue: env => typeInfo => index => path => mappings => proxy => value => $invalidValue (env, typeInfo, index, path, mappings, proxy, value),
-               TypeClassConstraintViolation: env => typeInfo => typeClass => index => path => mappings => proxy => value => $typeClassConstraintViolation (env, typeInfo, typeClass, index, path, mappings, proxy, value),
-               TypeVarConstraintViolation: env => typeInfo => index => path => mappings => proxy => values => $typeVarConstraintViolation (env, typeInfo, index, path, mappings, proxy, values),
-               UnrecognizedValue: env => typeInfo => index => path => mappings => proxy => value => $unrecognizedValue (env, typeInfo, index, path, mappings, proxy, value),
+               InvalidValue: invalidValue,
+               TypeClassConstraintViolation: typeClassConstraintViolation,
+               TypeVarConstraintViolation: typeVarConstraintViolation,
+               UnrecognizedValue: unrecognizedValue,
              });
            })
           (value => mappings => proxy => value)
@@ -1944,10 +1911,10 @@ const create = opts => {
            return neue
              (error => {
                 throw error ({
-                  InvalidValue: env => typeInfo => index => path => mappings => proxy => value => $invalidValue (env, typeInfo, index, path, mappings, proxy, value),
-                  TypeClassConstraintViolation: env => typeInfo => typeClass => index => path => mappings => proxy => value => $typeClassConstraintViolation (env, typeInfo, typeClass, index, path, mappings, proxy, value),
-                  TypeVarConstraintViolation: env => typeInfo => index => path => mappings => proxy => values => $typeVarConstraintViolation (env, typeInfo, index, path, mappings, proxy, values),
-                  UnrecognizedValue: env => typeInfo => index => path => mappings => proxy => value => $unrecognizedValue (env, typeInfo, index, path, mappings, proxy, value),
+                  InvalidValue: invalidValue,
+                  TypeClassConstraintViolation: typeClassConstraintViolation,
+                  TypeVarConstraintViolation: typeVarConstraintViolation,
+                  UnrecognizedValue: unrecognizedValue,
                 });
               })
              (value => mappings => proxy => cont (mappings) (proxy) (f (value)))
@@ -1969,10 +1936,10 @@ const create = opts => {
          return neue
            (error => {
               throw error ({
-                InvalidValue: env => typeInfo => index => path => mappings => proxy => value => $invalidValue (env, typeInfo, index, path, mappings, proxy, value),
-                TypeClassConstraintViolation: env => typeInfo => typeClass => index => path => mappings => proxy => value => $typeClassConstraintViolation (env, typeInfo, typeClass, index, path, mappings, proxy, value),
-                TypeVarConstraintViolation: env => typeInfo => index => path => mappings => proxy => values => $typeVarConstraintViolation (env, typeInfo, index, path, mappings, proxy, values),
-                UnrecognizedValue: env => typeInfo => index => path => mappings => proxy => value => $unrecognizedValue (env, typeInfo, index, path, mappings, proxy, value),
+                InvalidValue: invalidValue,
+                TypeClassConstraintViolation: typeClassConstraintViolation,
+                TypeVarConstraintViolation: typeVarConstraintViolation,
+                UnrecognizedValue: unrecognizedValue,
               });
             })
            (value => mappings => proxy => value)
