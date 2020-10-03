@@ -688,10 +688,7 @@ const validate = env => typeInfo => index => path => mappings => proxy => value 
     Z.any (
       type => (
         neue
-          (env => typeInfo => index => path => mappings => proxy => value => true)
-          (env => typeInfo => typeClass => index => path => mappings => proxy => value => true)
-          (env => typeInfo => index => path => mappings => proxy => values => true)
-          (env => typeInfo => index => path => mappings => proxy => value => true)
+          (error => true)
           (value => mappings => proxy => false)
           (env)
           (typeInfo)
@@ -708,10 +705,7 @@ const validate = env => typeInfo => index => path => mappings => proxy => value 
 
   if (
     neue
-      (env => typeInfo => index => path => mappings => proxy => value => true)
-      (env => typeInfo => typeClass => index => path => mappings => proxy => value => true)
-      (env => typeInfo => index => path => mappings => proxy => values => true)
-      (env => typeInfo => index => path => mappings => proxy => value => true)
+      (error => true)
       (value => mappings => proxy => false)
       (env)
       (typeInfo)
@@ -870,7 +864,15 @@ const format = cata ({
   Unknown: outer => inner => outer ('Unknown'),
 });
 
-const neue = invalidValue => typeClassConstraintViolation => typeVarConstraintViolation => unrecognizedValue => resolve => env => typeInfo => index => path => cata ({
+const InvalidValue = env => typeInfo => index => path => mappings => proxy => value => cases => cases.InvalidValue (env) (typeInfo) (index) (path) (mappings) (proxy) (value);
+
+const TypeClassConstraintViolation = env => typeInfo => typeClass => index => path => mappings => proxy => value => cases => cases.TypeClassConstraintViolation (env) (typeInfo) (typeClass) (index) (path) (mappings) (proxy) (value);
+
+const TypeVarConstraintViolation = env => typeInfo => index => path => mappings => proxy => values => cases => cases.TypeVarConstraintViolation (env) (typeInfo) (index) (path) (mappings) (proxy) (values);
+
+const UnrecognizedValue = env => typeInfo => index => path => mappings => proxy => value => cases => cases.UnrecognizedValue (env) (typeInfo) (index) (path) (mappings) (proxy) (value);
+
+const neue = reject => resolve => env => typeInfo => index => path => cata ({
   NoArguments: resolve,
   Unchecked: s => resolve,
   Inconsistent: resolve,
@@ -878,10 +880,7 @@ const neue = invalidValue => typeClassConstraintViolation => typeVarConstraintVi
     reduce
       (cont => supertype => value => mappings => proxy =>
          neue
-           (invalidValue)
-           (typeClassConstraintViolation)
-           (typeVarConstraintViolation)
-           (unrecognizedValue)
+           (reject)
            (cont)
            (env)
            (typeInfo)
@@ -894,7 +893,7 @@ const neue = invalidValue => typeClassConstraintViolation => typeVarConstraintVi
       (value => mappings => proxy =>
          test2 (value)
          ? resolve (value) (mappings) (proxy)
-         : invalidValue (env) (typeInfo) (index) (path) (mappings) (proxy) (value))
+         : reject (InvalidValue (env) (typeInfo) (index) (path) (mappings) (proxy) (value)))
       (supertypes)
       (value)
       (mappings)
@@ -903,16 +902,13 @@ const neue = invalidValue => typeClassConstraintViolation => typeVarConstraintVi
   EnumType: name => url => members => value => mappings => proxy => (
     memberOf (members) (value)
     ? resolve (value) (mappings) (proxy)
-    : invalidValue (env) (typeInfo) (index) (path) (mappings) (proxy) (value)
+    : reject (InvalidValue (env) (typeInfo) (index) (path) (mappings) (proxy) (value))
   ),
   UnaryType: name => url => supertypes => test2 => _1 => $1 => value => mappings => proxy => (
     reduce
       (cont => supertype => value => mappings => proxy =>
          neue
-           (invalidValue)
-           (typeClassConstraintViolation)
-           (typeVarConstraintViolation)
-           (unrecognizedValue)
+           (reject)
            (cont)
            (env)
            (typeInfo)
@@ -927,10 +923,7 @@ const neue = invalidValue => typeClassConstraintViolation => typeVarConstraintVi
          ? reduceRight
              (resolve => value => mappings => proxy => (
                 neue
-                  (invalidValue)
-                  (typeClassConstraintViolation)
-                  (typeVarConstraintViolation)
-                  (unrecognizedValue)
+                  (reject)
                   (value => resolve)
                   (env)
                   (typeInfo)
@@ -945,7 +938,7 @@ const neue = invalidValue => typeClassConstraintViolation => typeVarConstraintVi
              (_1 (value))
              (mappings)
              (proxy)
-         : invalidValue (env) (typeInfo) (index) (path) (mappings) (proxy) (value))
+         : reject (InvalidValue (env) (typeInfo) (index) (path) (mappings) (proxy) (value)))
       (supertypes)
       (value)
       (mappings)
@@ -955,10 +948,7 @@ const neue = invalidValue => typeClassConstraintViolation => typeVarConstraintVi
     reduce
       (cont => supertype => value => mappings => proxy =>
          neue
-           (invalidValue)
-           (typeClassConstraintViolation)
-           (typeVarConstraintViolation)
-           (unrecognizedValue)
+           (reject)
            (cont)
            (env)
            (typeInfo)
@@ -973,10 +963,7 @@ const neue = invalidValue => typeClassConstraintViolation => typeVarConstraintVi
          ? reduceRight
              (cont => value => mappings => proxy => (
                 neue
-                  (invalidValue)
-                  (typeClassConstraintViolation)
-                  (typeVarConstraintViolation)
-                  (unrecognizedValue)
+                  (reject)
                   (value => cont)
                   (env)
                   (typeInfo)
@@ -990,10 +977,7 @@ const neue = invalidValue => typeClassConstraintViolation => typeVarConstraintVi
              (reduceRight
                 (cont => value => mappings => proxy => (
                    neue
-                     (invalidValue)
-                     (typeClassConstraintViolation)
-                     (typeVarConstraintViolation)
-                     (unrecognizedValue)
+                     (reject)
                      (value => cont)
                      (env)
                      (typeInfo)
@@ -1009,7 +993,7 @@ const neue = invalidValue => typeClassConstraintViolation => typeVarConstraintVi
              (_1 (value))
              (mappings)
              (proxy)
-         : invalidValue (env) (typeInfo) (index) (path) (mappings) (proxy) (value))
+         : reject (InvalidValue (env) (typeInfo) (index) (path) (mappings) (proxy) (value)))
       (supertypes)
       (value)
       (mappings)
@@ -1018,10 +1002,7 @@ const neue = invalidValue => typeClassConstraintViolation => typeVarConstraintVi
   Function: types => value => mappings => proxy => {
     let mappings2 = mappings;
     return neue
-      (invalidValue)
-      (typeClassConstraintViolation)
-      (typeVarConstraintViolation)
-      (unrecognizedValue)
+      (reject)
       (value => mappings => proxy =>
          resolve ((...args) => {
                     const n = types.length - 1;
@@ -1030,10 +1011,7 @@ const neue = invalidValue => typeClassConstraintViolation => typeVarConstraintVi
                     }
                     args.forEach ((arg, idx) => {
                       neue
-                        (invalidValue)
-                        (typeClassConstraintViolation)
-                        (typeVarConstraintViolation)
-                        (unrecognizedValue)
+                        (reject)
                         (value => mappings => proxy => { mappings2 = mappings; })
                         (env)
                         (typeInfo)
@@ -1045,10 +1023,7 @@ const neue = invalidValue => typeClassConstraintViolation => typeVarConstraintVi
                         (proxy)
                     });
                     return neue
-                      (invalidValue)
-                      (typeClassConstraintViolation)
-                      (typeVarConstraintViolation)
-                      (unrecognizedValue)
+                      (reject)
                       (value => mappings => values => { mappings2 = mappings; return value; })
                       (env)
                       (typeInfo)
@@ -1073,21 +1048,18 @@ const neue = invalidValue => typeClassConstraintViolation => typeVarConstraintVi
   RecordType: fields => value => mappings => proxy => {
     const keys = (Object.keys (fields)).sort ();
     if (value == null) {
-      return invalidValue (env) (typeInfo) (index) (path) (mappings) (proxy) (value);
+      return reject (InvalidValue (env) (typeInfo) (index) (path) (mappings) (proxy) (value));
     } else {
       const missing = {};
       keys.forEach (k => { missing[k] = k; });
       for (const k in value) delete missing[k];
       if (Z.size (missing) > 0) {
-        return invalidValue (env) (typeInfo) (index) (path) (mappings) (proxy) (value);
+        return reject (InvalidValue (env) (typeInfo) (index) (path) (mappings) (proxy) (value));
       } else {
         return reduceRight
                  (cont => key => mappings => proxy => (
                     neue
-                      (invalidValue)
-                      (typeClassConstraintViolation)
-                      (typeVarConstraintViolation)
-                      (unrecognizedValue)
+                      (reject)
                       (value => cont)
                       (env)
                       (typeInfo)
@@ -1108,21 +1080,21 @@ const neue = invalidValue => typeClassConstraintViolation => typeVarConstraintVi
   NamedRecordType: name => url => supertypes => fields => value => mappings => proxy => {
     const keys = (Object.keys (fields)).sort ();
     if (value == null) {
-      return invalidValue (env) (typeInfo) (index) (path) (mappings) (proxy) (value);
+      return reject (InvalidValue (env) (typeInfo) (index) (path) (mappings) (proxy) (value));
     } else {
       const missing = {};
       keys.forEach (k => { missing[k] = k; });
       for (const k in value) delete missing[k];
       if (Z.size (missing) > 0) {
-        return invalidValue (env) (typeInfo) (index) (path) (mappings) (proxy) (value);
+        return reject (InvalidValue (env) (typeInfo) (index) (path) (mappings) (proxy) (value));
       } else {
         return reduceRight
                  (cont => key => mappings => proxy => (
                     neue
-                      (env => typeInfo => index => path => mappings => proxy => _value => invalidValue (env) (typeInfo) (index) (path) (mappings) (proxy) (value))
-                      (env => typeInfo => typeClass => index => path => mappings => proxy => _value => typeClassConstraintViolation (env) (typeInfo) (typeClass) (index) (path) (mappings) (proxy) (value))
-                      (env => typeInfo => index => path => mappings => proxy => values => typeVarConstraintViolation (env) (typeInfo) (index) (path) (mappings2) (proxy) ([value]))
-                      (env => typeInfo => index => path => mappings => proxy => _value => unrecognizedValue (env) (typeInfo) (index) (path) (mappings2) (proxy) (value))
+                      (error => reject (error ({InvalidValue: env => typeInfo => index => path => mappings => proxy => _value => InvalidValue (env) (typeInfo) (index) (path) (mappings) (proxy) (value),
+                                                TypeClassConstraintViolation: env => typeInfo => typeClass => index => path => mappings => proxy => _value => TypeClassConstraintViolation (env) (typeInfo) (typeClass) (index) (path) (mappings) (proxy) (value),
+                                                TypeVarConstraintViolation: env => typeInfo => index => path => mappings => proxy => values => TypeVarConstraintViolation (env) (typeInfo) (index) (path) (mappings) (proxy) ([value]),
+                                                UnrecognizedValue: env => typeInfo => index => path => mappings => proxy => _value => UnrecognizedValue (env) (typeInfo) (index) (path) (mappings) (proxy) (value)})))
                       (value => cont)
                       (env)
                       (typeInfo)
@@ -1149,7 +1121,7 @@ const neue = invalidValue => typeClassConstraintViolation => typeVarConstraintVi
       for (let idx = 0; idx < typeInfo.constraints[name].length; idx += 1) {
         const typeClass = typeInfo.constraints[name][idx];
         if (!(typeClass.test (value))) {
-          return typeClassConstraintViolation (env) (typeInfo) (typeClass) (index) (path) (mappings) (proxy) (value);
+          return reject (TypeClassConstraintViolation (env) (typeInfo) (typeClass) (index) (path) (mappings) (proxy) (value));
         }
       }
     }
@@ -1214,9 +1186,9 @@ const neue = invalidValue => typeClassConstraintViolation => typeVarConstraintVi
         }
         p = p.left;
       }
-      return typeVarConstraintViolation (env) (typeInfo) (index) (path) (mappings2) (proxy) (Z.reverse (values));
+      return reject (TypeVarConstraintViolation (env) (typeInfo) (index) (path) (mappings2) (proxy) (Z.reverse (values)));
     } else {
-      return unrecognizedValue (env) (typeInfo) (index) (path) (mappings2) (proxy) (value);
+      return reject (UnrecognizedValue (env) (typeInfo) (index) (path) (mappings2) (proxy) (value));
     }
   },
   UnaryTypeVariable: name => $1 => value => mappings => proxy => {
@@ -1265,14 +1237,14 @@ const neue = invalidValue => typeClassConstraintViolation => typeVarConstraintVi
     const types = mappings2.types (name);
     console.log ('types:', show (types));
     if (types.length === 0) {
-      return invalidValue (env) (typeInfo) (index) (path) (mappings2) (proxy) (value);
+      return reject (InvalidValue (env) (typeInfo) (index) (path) (mappings2) (proxy) (value));
     }
 
     if (Object.prototype.hasOwnProperty.call (typeInfo.constraints, name)) {
       for (let idx = 0; idx < typeInfo.constraints[name].length; idx += 1) {
         const typeClass = typeInfo.constraints[name][idx];
         if (!typeClass.test (value)) {
-          return typeClassConstraintViolation (env) (typeInfo) (typeClass) (index) (path) (mappings2) (proxy) (value);
+          return reject (TypeClassConstraintViolation (env) (typeInfo) (typeClass) (index) (path) (mappings2) (proxy) (value));
         }
       }
     }
@@ -1284,10 +1256,7 @@ const neue = invalidValue => typeClassConstraintViolation => typeVarConstraintVi
                          reduce
                            (values => value => (
                               neue
-                                (invalidValue)
-                                (typeClassConstraintViolation)
-                                (typeVarConstraintViolation)
-                                (unrecognizedValue)
+                                (reject)
                                 (value => mappings => proxy => proxy)
                                 (env)
                                 (typeInfo)
@@ -1318,7 +1287,7 @@ const neue = invalidValue => typeClassConstraintViolation => typeVarConstraintVi
 
     const types = mappings2.types (name);
     if (types.length === 0) {
-      return invalidValue (env) (typeInfo) (index) (path) (mappings2) (proxy) (value);
+      return reject (InvalidValue (env) (typeInfo) (index) (path) (mappings2) (proxy) (value));
     }
 
     return resolve (value)
@@ -1329,10 +1298,7 @@ const neue = invalidValue => typeClassConstraintViolation => typeVarConstraintVi
                            BinaryType: name => url => supertypes => test2 => _1 => _2 => _ => _ => (
                              reduce (proxy => value => (
                                        neue
-                                         (invalidValue)
-                                         (typeClassConstraintViolation)
-                                         (typeVarConstraintViolation)
-                                         (unrecognizedValue)
+                                         (reject)
                                          (value => mappings => proxy => proxy)
                                          (env)
                                          (typeInfo)
@@ -1345,10 +1311,7 @@ const neue = invalidValue => typeClassConstraintViolation => typeVarConstraintVi
                                      ))
                                     (reduce (proxy => value => (
                                                neue
-                                                 (invalidValue)
-                                                 (typeClassConstraintViolation)
-                                                 (typeVarConstraintViolation)
-                                                 (unrecognizedValue)
+                                                 (reject)
                                                  (value => mappings => proxy => proxy)
                                                  (env)
                                                  (typeInfo)
@@ -1947,10 +1910,14 @@ const create = opts => {
         }
 
         return neue
-          (env => typeInfo => index => path => mappings => proxy => value => { throw $invalidValue (env, typeInfo, index, path, mappings, proxy, value); })
-          (env => typeInfo => typeClass => index => path => mappings => proxy => value => { throw $typeClassConstraintViolation (env, typeInfo, typeClass, index, path, mappings, proxy, value); })
-          (env => typeInfo => index => path => mappings => proxy => values => { throw $typeVarConstraintViolation (env, typeInfo, index, path, mappings, proxy, values); })
-          (env => typeInfo => index => path => mappings => proxy => value => { throw $unrecognizedValue (env, typeInfo, index, path, mappings, proxy, value); })
+          (error => {
+             throw error ({
+               InvalidValue: env => typeInfo => index => path => mappings => proxy => value => $invalidValue (env, typeInfo, index, path, mappings, proxy, value),
+               TypeClassConstraintViolation: env => typeInfo => typeClass => index => path => mappings => proxy => value => $typeClassConstraintViolation (env, typeInfo, typeClass, index, path, mappings, proxy, value),
+               TypeVarConstraintViolation: env => typeInfo => index => path => mappings => proxy => values => $typeVarConstraintViolation (env, typeInfo, index, path, mappings, proxy, values),
+               UnrecognizedValue: env => typeInfo => index => path => mappings => proxy => value => $unrecognizedValue (env, typeInfo, index, path, mappings, proxy, value),
+             });
+           })
           (value => mappings => proxy => value)
           (opts.env)
           (typeInfo)
@@ -1975,10 +1942,14 @@ const create = opts => {
              throw invalidArgumentsCount (typeInfo, index, 1, [_x, ...rest]);
            }
            return neue
-             (env => typeInfo => index => path => mappings => proxy => value => { throw $invalidValue (env, typeInfo, index, path, mappings, proxy, value); })
-             (env => typeInfo => typeClass => index => path => mappings => proxy => value => { throw $typeClassConstraintViolation (env, typeInfo, typeClass, index, path, mappings, proxy, value); })
-             (env => typeInfo => index => path => mappings => proxy => values => { throw $typeVarConstraintViolation (env, typeInfo, index, path, mappings, proxy, values); })
-             (env => typeInfo => index => path => mappings => proxy => value => { throw $unrecognizedValue (env, typeInfo, index, path, mappings, proxy, value); })
+             (error => {
+                throw error ({
+                  InvalidValue: env => typeInfo => index => path => mappings => proxy => value => $invalidValue (env, typeInfo, index, path, mappings, proxy, value),
+                  TypeClassConstraintViolation: env => typeInfo => typeClass => index => path => mappings => proxy => value => $typeClassConstraintViolation (env, typeInfo, typeClass, index, path, mappings, proxy, value),
+                  TypeVarConstraintViolation: env => typeInfo => index => path => mappings => proxy => values => $typeVarConstraintViolation (env, typeInfo, index, path, mappings, proxy, values),
+                  UnrecognizedValue: env => typeInfo => index => path => mappings => proxy => value => $unrecognizedValue (env, typeInfo, index, path, mappings, proxy, value),
+                });
+              })
              (value => mappings => proxy => cont (mappings) (proxy) (f (value)))
              (opts.env)
              (typeInfo)
@@ -1996,10 +1967,14 @@ const create = opts => {
        mappings => proxy => value => {
          const index = types.length - 1;
          return neue
-           (env => typeInfo => index => path => mappings => proxy => value => { throw $invalidValue (env, typeInfo, index, path, mappings, proxy, value); })
-           (env => typeInfo => typeClass => index => path => mappings => proxy => value => { throw $typeClassConstraintViolation (env, typeInfo, typeClass, index, path, mappings, proxy, value); })
-           (env => typeInfo => index => path => mappings => proxy => values => { throw $typeVarConstraintViolation (env, typeInfo, index, path, mappings, proxy, values); })
-           (env => typeInfo => index => path => mappings => proxy => value => { throw $unrecognizedValue (env, typeInfo, index, path, mappings, proxy, value); })
+           (error => {
+              throw error ({
+                InvalidValue: env => typeInfo => index => path => mappings => proxy => value => $invalidValue (env, typeInfo, index, path, mappings, proxy, value),
+                TypeClassConstraintViolation: env => typeInfo => typeClass => index => path => mappings => proxy => value => $typeClassConstraintViolation (env, typeInfo, typeClass, index, path, mappings, proxy, value),
+                TypeVarConstraintViolation: env => typeInfo => index => path => mappings => proxy => values => $typeVarConstraintViolation (env, typeInfo, index, path, mappings, proxy, values),
+                UnrecognizedValue: env => typeInfo => index => path => mappings => proxy => value => $unrecognizedValue (env, typeInfo, index, path, mappings, proxy, value),
+              });
+            })
            (value => mappings => proxy => value)
            (opts.env)
            (typeInfo)
