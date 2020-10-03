@@ -185,26 +185,6 @@ const see2 = (label, name, url) => (
   '\nSee ' + url + ' for information about the ' + name + ' ' + label + '.\n'
 );
 
-//    typeClassConstraintViolation :: ... -> Error
-const typeClassConstraintViolation = env => typeInfo => typeClass => index => propPath => mappings => proxy => value => {
-  const expType = resolvePropPath (typeInfo.types[index], propPath);
-  return new TypeError (trimTrailingSpaces (
-    'Type-class constraint violation\n\n' +
-    underline (typeInfo,
-               tvn => tc => (
-                 tvn === name (expType) && tc.name === typeClass.name ? r ('^') : _
-               ),
-               formatType6 (Z.concat ([index], propPath))) +
-    '\n' +
-    showValuesAndTypes (env, typeInfo, index, propPath, mappings, proxy, [value], 1) + '\n\n' +
-    q (typeInfo.name) + ' requires ' +
-    q (name (expType)) + ' to satisfy the ' +
-    stripNamespace (typeClass) + ' type-class constraint; ' +
-    'the value at position 1 does not.\n' +
-    see ('type class', typeClass)
-  ));
-};
-
 //    underlineTypeVars :: (TypeInfo, StrMap (Array Any)) -> String
 const underlineTypeVars = (typeInfo, valuesByPath) => {
   //  Note: Sorting these keys lexicographically is not "correct", but it
@@ -259,108 +239,6 @@ const innerType = prop => cata ({
   NamedRecordType: _ => _ => _ => fields => fields[prop],
   Function: types => prop === '$1' ? types[0] : prop === '$2' ? types[1] : prop === '$3' ? types[2] : TK,
 });
-
-//    typeVarConstraintViolation :: ... -> Error
-const typeVarConstraintViolation = env => typeInfo => index => propPath => mappings => proxy => valuesAtPath => {
-  //  If we apply an ‘a -> a -> a -> a’ function to Left ('x'), Right (1),
-  //  and Right (null) we'd like to avoid underlining the first argument
-  //  position, since Left ('x') is compatible with the other ‘a’ values.
-  const selector = JSON.stringify (Z.concat ([index], propPath));
-  const values = Z.chain (r => r.selector === selector ? [r.value] : [], valuesAtPath);
-
-  const name1 = name (propPath.reduce ((t, prop) => innerType (prop) (t), typeInfo.types[index]));
-
-  const valuesByPath = reduce
-    (acc => r => {
-       const [index, ...propPath] = JSON.parse (r.selector);
-       const name2 = name (propPath.reduce ((t, prop) => innerType (prop) (t), typeInfo.types[index]));
-       if (name2 === name1) {
-         if (!(r.selector in acc)) {
-           acc[r.selector] = [];
-         }
-         acc[r.selector].push (r.value);
-       }
-       return acc;
-     })
-    (Object.create (null))
-    (valuesAtPath);
-
-  //  Note: Sorting these keys lexicographically is not "correct", but it
-  //  does the right thing for indexes less than 10.
-  const keys = Z.filter (k => {
-    const values_ = Z.chain (r => r.selector === k ? [r.value] : [], valuesAtPath);
-    return (
-      //  Keep X, the position at which the violation was observed.
-      k === selector ||
-      //  Keep positions whose values are incompatible with the values at X.
-      isEmpty (determineActualTypesStrict (env, typeInfo, index, propPath, mappings, proxy, Z.concat (values, values_)))
-    );
-  }, (Object.keys (valuesByPath)).sort ());
-
-  const underlinedTypeVars =
-  underlineTypeVars (typeInfo,
-                     reduce ($valuesByPath => k => { $valuesByPath[k] = valuesByPath[k]; return $valuesByPath; })
-                            ({})
-                            (keys));
-
-  return new TypeError (trimTrailingSpaces (
-    'Type-variable constraint violation\n\n' +
-    underlinedTypeVars + '\n' +
-    (Z.reduce ((st, k) => {
-      const values = valuesByPath[k];
-      return isEmpty (values) ? st : {
-        idx: st.idx + 1,
-        s: st.s +
-           showValuesAndTypes (env, typeInfo, index, propPath, mappings, proxy, values, st.idx + 1) +
-           '\n\n',
-      };
-    }, {idx: 0, s: ''}, keys)).s +
-    'Since there is no type of which all the above values are ' +
-    'members, the type-variable constraint has been violated.\n'
-  ));
-};
-
-//    unrecognizedValue :: ... -> Error
-const unrecognizedValue = env => typeInfo => index => propPath => mappings => proxy => value => {
-  const underlinedTypeVars =
-  underline (typeInfo,
-             K (K (_)),
-             formatType6 (Z.concat ([index], propPath)));
-
-  return new TypeError (trimTrailingSpaces (
-    'Unrecognized value\n\n' +
-    underlinedTypeVars + '\n' +
-    showValuesAndTypes (env, typeInfo, index, propPath, mappings, proxy, [value], 1) + '\n\n' +
-    toMarkdownList (
-      'The environment is empty! ' +
-      'Polymorphic functions require a non-empty environment.\n',
-      'The value at position 1 is not a member of any type in ' +
-      'the environment.\n\n' +
-      'The environment contains the following types:\n\n',
-      showTypeWith (typeInfo.types),
-      env
-    )
-  ));
-};
-
-//    invalidValue :: ... -> Error
-const invalidValue = env => typeInfo => index => propPath => mappings => proxy => value => {
-  const t = resolvePropPath (typeInfo.types[index], propPath);
-
-  const underlinedTypeVars =
-  underline (typeInfo,
-             K (K (_)),
-             formatType6 (Z.concat ([index], propPath)));
-
-  return new TypeError (trimTrailingSpaces (
-    'Invalid value\n\n' +
-    underlinedTypeVars + '\n' +
-    showValuesAndTypes (env, typeInfo, index, propPath, mappings, proxy, [value], 1) + '\n\n' +
-    'The value at position 1 is not a member of ' +
-    q (show (t)) + '.\n' +
-    see2 (arity (t) >= 1 ? 'type constructor' : 'type', name (t), url (t))
-  ));
-};
 
 //  expandUnknown
 //  :: Array Type
@@ -841,10 +719,125 @@ const UnrecognizedValue = env => typeInfo => index => path => mappings => proxy 
 
 //    toError :: $Error -> Error
 const toError = error => error ({
-  InvalidValue: invalidValue,
-  TypeClassConstraintViolation: typeClassConstraintViolation,
-  TypeVarConstraintViolation: typeVarConstraintViolation,
-  UnrecognizedValue: unrecognizedValue,
+
+  InvalidValue: env => typeInfo => index => propPath => mappings => proxy => value => {
+    const t = resolvePropPath (typeInfo.types[index], propPath);
+
+    const underlinedTypeVars =
+    underline (typeInfo,
+               K (K (_)),
+               formatType6 (Z.concat ([index], propPath)));
+
+    return new TypeError (trimTrailingSpaces (
+      'Invalid value\n\n' +
+      underlinedTypeVars + '\n' +
+      showValuesAndTypes (env, typeInfo, index, propPath, mappings, proxy, [value], 1) + '\n\n' +
+      'The value at position 1 is not a member of ' +
+      q (show (t)) + '.\n' +
+      see2 (arity (t) >= 1 ? 'type constructor' : 'type', name (t), url (t))
+    ));
+  },
+
+  TypeClassConstraintViolation: env => typeInfo => typeClass => index => propPath => mappings => proxy => value => {
+    const expType = resolvePropPath (typeInfo.types[index], propPath);
+    return new TypeError (trimTrailingSpaces (
+      'Type-class constraint violation\n\n' +
+      underline (typeInfo,
+                 tvn => tc => (
+                   tvn === name (expType) && tc.name === typeClass.name ? r ('^') : _
+                 ),
+                 formatType6 (Z.concat ([index], propPath))) +
+      '\n' +
+      showValuesAndTypes (env, typeInfo, index, propPath, mappings, proxy, [value], 1) + '\n\n' +
+      q (typeInfo.name) + ' requires ' +
+      q (name (expType)) + ' to satisfy the ' +
+      stripNamespace (typeClass) + ' type-class constraint; ' +
+      'the value at position 1 does not.\n' +
+      see ('type class', typeClass)
+    ));
+  },
+
+  TypeVarConstraintViolation: env => typeInfo => index => propPath => mappings => proxy => valuesAtPath => {
+    //  If we apply an ‘a -> a -> a -> a’ function to Left ('x'), Right (1),
+    //  and Right (null) we'd like to avoid underlining the first argument
+    //  position, since Left ('x') is compatible with the other ‘a’ values.
+    const selector = JSON.stringify (Z.concat ([index], propPath));
+    const values = Z.chain (r => r.selector === selector ? [r.value] : [], valuesAtPath);
+
+    const name1 = name (propPath.reduce ((t, prop) => innerType (prop) (t), typeInfo.types[index]));
+
+    const valuesByPath = reduce
+      (acc => r => {
+         const [index, ...propPath] = JSON.parse (r.selector);
+         const name2 = name (propPath.reduce ((t, prop) => innerType (prop) (t), typeInfo.types[index]));
+         if (name2 === name1) {
+           if (!(r.selector in acc)) {
+             acc[r.selector] = [];
+           }
+           acc[r.selector].push (r.value);
+         }
+         return acc;
+       })
+      (Object.create (null))
+      (valuesAtPath);
+
+    //  Note: Sorting these keys lexicographically is not "correct", but it
+    //  does the right thing for indexes less than 10.
+    const keys = Z.filter (k => {
+      const values_ = Z.chain (r => r.selector === k ? [r.value] : [], valuesAtPath);
+      return (
+        //  Keep X, the position at which the violation was observed.
+        k === selector ||
+        //  Keep positions whose values are incompatible with the values at X.
+        isEmpty (determineActualTypesStrict (env, typeInfo, index, propPath, mappings, proxy, Z.concat (values, values_)))
+      );
+    }, (Object.keys (valuesByPath)).sort ());
+
+    const underlinedTypeVars =
+    underlineTypeVars (typeInfo,
+                       reduce ($valuesByPath => k => { $valuesByPath[k] = valuesByPath[k]; return $valuesByPath; })
+                              ({})
+                              (keys));
+
+    return new TypeError (trimTrailingSpaces (
+      'Type-variable constraint violation\n\n' +
+      underlinedTypeVars + '\n' +
+      (Z.reduce ((st, k) => {
+        const values = valuesByPath[k];
+        return isEmpty (values) ? st : {
+          idx: st.idx + 1,
+          s: st.s +
+             showValuesAndTypes (env, typeInfo, index, propPath, mappings, proxy, values, st.idx + 1) +
+             '\n\n',
+        };
+      }, {idx: 0, s: ''}, keys)).s +
+      'Since there is no type of which all the above values are ' +
+      'members, the type-variable constraint has been violated.\n'
+    ));
+  },
+
+  UnrecognizedValue: env => typeInfo => index => propPath => mappings => proxy => value => {
+    const underlinedTypeVars =
+    underline (typeInfo,
+               K (K (_)),
+               formatType6 (Z.concat ([index], propPath)));
+
+    return new TypeError (trimTrailingSpaces (
+      'Unrecognized value\n\n' +
+      underlinedTypeVars + '\n' +
+      showValuesAndTypes (env, typeInfo, index, propPath, mappings, proxy, [value], 1) + '\n\n' +
+      toMarkdownList (
+        'The environment is empty! ' +
+        'Polymorphic functions require a non-empty environment.\n',
+        'The value at position 1 is not a member of any type in ' +
+        'the environment.\n\n' +
+        'The environment contains the following types:\n\n',
+        showTypeWith (typeInfo.types),
+        env
+      )
+    ));
+  },
+
 });
 
 const neue = reject => resolve => env => typeInfo => index => path => cata ({
