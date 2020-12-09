@@ -1273,7 +1273,7 @@
       $typeVarMap[typeVar.name].valuesByPath[key] = [];
     }
 
-    var isValid = test (env);
+    var isValid = test (env) ({});
 
     var expandUnknownStrict = B (B (B (filter (isConsistent))))
                                 (expandUnknown (env) ([]));
@@ -1492,18 +1492,21 @@
     }
   }
 
-  //# test :: Array Type -> Type -> a -> Boolean
+  //# test :: Array Type -> StrMap (Array TypeClass) -> Type -> a -> Boolean
   //.
-  //. Takes an environment, a type, and any value. Returns `true` if the value
-  //. is a member of the type; `false` otherwise.
+  //. Takes an environment, a type, type-class constraints, and any value.
+  //. Returns `true` if the value is a member of the type; `false` otherwise.
   //.
   //. The environment is only significant if the type contains
   //. [type variables][].
   function test(env) {
-    return function(t) {
-      return function(x) {
-        var typeInfo = {name: 'name', constraints: {}, types: [t]};
-        return (satisfactoryTypes (env, typeInfo, {}, t, 0, [], [x])).isRight;
+    return function(c) {
+      return function(t) {
+        return function(x) {
+          var typeInfo = {name: 'name', constraints: c, types: [t]};
+          return (satisfactoryTypes
+            (env, typeInfo, {}, t, 0, [], [x])).isRight;
+        };
       };
     };
   }
@@ -2900,7 +2903,11 @@
     test:
       def ('test')
           ({})
-          ([Array_ (Type), Type, Any, Boolean_])
+          ([Array_ (Type),
+            StrMap (Array_ (TypeClass)),
+            Type,
+            Any,
+            Boolean_])
           (test),
     NullaryType:
       def ('NullaryType')
