@@ -988,11 +988,15 @@ Since there is no type of which all the above values are members, the type-varia
     eq (show ($.RecordType ({}))) ('{}');
     eq (show ($.RecordType ({x: $.Number}))) ('{ x :: Number }');
     eq (show ($.RecordType ({x: $.Number, y: $.Number}))) ('{ x :: Number, y :: Number }');
-    eq (show ($.RecordType ({_ABC: $.Number, $123: $.Number}))) ('{ $123 :: Number, _ABC :: Number }');
+    eq (show ($.RecordType ({_ABC: $.Number, $123: $.Number}))) ('{ _ABC :: Number, $123 :: Number }');
     eq (show ($.RecordType ({0: $.Number, 1: $.Number}))) ('{ "0" :: Number, "1" :: Number }');
     eq (show ($.RecordType ({'foo-bar': $.Number}))) ('{ "foo-bar" :: Number }');
     eq (show ($.RecordType ({'foo bar': $.Number}))) ('{ "foo bar" :: Number }');
     eq (show ($.RecordType ({'x "y" z': $.Number}))) ('{ "x \\"y\\" z" :: Number }');
+
+    //  Field ordering:
+    eq (show ($.RecordType ({foo: $.Number, bar: $.Number}))) ('{ foo :: Number, bar :: Number }');
+    eq (show ($.RecordType ({bar: $.Number, foo: $.Number}))) ('{ bar :: Number, foo :: Number }');
 
     const pred = $.test ([]) ($.RecordType ({x: $.Number}));
 
@@ -1102,9 +1106,9 @@ See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Number for in
     throws (() => { length ({start: 0, end: 0}); })
            (new TypeError (`Invalid value
 
-length :: { end :: { x :: Number, y :: Number }, start :: { x :: Number, y :: Number } } -> Number
-                   ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-                                1
+length :: { start :: { x :: Number, y :: Number }, end :: { x :: Number, y :: Number } } -> Number
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                                  1
 
 1)  0 :: Number
 
@@ -1114,9 +1118,9 @@ The value at position 1 is not a member of ‘{ x :: Number, y :: Number }’.
     throws (() => { length ({start: {x: 0, y: 0}, end: {x: null, y: null}}); })
            (new TypeError (`Invalid value
 
-length :: { end :: { x :: Number, y :: Number }, start :: { x :: Number, y :: Number } } -> Number
-                          ^^^^^^
-                            1
+length :: { start :: { x :: Number, y :: Number }, end :: { x :: Number, y :: Number } } -> Number
+                                                                 ^^^^^^
+                                                                   1
 
 1)  null :: Null
 
@@ -3850,6 +3854,14 @@ suite ('interoperability', () => {
     eq (Z.equals ($.Array ($.NullaryType ('X') ('http://x.com/') ([]) (x => true)),
                   $.Array ($.NullaryType ('X') ('http://x.org/') ([]) (x => true))))
        (false);
+
+    //  Field ordering:
+    eq (Z.equals ($.RecordType ({foo: $.Number, bar: $.Number}),
+                  $.RecordType ({foo: $.Number, bar: $.Number})))
+       (true);
+    eq (Z.equals ($.RecordType ({foo: $.Number, bar: $.Number}),
+                  $.RecordType ({bar: $.Number, foo: $.Number})))
+       (true);
   });
 
 });
