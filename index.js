@@ -186,9 +186,19 @@
 
   var util = {inspect: {}};
 
+  function alt(a, f) {
+    try {
+      return f ();
+    } catch (e) {
+      /* istanbul ignore next */
+      return a;
+    }
+  }
+
   /* istanbul ignore else */
   if (typeof module === 'object' && typeof module.exports === 'object') {
-    module.exports = f (require ('util'),
+    module.exports = f (
+                        alt (util, function() { return require ('util'); }),
                         require ('sanctuary-either'),
                         require ('sanctuary-show'),
                         require ('sanctuary-type-classes'),
