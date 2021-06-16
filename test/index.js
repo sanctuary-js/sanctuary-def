@@ -2986,6 +2986,18 @@ The value at position 1 is not a member of ‘a -> a -> a -> b’.
     eq (alt (Right (5)) (Left (6))) (Right (5));
     eq (alt (Right (7)) (Right (8))) (Right (7));
 
+    //  Constraint ordering:
+    eq (show (def ('elem')
+                  ({a: [Z.Setoid], f: [Z.Foldable]})
+                  ([a, f (a), $.Boolean])
+                  (curry2 (Z.elem))))
+       ('elem :: (Setoid a, Foldable f) => a -> f a -> Boolean');
+    eq (show (def ('elem')
+                  ({f: [Z.Foldable], a: [Z.Setoid]})
+                  ([a, f (a), $.Boolean])
+                  (curry2 (Z.elem))))
+       ('elem :: (Foldable f, Setoid a) => a -> f a -> Boolean');
+
     //    concat :: Semigroup a => a -> a -> a
     const concat =
     def ('concat')

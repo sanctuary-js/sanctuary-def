@@ -2329,7 +2329,7 @@
     inner           // :: String -> TypeClass -> String -> String
   ) {
     var $reprs = [];
-    (sortedKeys (constraints)).forEach (function(k) {
+    (Object.keys (constraints)).forEach (function(k) {
       var f = inner (k);
       constraints[k].forEach (function(typeClass) {
         $reprs.push (f (typeClass) (stripNamespace (typeClass) + ' ' + k));
