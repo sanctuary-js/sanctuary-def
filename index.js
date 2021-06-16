@@ -184,12 +184,9 @@
 
   'use strict';
 
-  var util = {inspect: {}};
-
   /* istanbul ignore else */
   if (typeof module === 'object' && typeof module.exports === 'object') {
-    module.exports = f (require ('util'),
-                        require ('sanctuary-either'),
+    module.exports = f (require ('sanctuary-either'),
                         require ('sanctuary-show'),
                         require ('sanctuary-type-classes'),
                         require ('sanctuary-type-identifiers'));
@@ -198,18 +195,15 @@
              'sanctuary-show',
              'sanctuary-type-classes',
              'sanctuary-type-identifiers'],
-            function(Either, show, Z, type) {
-              return f (util, Either, show, Z, type);
-            });
+            f);
   } else {
-    self.sanctuaryDef = f (util,
-                           self.sanctuaryEither,
+    self.sanctuaryDef = f (self.sanctuaryEither,
                            self.sanctuaryShow,
                            self.sanctuaryTypeClasses,
                            self.sanctuaryTypeIdentifiers);
   }
 
-} (function(util, Either, show, Z, type) {
+} (function(Either, show, Z, type) {
 
   'use strict';
 
@@ -219,10 +213,6 @@
   var slice             = Array.prototype.slice;
   var hasOwnProperty    = Object.prototype.hasOwnProperty;
   var toString          = Object.prototype.toString;
-
-  var inspect = typeof util.inspect.custom === 'symbol' ?
-                util.inspect.custom :
-                /* istanbul ignore next */ 'inspect';
 
   //  Left :: a -> Either a b
   var Left = Either.Left;
@@ -2780,7 +2770,14 @@
       } :
       wrapNext ({}, [], 0);
 
-    wrapped[inspect] = wrapped.toString = always0 (typeSignature (typeInfo));
+    wrapped.toString = always0 (typeSignature (typeInfo));
+    /* istanbul ignore else */
+    if (
+      typeof process !== 'undefined' &&
+      process != null &&
+      process.versions != null &&
+      process.versions.node != null
+    ) wrapped[Symbol.for ('nodejs.util.inspect.custom')] = wrapped.toString;
     /* istanbul ignore if */
     if (typeof Deno !== 'undefined') {
       if (Deno != null && typeof Deno.customInspect === 'symbol') {
