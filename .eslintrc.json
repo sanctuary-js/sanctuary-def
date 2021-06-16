@@ -36,7 +36,7 @@
     },
     {
       "files": ["index.js"],
-      "globals": {"Deno": false},
+      "globals": {"Deno": false, "Symbol": false},
       "rules": {
         "multiline-comment-style": ["off"]
       }
