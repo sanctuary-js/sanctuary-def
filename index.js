@@ -2781,6 +2781,12 @@
       wrapNext ({}, [], 0);
 
     wrapped[inspect] = wrapped.toString = always0 (typeSignature (typeInfo));
+    /* istanbul ignore if */
+    if (typeof Deno !== 'undefined') {
+      if (Deno != null && typeof Deno.customInspect === 'symbol') {
+        wrapped[Deno.customInspect] = wrapped.toString;
+      }
+    }
 
     return wrapped;
   }
