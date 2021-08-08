@@ -3,4 +3,4 @@ set -euf -o pipefail
 
 node_modules/.bin/sanctuary-test "$@"
 
-node --experimental-modules test/module.mjs
+node --experimental-modules test_/module.mjs
