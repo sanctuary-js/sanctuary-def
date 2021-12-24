@@ -1499,28 +1499,46 @@
     };
   }
 
-  function validate(env) {
-    return function(t) {
-      return function(x) {
-        var typeInfo = {name: 'name', constraints: {}, types: [t]};
-        var result = satisfactoryTypes (env, typeInfo, {}, t, 0, [], [x]);
+  function leftToError (propName) {
+    return function (typeName) {
+      return function (typeValue) {
+        return function (either) {
+          if (either.isLeft) {
+            return Left ({error:'WrongValue', type: typeName, name: propName, value: typeValue});
+          } else {
+            return either;
+          }
+        }
+      }
+    }
+  }
 
-        // if (result.isLeft) {
-        //   try {
-        //     result = Left (result.value ());
-        //   } catch (error) {
-        //     result = Left (error);
-        //   }
-        // }
+  function validate (t) {
+    return function (x) {
+      // var result = expType.validate (env) (values[idx]);
+      var returnValue = [];
+      var types = Object.keys (t.types);
 
-        // return [result.isLeft
-        //   ? Left (result.value ())
-        //   : result];
-        return result.isLeft
-          ? Left (result.value ())
-          : result;
-      };
-    };
+      for (var i = 0, len = types.length; i < len; ++i) {
+        var propName    = types[i];
+        var propValue   = x[propName];
+        var type        = t.types[propName];
+        var convertLeft = leftToError (propName)
+                                      (type.name)
+                                      (propValue);
+
+        returnValue.push (
+          convertLeft (type.validate ([])
+                                     (propValue))
+        );
+      }
+
+      returnValue.push (
+        leftToError ('') (t.name ||t.type) (x) (t.validate ([]) (x))
+      );
+
+      return returnValue;
+    }
   }
 
   //. ### Type constructors
@@ -2933,8 +2951,7 @@
     validate:
       def ('validate')
           ({})
-          // ([Array_ (Type), Type, Any, Array_ (Either_ (Error_) (Object_))])
-          ([Array_ (Type), Type, Any, Either_ (Error_) (Object_)])
+          ([Type, Any, Array_ (Either_ (Object_) (Any))])
           (validate),
     NullaryType:
       def ('NullaryType')
