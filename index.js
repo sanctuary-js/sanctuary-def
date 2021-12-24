@@ -1499,7 +1499,7 @@
     };
   }
 
-  //# validate :: Type -> a -> Either Object a
+  //# validate :: Type -> a -> Array (Either Object a)
   //.
   //. Takes a type, and any value. Returns an `Array` of
   //. `Right a` if the value is a member of the type;
