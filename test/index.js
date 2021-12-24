@@ -3898,45 +3898,103 @@ suite ('validate', () => {
 
     // null is not a member of ‘FooBar’
     eq ($.validate (FooBar) (null))
-      ([Left ({"error": "WrongValue", "name": "$$", "type": "FooBar", "value": null})]);
+      ([Left ({'error': 'WrongValue', 'name': '$$', 'type': 'FooBar', 'value': null})]);
 
     // undefined is not a member of ‘FooBar’
     eq ($.validate (FooBar) (undefined))
-      ([Left ({"error": "WrongValue", "name": "$$", "type": "FooBar", "value": undefined})]);
+      ([Left ({'error': 'WrongValue', 'name': '$$', 'type': 'FooBar', 'value': undefined})]);
 
-    // '"bar" field is missing', '"foo" field is missing'
+    // ''bar' field is missing', ''foo' field is missing'
     eq ($.validate (FooBar) ({}))
       ([
-        Left ({"error": "WrongValue", "name": "$$", "type": "FooBar", "value": {}}),
-        Left ({"error": "MissingValue", "name": "bar", "type": "Number", "value": undefined}),
-        Left ({"error": "MissingValue", "name": "foo", "type": "String", "value": undefined})
+        Left ({'error': 'WrongValue', 'name': '$$', 'type': 'FooBar', 'value': {}}),
+        Left ({'error': 'MissingValue', 'name': 'bar', 'type': 'Number', 'value': undefined}),
+        Left ({'error': 'MissingValue', 'name': 'foo', 'type': 'String', 'value': undefined}),
       ]);
 
-    // "bar" field is missing
+    // 'bar' field is missing
     eq ($.validate (FooBar) ({foo: null}))
       ([
-        Left ({"error": "WrongValue", "name": "$$", "type": "FooBar", "value": {"foo": null}}),
-        Left ({"error": "MissingValue", "name": "bar", "type": "Number", "value": undefined}),
-        Left ({"error": "WrongValue", "name": "foo", "type": "String", "value": null})
+        Left ({'error': 'WrongValue', 'name': '$$', 'type': 'FooBar', 'value': {'foo': null}}),
+        Left ({'error': 'MissingValue', 'name': 'bar', 'type': 'Number', 'value': undefined}),
+        Left ({'error': 'WrongValue', 'name': 'foo', 'type': 'String', 'value': null}),
       ]);
 
-    // Value of "bar" field, null, is not a member of ‘Number’
+    // Value of 'bar' field, null, is not a member of ‘Number’
     eq ($.validate (FooBar) ({foo: null, bar: null}))
       ([
-        Left ({"error": "WrongValue", "name": "$$", "type": "FooBar", "value": {"bar": null, "foo": null}}),
-        Left ({"error": "WrongValue", "name": "bar", "type": "Number", "value": null}),
-        Left ({"error": "WrongValue", "name": "foo", "type": "String", "value": null})
+        Left ({'error': 'WrongValue', 'name': '$$', 'type': 'FooBar', 'value': {'bar': null, 'foo': null}}),
+        Left ({'error': 'WrongValue', 'name': 'bar', 'type': 'Number', 'value': null}),
+        Left ({'error': 'WrongValue', 'name': 'foo', 'type': 'String', 'value': null}),
       ]);
 
-      // Value of "foo" field, null, is not a member of ‘String’
+      // Value of 'foo' field, null, is not a member of ‘String’
     eq ($.validate (FooBar) ({foo: null, bar: 42}))
       ([
-        Left ({"error": "WrongValue", "name": "$$", "type": "FooBar", "value": {"bar": 42, "foo": null}}),
-        Left ({"error": "WrongValue", "name": "foo", "type": "String", "value": null})
+        Left ({'error': 'WrongValue', 'name': '$$', 'type': 'FooBar', 'value': {'bar': 42, 'foo': null}}),
+        Left ({'error': 'WrongValue', 'name': 'foo', 'type': 'String', 'value': null}),
       ]);
 
     eq ($.validate (FooBar) ({foo: 'blue', bar: 42}))
        ([Right ({foo: 'blue', bar: 42})]);
+
+  });
+
+  test ('Custom Type', () => {
+
+    //    $DateIso :: NullaryType
+    const $DateIso = (
+      $.NullaryType ('DateIso')
+                    ('https://www.w3.org/QA/Tips/iso-date')
+                    ([$.String])
+                    (x => /^\d{4}-(?:0[1-9]|1[0-2])-(?:0[1-9]|[1-2]\d|3[0-1])$/.test (x))
+    );
+
+    const model1 = $.RecordType ({
+      date: $DateIso,
+    });
+
+    const model2 = $.RecordType ({
+      date: $.NonEmpty ($DateIso),
+      bool: $.Boolean,
+    });
+
+    eq ($.validate (model1) ({date: '2020-04-10'}))
+       ([Right ({date: '2020-04-10'})]);
+
+    eq ($.validate (model1) ({date: '2020-04-100'}))
+       ([
+         Left ({'error': 'WrongValue', 'name': '$$', 'type': 'RECORD', 'value': {'date': '2020-04-100'}}),
+         Left ({'error': 'WrongValue', 'name': 'date', 'type': 'DateIso', 'value': '2020-04-100'}),
+       ]);
+
+    eq ($.validate (model2) ({bool: 'foobar', date: '2020-04-100'}))
+       ([
+        Left ({'error': 'WrongValue', 'name': '$$', 'type': 'RECORD', 'value': {'bool': 'foobar', 'date': '2020-04-100'}}),
+        Left ({'error': 'WrongValue', 'name': 'date', 'type': 'DateIso', 'value': '2020-04-100'}),
+        Left ({'error': 'WrongValue', 'name': 'bool', 'type': 'Boolean', 'value': 'foobar'}),
+       ]);
+
+    eq ($.validate (model2) ({date: '2020-04-10', bool: 'foobar'}))
+       ([
+         Left ({'error': 'WrongValue', 'name': '$$', 'type': 'RECORD', 'value': {'bool': 'foobar', 'date': '2020-04-10'}}),
+         Left ({'error': 'WrongValue', 'name': 'bool', 'type': 'Boolean', 'value': 'foobar'}),
+       ]);
+
+    eq ($.validate (model2) ({date: '2020-04-100', bool: true}))
+       ([
+         Left ({'error': 'WrongValue', 'name': '$$', 'type': 'RECORD', 'value': {'bool': true, 'date': '2020-04-100'}}),
+         Left ({'error': 'WrongValue', 'name': 'date', 'type': 'DateIso', 'value': '2020-04-100'}),
+       ]);
+
+    eq ($.validate (model2) ({date: [], bool: false}))
+       ([
+        Left ({'error': 'WrongValue', 'name': '$$', 'type': 'RECORD', 'value': {'bool': false, 'date': []}}),
+        Left ({'error': 'WrongValue', 'name': 'date', 'type': 'NonEmpty', 'value': []}),
+       ]);
+
+    eq ($.validate (model2) ({bool: false, date: '2020-04-10'}))
+       ([Right ({date: '2020-04-10', bool: false})]);
 
   });
 
