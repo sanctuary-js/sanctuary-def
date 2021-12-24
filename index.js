@@ -1499,6 +1499,30 @@
     };
   }
 
+  function validate(env) {
+    return function(t) {
+      return function(x) {
+        var typeInfo = {name: 'name', constraints: {}, types: [t]};
+        var result = satisfactoryTypes (env, typeInfo, {}, t, 0, [], [x]);
+
+        // if (result.isLeft) {
+        //   try {
+        //     result = Left (result.value ());
+        //   } catch (error) {
+        //     result = Left (error);
+        //   }
+        // }
+
+        // return [result.isLeft
+        //   ? Left (result.value ())
+        //   : result];
+        return result.isLeft
+          ? Left (result.value ())
+          : result;
+      };
+    };
+  }
+
   //. ### Type constructors
   //.
   //. sanctuary-def provides several functions for defining types.
@@ -2906,6 +2930,12 @@
           ({})
           ([Array_ (Type), Type, Any, Boolean_])
           (test),
+    validate:
+      def ('validate')
+          ({})
+          // ([Array_ (Type), Type, Any, Array_ (Either_ (Error_) (Object_))])
+          ([Array_ (Type), Type, Any, Either_ (Error_) (Object_)])
+          (validate),
     NullaryType:
       def ('NullaryType')
           ({})
