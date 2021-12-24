@@ -3878,6 +3878,66 @@ suite ('interoperability', () => {
 
 });
 
-// suite ('validate', () => {
-//   test ('validate')
-// });
+suite ('validate', () => {
+
+  test ('Undefined', () => {
+
+    eq ($.validate ($.Undefined) (undefined))
+       ([Right (undefined)]);
+
+  });
+
+  test ('NamedRecordType', () => {
+    //    FooBar :: Type
+    const FooBar = $.NamedRecordType
+      ('FooBar')
+      ('')
+      ([])
+      ({foo: $.String,
+        bar: $.Number});
+
+    // null is not a member of ‘FooBar’
+    eq ($.validate (FooBar) (null))
+      ([Left ({"error": "WrongValue", "name": "$$", "type": "FooBar", "value": null})]);
+
+    // undefined is not a member of ‘FooBar’
+    eq ($.validate (FooBar) (undefined))
+      ([Left ({"error": "WrongValue", "name": "$$", "type": "FooBar", "value": undefined})]);
+
+    // '"bar" field is missing', '"foo" field is missing'
+    eq ($.validate (FooBar) ({}))
+      ([
+        Left ({"error": "WrongValue", "name": "$$", "type": "FooBar", "value": {}}),
+        Left ({"error": "MissingValue", "name": "bar", "type": "Number", "value": undefined}),
+        Left ({"error": "MissingValue", "name": "foo", "type": "String", "value": undefined})
+      ]);
+
+    // "bar" field is missing
+    eq ($.validate (FooBar) ({foo: null}))
+      ([
+        Left ({"error": "WrongValue", "name": "$$", "type": "FooBar", "value": {"foo": null}}),
+        Left ({"error": "MissingValue", "name": "bar", "type": "Number", "value": undefined}),
+        Left ({"error": "WrongValue", "name": "foo", "type": "String", "value": null})
+      ]);
+
+    // Value of "bar" field, null, is not a member of ‘Number’
+    eq ($.validate (FooBar) ({foo: null, bar: null}))
+      ([
+        Left ({"error": "WrongValue", "name": "$$", "type": "FooBar", "value": {"bar": null, "foo": null}}),
+        Left ({"error": "WrongValue", "name": "bar", "type": "Number", "value": null}),
+        Left ({"error": "WrongValue", "name": "foo", "type": "String", "value": null})
+      ]);
+
+      // Value of "foo" field, null, is not a member of ‘String’
+    eq ($.validate (FooBar) ({foo: null, bar: 42}))
+      ([
+        Left ({"error": "WrongValue", "name": "$$", "type": "FooBar", "value": {"bar": 42, "foo": null}}),
+        Left ({"error": "WrongValue", "name": "foo", "type": "String", "value": null})
+      ]);
+
+    eq ($.validate (FooBar) ({foo: 'blue', bar: 42}))
+       ([Right ({foo: 'blue', bar: 42})]);
+
+  });
+
+});

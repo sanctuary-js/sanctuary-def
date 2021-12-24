@@ -1502,27 +1502,30 @@
   //# validate :: Type -> a -> Either Object a
   //.
   //. Takes a type, and any value. Returns an `Array` of
-  //. `Either a` if the value
-  //. is a member of the type; `Either Object` otherwise.
-  function validate (t) {
-    return function (x) {
+  //. `Right a` if the value is a member of the type;
+  //. `Left Object` for each property that is invalid.
+  //. The first index in the `Left` array is always named `$$`,
+  //. which refers to the entire value.
+  function validate(t) {
+    return function(x) {
       var returnValue = [];
-      var props       = t.keys;
-      var result      = t.validate ([]) (x);
+      var $$Result    = t.validate ([]) (x);
 
       returnValue.push (
-        result.isLeft
+        $$Result.isLeft
           ? Left ({
-              error:'WrongValue',
+              error: 'WrongValue',
               type: t.name || t.type,
-              name: '$_',
+              name: '$$',
               value: x
             })
-          : result
+          : $$Result
       );
 
       if (x != null && t.keys.length > 0) {
-        for (var i = 0, len = props.length; i < len; ++i) {
+        var props = t.keys;
+
+        for (var i = 0, len = props.length; i < len; i += 1) {
           var propName  = props[i];
           var propValue = x[propName];
           var type      = t.types[propName];
@@ -1532,8 +1535,11 @@
             if (propName in x) {
               returnValue.push (
                 Left ({
-                  error:'WrongValue',
-                  type: type.name,
+                  error: 'WrongValue',
+                  // TODO: figure what propPath really is
+                  type: result.value.propPath.length > 0
+                    ? type.types[result.value.propPath[0]].name
+                    : type.name,
                   name: propName,
                   value: propValue
                 })
@@ -1541,7 +1547,7 @@
             } else {
               returnValue.push (
                 Left ({
-                  error:'MissingValue',
+                  error: 'MissingValue',
                   type: type.name,
                   name: propName,
                   value: propValue
@@ -1553,7 +1559,7 @@
       }
 
       return returnValue;
-    }
+    };
   }
 
   //. ### Type constructors
