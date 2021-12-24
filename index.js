@@ -1504,7 +1504,7 @@
   //. Takes a type, and any value. Returns an `Array` of
   //. `Right a` if the value is a member of the type;
   //. `Left Object` for each property that is invalid.
-  //. The first index in a array of `Left`s is always named `$$`,
+  //. The first index in an array of `Left`s is always named `$$`,
   //. which refers to the entire value.
   function validate(t) {
     return function(x) {
