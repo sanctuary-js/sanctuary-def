@@ -1499,43 +1499,58 @@
     };
   }
 
-  function leftToError (propName) {
-    return function (typeName) {
-      return function (typeValue) {
-        return function (either) {
-          if (either.isLeft) {
-            return Left ({error:'WrongValue', type: typeName, name: propName, value: typeValue});
-          } else {
-            return either;
+  //# validate :: Type -> a -> Either Object a
+  //.
+  //. Takes a type, and any value. Returns an `Array` of
+  //. `Either a` if the value
+  //. is a member of the type; `Either Object` otherwise.
+  function validate (t) {
+    return function (x) {
+      var returnValue = [];
+      var props       = t.keys;
+      var result      = t.validate ([]) (x);
+
+      returnValue.push (
+        result.isLeft
+          ? Left ({
+              error:'WrongValue',
+              type: t.name || t.type,
+              name: '$_',
+              value: x
+            })
+          : result
+      );
+
+      if (x != null && t.keys.length > 0) {
+        for (var i = 0, len = props.length; i < len; ++i) {
+          var propName  = props[i];
+          var propValue = x[propName];
+          var type      = t.types[propName];
+          var result    = type.validate ([]) (propValue);
+
+          if (result.isLeft) {
+            if (propName in x) {
+              returnValue.push (
+                Left ({
+                  error:'WrongValue',
+                  type: type.name,
+                  name: propName,
+                  value: propValue
+                })
+              );
+            } else {
+              returnValue.push (
+                Left ({
+                  error:'MissingValue',
+                  type: type.name,
+                  name: propName,
+                  value: propValue
+                })
+              );
+            }
           }
         }
       }
-    }
-  }
-
-  function validate (t) {
-    return function (x) {
-      // var result = expType.validate (env) (values[idx]);
-      var returnValue = [];
-      var types = Object.keys (t.types);
-
-      for (var i = 0, len = types.length; i < len; ++i) {
-        var propName    = types[i];
-        var propValue   = x[propName];
-        var type        = t.types[propName];
-        var convertLeft = leftToError (propName)
-                                      (type.name)
-                                      (propValue);
-
-        returnValue.push (
-          convertLeft (type.validate ([])
-                                     (propValue))
-        );
-      }
-
-      returnValue.push (
-        leftToError ('') (t.name ||t.type) (x) (t.validate ([]) (x))
-      );
 
       return returnValue;
     }

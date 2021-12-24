@@ -30,17 +30,21 @@ const log = x => console.debug (x);
 // const invalid = $.validate (model1) ({date:'2020-04-100'});
 
 const valid   = $.validate (model2) ({date:'2020-04-10', bool: false});
-// const invalid = $.validate (model2) ({date:'2020-04-100', bool: 'false'});
-const invalid = $.validate (model2) ({date:'2020-04-10', bool: 'foobar'});
+// const invalid = $.validate (model2) ({date:'2020-04-100', bool: 'foobar'});
+// const invalid = $.validate (model2) ({date:'2020-04-10', bool: 'foobar'});
+
+const invalid = $.validate (model2) ({bool: false});
 
 // expType.validate :: a -> Right a
 // expType.validate (env) ('2020-04-10') -> Right ('2020-04-10')
 //
 // Array (Right ({ types: Array (expType.validate) }))
+log ('Valid: ')
 valid.forEach (log);
-invalid.forEach (log);
 
+log ('Invalid: ')
 // Array (Left Error)
+invalid.forEach (log);
 // invalid.map (either => either.value)
 // 			 .forEach (log);
 
