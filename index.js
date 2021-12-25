@@ -251,6 +251,13 @@
     };
   }
 
+  //  map :: Functor f => (a -⁠> b) -⁠> f a -⁠> f b
+  // function map(f) {
+  //   return function(xs) {
+  //     return Z.map (f, xs);
+  //   };
+  // }
+
   //  init :: Array a -> Array a
   function init(xs) { return xs.slice (0, -1); }
 
@@ -1508,8 +1515,63 @@
   //. which refers to the entire value.
   function validate(t) {
     return function(x) {
+      // 1. build list of prop, validate function and value object for all keys
+      // 2. when value = null, use MissingValue object
+      // 3. run all remainder validate functions for nested type validation
+      // 4. remove all Rights from list
+      // 5. concatenate $$ (in returnValue) with all Lefts
+
       var returnValue = [];
       var $$Result    = t.validate ([]) (x);
+
+      // 1 and 2
+      //  props :: Array (Either Object Object)
+      var props = t.keys.map (function(p) {
+        return x == null
+          ? Left ({
+              error: 'MissingValue',
+              type: t.name || t.type,
+              name: p,
+              value: x
+            })
+          : Right ({
+              name: p,
+              type: t.types[p],
+              value: x[p]
+            });
+      });
+
+      var validateRights = Z.compose (function(p) {
+        if (p.result.isLeft) {
+          if (p.name in x) {
+            return Left ({
+              error: 'WrongValue',
+              // TODO: figure out what propPath really is
+              type: p.result.value.propPath.length > 0
+                ? p.type.types[p.result.value.propPath[0]].name
+                : p.type.name,
+              name: p.name,
+              value: p.value
+            });
+          } else {
+            return Left ({
+              error: 'MissingValue',
+              type: p.type.name,
+              name: p.name,
+              value: p.value
+            });
+          }
+        } else {
+          return Right (p);
+        }
+      }, function(p) {
+        return {
+          name: p.name,
+          result: p.type.validate ([]) (p.value),
+          type: p.type,
+          value: p.value
+        };
+      });
 
       returnValue.push (
         $$Result.isLeft
@@ -1522,43 +1584,24 @@
           : $$Result
       );
 
-      if (x != null && t.keys.length > 0) {
-        var props = t.keys;
+      // 3
+      var tmp0 = Z.map (function(prop) {
+        return Z.chain (validateRights, prop);
+      }, props);
 
-        for (var i = 0, len = props.length; i < len; i += 1) {
-          var propName  = props[i];
-          var propValue = x[propName];
-          var type      = t.types[propName];
-          var result    = type.validate ([]) (propValue);
+      // 4
+      var tmp1 = Z.filter (function(either) {
+        return either.isLeft;
+      }, tmp0);
 
-          if (result.isLeft) {
-            if (propName in x) {
-              returnValue.push (
-                Left ({
-                  error: 'WrongValue',
-                  // TODO: figure what propPath really is
-                  type: result.value.propPath.length > 0
-                    ? type.types[result.value.propPath[0]].name
-                    : type.name,
-                  name: propName,
-                  value: propValue
-                })
-              );
-            } else {
-              returnValue.push (
-                Left ({
-                  error: 'MissingValue',
-                  type: type.name,
-                  name: propName,
-                  value: propValue
-                })
-              );
-            }
-          }
-        }
-      }
-
-      return returnValue;
+      // 5
+      return Z.concat (returnValue, tmp1);
+      // return Z.concat (
+      //   returnValue,
+      //   Z.filter (
+      //     either => either.isLeft,
+      //     Z.map (prop => Z.map (validateRights, prop), props))
+      // );
     };
   }
 
