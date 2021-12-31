@@ -220,6 +220,9 @@
   //  Right :: b -> Either a b
   var Right = Either.Right;
 
+  //  lefts :: Fola
+  var lefts = B (map (prop ('value'))) (filter (prop ('isLeft')));
+
   //  B :: (b -> c) -> (a -> b) -> a -> c
   function B(f) {
     return function(g) {
@@ -252,11 +255,11 @@
   }
 
   //  map :: Functor f => (a -⁠> b) -⁠> f a -⁠> f b
-  // function map(f) {
-  //   return function(xs) {
-  //     return Z.map (f, xs);
-  //   };
-  // }
+  function map(f) {
+    return function(xs) {
+      return Z.map (f, xs);
+    };
+  }
 
   //  init :: Array a -> Array a
   function init(xs) { return xs.slice (0, -1); }
@@ -1506,26 +1509,19 @@
     };
   }
 
-  //# validate :: Type -> a -> Array (Either Object a)
+  //# validate :: Type -> a -> Either (Array ValidationError) a
   //.
-  //. Takes a type, and any value. Returns an `Array` of
-  //. `Right a` if the value is a member of the type;
-  //. `Left Object` for each property that is invalid.
-  //. The first index in an array of `Left`s is always named `$$`,
-  //. which refers to the entire value.
+  //. Takes a type, and any value. Returns `Right a` if
+  //. the value is a member of the type;
+  //. `Left (Array ValidationError)` for each property
+  //. that is invalid. The first index in a `Left` array
+  //. is always named `$$`, which refers to the entire value.
   function validate(t) {
     return function(x) {
-      // 1. build list of prop, validate function and value object for all keys
-      // 2. when value = null, use MissingValue object
-      // 3. run all remainder validate functions for nested type validation
-      // 4. remove all Rights from list
-      // 5. concatenate $$ (in returnValue) with all Lefts
+      //  $$Result :: {value, propPath} e => Either e a
+      var $$Result = t.validate ([]) (x);
 
-      var returnValue = [];
-      var $$Result    = t.validate ([]) (x);
-
-      // 1 and 2
-      //  props :: Array (Either Object Object)
+      //  props :: Array (Either ValidationError TestObject)
       var props = t.keys.map (function(p) {
         return x == null
           ? Left ({
@@ -1541,8 +1537,11 @@
             });
       });
 
-      var validateRights = Z.compose (function(p) {
-        if (p.result.isLeft) {
+      //  validateTestObject :: TestObject -> Either ValidationError TestObject
+      var validateTestObject = Z.compose (function(p) {
+        if (p.result.isRight) {
+          return Right (p);
+        } else {
           if (p.name in x) {
             return Left ({
               error: 'WrongValue',
@@ -1561,8 +1560,6 @@
               value: p.value
             });
           }
-        } else {
-          return Right (p);
         }
       }, function(p) {
         return {
@@ -1573,29 +1570,35 @@
         };
       });
 
-      returnValue.push (
-        $$Result.isLeft
-          ? Left ({
-              error: 'WrongValue',
-              type: t.name || t.type,
-              name: '$$',
-              value: x
-            })
-          : $$Result
-      );
+      if ($$Result.isLeft) {
+        //  tmp0 :: Array (Either ValidationError TestObject)
+        var tmp0 = Z.map (function(prop) {
+          return Z.chain (validateTestObject, prop);
+        }, props);
 
-      // 3
-      var tmp0 = Z.map (function(prop) {
-        return Z.chain (validateRights, prop);
-      }, props);
+        //  tmp1 :: Array (Left ValidationError)
+        var tmp1 = Z.filter (function(either) {
+          return either.isLeft;
+        }, tmp0);
 
-      // 4
-      var tmp1 = Z.filter (function(either) {
-        return either.isLeft;
-      }, tmp0);
+        //  tmp2 :: Array (Left ValidationError)
+        var tmp2 = Z.prepend (Left ({
+          error: 'WrongValue',
+          type: t.name || t.type,
+          name: '$$',
+          value: x
+        }), tmp1);
 
-      // 5
-      return Z.concat (returnValue, tmp1);
+        //  tmp3 :: Array (ValidationError)
+        var tmp3 = lefts (tmp2);
+
+        // return :: Left (Array ValidationError)
+        return Left (tmp3);
+      } else {
+        // return :: Right a
+        return $$Result;
+      }
+
       // return Z.concat (
       //   returnValue,
       //   Z.filter (
@@ -3015,7 +3018,7 @@
     validate:
       def ('validate')
           ({})
-          ([Type, Any, Array_ (Either_ (Object_) (Any))])
+          ([Type, Any, Either_ (Array_ (Object_)) (Any)])
           (validate),
     NullaryType:
       def ('NullaryType')
