@@ -1541,25 +1541,23 @@
       var validateTestObject = Z.compose (function(p) {
         if (p.result.isRight) {
           return Right (p);
+        } else if (p.name in x) {
+          return Left ({
+            error: 'WrongValue',
+            // TODO: figure out what propPath really is
+            type: p.result.value.propPath.length > 0
+              ? p.type.types[p.result.value.propPath[0]].name
+              : p.type.name,
+            name: p.name,
+            value: p.value
+          });
         } else {
-          if (p.name in x) {
-            return Left ({
-              error: 'WrongValue',
-              // TODO: figure out what propPath really is
-              type: p.result.value.propPath.length > 0
-                ? p.type.types[p.result.value.propPath[0]].name
-                : p.type.name,
-              name: p.name,
-              value: p.value
-            });
-          } else {
-            return Left ({
-              error: 'MissingValue',
-              type: p.type.name,
-              name: p.name,
-              value: p.value
-            });
-          }
+          return Left ({
+            error: 'MissingValue',
+            type: p.type.name,
+            name: p.name,
+            value: p.value
+          });
         }
       }, function(p) {
         return {
