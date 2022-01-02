@@ -220,8 +220,8 @@
   //  Right :: b -> Either a b
   var Right = Either.Right;
 
-  //  lefts :: Fola
-  var lefts = B (map (prop ('value'))) (filter (prop ('isLeft')));
+  //  lefts :: (Filterable f, Functor f) => f (Either a b) -> f a
+  var lefts = Z.compose (map (prop ('value')), filter (prop ('isLeft')));
 
   //  B :: (b -> c) -> (a -> b) -> a -> c
   function B(f) {
@@ -1569,29 +1569,21 @@
       });
 
       if ($$Result.isLeft) {
-        //  tmp0 :: Array (Either ValidationError TestObject)
-        var tmp0 = Z.map (function(prop) {
+        //  tmp0 :: Array (ValidationError)
+        var tmp0 = lefts (Z.map (function(prop) {
           return Z.chain (validateTestObject, prop);
-        }, props);
+        }, props));
 
-        //  tmp1 :: Array (Left ValidationError)
-        var tmp1 = Z.filter (function(either) {
-          return either.isLeft;
-        }, tmp0);
-
-        //  tmp2 :: Array (Left ValidationError)
-        var tmp2 = Z.prepend (Left ({
+        //  tmp1 :: Array (ValidationError)
+        var tmp1 = Z.prepend ({
           error: 'WrongValue',
           type: t.name || t.type,
           name: '$$',
           value: x
-        }), tmp1);
-
-        //  tmp3 :: Array (ValidationError)
-        var tmp3 = lefts (tmp2);
+        }, tmp0);
 
         // return :: Left (Array ValidationError)
-        return Left (tmp3);
+        return Left (tmp1);
       } else {
         // return :: Right a
         return $$Result;
