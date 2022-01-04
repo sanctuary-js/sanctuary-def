@@ -716,7 +716,11 @@
     ('HtmlElement')
     ([])
     (function(x) {
-       return /^\[object HTML.+Element\]$/.test (toString.call (x));
+      return (
+        x && x.toString && /^\[object HTML.*Element\]$/.test (x.toString ())
+        ||
+        false
+      );
      });
 
   //# Identity :: Type -> Type
