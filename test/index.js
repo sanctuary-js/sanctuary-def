@@ -1672,6 +1672,10 @@ See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Array2 for in
     eq ($.HtmlElement.name) ('HtmlElement');
     eq ($.HtmlElement.url) (`https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#HtmlElement`);
     eq ($.HtmlElement.supertypes) ([]);
+
+    const isHtmlElement = $.test ([]) ($.HtmlElement);
+    eq (isHtmlElement ({[Symbol.toStringTag]: 'HTMLDivElement'})) (true);
+    eq (isHtmlElement ({[Symbol.toStringTag]: 'HTMLElement'})) (true);
   });
 
   test ('provides the "Identity" type constructor', () => {
