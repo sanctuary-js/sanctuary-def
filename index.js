@@ -220,6 +220,9 @@
   //  Right :: b -> Either a b
   var Right = Either.Right;
 
+  //  lefts :: (Filterable f, Functor f) => f (Either a b) -> f a
+  var lefts = Z.compose (map (prop ('value')), filter (prop ('isLeft')));
+
   //  B :: (b -> c) -> (a -> b) -> a -> c
   function B(f) {
     return function(g) {
@@ -248,6 +251,13 @@
   function filter(pred) {
     return function(xs) {
       return Z.filter (pred, xs);
+    };
+  }
+
+  //  map :: Functor f => (a -⁠> b) -⁠> f a -⁠> f b
+  function map(f) {
+    return function(xs) {
+      return Z.map (f, xs);
     };
   }
 
@@ -1496,6 +1506,95 @@
         var typeInfo = {name: 'name', constraints: {}, types: [t]};
         return (satisfactoryTypes (env, typeInfo, {}, t, 0, [], [x])).isRight;
       };
+    };
+  }
+
+  //# validate :: Type -> a -> Either (Array ValidationError) a
+  //.
+  //. Takes a type, and any value. Returns `Right a` if
+  //. the value is a member of the type;
+  //. `Left (Array ValidationError)` for each property
+  //. that is invalid. The first index in a `Left` array
+  //. is always named `$$`, which refers to the entire value.
+  function validate(t) {
+    return function(x) {
+      //  $$Result :: {value, propPath} e => Either e a
+      var $$Result = t.validate ([]) (x);
+
+      //  props :: Array (Either ValidationError TestObject)
+      var props = t.keys.map (function(p) {
+        return x == null
+          ? Left ({
+              error: 'MissingValue',
+              type: t.name || t.type,
+              name: p,
+              value: x
+            })
+          : Right ({
+              name: p,
+              type: t.types[p],
+              value: x[p]
+            });
+      });
+
+      //  validateTestObject :: TestObject -> Either ValidationError TestObject
+      var validateTestObject = Z.compose (function(p) {
+        if (p.result.isRight) {
+          return Right (p);
+        } else if (p.name in x) {
+          return Left ({
+            error: 'WrongValue',
+            // TODO: figure out what propPath really is
+            type: p.result.value.propPath.length > 0
+              ? p.type.types[p.result.value.propPath[0]].name
+              : p.type.name,
+            name: p.name,
+            value: p.value
+          });
+        } else {
+          return Left ({
+            error: 'MissingValue',
+            type: p.type.name,
+            name: p.name,
+            value: p.value
+          });
+        }
+      }, function(p) {
+        return {
+          name: p.name,
+          result: p.type.validate ([]) (p.value),
+          type: p.type,
+          value: p.value
+        };
+      });
+
+      if ($$Result.isLeft) {
+        //  tmp0 :: Array (ValidationError)
+        var tmp0 = lefts (Z.map (function(prop) {
+          return Z.chain (validateTestObject, prop);
+        }, props));
+
+        //  tmp1 :: Array (ValidationError)
+        var tmp1 = Z.prepend ({
+          error: 'WrongValue',
+          type: t.name || t.type,
+          name: '$$',
+          value: x
+        }, tmp0);
+
+        // return :: Left (Array ValidationError)
+        return Left (tmp1);
+      } else {
+        // return :: Right a
+        return $$Result;
+      }
+
+      // return Z.concat (
+      //   returnValue,
+      //   Z.filter (
+      //     either => either.isLeft,
+      //     Z.map (prop => Z.map (validateRights, prop), props))
+      // );
     };
   }
 
@@ -2906,6 +3005,11 @@
           ({})
           ([Array_ (Type), Type, Any, Boolean_])
           (test),
+    validate:
+      def ('validate')
+          ({})
+          ([Type, Any, Either_ (Array_ (Object_)) (Any)])
+          (validate),
     NullaryType:
       def ('NullaryType')
           ({})
