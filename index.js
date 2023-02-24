@@ -180,7 +180,7 @@
 //. //   The value at position 1 is not a member of ‘Number’.
 //. ```
 
-(function(f) {
+(f => {
 
   'use strict';
 
@@ -203,192 +203,61 @@
                            self.sanctuaryTypeIdentifiers);
   }
 
-} (function(Either, show, Z, type) {
+}) ((Either, show, Z, type) => {
 
   'use strict';
 
-  var MAX_SAFE_INTEGER = Math.pow (2, 53) - 1;
-  var MIN_SAFE_INTEGER = -MAX_SAFE_INTEGER;
+  const {hasOwnProperty, toString} = Object.prototype;
 
-  var slice             = Array.prototype.slice;
-  var hasOwnProperty    = Object.prototype.hasOwnProperty;
-  var toString          = Object.prototype.toString;
-
-  //  Left :: a -> Either a b
-  var Left = Either.Left;
-
-  //  Right :: b -> Either a b
-  var Right = Either.Right;
+  const {Left, Right} = Either;
 
   //  B :: (b -> c) -> (a -> b) -> a -> c
-  function B(f) {
-    return function(g) {
-      return function(x) {
-        return f (g (x));
-      };
-    };
-  }
-
-  //  I :: a -> a
-  function I(x) { return x; }
-
-  //  K :: a -> b -> a
-  function K(x) { return function(y) { return x; }; }
-
-  //  always0 :: a -> () -> a
-  function always0(x) { return function() { return x; }; }
-
-  //  always2 :: a -> (b, c) -> a
-  function always2(x) { return function(y, z) { return x; }; }
+  const B = f => g => x => f (g (x));
 
   //  complement :: (a -> Boolean) -> a -> Boolean
-  function complement(pred) { return function(x) { return !(pred (x)); }; }
-
-  //  filter :: Filterable f => (a -> Boolean) -> f a -> f a
-  function filter(pred) {
-    return function(xs) {
-      return Z.filter (pred, xs);
-    };
-  }
-
-  //  init :: Array a -> Array a
-  function init(xs) { return xs.slice (0, -1); }
-
-  //  isEmpty :: Foldable f => f a -> Boolean
-  function isEmpty(xs) { return Z.size (xs) === 0; }
+  const complement = pred => x => !(pred (x));
 
   //  isPrefix :: Array a -> Array a -> Boolean
-  function isPrefix(candidate) {
-    return function(xs) {
-      if (candidate.length > xs.length) return false;
-      for (var idx = 0; idx < candidate.length; idx += 1) {
-        if (candidate[idx] !== xs[idx]) return false;
-      }
-      return true;
-    };
-  }
-
-  //  joinWith :: (String, Array String) -> String
-  function joinWith(separator, ss) {
-    return ss.join (separator);
-  }
-
-  //  last :: Array a -> a
-  function last(xs) { return xs[xs.length - 1]; }
-
-  //  memberOf :: Array a -> a -> Boolean
-  function memberOf(xs) {
-    return function(y) {
-      return xs.some (function(x) { return Z.equals (x, y); });
-    };
-  }
-
-  //  or :: (Array a, Array a) -> Array a
-  function or(xs, ys) { return isEmpty (xs) ? ys : xs; }
-
-  //  prop :: String -> {} -> a
-  function prop(field) { return function(record) { return record[field]; }; }
-
-  //  sizeEq :: Foldable f => Integer -> f a -> Boolean
-  function sizeEq(n) { return function(xs) { return Z.size (xs) === n; }; }
-
-  //  strRepeat :: (String, Integer) -> String
-  function strRepeat(s, times) {
-    return joinWith (s, Array (times + 1));
-  }
-
-  //  r :: Char -> String -> String
-  function r(c) {
-    return function(s) {
-      return strRepeat (c, s.length);
-    };
-  }
-
-  //  _ :: String -> String
-  var _ = r (' ');
-
-  //  sortedKeys :: Object -> Array String
-  function sortedKeys(o) {
-    return (Object.keys (o)).sort ();
-  }
+  const isPrefix = candidate => xs => {
+    if (candidate.length > xs.length) return false;
+    for (let idx = 0; idx < candidate.length; idx += 1) {
+      if (candidate[idx] !== xs[idx]) return false;
+    }
+    return true;
+  };
 
   //  toArray :: Foldable f => f a -> Array a
-  function toArray(foldable) {
-    return Array.isArray (foldable) ?
-           foldable :
-           Z.reduce (function(xs, x) { xs.push (x); return xs; },
-                     [],
-                     foldable);
-  }
-
-  //  toMarkdownList :: (String, String, a -> String, Array a) -> String
-  function toMarkdownList(empty, s, f, xs) {
-    return isEmpty (xs) ?
-      empty :
-      Z.reduce (function(s, x) { return s + '  - ' + f (x) + '\n'; }, s, xs);
-  }
-
-  //  trimTrailingSpaces :: String -> String
-  function trimTrailingSpaces(s) {
-    return s.replace (/[ ]+$/gm, '');
-  }
-
-  //  when :: Boolean -> (a -> a) -> a -> a
-  function when(bool) {
-    return function(f) {
-      return function(x) {
-        return bool ? f (x) : x;
-      };
-    };
-  }
-
-  //  wrap :: String -> String -> String -> String
-  function wrap(prefix) {
-    return function(suffix) {
-      return function(s) {
-        return prefix + s + suffix;
-      };
-    };
-  }
-
-  //  parenthesize :: (String -> String) -> String -> String
-  function parenthesize(f) { return wrap (f ('(')) (f (')')); }
-
-  //  q :: String -> String
-  var q = wrap ('\u2018') ('\u2019');
+  const toArray = foldable => (
+    Array.isArray (foldable)
+    ? foldable
+    : Z.reduce ((xs, x) => ((xs.push (x), xs)), [], foldable)
+  );
 
   //  stripNamespace :: TypeClass -> String
-  function stripNamespace(typeClass) {
-    return typeClass.name.slice (typeClass.name.indexOf ('/') + 1);
-  }
+  const stripNamespace = ({name}) => name.slice (name.indexOf ('/') + 1);
 
-  function _test(env) {
-    return function(x) {
-      return function recur(t) {
-        return t.supertypes.every (recur) && t._test (env) (x);
-      };
-    };
-  }
+  const _test = env => x => function recur(t) {
+    return t.supertypes.every (recur) && t._test (env) (x);
+  };
 
-  var Type$prototype = {
+  const Type$prototype = {
     '@@type': 'sanctuary-def/Type@1',
     '@@show': function() {
-      return this.format (I, K (I));
+      return this.format (s => s, k => s => s);
     },
     'validate': function(env) {
-      var test2 = _test (env);
-      var type = this;
-      return function(x) {
-        if (!(test2 (x) (type))) return Left ({value: x, propPath: []});
-        for (var idx = 0; idx < type.keys.length; idx += 1) {
-          var k = type.keys[idx];
-          var t = type.types[k];
-          var ys = type.extractors[k] (x);
-          for (var idx2 = 0; idx2 < ys.length; idx2 += 1) {
-            var result = t.validate (env) (ys[idx2]);
+      const test2 = _test (env);
+      return x => {
+        if (!(test2 (x) (this))) return Left ({value: x, propPath: []});
+        for (let idx = 0; idx < this.keys.length; idx += 1) {
+          const k = this.keys[idx];
+          const t = this.types[k];
+          const ys = this.extractors[k] (x);
+          for (let idx2 = 0; idx2 < ys.length; idx2 += 1) {
+            const result = t.validate (env) (ys[idx2]);
             if (result.isLeft) {
               return Left ({value: result.value.value,
-                            propPath: Z.concat ([k], result.value.propPath)});
+                            propPath: [k, ...result.value.propPath]});
             }
           }
         }
@@ -402,14 +271,14 @@
         Z.equals (this.url, other.url) &&
         Z.equals (this.supertypes, other.supertypes) &&
         this.keys.length === other.keys.length &&
-        this.keys.every (function(k) { return other.keys.includes (k); }) &&
+        this.keys.every (k => other.keys.includes (k)) &&
         Z.equals (this.types, other.types)
       );
-    }
+    },
   };
 
   //  _Type :: ... -> Type
-  function _Type(
+  const _Type = (
     type,       // :: String
     name,       // :: String
     url,        // :: String
@@ -417,88 +286,91 @@
     format,
     // :: Nullable ((String -> String, String -> String -> String) -> String)
     supertypes, // :: Array Type
-    test,       // :: Any -> Boolean
+    test,       // :: Array Type -> Any -> Boolean
     tuples      // :: Array (Array3 String (a -> Array b) Type)
-  ) {
-    var t = Object.create (Type$prototype);
+  ) => {
+    const t = Object.create (Type$prototype);
     t._test = test;
-    t._extractors = tuples.reduce (function(_extractors, tuple) {
-      _extractors[tuple[0]] = tuple[1];
-      return _extractors;
-    }, {});
+    t._extractors = tuples.reduce (
+      (_extractors, [k, e]) => ((_extractors[k] = e, _extractors)),
+      {}
+    );
     t.arity = arity;  // number of type parameters
     t.extractors = Z.map (B (toArray), t._extractors);
-    t.format = format || function(outer, inner) {
-      return Z.reduce (function(s, tuple) {
-        return s +
-               outer (' ') +
-               when (tuple[2].arity > 0)
-                    (parenthesize (outer))
-                    (inner (tuple[0]) (show (tuple[2])));
-      }, outer (name), tuples);
-    };
-    t.keys = tuples.map (function(tuple) { return tuple[0]; });
+    t.format = format || ((outer, inner) =>
+      outer (name) +
+      Z.foldMap (
+        String,
+        ([k, , t]) => (
+          t.arity > 0
+          ? outer (' ') + outer ('(') + inner (k) (show (t)) + outer (')')
+          : outer (' ')               + inner (k) (show (t))
+        ),
+        tuples
+      )
+    );
+    t.keys = tuples.map (([k]) => k);
     t.name = name;
     t.supertypes = supertypes;
     t.type = type;
-    t.types = tuples.reduce (function(types, tuple) {
-      types[tuple[0]] = tuple[2];
-      return types;
-    }, {});
+    t.types = tuples.reduce ((types, [k, , t]) => ((types[k] = t, types)), {});
     t.url = url;
     return t;
-  }
+  };
 
-  var BINARY        = 'BINARY';
-  var FUNCTION      = 'FUNCTION';
-  var INCONSISTENT  = 'INCONSISTENT';
-  var NO_ARGUMENTS  = 'NO_ARGUMENTS';
-  var NULLARY       = 'NULLARY';
-  var RECORD        = 'RECORD';
-  var UNARY         = 'UNARY';
-  var UNKNOWN       = 'UNKNOWN';
-  var VARIABLE      = 'VARIABLE';
+  const BINARY        = 'BINARY';
+  const FUNCTION      = 'FUNCTION';
+  const INCONSISTENT  = 'INCONSISTENT';
+  const NO_ARGUMENTS  = 'NO_ARGUMENTS';
+  const NULLARY       = 'NULLARY';
+  const RECORD        = 'RECORD';
+  const UNARY         = 'UNARY';
+  const UNKNOWN       = 'UNKNOWN';
+  const VARIABLE      = 'VARIABLE';
 
   //  Inconsistent :: Type
-  var Inconsistent =
-  _Type (INCONSISTENT, '', '', 0, always2 ('???'), [], K (K (false)), []);
+  const Inconsistent = _Type (
+    INCONSISTENT,
+    '',
+    '',
+    0,
+    (outer, inner) => '???',
+    [],
+    null,
+    []
+  );
 
   //  NoArguments :: Type
-  var NoArguments =
-  _Type (NO_ARGUMENTS, '', '', 0, always2 ('()'), [], K (K (true)), []);
-
-  //  arityGte :: NonNegativeInteger -> Type -> Boolean
-  function arityGte(n) {
-    return function(t) {
-      return t.arity >= n;
-    };
-  }
+  const NoArguments = _Type (
+    NO_ARGUMENTS,
+    '',
+    '',
+    0,
+    (outer, inner) => '()',
+    [],
+    null,
+    []
+  );
 
   //  typeEq :: String -> a -> Boolean
-  function typeEq(name) {
-    return function(x) {
-      return type (x) === name;
-    };
-  }
+  const typeEq = name => x => type (x) === name;
 
   //  typeofEq :: String -> a -> Boolean
-  function typeofEq(typeof_) {
-    return function(x) {
-      // eslint-disable-next-line valid-typeof
-      return typeof x === typeof_;
-    };
-  }
+  const typeofEq = typeof_ => x => (
+    typeof x === typeof_  // eslint-disable-line valid-typeof
+  );
 
   //  functionUrl :: String -> String
-  function functionUrl(name) {
-    var version = '0.22.0';  // updated programmatically
-    return 'https://github.com/sanctuary-js/sanctuary-def/tree/v' + version +
-           '#' + name;
-  }
+  const functionUrl = name => {
+    const version = '0.22.0';  // updated programmatically
+    return (
+      `https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#${name}`
+    );
+  };
 
-  var NullaryTypeWithUrl = Z.ap (NullaryType, functionUrl);
-  var UnaryTypeWithUrl = Z.ap (UnaryType, functionUrl);
-  var BinaryTypeWithUrl = Z.ap (BinaryType, functionUrl);
+  const NullaryTypeWithUrl = Z.ap (NullaryType, functionUrl);
+  const UnaryTypeWithUrl = Z.ap (UnaryType, functionUrl);
+  const BinaryTypeWithUrl = Z.ap (BinaryType, functionUrl);
 
   //. ### Types
   //.
@@ -522,8 +394,16 @@
   //.   - `List (List (List Number))`
   //.   - `List (List (List String))`
   //.   - `...`
-  var Unknown =
-  _Type (UNKNOWN, '', '', 0, always2 ('Unknown'), [], K (K (true)), []);
+  const Unknown = _Type (
+    UNKNOWN,
+    '',
+    '',
+    0,
+    (outer, inner) => 'Unknown',
+    [],
+    env => x => true,
+    []
+  );
 
   //# Void :: Type
   //.
@@ -532,23 +412,23 @@
   //. May be used to convey that a type parameter of an algebraic data type
   //. will not be used. For example, a future of type `Future Void String`
   //. will never be rejected.
-  var Void = NullaryTypeWithUrl
+  const Void = NullaryTypeWithUrl
     ('Void')
     ([])
-    (K (false));
+    (x => false);
 
   //# Any :: Type
   //.
   //. Type comprising every JavaScript value.
-  var Any = NullaryTypeWithUrl
+  const Any = NullaryTypeWithUrl
     ('Any')
     ([])
-    (K (true));
+    (x => true);
 
   //# AnyFunction :: Type
   //.
   //. Type comprising every Function value.
-  var AnyFunction = NullaryTypeWithUrl
+  const AnyFunction = NullaryTypeWithUrl
     ('Function')
     ([])
     (typeofEq ('function'));
@@ -556,7 +436,7 @@
   //# Arguments :: Type
   //.
   //. Type comprising every [`arguments`][arguments] object.
-  var Arguments = NullaryTypeWithUrl
+  const Arguments = NullaryTypeWithUrl
     ('Arguments')
     ([])
     (typeEq ('Arguments'));
@@ -564,44 +444,44 @@
   //# Array :: Type -> Type
   //.
   //. Constructor for homogeneous Array types.
-  var Array_ = UnaryTypeWithUrl
+  const Array_ = UnaryTypeWithUrl
     ('Array')
     ([])
     (typeEq ('Array'))
-    (I);
+    (array => array);
 
   //# Array0 :: Type
   //.
   //. Type whose sole member is `[]`.
-  var Array0 = NullaryTypeWithUrl
+  const Array0 = NullaryTypeWithUrl
     ('Array0')
     ([Array_ (Unknown)])
-    (sizeEq (0));
+    (array => array.length === 0);
 
   //# Array1 :: Type -> Type
   //.
   //. Constructor for singleton Array types.
-  var Array1 = UnaryTypeWithUrl
+  const Array1 = UnaryTypeWithUrl
     ('Array1')
     ([Array_ (Unknown)])
-    (sizeEq (1))
-    (I);
+    (array => array.length === 1)
+    (array1 => array1);
 
   //# Array2 :: Type -> Type -> Type
   //.
   //. Constructor for heterogeneous Array types of length 2. `['foo', true]` is
   //. a member of `Array2 String Boolean`.
-  var Array2 = BinaryTypeWithUrl
+  const Array2 = BinaryTypeWithUrl
     ('Array2')
     ([Array_ (Unknown)])
-    (sizeEq (2))
-    (function(array2) { return [array2[0]]; })
-    (function(array2) { return [array2[1]]; });
+    (array => array.length === 2)
+    (array2 => [array2[0]])
+    (array2 => [array2[1]]);
 
   //# Boolean :: Type
   //.
   //. Type comprising `true` and `false`.
-  var Boolean_ = NullaryTypeWithUrl
+  const Boolean_ = NullaryTypeWithUrl
     ('Boolean')
     ([])
     (typeofEq ('boolean'));
@@ -609,19 +489,16 @@
   //# Buffer :: Type
   //.
   //. Type comprising every [Buffer][] object.
-  var Buffer_ = NullaryTypeWithUrl
+  const Buffer_ = NullaryTypeWithUrl
     ('Buffer')
     ([])
-    (function(x) {
-       return typeof Buffer !== 'undefined' &&
-              // eslint-disable-next-line no-undef
-              Buffer.isBuffer (x);
-     });
+    // eslint-disable-next-line no-undef
+    (x => typeof Buffer !== 'undefined' && Buffer.isBuffer (x));
 
   //# Date :: Type
   //.
   //. Type comprising every Date value.
-  var Date_ = NullaryTypeWithUrl
+  const Date_ = NullaryTypeWithUrl
     ('Date')
     ([])
     (typeEq ('Date'));
@@ -629,35 +506,35 @@
   //# ValidDate :: Type
   //.
   //. Type comprising every [`Date`][] value except `new Date (NaN)`.
-  var ValidDate = NullaryTypeWithUrl
+  const ValidDate = NullaryTypeWithUrl
     ('ValidDate')
     ([Date_])
-    (B (complement (isNaN)) (Number));
+    (B (complement (Number.isNaN)) (Number));
 
   //# Descending :: Type -> Type
   //.
   //. [Descending][] type constructor.
-  var Descending = UnaryTypeWithUrl
+  const Descending = UnaryTypeWithUrl
     ('Descending')
     ([])
     (typeEq ('sanctuary-descending/Descending@1'))
-    (I);
+    (descending => descending);
 
   //# Either :: Type -> Type -> Type
   //.
   //. [Either][] type constructor.
-  var Either_ = BinaryTypeWithUrl
+  const Either_ = BinaryTypeWithUrl
     ('Either')
     ([])
     (typeEq ('sanctuary-either/Either@1'))
-    (function(either) { return either.isLeft ? [either.value] : []; })
-    (function(either) { return either.isLeft ? [] : [either.value]; });
+    (either => either.isLeft ? [either.value] : [])
+    (either => either.isLeft ? [] : [either.value]);
 
   //# Error :: Type
   //.
   //. Type comprising every Error value, including values of more specific
   //. constructors such as [`SyntaxError`][] and [`TypeError`][].
-  var Error_ = NullaryTypeWithUrl
+  const Error_ = NullaryTypeWithUrl
     ('Error')
     ([])
     (typeEq ('Error'));
@@ -667,7 +544,7 @@
   //. Binary type constructor for unary function types. `$.Fn (I) (O)`
   //. represents `I -> O`, the type of functions that take a value of
   //. type `I` and return a value of type `O`.
-  function Fn($1) { return function($2) { return Function_ ([$1, $2]); }; }
+  const Fn = $1 => $2 => Function_ ([$1, $2]);
 
   //# Function :: NonEmpty (Array Type) -> Type
   //.
@@ -678,94 +555,91 @@
   //.   - `$.Function ([$.Date, $.String])` represents the `Date -> String`
   //.     type; and
   //.   - `$.Function ([a, b, a])` represents the `(a, b) -> a` type.
-  function Function_(types) {
-    var tuples = Z.reduce (function(tuples, t) {
-      tuples.push (['$' + show (tuples.length + 1), K ([]), t]);
-      return tuples;
-    }, [], types);
-
-    function format(outer, inner) {
-      return when (tuples.length !== 2)
-                  (parenthesize (outer))
-                  (joinWith (outer (', '),
-                             Z.map (function(tuple) {
-                               return when (tuple[2].type === FUNCTION)
-                                           (parenthesize (outer))
-                                           (inner (tuple[0])
-                                                  (show (tuple[2])));
-                             }, init (tuples)))) +
-             outer (' -> ') +
-             inner ((last (tuples))[0])
-                   (show ((last (tuples))[2]));
-    }
-
-    return _Type (FUNCTION,
-                  '',
-                  '',
-                  types.length,
-                  format,
-                  [AnyFunction],
-                  K (K (true)),
-                  tuples);
-  }
+  const Function_ = types => (
+    _Type (
+      FUNCTION,
+      '',
+      '',
+      types.length,
+      (outer, inner) => {
+        const repr = (
+          types
+          .slice (0, -1)
+          .map ((t, idx) =>
+            t.type === FUNCTION
+            ? outer ('(') + inner (`$${idx + 1}`) (show (t)) + outer (')')
+            : inner (`$${idx + 1}`) (show (t))
+          )
+          .join (outer (', '))
+        );
+        return (
+          (types.length === 2 ? repr : outer ('(') + repr + outer (')')) +
+          outer (' -> ') +
+          inner (`$${types.length}`)
+                (show (types[types.length - 1]))
+        );
+      },
+      [AnyFunction],
+      env => x => true,
+      types.map ((t, idx) => [`$${idx + 1}`, x => [], t])
+    )
+  );
 
   //# HtmlElement :: Type
   //.
   //. Type comprising every [HTML element][].
-  var HtmlElement = NullaryTypeWithUrl
+  const HtmlElement = NullaryTypeWithUrl
     ('HtmlElement')
     ([])
-    (function(x) {
-       return /^\[object HTML.*Element\]$/.test (toString.call (x));
-     });
+    (x => /^\[object HTML.*Element\]$/.test (toString.call (x)));
 
   //# Identity :: Type -> Type
   //.
   //. [Identity][] type constructor.
-  var Identity = UnaryTypeWithUrl
+  const Identity = UnaryTypeWithUrl
     ('Identity')
     ([])
     (typeEq ('sanctuary-identity/Identity@1'))
-    (I);
+    (identity => identity);
 
   //# JsMap :: Type -> Type -> Type
   //.
   //. Constructor for native Map types. `$.JsMap ($.Number) ($.String)`,
   //. for example, is the type comprising every native Map whose keys are
   //. numbers and whose values are strings.
-  var JsMap = BinaryTypeWithUrl
+  const JsMap = BinaryTypeWithUrl
     ('JsMap')
     ([])
-    (function(x) { return toString.call (x) === '[object Map]'; })
-    (function(jsMap) { return Array.from (jsMap.keys ()); })
-    (function(jsMap) { return Array.from (jsMap.values ()); });
+    (x => toString.call (x) === '[object Map]')
+    (jsMap => Array.from (jsMap.keys ()))
+    (jsMap => Array.from (jsMap.values ()));
 
   //# JsSet :: Type -> Type
   //.
   //. Constructor for native Set types. `$.JsSet ($.Number)`, for example,
   //. is the type comprising every native Set whose values are numbers.
-  var JsSet = UnaryTypeWithUrl
+  const JsSet = UnaryTypeWithUrl
     ('JsSet')
     ([])
-    (function(x) { return toString.call (x) === '[object Set]'; })
-    (function(jsSet) { return Array.from (jsSet.values ()); });
+    (x => toString.call (x) === '[object Set]')
+    (jsSet => Array.from (jsSet.values ()));
 
   //# Maybe :: Type -> Type
   //.
   //. [Maybe][] type constructor.
-  var Maybe = UnaryTypeWithUrl
+  const Maybe = UnaryTypeWithUrl
     ('Maybe')
     ([])
     (typeEq ('sanctuary-maybe/Maybe@1'))
-    (I);
+    (maybe => maybe);
 
   //# Module :: Type
   //.
   //. Type comprising every ES module.
-  var Module = NullaryTypeWithUrl
+  const Module = NullaryTypeWithUrl
     ('Module')
     ([])
-    (function(x) { return toString.call (x) === '[object Module]'; });
+    (x => toString.call (x) === '[object Module]');
 
   //# NonEmpty :: Type -> Type
   //.
@@ -773,20 +647,18 @@
   //. the type comprising every [`String`][] value except `''`.
   //.
   //. The given type must satisfy the [Monoid][] and [Setoid][] specifications.
-  var NonEmpty = UnaryTypeWithUrl
+  const NonEmpty = UnaryTypeWithUrl
     ('NonEmpty')
     ([])
-    (function(x) {
-       return Z.Monoid.test (x) &&
-              Z.Setoid.test (x) &&
-              !(Z.equals (x, Z.empty (x.constructor)));
-     })
-    (function(monoid) { return [monoid]; });
+    (x => Z.Monoid.test (x) &&
+          Z.Setoid.test (x) &&
+          !(Z.equals (x, Z.empty (x.constructor))))
+    (monoid => [monoid]);
 
   //# Null :: Type
   //.
   //. Type whose sole member is `null`.
-  var Null = NullaryTypeWithUrl
+  const Null = NullaryTypeWithUrl
     ('Null')
     ([])
     (typeEq ('Null'));
@@ -794,32 +666,30 @@
   //# Nullable :: Type -> Type
   //.
   //. Constructor for types that include `null` as a member.
-  var Nullable = UnaryTypeWithUrl
+  const Nullable = UnaryTypeWithUrl
     ('Nullable')
     ([])
-    (K (true))
-    (function(nullable) {
-       // eslint-disable-next-line eqeqeq
-       return nullable === null ? [] : [nullable];
-     });
+    (x => true)
+    // eslint-disable-next-line eqeqeq
+    (nullable => nullable === null ? [] : [nullable]);
 
   //# Number :: Type
   //.
   //. Type comprising every primitive Number value (including `NaN`).
-  var Number_ = NullaryTypeWithUrl
+  const Number_ = NullaryTypeWithUrl
     ('Number')
     ([])
     (typeofEq ('number'));
 
-  function nonZero(x) { return x !== 0; }
-  function nonNegative(x) { return x >= 0; }
-  function positive(x) { return x > 0; }
-  function negative(x) { return x < 0; }
+  const nonZero = x => x !== 0;
+  const nonNegative = x => x >= 0;
+  const positive = x => x > 0;
+  const negative = x => x < 0;
 
   //# PositiveNumber :: Type
   //.
   //. Type comprising every [`Number`][] value greater than zero.
-  var PositiveNumber = NullaryTypeWithUrl
+  const PositiveNumber = NullaryTypeWithUrl
     ('PositiveNumber')
     ([Number_])
     (positive);
@@ -827,7 +697,7 @@
   //# NegativeNumber :: Type
   //.
   //. Type comprising every [`Number`][] value less than zero.
-  var NegativeNumber = NullaryTypeWithUrl
+  const NegativeNumber = NullaryTypeWithUrl
     ('NegativeNumber')
     ([Number_])
     (negative);
@@ -835,15 +705,15 @@
   //# ValidNumber :: Type
   //.
   //. Type comprising every [`Number`][] value except `NaN`.
-  var ValidNumber = NullaryTypeWithUrl
+  const ValidNumber = NullaryTypeWithUrl
     ('ValidNumber')
     ([Number_])
-    (complement (isNaN));
+    (complement (Number.isNaN));
 
   //# NonZeroValidNumber :: Type
   //.
   //. Type comprising every [`ValidNumber`][] value except `0` and `-0`.
-  var NonZeroValidNumber = NullaryTypeWithUrl
+  const NonZeroValidNumber = NullaryTypeWithUrl
     ('NonZeroValidNumber')
     ([ValidNumber])
     (nonZero);
@@ -852,7 +722,7 @@
   //.
   //. Type comprising every [`ValidNumber`][] value except `Infinity` and
   //. `-Infinity`.
-  var FiniteNumber = NullaryTypeWithUrl
+  const FiniteNumber = NullaryTypeWithUrl
     ('FiniteNumber')
     ([ValidNumber])
     (isFinite);
@@ -860,7 +730,7 @@
   //# NonZeroFiniteNumber :: Type
   //.
   //. Type comprising every [`FiniteNumber`][] value except `0` and `-0`.
-  var NonZeroFiniteNumber = NullaryTypeWithUrl
+  const NonZeroFiniteNumber = NullaryTypeWithUrl
     ('NonZeroFiniteNumber')
     ([FiniteNumber])
     (nonZero);
@@ -868,7 +738,7 @@
   //# PositiveFiniteNumber :: Type
   //.
   //. Type comprising every [`FiniteNumber`][] value greater than zero.
-  var PositiveFiniteNumber = NullaryTypeWithUrl
+  const PositiveFiniteNumber = NullaryTypeWithUrl
     ('PositiveFiniteNumber')
     ([FiniteNumber])
     (positive);
@@ -876,7 +746,7 @@
   //# NegativeFiniteNumber :: Type
   //.
   //. Type comprising every [`FiniteNumber`][] value less than zero.
-  var NegativeFiniteNumber = NullaryTypeWithUrl
+  const NegativeFiniteNumber = NullaryTypeWithUrl
     ('NegativeFiniteNumber')
     ([FiniteNumber])
     (negative);
@@ -885,19 +755,17 @@
   //.
   //. Type comprising every integer in the range
   //. [[`Number.MIN_SAFE_INTEGER`][min] .. [`Number.MAX_SAFE_INTEGER`][max]].
-  var Integer = NullaryTypeWithUrl
+  const Integer = NullaryTypeWithUrl
     ('Integer')
     ([ValidNumber])
-    (function(x) {
-       return Math.floor (x) === x &&
-              x >= MIN_SAFE_INTEGER &&
-              x <= MAX_SAFE_INTEGER;
-     });
+    (x => Math.floor (x) === x &&
+          x >= Number.MIN_SAFE_INTEGER &&
+          x <= Number.MAX_SAFE_INTEGER);
 
   //# NonZeroInteger :: Type
   //.
   //. Type comprising every [`Integer`][] value except `0` and `-0`.
-  var NonZeroInteger = NullaryTypeWithUrl
+  const NonZeroInteger = NullaryTypeWithUrl
     ('NonZeroInteger')
     ([Integer])
     (nonZero);
@@ -906,7 +774,7 @@
   //.
   //. Type comprising every non-negative [`Integer`][] value (including `-0`).
   //. Also known as the set of natural numbers under ISO 80000-2:2009.
-  var NonNegativeInteger = NullaryTypeWithUrl
+  const NonNegativeInteger = NullaryTypeWithUrl
     ('NonNegativeInteger')
     ([Integer])
     (nonNegative);
@@ -914,7 +782,7 @@
   //# PositiveInteger :: Type
   //.
   //. Type comprising every [`Integer`][] value greater than zero.
-  var PositiveInteger = NullaryTypeWithUrl
+  const PositiveInteger = NullaryTypeWithUrl
     ('PositiveInteger')
     ([Integer])
     (positive);
@@ -922,7 +790,7 @@
   //# NegativeInteger :: Type
   //.
   //. Type comprising every [`Integer`][] value less than zero.
-  var NegativeInteger = NullaryTypeWithUrl
+  const NegativeInteger = NullaryTypeWithUrl
     ('NegativeInteger')
     ([Integer])
     (negative);
@@ -936,7 +804,7 @@
   //.   - [`Object.create`][]; or
   //.   - the `new` operator in conjunction with `Object` or a custom
   //.     constructor function.
-  var Object_ = NullaryTypeWithUrl
+  const Object_ = NullaryTypeWithUrl
     ('Object')
     ([])
     (typeEq ('Object'));
@@ -944,17 +812,17 @@
   //# Pair :: Type -> Type -> Type
   //.
   //. [Pair][] type constructor.
-  var Pair = BinaryTypeWithUrl
+  const Pair = BinaryTypeWithUrl
     ('Pair')
     ([])
     (typeEq ('sanctuary-pair/Pair@1'))
-    (function(pair) { return [pair.fst]; })
-    (function(pair) { return [pair.snd]; });
+    (pair => [pair.fst])
+    (pair => [pair.snd]);
 
   //# RegExp :: Type
   //.
   //. Type comprising every RegExp value.
-  var RegExp_ = NullaryTypeWithUrl
+  const RegExp_ = NullaryTypeWithUrl
     ('RegExp')
     ([])
     (typeEq ('RegExp'));
@@ -964,20 +832,20 @@
   //. Type comprising every [`RegExp`][] value whose `global` flag is `true`.
   //.
   //. See also [`NonGlobalRegExp`][].
-  var GlobalRegExp = NullaryTypeWithUrl
+  const GlobalRegExp = NullaryTypeWithUrl
     ('GlobalRegExp')
     ([RegExp_])
-    (prop ('global'));
+    (regexp => regexp.global);
 
   //# NonGlobalRegExp :: Type
   //.
   //. Type comprising every [`RegExp`][] value whose `global` flag is `false`.
   //.
   //. See also [`GlobalRegExp`][].
-  var NonGlobalRegExp = NullaryTypeWithUrl
+  const NonGlobalRegExp = NullaryTypeWithUrl
     ('NonGlobalRegExp')
     ([RegExp_])
-    (complement (prop ('global')));
+    (regexp => !regexp.global);
 
   //# StrMap :: Type -> Type
   //.
@@ -985,16 +853,16 @@
   //.
   //. `{foo: 1, bar: 2, baz: 3}`, for example, is a member of `StrMap Number`;
   //. `{foo: 1, bar: 2, baz: 'XXX'}` is not.
-  var StrMap = UnaryTypeWithUrl
+  const StrMap = UnaryTypeWithUrl
     ('StrMap')
     ([Object_])
-    (K (true))
-    (I);
+    (x => true)
+    (strMap => strMap);
 
   //# String :: Type
   //.
   //. Type comprising every primitive String value.
-  var String_ = NullaryTypeWithUrl
+  const String_ = NullaryTypeWithUrl
     ('String')
     ([])
     (typeofEq ('string'));
@@ -1011,15 +879,15 @@
   //.   - `'gm'`
   //.   - `'im'`
   //.   - `'gim'`
-  var RegexFlags = NullaryTypeWithUrl
+  const RegexFlags = NullaryTypeWithUrl
     ('RegexFlags')
     ([String_])
-    (function(s) { return /^g?i?m?$/.test (s); });
+    (s => /^g?i?m?$/.test (s));
 
   //# Symbol :: Type
   //.
   //. Type comprising every Symbol value.
-  var Symbol_ = NullaryTypeWithUrl
+  const Symbol_ = NullaryTypeWithUrl
     ('Symbol')
     ([])
     (typeofEq ('symbol'));
@@ -1027,7 +895,7 @@
   //# Type :: Type
   //.
   //. Type comprising every `Type` value.
-  var Type = NullaryTypeWithUrl
+  const Type = NullaryTypeWithUrl
     ('Type')
     ([])
     (typeEq ('sanctuary-def/Type@1'));
@@ -1035,7 +903,7 @@
   //# TypeClass :: Type
   //.
   //. Type comprising every [`TypeClass`][] value.
-  var TypeClass = NullaryTypeWithUrl
+  const TypeClass = NullaryTypeWithUrl
     ('TypeClass')
     ([])
     (typeEq ('sanctuary-type-classes/TypeClass@1'));
@@ -1043,7 +911,7 @@
   //# Undefined :: Type
   //.
   //. Type whose sole member is `undefined`.
-  var Undefined = NullaryTypeWithUrl
+  const Undefined = NullaryTypeWithUrl
     ('Undefined')
     ([])
     (typeEq ('Undefined'));
@@ -1080,7 +948,7 @@
   //.   - <code>[Type](#Type)</code>
   //.   - <code>[TypeClass](#TypeClass)</code>
   //.   - <code>[Undefined](#Undefined)</code>
-  var env = [
+  const env = [
     AnyFunction,
     Arguments,
     Array_ (Unknown),
@@ -1108,14 +976,14 @@
     Symbol_,
     Type,
     TypeClass,
-    Undefined
+    Undefined,
   ];
 
   //  Unchecked :: String -> Type
-  function Unchecked(s) { return NullaryType (s) ('') ([]) (K (true)); }
+  const Unchecked = s => NullaryType (s) ('') ([]) (x => true);
 
   //  production :: Boolean
-  var production =
+  const production =
     typeof process !== 'undefined' &&
     /* global process:false */
     process != null &&
@@ -1123,7 +991,7 @@
     process.env.NODE_ENV === 'production';
 
   //  numbers :: Array String
-  var numbers = [
+  const numbers = [
     'zero',
     'one',
     'two',
@@ -1133,97 +1001,94 @@
     'six',
     'seven',
     'eight',
-    'nine'
+    'nine',
   ];
 
   //  numArgs :: Integer -> String
-  function numArgs(n) {
-    return (n < numbers.length ? numbers[n] : show (n)) + ' ' +
-           (n === 1 ? 'argument' : 'arguments');
-  }
+  const numArgs = n => `${
+    n < numbers.length ? numbers[n] : show (n)
+  } ${
+    n === 1 ? 'argument' : 'arguments'
+  }`;
 
-  //  expandUnknown
-  //  :: Array Type
-  //  -> Array Object
-  //  -> Any
-  //  -> (a -> Array b)
-  //  -> Type
-  //  -> Array Type
-  function expandUnknown(env) {
-    return function(seen) {
-      return function(value) {
-        return function(extractor) {
-          return function(type) {
-            return type.type === UNKNOWN ?
-                   _determineActualTypes (env, seen, extractor (value)) :
-                   [type];
-          };
-        };
-      };
-    };
-  }
+  //  expandUnknown :: (Array Type, Array Object, Any, (a -> Array b), Type)
+  //                -> Array Type
+  const expandUnknown = (env, seen, value, extractor, type) => (
+    type.type === UNKNOWN
+    ? _determineActualTypes (env, seen, extractor (value))
+    : [type]
+  );
 
   //  _determineActualTypes :: ... -> Array Type
-  function _determineActualTypes(
+  const _determineActualTypes = (
     env,            // :: Array Type
     seen,           // :: Array Object
     values          // :: Array Any
-  ) {
-    var expandUnknown4 = expandUnknown (env);
+  ) => {
+    if (values.length === 0) return [Unknown];
 
-    function refine(types, value) {
-      var seen$;
+    const refine = (types, value) => {
+      let seen$;
       if (typeof value === 'object' && value != null ||
           typeof value === 'function') {
         //  Abort if a circular reference is encountered; add the current
         //  object to the array of seen objects otherwise.
         if (seen.indexOf (value) >= 0) return [];
-        seen$ = Z.concat (seen, [value]);
+        seen$ = [...seen, value];
       } else {
         seen$ = seen;
       }
-      var expandUnknown2 = expandUnknown4 (seen$) (value);
-      return Z.chain (function(t) {
-        return (
+      return Z.chain (
+        t => (
           (t.validate (env) (value)).isLeft ?
             [] :
           t.type === UNARY ?
-            Z.map (fromUnaryType (t),
-                   expandUnknown2 (t.extractors.$1) (t.types.$1)) :
+            Z.map (
+              fromUnaryType (t),
+              expandUnknown (env, seen$, value, t.extractors.$1, t.types.$1)
+            ) :
           t.type === BINARY ?
-            Z.lift2 (fromBinaryType (t),
-                     expandUnknown2 (t.extractors.$1) (t.types.$1),
-                     expandUnknown2 (t.extractors.$2) (t.types.$2)) :
+            Z.lift2 (
+              fromBinaryType (t),
+              expandUnknown (env, seen$, value, t.extractors.$1, t.types.$1),
+              expandUnknown (env, seen$, value, t.extractors.$2, t.types.$2)
+            ) :
           // else
             [t]
-        );
-      }, types);
-    }
-
-    return isEmpty (values) ?
-      [Unknown] :
-      or (Z.reduce (refine, env, values), [Inconsistent]);
-  }
+        ),
+        types
+      );
+    };
+    const types = values.reduce (refine, env);
+    return types.length > 0 ? types : [Inconsistent];
+  };
 
   //  isConsistent :: Type -> Boolean
-  function isConsistent(t) {
-    return t.type === UNARY   ? isConsistent (t.types.$1) :
-           t.type === BINARY  ? isConsistent (t.types.$1) &&
-                                isConsistent (t.types.$2) :
-           /* else */           t.type !== INCONSISTENT;
-  }
+  const isConsistent = t => {
+    switch (t.type) {
+      case INCONSISTENT:
+        return false;
+      case UNARY:
+        return isConsistent (t.types.$1);
+      case BINARY:
+        return isConsistent (t.types.$1) &&
+               isConsistent (t.types.$2);
+      default:
+        return true;
+    }
+  };
 
   //  determineActualTypesStrict :: (Array Type, Array Any) -> Array Type
-  function determineActualTypesStrict(env, values) {
-    return Z.filter (isConsistent,
-                     _determineActualTypes (env, [], values));
-  }
+  const determineActualTypesStrict = (env, values) => (
+    Z.filter (isConsistent,
+              _determineActualTypes (env, [], values))
+  );
 
   //  determineActualTypesLoose :: (Array Type, Array Any) -> Array Type
-  function determineActualTypesLoose(env, values) {
-    return Z.reject (function(t) { return t.type === INCONSISTENT; },
-                     _determineActualTypes (env, [], values));
-  }
+  const determineActualTypesLoose = (env, values) => (
+    Z.reject (t => t.type === INCONSISTENT,
+              _determineActualTypes (env, [], values))
+  );
 
   //  TypeInfo = { name :: String
   //             , constraints :: StrMap (Array TypeClass)
@@ -1235,95 +1100,96 @@
   //  PropPath = Array (Number | String)
 
   //  updateTypeVarMap :: ... -> TypeVarMap
-  function updateTypeVarMap(
+  const updateTypeVarMap = (
     env,            // :: Array Type
     typeVarMap,     // :: TypeVarMap
     typeVar,        // :: Type
     index,          // :: Integer
     propPath,       // :: PropPath
     values          // :: Array Any
-  ) {
-    var $typeVarMap = {};
-    for (var typeVarName in typeVarMap) {
-      var entry = typeVarMap[typeVarName];
-      var $entry = {types: entry.types.slice (), valuesByPath: {}};
-      for (var k in entry.valuesByPath) {
+  ) => {
+    const $typeVarMap = {};
+    for (const typeVarName in typeVarMap) {
+      const entry = typeVarMap[typeVarName];
+      const $entry = {types: entry.types.slice (), valuesByPath: {}};
+      for (const k in entry.valuesByPath) {
         $entry.valuesByPath[k] = entry.valuesByPath[k].slice ();
       }
       $typeVarMap[typeVarName] = $entry;
     }
     if (!(hasOwnProperty.call ($typeVarMap, typeVar.name))) {
       $typeVarMap[typeVar.name] = {
-        types: Z.filter (arityGte (typeVar.arity), env),
-        valuesByPath: {}
+        types: Z.filter (t => t.arity >= typeVar.arity, env),
+        valuesByPath: {},
       };
     }
 
-    var key = JSON.stringify (Z.concat ([index], propPath));
+    const key = JSON.stringify ([index, ...propPath]);
     if (!(hasOwnProperty.call ($typeVarMap[typeVar.name].valuesByPath, key))) {
       $typeVarMap[typeVar.name].valuesByPath[key] = [];
     }
 
-    var isValid = test (env);
+    const isValid = test (env);
 
-    var expandUnknownStrict = B (B (B (filter (isConsistent))))
-                                (expandUnknown (env) ([]));
-
-    values.forEach (function(value) {
-      var expandUnknownStrict2 = expandUnknownStrict (value);
+    values.forEach (value => {
       $typeVarMap[typeVar.name].valuesByPath[key].push (value);
-      $typeVarMap[typeVar.name].types = Z.chain (function(t) {
-        return (
+      $typeVarMap[typeVar.name].types = Z.chain (
+        t => (
           !(isValid (t) (value)) ?
             [] :
           typeVar.arity === 0 && t.type === UNARY ?
-            Z.map (fromUnaryType (t),
-                   expandUnknownStrict2 (t.extractors.$1) (t.types.$1)) :
+            Z.map (
+              fromUnaryType (t),
+              Z.filter (
+                isConsistent,
+                expandUnknown (env, [], value, t.extractors.$1, t.types.$1)
+              )
+            ) :
           typeVar.arity === 0 && t.type === BINARY ?
-            Z.lift2 (fromBinaryType (t),
-                     expandUnknownStrict2 (t.extractors.$1) (t.types.$1),
-                     expandUnknownStrict2 (t.extractors.$2) (t.types.$2)) :
+            Z.lift2 (
+              fromBinaryType (t),
+              Z.filter (
+                isConsistent,
+                expandUnknown (env, [], value, t.extractors.$1, t.types.$1)
+              ),
+              Z.filter (
+                isConsistent,
+                expandUnknown (env, [], value, t.extractors.$2, t.types.$2)
+              )
+            ) :
           // else
             [t]
-        );
-      }, $typeVarMap[typeVar.name].types);
+        ),
+        $typeVarMap[typeVar.name].types
+      );
     });
 
     return $typeVarMap;
-  }
+  };
 
   //  underlineTypeVars :: (TypeInfo, StrMap (Array Any)) -> String
-  function underlineTypeVars(typeInfo, valuesByPath) {
+  const underlineTypeVars = (typeInfo, valuesByPath) => {
     //  Note: Sorting these keys lexicographically is not "correct", but it
     //  does the right thing for indexes less than 10.
-    var paths = Z.map (JSON.parse, sortedKeys (valuesByPath));
-    return underline (
-      typeInfo,
-      K (K (_)),
-      function(index) {
-        return function(f) {
-          return function(t) {
-            return function(propPath) {
-              var indexedPropPath = Z.concat ([index], propPath);
-              return function(s) {
-                if (paths.some (isPrefix (indexedPropPath))) {
-                  var key = JSON.stringify (indexedPropPath);
-                  if (!(hasOwnProperty.call (valuesByPath, key))) return s;
-                  if (!(isEmpty (valuesByPath[key]))) return f (s);
-                }
-                return _ (s);
-              };
-            };
-          };
-        };
-      }
+    const paths = Z.map (JSON.parse, Z.sort (Object.keys (valuesByPath)));
+    return (
+      underline_ (typeInfo)
+                 (index => f => t => propPath => s => {
+                    const indexedPropPath = [index, ...propPath];
+                    if (paths.some (isPrefix (indexedPropPath))) {
+                      const key = JSON.stringify (indexedPropPath);
+                      if (!(hasOwnProperty.call (valuesByPath, key))) return s;
+                      if (valuesByPath[key].length > 0) return f (s);
+                    }
+                    return ' '.repeat (s.length);
+                  })
     );
-  }
+  };
 
   //  satisfactoryTypes :: ... -> Either (() -> Error)
   //                                     { typeVarMap :: TypeVarMap
   //                                     , types :: Array Type }
-  function satisfactoryTypes(
+  const satisfactoryTypes = (
     env,            // :: Array Type
     typeInfo,       // :: TypeInfo
     typeVarMap,     // :: TypeVarMap
@@ -1331,157 +1197,169 @@
     index,          // :: Integer
     propPath,       // :: PropPath
     values          // :: Array Any
-  ) {
-    var recur = satisfactoryTypes;
+  ) => {
+    const recur = satisfactoryTypes;
 
-    for (var idx = 0; idx < values.length; idx += 1) {
-      var result = expType.validate (env) (values[idx]);
+    for (let idx = 0; idx < values.length; idx += 1) {
+      const result = expType.validate (env) (values[idx]);
       if (result.isLeft) {
-        return Left (function() {
-          return invalidValue (env,
-                               typeInfo,
-                               index,
-                               Z.concat (propPath, result.value.propPath),
-                               result.value.value);
-        });
+        return Left (() =>
+          invalidValue (env,
+                        typeInfo,
+                        index,
+                        [...propPath, ...result.value.propPath],
+                        result.value.value)
+        );
       }
     }
 
     switch (expType.type) {
-
-      case VARIABLE:
-        var typeVarName = expType.name;
-        var constraints = typeInfo.constraints;
+      case VARIABLE: {
+        const typeVarName = expType.name;
+        const {constraints} = typeInfo;
         if (hasOwnProperty.call (constraints, typeVarName)) {
-          var typeClasses = constraints[typeVarName];
-          for (idx = 0; idx < values.length; idx += 1) {
-            for (var idx2 = 0; idx2 < typeClasses.length; idx2 += 1) {
+          const typeClasses = constraints[typeVarName];
+          for (let idx = 0; idx < values.length; idx += 1) {
+            for (let idx2 = 0; idx2 < typeClasses.length; idx2 += 1) {
               if (!(typeClasses[idx2].test (values[idx]))) {
-                return Left (function() {
-                  return typeClassConstraintViolation (
+                return Left (() =>
+                  typeClassConstraintViolation (
                     env,
                     typeInfo,
                     typeClasses[idx2],
                     index,
                     propPath,
-                    values[idx],
-                    typeVarMap
-                  );
-                });
+                    values[idx]
+                  )
+                );
               }
             }
           }
         }
 
-        var typeVarMap$ = updateTypeVarMap (env,
-                                            typeVarMap,
-                                            expType,
-                                            index,
-                                            propPath,
-                                            values);
+        const typeVarMap$ = updateTypeVarMap (env,
+                                              typeVarMap,
+                                              expType,
+                                              index,
+                                              propPath,
+                                              values);
 
-        var okTypes = typeVarMap$[typeVarName].types;
-        return isEmpty (okTypes) ?
-          Left (function() {
-            return typeVarConstraintViolation (
-              env,
-              typeInfo,
-              index,
-              propPath,
-              typeVarMap$[typeVarName].valuesByPath
-            );
-          }) :
-          Z.reduce (function(e, t) {
-            return Z.chain (function(r) {
-              //  The `a` in `Functor f => f a` corresponds to the `a`
-              //  in `Maybe a` but to the `b` in `Either a b`. A type
-              //  variable's $1 will correspond to either $1 or $2 of
-              //  the actual type depending on the actual type's arity.
-              var offset = t.arity - expType.arity;
-              return expType.keys.reduce (function(e, k, idx) {
-                var extractor = t.extractors[t.keys[offset + idx]];
-                return Z.reduce (function(e, x) {
-                  return Z.chain (function(r) {
-                    return recur (env,
-                                  typeInfo,
-                                  r.typeVarMap,
-                                  expType.types[k],
-                                  index,
-                                  Z.concat (propPath, [k]),
-                                  [x]);
-                  }, e);
-                }, e, Z.chain (extractor, values));
-              }, Right (r));
-            }, e);
-          }, Right ({typeVarMap: typeVarMap$, types: okTypes}), okTypes);
-
-      case UNARY:
-        return Z.map (
-          function(result) {
-            return {
-              typeVarMap: result.typeVarMap,
-              types: Z.map (fromUnaryType (expType),
-                            or (result.types, [expType.types.$1]))
-            };
-          },
-          recur (env,
-                 typeInfo,
-                 typeVarMap,
-                 expType.types.$1,
-                 index,
-                 Z.concat (propPath, ['$1']),
-                 Z.chain (expType.extractors.$1, values))
+        const okTypes = typeVarMap$[typeVarName].types;
+        return (
+          okTypes.length === 0
+          ? Left (() =>
+              typeVarConstraintViolation (
+                env,
+                typeInfo,
+                index,
+                propPath,
+                typeVarMap$[typeVarName].valuesByPath
+              )
+            )
+          : Z.reduce ((e, t) => (
+              Z.chain (r => {
+                //  The `a` in `Functor f => f a` corresponds to the `a`
+                //  in `Maybe a` but to the `b` in `Either a b`. A type
+                //  variable's $1 will correspond to either $1 or $2 of
+                //  the actual type depending on the actual type's arity.
+                const offset = t.arity - expType.arity;
+                return expType.keys.reduce ((e, k, idx) => {
+                  const extractor = t.extractors[t.keys[offset + idx]];
+                  return Z.reduce ((e, x) => (
+                    Z.chain (r => recur (
+                      env,
+                      typeInfo,
+                      r.typeVarMap,
+                      expType.types[k],
+                      index,
+                      [...propPath, k],
+                      [x]
+                    ), e)
+                  ), e, Z.chain (extractor, values));
+                }, Right (r));
+              }, e)
+            ), Right ({typeVarMap: typeVarMap$, types: okTypes}), okTypes)
         );
-
-      case BINARY:
+      }
+      case UNARY: {
+        return Z.map (
+          result => ({
+            typeVarMap: result.typeVarMap,
+            types: Z.map (
+              fromUnaryType (expType),
+              /* istanbul ignore next */
+              result.types.length > 0
+              ? result.types
+              : [expType.types.$1]
+            ),
+          }),
+          recur (
+            env,
+            typeInfo,
+            typeVarMap,
+            expType.types.$1,
+            index,
+            [...propPath, '$1'],
+            Z.chain (expType.extractors.$1, values)
+          )
+        );
+      }
+      case BINARY: {
         return Z.chain (
-          function(result) {
-            var $1s = result.types;
+          result => {
+            const $1s = result.types;
             return Z.map (
-              function(result) {
-                var $2s = result.types;
+              result => {
+                const $2s = result.types;
                 return {
                   typeVarMap: result.typeVarMap,
                   types: Z.lift2 (fromBinaryType (expType),
-                                  or ($1s, [expType.types.$1]),
-                                  or ($2s, [expType.types.$2]))
+                                  /* istanbul ignore next */
+                                  $1s.length > 0 ? $1s : [expType.types.$1],
+                                  /* istanbul ignore next */
+                                  $2s.length > 0 ? $2s : [expType.types.$2]),
                 };
               },
-              recur (env,
-                     typeInfo,
-                     result.typeVarMap,
-                     expType.types.$2,
-                     index,
-                     Z.concat (propPath, ['$2']),
-                     Z.chain (expType.extractors.$2, values))
+              recur (
+                env,
+                typeInfo,
+                result.typeVarMap,
+                expType.types.$2,
+                index,
+                [...propPath, '$2'],
+                Z.chain (expType.extractors.$2, values)
+              )
             );
           },
-          recur (env,
-                 typeInfo,
-                 typeVarMap,
-                 expType.types.$1,
-                 index,
-                 Z.concat (propPath, ['$1']),
-                 Z.chain (expType.extractors.$1, values))
+          recur (
+            env,
+            typeInfo,
+            typeVarMap,
+            expType.types.$1,
+            index,
+            [...propPath, '$1'],
+            Z.chain (expType.extractors.$1, values)
+          )
         );
-
-      case RECORD:
-        return Z.reduce (function(e, k) {
-          return Z.chain (function(r) {
-            return recur (env,
-                          typeInfo,
-                          r.typeVarMap,
-                          expType.types[k],
-                          index,
-                          Z.concat (propPath, [k]),
-                          Z.chain (expType.extractors[k], values));
-          }, e);
-        }, Right ({typeVarMap: typeVarMap, types: [expType]}), expType.keys);
-
-      default:
-        return Right ({typeVarMap: typeVarMap, types: [expType]});
+      }
+      case RECORD: {
+        return Z.reduce ((e, k) => (
+          Z.chain (r => recur (
+            env,
+            typeInfo,
+            r.typeVarMap,
+            expType.types[k],
+            index,
+            [...propPath, k],
+            Z.chain (expType.extractors[k], values)
+          ), e)
+        ), Right ({typeVarMap, types: [expType]}), expType.keys);
+      }
+      default: {
+        return Right ({typeVarMap, types: [expType]});
+      }
     }
-  }
+  };
 
   //# test :: Array Type -> Type -> a -> Boolean
   //.
@@ -1490,14 +1368,10 @@
   //.
   //. The environment is only significant if the type contains
   //. [type variables][].
-  function test(env) {
-    return function(t) {
-      return function(x) {
-        var typeInfo = {name: 'name', constraints: {}, types: [t]};
-        return (satisfactoryTypes (env, typeInfo, {}, t, 0, [], [x])).isRight;
-      };
-    };
-  }
+  const test = env => t => x => {
+    const typeInfo = {name: 'name', constraints: {}, types: [t]};
+    return (satisfactoryTypes (env, typeInfo, {}, t, 0, [], [x])).isRight;
+  };
 
   //. ### Type constructors
   //.
@@ -1576,13 +1450,9 @@
   //. //   See http://example.com/my-package#NonZeroInteger for information about the NonZeroInteger type.
   //. ```
   function NullaryType(name) {
-    return function(url) {
-      return function(supertypes) {
-        return function(test) {
-          return _Type (NULLARY, name, url, 0, null, supertypes, K (test), []);
-        };
-      };
-    };
+    return url => supertypes => test => (
+      _Type (NULLARY, name, url, 0, null, supertypes, env => test, [])
+    );
   }
 
   //# UnaryType :: Foldable f => String -> String -> Array Type -> (Any -> Boolean) -> (t a -> f a) -> Type -> Type
@@ -1667,34 +1537,26 @@
   //. //   Since there is no type of which all the above values are members, the type-variable constraint has been violated.
   //. ```
   function UnaryType(name) {
-    return function(url) {
-      return function(supertypes) {
-        return function(test) {
-          return function(_1) {
-            return function($1) {
-              return _Type (UNARY,
-                            name,
-                            url,
-                            1,
-                            null,
-                            supertypes,
-                            K (test),
-                            [['$1', _1, $1]]);
-            };
-          };
-        };
-      };
-    };
+    return url => supertypes => test => _1 => $1 => (
+      _Type (UNARY,
+             name,
+             url,
+             1,
+             null,
+             supertypes,
+             env => test,
+             [['$1', _1, $1]])
+    );
   }
 
   //  fromUnaryType :: Type -> Type -> Type
-  function fromUnaryType(t) {
-    return UnaryType (t.name)
-                     (t.url)
-                     (t.supertypes)
-                     (t._test ([]))
-                     (t._extractors.$1);
-  }
+  const fromUnaryType = t => (
+    UnaryType (t.name)
+              (t.url)
+              (t.supertypes)
+              (t._test ([]))
+              (t._extractors.$1)
+  );
 
   //# BinaryType :: Foldable f => String -> String -> Array Type -> (Any -> Boolean) -> (t a b -> f a) -> (t a b -> f b) -> Type -> Type -> Type
   //.
@@ -1793,40 +1655,28 @@
   //. //   See http://example.com/my-package#Rank for information about the Rank type.
   //. ```
   function BinaryType(name) {
-    return function(url) {
-      return function(supertypes) {
-        return function(test) {
-          return function(_1) {
-            return function(_2) {
-              return function($1) {
-                return function($2) {
-                  return _Type (BINARY,
-                                name,
-                                url,
-                                2,
-                                null,
-                                supertypes,
-                                K (test),
-                                [['$1', _1, $1],
-                                 ['$2', _2, $2]]);
-                };
-              };
-            };
-          };
-        };
-      };
-    };
+    return url => supertypes => test => _1 => _2 => $1 => $2 => (
+      _Type (BINARY,
+             name,
+             url,
+             2,
+             null,
+             supertypes,
+             env => test,
+             [['$1', _1, $1],
+              ['$2', _2, $2]])
+    );
   }
 
   //  fromBinaryType :: (Type -> Type -> Type) -> Type -> Type -> Type
-  function fromBinaryType(t) {
-    return BinaryType (t.name)
-                      (t.url)
-                      (t.supertypes)
-                      (t._test ([]))
-                      (t._extractors.$1)
-                      (t._extractors.$2);
-  }
+  const fromBinaryType = t => (
+    BinaryType (t.name)
+               (t.url)
+               (t.supertypes)
+               (t._test ([]))
+               (t._extractors.$1)
+               (t._extractors.$2)
+  );
 
   //# EnumType :: String -> String -> Array Any -> Type
   //.
@@ -1850,9 +1700,9 @@
   //.   ([10, 20, 50, 100, 200]);
   //. ```
   function EnumType(name) {
-    return function(url) {
-      return B (NullaryType (name) (url) ([])) (memberOf);
-    };
+    return url => members => (
+      NullaryType (name) (url) ([]) (x => members.some (m => Z.equals (x, m)))
+    );
   }
 
   //# RecordType :: StrMap Type -> Type
@@ -1907,37 +1757,35 @@
   //. //
   //. //   The value at position 1 is not a member of ‘{ x :: FiniteNumber, y :: FiniteNumber }’.
   //. ```
-  function RecordType(fields) {
-    var keys = Object.keys (fields);
-
-    function format(outer, inner) {
-      if (isEmpty (keys)) return outer ('{}');
-      var reprs = Z.map (function(k) {
-        var t = fields[k];
-        return outer (' ') +
-               outer (/^(?!\d)[$\w]+$/.test (k) ? k : show (k)) +
-               outer (' :: ') +
-               inner (k) (show (t));
-      }, keys);
-      return wrap (outer ('{')) (outer (' }')) (joinWith (outer (','), reprs));
-    }
-
-    function test(env) {
-      return function(x) {
+  const RecordType = fields => {
+    const keys = Object.keys (fields);
+    return _Type (
+      RECORD,
+      '',
+      '',
+      0,
+      (outer, inner) => {
+        if (keys.length === 0) return outer ('{}');
+        const reprs = Z.map (k => {
+          const t = fields[k];
+          return outer (' ') +
+                 outer (/^(?!\d)[$\w]+$/.test (k) ? k : show (k)) +
+                 outer (' :: ') +
+                 inner (k) (show (t));
+        }, keys);
+        return outer ('{') + reprs.join (outer (',')) + outer (' }');
+      },
+      [],
+      env => x => {
         if (x == null) return false;
-        var missing = {};
-        keys.forEach (function(k) { missing[k] = k; });
-        for (var k in x) delete missing[k];
-        return isEmpty (missing);
-      };
-    }
-
-    var tuples = keys.map (function(k) {
-      return [k, function(x) { return [x[k]]; }, fields[k]];
-    });
-
-    return _Type (RECORD, '', '', 0, format, [], test, tuples);
-  }
+        const missing = {};
+        keys.forEach (k => { missing[k] = k; });
+        for (const k in x) delete missing[k];
+        return Z.size (missing) === 0;
+      },
+      keys.map (k => [k, x => [x[k]], fields[k]])
+    );
+  };
 
   //# NamedRecordType :: NonEmpty String -> String -> Array Type -> StrMap Type -> Type
   //.
@@ -1995,58 +1843,26 @@
   //. //
   //. //   See http://example.com/my-package#Cylinder for information about the Cylinder type.
   //. ```
-  function NamedRecordType(name) {
-    return function(url) {
-      return function(supertypes) {
-        return function(fields) {
-          var keys = sortedKeys (fields);
-
-          function format(outer, inner) {
-            return outer (name);
-          }
-
-          function test(env) {
-            var test2 = _test (env);
-            return function(x) {
-              if (x == null) return false;
-              var missing = {};
-              keys.forEach (function(k) { missing[k] = k; });
-              for (var k in x) delete missing[k];
-              return isEmpty (missing) &&
-                     keys.every (function(k) {
-                       return test2 (x[k]) (fields[k]);
-                     });
-            };
-          }
-
-          var tuples = keys.map (function(k) {
-            return [k, function(x) { return [x[k]]; }, fields[k]];
-          });
-
-          return _Type (RECORD,
-                        name,
-                        url,
-                        0,
-                        format,
-                        supertypes,
-                        test,
-                        tuples);
-        };
-      };
-    };
-  }
-
-  //  typeVarPred :: NonNegativeInteger -> Array Type -> Any -> Boolean
-  function typeVarPred(arity) {
-    var filter = arityGte (arity);
-    return function(env) {
-      var test2 = _test (env);
-      return function(x) {
-        var test1 = test2 (x);
-        return env.some (function(t) { return filter (t) && test1 (t); });
-      };
-    };
-  }
+  const NamedRecordType = name => url => supertypes => fields => {
+    const keys = Z.sort (Object.keys (fields));
+    return _Type (
+      RECORD,
+      name,
+      url,
+      0,
+      (outer, inner) => outer (name),
+      supertypes,
+      env => x => {
+        if (x == null) return false;
+        const missing = {};
+        keys.forEach (k => { missing[k] = k; });
+        for (const k in x) delete missing[k];
+        return Z.size (missing) === 0 &&
+               keys.every (k => _test (env) (x[k]) (fields[k]));
+      },
+      keys.map (k => [k, x => [x[k]], fields[k]])
+    );
+  };
 
   //# TypeVariable :: String -> Type
   //.
@@ -2104,11 +1920,16 @@
   //. //
   //. //   Since there is no type of which all the above values are members, the type-variable constraint has been violated.
   //. ```
-  function TypeVariable(name) {
-    var tuples = [];
-    var test = typeVarPred (tuples.length);
-    return _Type (VARIABLE, name, '', 0, always2 (name), [], test, tuples);
-  }
+  const TypeVariable = name => (
+    _Type (VARIABLE,
+           name,
+           '',
+           0,
+           (outer, inner) => name,
+           [],
+           env => x => env.some (t => t.arity >= 0 && _test (env) (x) (t)),
+           [])
+  );
 
   //# UnaryTypeVariable :: String -> Type -> Type
   //.
@@ -2156,13 +1977,16 @@
   //.
   //. This shallow inspection makes it possible to constrain a value's "outer"
   //. and "inner" types independently.
-  function UnaryTypeVariable(name) {
-    return function($1) {
-      var tuples = [['$1', K ([]), $1]];
-      var test = typeVarPred (tuples.length);
-      return _Type (VARIABLE, name, '', 1, null, [], test, tuples);
-    };
-  }
+  const UnaryTypeVariable = name => $1 => (
+    _Type (VARIABLE,
+           name,
+           '',
+           1,
+           null,
+           [],
+           env => x => env.some (t => t.arity >= 1 && _test (env) (x) (t)),
+           [['$1', x => [], $1]])
+  );
 
   //# BinaryTypeVariable :: String -> Type -> Type -> Type
   //.
@@ -2178,28 +2002,29 @@
   //.
   //. The more detailed explanation of [`UnaryTypeVariable`][] also applies to
   //. `BinaryTypeVariable`.
-  function BinaryTypeVariable(name) {
-    return function($1) {
-      return function($2) {
-        var tuples = [['$1', K ([]), $1],
-                      ['$2', K ([]), $2]];
-        var test = typeVarPred (tuples.length);
-        return _Type (VARIABLE, name, '', 2, null, [], test, tuples);
-      };
-    };
-  }
+  const BinaryTypeVariable = name => $1 => $2 => (
+    _Type (VARIABLE,
+           name,
+           '',
+           2,
+           null,
+           [],
+           env => x => env.some (t => t.arity >= 2 && _test (env) (x) (t)),
+           [['$1', x => [], $1],
+            ['$2', x => [], $2]])
+  );
 
   //# Thunk :: Type -> Type
   //.
   //. `$.Thunk (T)` is shorthand for `$.Function ([T])`, the type comprising
   //. every nullary function (thunk) that returns a value of type `T`.
-  function Thunk(t) { return Function_ ([t]); }
+  const Thunk = t => Function_ ([t]);
 
   //# Predicate :: Type -> Type
   //.
   //. `$.Predicate (T)` is shorthand for `$.Fn (T) ($.Boolean)`, the type
   //. comprising every predicate function that takes a value of type `T`.
-  function Predicate(t) { return Fn (t) (Boolean_); }
+  const Predicate = t => Fn (t) (Boolean_);
 
   //. ### Type classes
   //.
@@ -2294,378 +2119,409 @@
   //
   //  This function is used in `curry` when a function defined via `def`
   //  is applied to too many arguments.
-  function invalidArgumentsCount(typeInfo, index, numArgsExpected, args) {
-    return new TypeError (trimTrailingSpaces (
-      q (typeInfo.name) + ' applied to the wrong number of arguments\n\n' +
-      underline (
-        typeInfo,
-        K (K (_)),
-        function(index_) {
-          return function(f) {
-            return K (K (index_ === index ? f : _));
-          };
-        }
-      ) + '\n' +
-      'Expected ' + numArgs (numArgsExpected) +
-      ' but received ' + numArgs (args.length) +
-      toMarkdownList ('.\n', ':\n\n', show, args)
-    ));
-  }
+  const invalidArgumentsCount = (typeInfo, index, numArgsExpected, args) => (
+    new TypeError (
+      `‘${
+        typeInfo.name
+      }’ applied to the wrong number of arguments\n\n${
+        underline_ (typeInfo)
+                   (index_ => f => t => propPath => s =>
+                      index_ === index ? f (s) : ' '.repeat (s.length))
+      }\nExpected ${
+        numArgs (numArgsExpected)
+      } but received ${
+        numArgs (args.length)
+      }${
+        /* istanbul ignore next */
+        args.length === 0
+        ? '.\n'
+        : ':\n\n' + Z.foldMap (String, x => `  - ${show (x)}\n`, args)
+      }`
+    )
+  );
 
   //  constraintsRepr :: ... -> String
-  function constraintsRepr(
+  const constraintsRepr = (
     constraints,    // :: StrMap (Array TypeClass)
     outer,          // :: String -> String
     inner           // :: String -> TypeClass -> String -> String
-  ) {
-    var $reprs = [];
-    (Object.keys (constraints)).forEach (function(k) {
-      var f = inner (k);
-      constraints[k].forEach (function(typeClass) {
-        $reprs.push (f (typeClass) (stripNamespace (typeClass) + ' ' + k));
-      });
-    });
-    return when ($reprs.length > 0)
-                (wrap ('') (outer (' => ')))
-                (when ($reprs.length > 1)
-                      (parenthesize (outer))
-                      (joinWith (outer (', '), $reprs)));
-  }
+  ) => {
+    const reprs = Z.chain (
+      k => (
+        constraints[k].map (typeClass =>
+          inner (k) (typeClass) (`${stripNamespace (typeClass)} ${k}`)
+        )
+      ),
+      Object.keys (constraints)
+    );
+    switch (reprs.length) {
+      case 0:
+        return '';
+      case 1:
+        return reprs.join (outer (', ')) + outer (' => ');
+      default:
+        return outer ('(') + reprs.join (outer (', ')) + outer (') => ');
+    }
+  };
 
   //  label :: String -> String -> String
-  function label(label) {
-    return function(s) {
-      var delta = s.length - label.length;
-      return strRepeat (' ', Math.floor (delta / 2)) + label +
-             strRepeat (' ', Math.ceil (delta / 2));
-    };
-  }
+  const label = label => s => {
+    const delta = s.length - label.length;
+    return ' '.repeat (Math.floor (delta / 2)) + label +
+           ' '.repeat (Math.ceil (delta / 2));
+  };
 
   //  typeVarNames :: Type -> Array String
-  function typeVarNames(t) {
-    return Z.concat (
-      t.type === VARIABLE ? [t.name] : [],
-      Z.chain (function(k) { return typeVarNames (t.types[k]); }, t.keys)
-    );
-  }
+  const typeVarNames = t => [
+    ...(t.type === VARIABLE ? [t.name] : []),
+    ...(Z.chain (k => typeVarNames (t.types[k]), t.keys)),
+  ];
 
   //  showTypeWith :: Array Type -> Type -> String
-  function showTypeWith(types) {
-    var names = Z.chain (typeVarNames, types);
-    return function(t) {
-      var code = 'a'.charCodeAt (0);
-      return when (t.type === FUNCTION)
-                  (parenthesize (I))
-                  ((show (t)).replace (/\bUnknown\b/g, function() {
-                     // eslint-disable-next-line no-plusplus
-                     do var name = String.fromCharCode (code++);
-                     while (names.indexOf (name) >= 0);
-                     return name;
-                   }));
+  const showTypeWith = types => {
+    const names = Z.chain (typeVarNames, types);
+    return t => {
+      let code = 'a'.charCodeAt (0);
+      const repr = (
+        show (t)
+        .replace (/\bUnknown\b/g, () => {
+          let name;
+          // eslint-disable-next-line no-plusplus
+          do name = String.fromCharCode (code++);
+          while (names.indexOf (name) >= 0);
+          return name;
+        })
+      );
+      return t.type === FUNCTION ? '(' + repr + ')' : repr;
     };
-  }
+  };
 
   //  showValuesAndTypes :: ... -> String
-  function showValuesAndTypes(
+  const showValuesAndTypes = (
     env,            // :: Array Type
     typeInfo,       // :: TypeInfo
     values,         // :: Array Any
     pos             // :: Integer
-  ) {
-    var showType = showTypeWith (typeInfo.types);
-    return show (pos) + ')  ' + joinWith ('\n    ', Z.map (function(x) {
-      return show (x) +
-             ' :: ' +
-             joinWith (', ',
-                       or (Z.map (showType,
-                                  determineActualTypesLoose (env, [x])),
-                           ['(no types)']));
-    }, values));
-  }
+  ) => {
+    const showType = showTypeWith (typeInfo.types);
+    return `${
+      show (pos)
+    })  ${
+      values
+      .map (x => {
+        const types = determineActualTypesLoose (env, [x]);
+        return `${
+          show (x)
+        } :: ${
+          types.length > 0 ? (types.map (showType)).join (', ') : '(no types)'
+        }`;
+      })
+      .join ('\n    ')
+    }`;
+  };
 
   //  typeSignature :: TypeInfo -> String
-  function typeSignature(typeInfo) {
-    return typeInfo.name + ' :: ' +
-           constraintsRepr (typeInfo.constraints, I, K (K (I))) +
-           joinWith (' -> ',
-                     Z.map (showTypeWith (typeInfo.types), typeInfo.types));
-  }
+  const typeSignature = typeInfo => `${
+    typeInfo.name
+  } :: ${
+    constraintsRepr (typeInfo.constraints, s => s, tvn => tc => s => s)
+  }${
+    typeInfo.types
+    .map (showTypeWith (typeInfo.types))
+    .join (' -> ')
+  }`;
 
   //  _underline :: ... -> String
-  function _underline(
+  const _underline = (
     t,              // :: Type
     propPath,       // :: PropPath
     formatType3     // :: Type -> Array String -> String -> String
-  ) {
-    return formatType3 (t) (propPath) (t.format (_, function(k) {
-      return K (_underline (t.types[k],
-                            Z.concat (propPath, [k]),
-                            formatType3));
-    }));
-  }
+  ) => (
+    formatType3 (t)
+                (propPath)
+                (t.format (s => ' '.repeat (s.length),
+                           k => s => _underline (t.types[k],
+                                                 [...propPath, k],
+                                                 formatType3)))
+  );
 
   //  underline :: ... -> String
-  function underline(
-    typeInfo,               // :: TypeInfo
-    underlineConstraint,    // :: String -> TypeClass -> String -> String
-    formatType5
-    // :: Integer -> (String -> String) -> Type -> PropPath -> String -> String
-  ) {
-    var st = typeInfo.types.reduce (function(st, t, index) {
-      var f = B (when (t.type === FUNCTION)
-                      (parenthesize (_)))
-                (B (function(f) { return _underline (t, [], f); })
-                   (formatType5 (index)));
-      st.carets.push (f (r ('^')));
-      st.numbers.push (f (function(s) {
-        return label (show (st.counter += 1)) (s);
-      }));
+  const underline = underlineConstraint => typeInfo => formatType5 => {
+    const st = typeInfo.types.reduce ((st, t, index) => {
+      const f = f => (
+        t.type === FUNCTION
+        ? ' ' + _underline (t, [], formatType5 (index) (f)) + ' '
+        :       _underline (t, [], formatType5 (index) (f))
+      );
+      st.carets.push (f (s => '^'.repeat (s.length)));
+      st.numbers.push (f (s => label (show (st.counter += 1)) (s)));
       return st;
     }, {carets: [], numbers: [], counter: 0});
 
-    return typeSignature (typeInfo) + '\n' +
-           _ (typeInfo.name + ' :: ') +
-              constraintsRepr (typeInfo.constraints, _, underlineConstraint) +
-              joinWith (_ (' -> '), st.carets) + '\n' +
-           _ (typeInfo.name + ' :: ') +
-              constraintsRepr (typeInfo.constraints, _, K (K (_))) +
-              joinWith (_ (' -> '), st.numbers) + '\n';
-  }
+    return (
+      `${
+        typeSignature (typeInfo)
+      }\n${
+        ' '.repeat (`${typeInfo.name} :: `.length)
+      }${
+        constraintsRepr (
+          typeInfo.constraints,
+          s => ' '.repeat (s.length),
+          underlineConstraint
+        )
+      }${
+        st.carets.join (' '.repeat (' -> '.length))
+      }\n${
+        ' '.repeat (`${typeInfo.name} :: `.length)
+      }${
+        constraintsRepr (
+          typeInfo.constraints,
+          s => ' '.repeat (s.length),
+          tvn => tc => s => ' '.repeat (s.length)
+        )
+      }${
+        st.numbers.join (' '.repeat (' -> '.length))
+      }\n`
+    ).replace (/[ ]+$/gm, '');
+  };
 
-  //  resolvePropPath :: (Type, Array String) -> Type
-  function resolvePropPath(t, propPath) {
-    return Z.reduce (function(t, prop) { return t.types[prop]; },
-                     t,
-                     propPath);
-  }
+  //  underline_ :: ... -> String
+  const underline_ = underline (tvn => tc => s => ' '.repeat (s.length));
 
   //  formatType6 ::
   //    PropPath -> Integer -> (String -> String) ->
   //      Type -> PropPath -> String -> String
-  function formatType6(indexedPropPath) {
-    return function(index_) {
-      return function(f) {
-        return function(t) {
-          return function(propPath_) {
-            var indexedPropPath_ = Z.concat ([index_], propPath_);
-            var p = isPrefix (indexedPropPath_) (indexedPropPath);
-            var q = isPrefix (indexedPropPath) (indexedPropPath_);
-            return p && q ? f : p ? I : _;
-          };
-        };
-      };
-    };
-  }
-
-  //  see :: (String, { name :: String, url :: String? }) -> String
-  function see(label, record) {
-    return record.url == null || record.url === '' ?
-           '' :
-           '\nSee ' + record.url +
-           ' for information about the ' + record.name + ' ' + label + '.\n';
-  }
+  const formatType6 = indexedPropPath => index_ => f => t => propPath_ => {
+    const indexedPropPath_ = [index_, ...propPath_];
+    const p = isPrefix (indexedPropPath_) (indexedPropPath);
+    const q = isPrefix (indexedPropPath) (indexedPropPath_);
+    return s => p && q ? f (s) : p ? s : ' '.repeat (s.length);
+  };
 
   //  typeClassConstraintViolation :: ... -> Error
-  function typeClassConstraintViolation(
+  const typeClassConstraintViolation = (
     env,            // :: Array Type
     typeInfo,       // :: TypeInfo
     typeClass,      // :: TypeClass
     index,          // :: Integer
     propPath,       // :: PropPath
-    value,          // :: Any
-    typeVarMap      // :: TypeVarMap
-  ) {
-    var expType = resolvePropPath (typeInfo.types[index], propPath);
-    return new TypeError (trimTrailingSpaces (
-      'Type-class constraint violation\n\n' +
-      underline (typeInfo,
-                 function(tvn) {
-                   return function(tc) {
-                     return (
-                       tvn === expType.name && tc.name === typeClass.name ?
-                         r ('^') :
-                         _
-                     );
-                   };
-                 },
-                 formatType6 (Z.concat ([index], propPath))) +
-      '\n' +
-      showValuesAndTypes (env, typeInfo, [value], 1) + '\n\n' +
-      q (typeInfo.name) + ' requires ' +
-      q (expType.name) + ' to satisfy the ' +
-      stripNamespace (typeClass) + ' type-class constraint; ' +
-      'the value at position 1 does not.\n' +
-      see ('type class', typeClass)
-    ));
-  }
+    value           // :: Any
+  ) => {
+    const expType = propPath.reduce (
+      (t, prop) => t.types[prop],
+      typeInfo.types[index]
+    );
+    return new TypeError (
+      `Type-class constraint violation\n\n${
+        underline (tvn => tc => s =>
+                     tvn === expType.name && tc.name === typeClass.name
+                     ? '^'.repeat (s.length)
+                     : ' '.repeat (s.length))
+                  (typeInfo)
+                  (formatType6 ([index, ...propPath]))
+      }\n${
+        showValuesAndTypes (env, typeInfo, [value], 1)
+      }\n\n‘${
+        typeInfo.name
+      }’ requires ‘${
+        expType.name
+      }’ to satisfy the ${
+        stripNamespace (typeClass)
+      } type-class constraint; the value at position 1 does not.\n${
+        /* istanbul ignore next */
+        typeClass.url == null ||
+        typeClass.url === ''
+        ? ''
+        : `\nSee ${
+            typeClass.url
+          } for information about the ${
+            typeClass.name
+          } type class.\n`
+      }`
+    );
+  };
 
   //  typeVarConstraintViolation :: ... -> Error
-  function typeVarConstraintViolation(
+  const typeVarConstraintViolation = (
     env,            // :: Array Type
     typeInfo,       // :: TypeInfo
     index,          // :: Integer
     propPath,       // :: PropPath
     valuesByPath    // :: StrMap (Array Any)
-  ) {
+  ) => {
     //  If we apply an ‘a -> a -> a -> a’ function to Left ('x'), Right (1),
     //  and Right (null) we'd like to avoid underlining the first argument
     //  position, since Left ('x') is compatible with the other ‘a’ values.
-    var key = JSON.stringify (Z.concat ([index], propPath));
-    var values = valuesByPath[key];
+    const key = JSON.stringify ([index, ...propPath]);
+    const values = valuesByPath[key];
 
     //  Note: Sorting these keys lexicographically is not "correct", but it
     //  does the right thing for indexes less than 10.
-    var keys = Z.filter (function(k) {
-      var values_ = valuesByPath[k];
+    const keys = Z.filter (k => {
+      const values_ = valuesByPath[k];
       return (
         //  Keep X, the position at which the violation was observed.
         k === key ||
         //  Keep positions whose values are incompatible with the values at X.
-        isEmpty (determineActualTypesStrict (env, Z.concat (values, values_)))
+        (determineActualTypesStrict (env, [...values, ...values_])).length
+          === 0
       );
-    }, sortedKeys (valuesByPath));
+    }, Z.sort (Object.keys (valuesByPath)));
 
-    var underlinedTypeVars =
-    underlineTypeVars (typeInfo,
-                       Z.reduce (function($valuesByPath, k) {
-                         $valuesByPath[k] = valuesByPath[k];
-                         return $valuesByPath;
-                       }, {}, keys));
-
-    return new TypeError (trimTrailingSpaces (
-      'Type-variable constraint violation\n\n' +
-      underlinedTypeVars + '\n' +
-      (Z.reduce (function(st, k) {
-        var values = valuesByPath[k];
-        return isEmpty (values) ? st : {
-          idx: st.idx + 1,
-          s: st.s +
-             showValuesAndTypes (env, typeInfo, values, st.idx + 1) +
-             '\n\n'
-        };
-      }, {idx: 0, s: ''}, keys)).s +
+    return new TypeError (
+      `Type-variable constraint violation\n\n${
+        underlineTypeVars (
+          typeInfo,
+          keys.reduce (($valuesByPath, k) => ((
+            $valuesByPath[k] = valuesByPath[k],
+            $valuesByPath
+          )), {})
+        )
+      }\n${
+        keys.reduce (({idx, s}, k) => {
+          const values = valuesByPath[k];
+          return values.length === 0
+                 ? {idx, s}
+                 : {idx: idx + 1,
+                    s: s + showValuesAndTypes (env, typeInfo, values, idx + 1)
+                         + '\n\n'};
+        }, {idx: 0, s: ''})
+        .s
+      }` +
       'Since there is no type of which all the above values are ' +
       'members, the type-variable constraint has been violated.\n'
-    ));
-  }
+    );
+  };
 
   //  invalidValue :: ... -> Error
-  function invalidValue(
+  const invalidValue = (
     env,            // :: Array Type
     typeInfo,       // :: TypeInfo
     index,          // :: Integer
     propPath,       // :: PropPath
     value           // :: Any
-  ) {
-    var t = resolvePropPath (typeInfo.types[index], propPath);
-
-    var underlinedTypeVars =
-    underline (typeInfo,
-               K (K (_)),
-               formatType6 (Z.concat ([index], propPath)));
-
-    return new TypeError (trimTrailingSpaces (
+  ) => {
+    const t = propPath.reduce (
+      (t, prop) => t.types[prop],
+      typeInfo.types[index]
+    );
+    return new TypeError (
       t.type === VARIABLE &&
-      isEmpty (determineActualTypesLoose (env, [value])) ?
-        'Unrecognized value\n\n' +
-        underlinedTypeVars + '\n' +
-        showValuesAndTypes (env, typeInfo, [value], 1) + '\n\n' +
-        toMarkdownList (
-          'The environment is empty! ' +
-          'Polymorphic functions require a non-empty environment.\n',
-          'The value at position 1 is not a member of any type in ' +
-          'the environment.\n\n' +
-          'The environment contains the following types:\n\n',
-          showTypeWith (typeInfo.types),
-          env
-        ) :
+      (determineActualTypesLoose (env, [value])).length === 0 ?
+        `Unrecognized value\n\n${
+          underline_ (typeInfo) (formatType6 ([index, ...propPath]))
+        }\n${
+          showValuesAndTypes (env, typeInfo, [value], 1)
+        }\n\n${
+          env.length === 0
+          ? 'The environment is empty! ' +
+            'Polymorphic functions require a non-empty environment.\n'
+          : 'The value at position 1 is not a member of any type in ' +
+            'the environment.\n\n' +
+            'The environment contains the following types:\n\n' +
+            Z.foldMap (
+              String,
+              t => `  - ${showTypeWith (typeInfo.types) (t)}\n`,
+              env
+            )
+        }` :
       // else
-        'Invalid value\n\n' +
-        underlinedTypeVars + '\n' +
-        showValuesAndTypes (env, typeInfo, [value], 1) + '\n\n' +
-        'The value at position 1 is not a member of ' +
-        q (show (t)) + '.\n' +
-        see (arityGte (1) (t) ? 'type constructor' : 'type', t)
-    ));
-  }
+        `Invalid value\n\n${
+          underline_ (typeInfo) (formatType6 ([index, ...propPath]))
+        }\n${
+          showValuesAndTypes (env, typeInfo, [value], 1)
+        }\n\nThe value at position 1 is not a member of ‘${
+          show (t)
+        }’.\n${
+          t.url == null || t.url === ''
+          ? ''
+          : `\nSee ${
+              t.url
+            } for information about the ${
+              t.name
+            } ${
+              t.arity > 0 ? 'type constructor' : 'type'
+            }.\n`
+        }`
+    );
+  };
 
   //  invalidArgumentsLength :: ... -> Error
   //
   //  This function is used in `wrapFunctionCond` to ensure that higher-order
   //  functions defined via `def` only ever apply a function argument to the
   //  correct number of arguments.
-  function invalidArgumentsLength(
+  const invalidArgumentsLength = (
     typeInfo,           // :: TypeInfo
     index,              // :: Integer
     numArgsExpected,    // :: Integer
     args                // :: Array Any
-  ) {
-    return new TypeError (trimTrailingSpaces (
-      q (typeInfo.name) +
-      ' applied ' + q (show (typeInfo.types[index])) +
-      ' to the wrong number of arguments\n\n' +
-      underline (
-        typeInfo,
-        K (K (_)),
-        function(index_) {
-          return function(f) {
-            return function(t) {
-              return function(propPath) {
-                return function(s) {
-                  return index_ === index ?
-                    t.format (_, function(k) { return k === '$1' ? f : _; }) :
-                    _ (s);
-                };
-              };
-            };
-          };
-        }
-      ) + '\n' +
-      'Expected ' + numArgs (numArgsExpected) +
-      ' but received ' + numArgs (args.length) +
-      toMarkdownList ('.\n', ':\n\n', show, args)
-    ));
-  }
+  ) => (
+    new TypeError (
+      `‘${
+        typeInfo.name
+      }’ applied ‘${
+        show (typeInfo.types[index])
+      }’ to the wrong number of arguments\n\n${
+        underline_ (typeInfo)
+                   (index_ => f => t => propPath => s =>
+                      index_ === index
+                      ? t.format (
+                          s => ' '.repeat (s.length),
+                          k => k === '$1' ? f : s => ' '.repeat (s.length)
+                        )
+                      : ' '.repeat (s.length))
+      }\nExpected ${
+        numArgs (numArgsExpected)
+      } but received ${
+        numArgs (args.length)
+      }${
+        args.length === 0
+        ? '.\n'
+        : ':\n\n' + Z.foldMap (String, x => `  - ${show (x)}\n`, args)
+      }`
+    )
+  );
 
   //  assertRight :: Either (() -> Error) a -> a !
-  function assertRight(either) {
+  const assertRight = either => {
     if (either.isLeft) throw either.value ();
     return either.value;
-  }
+  };
 
   //  withTypeChecking :: ... -> Function
-  function withTypeChecking(
+  const withTypeChecking = (
     env,            // :: Array Type
     typeInfo,       // :: TypeInfo
     impl            // :: Function
-  ) {
-    var n = typeInfo.types.length - 1;
+  ) => {
+    const n = typeInfo.types.length - 1;
 
     //  wrapFunctionCond :: (TypeVarMap, Integer, a) -> a
-    function wrapFunctionCond(_typeVarMap, index, value) {
-      var expType = typeInfo.types[index];
+    const wrapFunctionCond = (_typeVarMap, index, value) => {
+      const expType = typeInfo.types[index];
       if (expType.type !== FUNCTION) return value;
 
       //  checkValue :: (TypeVarMap, Integer, String, a) -> Either (() -> Error) TypeVarMap
-      function checkValue(typeVarMap, index, k, x) {
-        var propPath = [k];
-        var t = expType.types[k];
+      const checkValue = (typeVarMap, index, k, x) => {
+        const propPath = [k];
+        const t = expType.types[k];
         return (
           t.type === VARIABLE ?
             Z.chain (
-              function(typeVarMap) {
-                return isEmpty (typeVarMap[t.name].types) ?
-                  Left (function() {
-                    return typeVarConstraintViolation (
+              typeVarMap => (
+                typeVarMap[t.name].types.length === 0
+                ? Left (() =>
+                    typeVarConstraintViolation (
                       env,
                       typeInfo,
                       index,
                       propPath,
                       typeVarMap[t.name].valuesByPath
-                    );
-                  }) :
-                  Right (typeVarMap);
-              },
+                    )
+                  )
+                : Right (typeVarMap)
+              ),
               Right (updateTypeVarMap (env,
                                        typeVarMap,
                                        t,
@@ -2675,7 +2531,7 @@
             ) :
           // else
             Z.map (
-              function(r) { return r.typeVarMap; },
+              r => r.typeVarMap,
               satisfactoryTypes (env,
                                  typeInfo,
                                  typeVarMap,
@@ -2685,79 +2541,82 @@
                                  [x])
             )
         );
-      }
+      };
 
-      var typeVarMap = _typeVarMap;
-      return function(x) {
-        if (arguments.length !== expType.arity - 1) {
+      let typeVarMap = _typeVarMap;
+      return (...args) => {
+        if (args.length !== expType.arity - 1) {
           throw invalidArgumentsLength (typeInfo,
                                         index,
                                         expType.arity - 1,
-                                        slice.call (arguments));
+                                        args);
         }
 
-        var args = arguments;
         typeVarMap = assertRight (
-          (init (expType.keys)).reduce (function(either, k, idx) {
-            var arg = args[idx];
-            return Z.chain (function(typeVarMap) {
-              return checkValue (typeVarMap, index, k, arg);
-            }, either);
-          }, Right (typeVarMap))
+          expType.keys
+          .slice (0, -1)
+          .reduce (
+            (either, k, idx) => (
+              Z.chain (
+                typeVarMap => checkValue (typeVarMap, index, k, args[idx]),
+                either
+              )
+            ),
+            Right (typeVarMap)
+          )
         );
 
-        var output = value.apply (this, arguments);
-        var k = last (expType.keys);
+        const output = value.apply (this, args);
+        const k = expType.keys[expType.keys.length - 1];
         typeVarMap = assertRight (checkValue (typeVarMap, index, k, output));
         return output;
       };
-    }
+    };
 
     //  wrapNext :: (TypeVarMap, Array Any, Integer) -> (a -> b)
-    function wrapNext(_typeVarMap, _values, index) {
-      return function(x) {
-        var args = slice.call (arguments);
-        if (args.length !== 1) {
-          throw invalidArgumentsCount (typeInfo, index, 1, args);
-        }
-        var typeVarMap = (assertRight (
+    const wrapNext = (_typeVarMap, _values, index) => (head, ...tail) => {
+      const args = [head, ...tail];
+      if (args.length !== 1) {
+        throw invalidArgumentsCount (typeInfo, index, 1, args);
+      }
+      let {typeVarMap} = assertRight (
+        satisfactoryTypes (env,
+                           typeInfo,
+                           _typeVarMap,
+                           typeInfo.types[index],
+                           index,
+                           [],
+                           args)
+      );
+
+      const values = [..._values, ...args];
+      if (index + 1 === n) {
+        const value = values.reduce (
+          (f, x, idx) => f (wrapFunctionCond (typeVarMap, idx, x)),
+          impl
+        );
+        ({typeVarMap} = assertRight (
           satisfactoryTypes (env,
                              typeInfo,
-                             _typeVarMap,
-                             typeInfo.types[index],
-                             index,
+                             typeVarMap,
+                             typeInfo.types[n],
+                             n,
                              [],
-                             args)
-        )).typeVarMap;
+                             [value])
+        ));
+        return wrapFunctionCond (typeVarMap, n, value);
+      } else {
+        return wrapNext (typeVarMap, values, index + 1);
+      }
+    };
 
-        var values = Z.concat (_values, args);
-        if (index + 1 === n) {
-          var value = values.reduce (function(f, x, idx) {
-            return f (wrapFunctionCond (typeVarMap, idx, x));
-          }, impl);
-          typeVarMap = (assertRight (
-            satisfactoryTypes (env,
-                               typeInfo,
-                               typeVarMap,
-                               typeInfo.types[n],
-                               n,
-                               [],
-                               [value])
-          )).typeVarMap;
-          return wrapFunctionCond (typeVarMap, n, value);
-        } else {
-          return wrapNext (typeVarMap, values, index + 1);
+    const wrapped = typeInfo.types[0].type === NO_ARGUMENTS ?
+      (...args) => {
+        if (args.length !== 0) {
+          throw invalidArgumentsCount (typeInfo, 0, 0, args);
         }
-      };
-    }
-
-    var wrapped = typeInfo.types[0].type === NO_ARGUMENTS ?
-      function() {
-        if (arguments.length !== 0) {
-          throw invalidArgumentsCount (typeInfo, 0, 0, slice.call (arguments));
-        }
-        var value = impl ();
-        var typeVarMap = (assertRight (
+        const value = impl ();
+        const {typeVarMap} = assertRight (
           satisfactoryTypes (env,
                              typeInfo,
                              {},
@@ -2765,12 +2624,12 @@
                              n,
                              [],
                              [value])
-        )).typeVarMap;
+        );
         return wrapFunctionCond (typeVarMap, n, value);
       } :
       wrapNext ({}, [], 0);
 
-    wrapped.toString = always0 (typeSignature (typeInfo));
+    wrapped.toString = () => typeSignature (typeInfo);
     /* istanbul ignore else */
     if (
       typeof process !== 'undefined' &&
@@ -2786,64 +2645,58 @@
     }
 
     return wrapped;
-  }
+  };
 
   //  defTypes :: NonEmpty (Array Type)
-  var defTypes = [
+  const defTypes = [
     String_,
     StrMap (Array_ (TypeClass)),
     NonEmpty (Array_ (Type)),
     AnyFunction,
-    AnyFunction
+    AnyFunction,
   ];
 
-  function create(opts) {
-    function def(name) {
-      return function(constraints) {
-        return function(expTypes) {
-          return function(impl) {
-            return opts.checkTypes ?
-              withTypeChecking (opts.env,
-                                {name: name,
-                                 constraints: constraints,
-                                 types: expTypes.length === 1 ?
-                                        Z.concat ([NoArguments], expTypes) :
-                                        expTypes},
-                                impl) :
-              impl;
-          };
-        };
-      };
-    }
-    return def (def.name) ({}) (defTypes) (def);
-  }
+  const create = opts => {
+    const def = name => constraints => expTypes => impl => (
+      opts.checkTypes
+      ? withTypeChecking (opts.env,
+                          {name,
+                           constraints,
+                           types: expTypes.length === 1
+                                  ? [NoArguments, ...expTypes]
+                                  : expTypes},
+                          impl)
+      : impl
+    );
+    return def ('def') ({}) (defTypes) (def);
+  };
 
-  var def = create ({checkTypes: !production, env: env});
+  const def = create ({checkTypes: !production, env});
 
   //  fromUncheckedUnaryType :: (Type -> Type) -> Type -> Type
-  function fromUncheckedUnaryType(typeConstructor) {
-    var t = typeConstructor (Unknown);
+  const fromUncheckedUnaryType = typeConstructor => {
+    const t = typeConstructor (Unknown);
     return def (t.name) ({}) ([Type, Type]) (fromUnaryType (t));
-  }
+  };
 
   //  fromUncheckedBinaryType :: (Type -> Type -> Type) -> Type -> Type -> Type
-  function fromUncheckedBinaryType(typeConstructor) {
-    var t = typeConstructor (Unknown) (Unknown);
+  const fromUncheckedBinaryType = typeConstructor => {
+    const t = typeConstructor (Unknown) (Unknown);
     return def (t.name) ({}) ([Type, Type, Type]) (fromBinaryType (t));
-  }
+  };
 
   return {
-    Any: Any,
-    AnyFunction: AnyFunction,
-    Arguments: Arguments,
+    Any,
+    AnyFunction,
+    Arguments,
     Array: fromUncheckedUnaryType (Array_),
-    Array0: Array0,
+    Array0,
     Array1: fromUncheckedUnaryType (Array1),
     Array2: fromUncheckedBinaryType (Array2),
     Boolean: Boolean_,
     Buffer: Buffer_,
     Date: Date_,
-    ValidDate: ValidDate,
+    ValidDate,
     Descending: fromUncheckedUnaryType (Descending),
     Either: fromUncheckedBinaryType (Either_),
     Error: Error_,
@@ -2857,49 +2710,49 @@
           ({})
           ([NonEmpty (Array_ (Type)), Type])
           (Function_),
-    HtmlElement: HtmlElement,
+    HtmlElement,
     Identity: fromUncheckedUnaryType (Identity),
     JsMap: fromUncheckedBinaryType (JsMap),
     JsSet: fromUncheckedUnaryType (JsSet),
     Maybe: fromUncheckedUnaryType (Maybe),
-    Module: Module,
-    NonEmpty: NonEmpty,
-    Null: Null,
+    Module,
+    NonEmpty,
+    Null,
     Nullable: fromUncheckedUnaryType (Nullable),
     Number: Number_,
-    PositiveNumber: PositiveNumber,
-    NegativeNumber: NegativeNumber,
-    ValidNumber: ValidNumber,
-    NonZeroValidNumber: NonZeroValidNumber,
-    FiniteNumber: FiniteNumber,
-    NonZeroFiniteNumber: NonZeroFiniteNumber,
-    PositiveFiniteNumber: PositiveFiniteNumber,
-    NegativeFiniteNumber: NegativeFiniteNumber,
-    Integer: Integer,
-    NonZeroInteger: NonZeroInteger,
-    NonNegativeInteger: NonNegativeInteger,
-    PositiveInteger: PositiveInteger,
-    NegativeInteger: NegativeInteger,
+    PositiveNumber,
+    NegativeNumber,
+    ValidNumber,
+    NonZeroValidNumber,
+    FiniteNumber,
+    NonZeroFiniteNumber,
+    PositiveFiniteNumber,
+    NegativeFiniteNumber,
+    Integer,
+    NonZeroInteger,
+    NonNegativeInteger,
+    PositiveInteger,
+    NegativeInteger,
     Object: Object_,
     Pair: fromUncheckedBinaryType (Pair),
     RegExp: RegExp_,
-    GlobalRegExp: GlobalRegExp,
-    NonGlobalRegExp: NonGlobalRegExp,
-    RegexFlags: RegexFlags,
+    GlobalRegExp,
+    NonGlobalRegExp,
+    RegexFlags,
     StrMap: fromUncheckedUnaryType (StrMap),
     String: String_,
     Symbol: Symbol_,
-    Type: Type,
-    TypeClass: TypeClass,
-    Undefined: Undefined,
-    Unknown: Unknown,
-    Void: Void,
-    env: env,
+    Type,
+    TypeClass,
+    Undefined,
+    Unknown,
+    Void,
+    env,
     create:
       def ('create')
           ({})
           ([RecordType ({checkTypes: Boolean_, env: Array_ (Type)}),
-            Unchecked (joinWith (' -> ', Z.map (show, defTypes)))])
+            Unchecked ((defTypes.map (show)).join (' -> '))])
           (create),
     test:
       def ('test')
@@ -2924,10 +2777,8 @@
             Unchecked ('(Any -> Boolean)'),
             Unchecked ('(t a -> f a)'),
             Unchecked ('Type -> Type')])
-          (function(name) {
-             return B (B (B (B (def (name) ({}) ([Type, Type])))))
-                      (UnaryType (name));
-           }),
+          (name => B (B (B (B (def (name) ({}) ([Type, Type])))))
+                     (UnaryType (name))),
     BinaryType:
       def ('BinaryType')
           ({f: [Z.Foldable]})
@@ -2938,10 +2789,8 @@
             Unchecked ('(t a b -> f a)'),
             Unchecked ('(t a b -> f b)'),
             Unchecked ('Type -> Type -> Type')])
-          (function(name) {
-             return B (B (B (B (B (def (name) ({}) ([Type, Type, Type]))))))
-                      (BinaryType (name));
-           }),
+          (name => B (B (B (B (B (def (name) ({}) ([Type, Type, Type]))))))
+                     (BinaryType (name))),
     EnumType:
       def ('EnumType')
           ({})
@@ -2966,19 +2815,18 @@
       def ('UnaryTypeVariable')
           ({})
           ([String_, Unchecked ('Type -> Type')])
-          (function(name) {
-             return def (name) ({}) ([Type, Type]) (UnaryTypeVariable (name));
-           }),
+          (name => def (name)
+                       ({})
+                       ([Type, Type])
+                       (UnaryTypeVariable (name))),
     BinaryTypeVariable:
       def ('BinaryTypeVariable')
           ({})
           ([String_, Unchecked ('Type -> Type -> Type')])
-          (function(name) {
-             return def (name)
-                        ({})
-                        ([Type, Type, Type])
-                        (BinaryTypeVariable (name));
-           }),
+          (name => def (name)
+                       ({})
+                       ([Type, Type, Type])
+                       (BinaryTypeVariable (name))),
     Thunk:
       def ('Thunk')
           ({})
@@ -2988,10 +2836,10 @@
       def ('Predicate')
           ({})
           ([Type, Type])
-          (Predicate)
+          (Predicate),
   };
 
-}));
+});
 
 //. [Buffer]:               https://nodejs.org/api/buffer.html#buffer_buffer
 //. [Descending]:           v:sanctuary-js/sanctuary-descending

@@ -1645,16 +1645,16 @@ See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Array2 for in
     function Fn($1) { return function($2) { return $.Function ([$1, $2]); }; }
 
     //  https://gist.github.com/Avaq/1f0636ec5c8d6aed2e45
-    var I = Fn (a) (a);
-    var K = Fn (a) (Fn (b) (a));
-    var A = Fn (Fn (a) (b)) (Fn (a) (b));
-    var T = Fn (a) (Fn (Fn (a) (b)) (b));
-    var W = Fn (Fn (a) (Fn (a) (b))) (Fn (a) (b));
-    var C = Fn (Fn (a) (Fn (b) (c))) (Fn (b) (Fn (a) (c)));
-    var B = Fn (Fn (b) (c)) (Fn (Fn (a) (b)) (Fn (a) (c)));
-    var S = Fn (Fn (a) (Fn (b) (c))) (Fn (Fn (a) (b)) (Fn (a) (c)));
-    var P = Fn (Fn (b) (Fn (b) (c))) (Fn (Fn (a) (b)) (Fn (a) (Fn (a) (c))));
-    var Y = Fn (Fn (a) (a)) (a);
+    const I = Fn (a) (a);
+    const K = Fn (a) (Fn (b) (a));
+    const A = Fn (Fn (a) (b)) (Fn (a) (b));
+    const T = Fn (a) (Fn (Fn (a) (b)) (b));
+    const W = Fn (Fn (a) (Fn (a) (b))) (Fn (a) (b));
+    const C = Fn (Fn (a) (Fn (b) (c))) (Fn (b) (Fn (a) (c)));
+    const B = Fn (Fn (b) (c)) (Fn (Fn (a) (b)) (Fn (a) (c)));
+    const S = Fn (Fn (a) (Fn (b) (c))) (Fn (Fn (a) (b)) (Fn (a) (c)));
+    const P = Fn (Fn (b) (Fn (b) (c))) (Fn (Fn (a) (b)) (Fn (a) (Fn (a) (c))));
+    const Y = Fn (Fn (a) (a)) (a);
 
     eq (show (I)) ('a -> a');
     eq (show (K)) ('a -> b -> a');
@@ -2241,6 +2241,7 @@ Since there is no type of which all the above values are members, the type-varia
     o2.ref = o1;
 
     const values = [
+      // eslint-disable-next-line prefer-rest-params
       [(function() { return arguments; } (1, 2, 3)), 'Arguments'],
       [new Boolean (false), ''],
       [new Date (0), 'Date'],
