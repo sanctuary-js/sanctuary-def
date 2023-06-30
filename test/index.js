@@ -87,6 +87,7 @@ suite ('env', () => {
          $.Arguments,
          $.Array ($.Unknown),
          $.Array2 ($.Unknown) ($.Unknown),
+         $.BigInt,
          $.Boolean,
          $.Buffer,
          $.Date,
@@ -1549,6 +1550,16 @@ The value at position 1 is not a member of ‘Array2 a b’.
 
 See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Array2 for information about the Array2 type constructor.
 `));
+  });
+
+  test ('provides the "BigInt" type', () => {
+    eq ($.BigInt.name) ('BigInt');
+    eq ($.BigInt.url) (`https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#BigInt`);
+    eq ($.BigInt.supertypes) ([]);
+
+    eq ($.test ([]) ($.BigInt) (1)) (false);
+    eq ($.test ([]) ($.BigInt) (1n)) (true);
+    eq ($.test ([]) ($.BigInt) (BigInt (100))) (true);
   });
 
   test ('provides the "Boolean" type', () => {
