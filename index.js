@@ -287,13 +287,13 @@
     // :: Nullable ((String -> String, String -> String -> String) -> String)
     supertypes, // :: Array Type
     test,       // :: Array Type -> Any -> Boolean
-    tuples      // :: Array (Array3 String (a -> Array b) Type)
+    tuples,     // :: Array (Array3 String (a -> Array b) Type)
   ) => {
     const t = Object.create (Type$prototype);
     t._test = test;
     t._extractors = tuples.reduce (
       (_extractors, [k, e]) => ((_extractors[k] = e, _extractors)),
-      {}
+      {},
     );
     t.arity = arity;  // number of type parameters
     t.extractors = Z.map (B (toArray), t._extractors);
@@ -306,7 +306,7 @@
           ? outer (' ') + outer ('(') + inner (k) (show (t)) + outer (')')
           : outer (' ')               + inner (k) (show (t))
         ),
-        tuples
+        tuples,
       )
     );
     t.keys = tuples.map (([k]) => k);
@@ -337,7 +337,7 @@
     (outer, inner) => '???',
     [],
     null,
-    []
+    [],
   );
 
   //  NoArguments :: Type
@@ -349,7 +349,7 @@
     (outer, inner) => '()',
     [],
     null,
-    []
+    [],
   );
 
   //  typeEq :: String -> a -> Boolean
@@ -402,7 +402,7 @@
     (outer, inner) => 'Unknown',
     [],
     env => x => true,
-    []
+    [],
   );
 
   //# Void :: Type
@@ -576,7 +576,7 @@
           .map ((t, idx) =>
             t.type === FUNCTION
             ? outer ('(') + inner (`$${idx + 1}`) (show (t)) + outer (')')
-            : inner (`$${idx + 1}`) (show (t))
+            : inner (`$${idx + 1}`) (show (t)),
           )
           .join (outer (', '))
         );
@@ -589,7 +589,7 @@
       },
       [AnyFunction],
       env => x => true,
-      types.map ((t, idx) => [`$${idx + 1}`, x => [], t])
+      types.map ((t, idx) => [`$${idx + 1}`, x => [], t]),
     )
   );
 
@@ -1033,7 +1033,7 @@
   const _determineActualTypes = (
     env,            // :: Array Type
     seen,           // :: Array Object
-    values          // :: Array Any
+    values,         // :: Array Any
   ) => {
     if (values.length === 0) return [Unknown];
 
@@ -1055,18 +1055,18 @@
           t.type === UNARY ?
             Z.map (
               fromUnaryType (t),
-              expandUnknown (env, seen$, value, t.extractors.$1, t.types.$1)
+              expandUnknown (env, seen$, value, t.extractors.$1, t.types.$1),
             ) :
           t.type === BINARY ?
             Z.lift2 (
               fromBinaryType (t),
               expandUnknown (env, seen$, value, t.extractors.$1, t.types.$1),
-              expandUnknown (env, seen$, value, t.extractors.$2, t.types.$2)
+              expandUnknown (env, seen$, value, t.extractors.$2, t.types.$2),
             ) :
           // else
             [t]
         ),
-        types
+        types,
       );
     };
     const types = values.reduce (refine, env);
@@ -1116,7 +1116,7 @@
     typeVar,        // :: Type
     index,          // :: Integer
     propPath,       // :: PropPath
-    values          // :: Array Any
+    values,         // :: Array Any
   ) => {
     const $typeVarMap = {};
     for (const typeVarName in typeVarMap) {
@@ -1152,25 +1152,25 @@
               fromUnaryType (t),
               Z.filter (
                 isConsistent,
-                expandUnknown (env, [], value, t.extractors.$1, t.types.$1)
-              )
+                expandUnknown (env, [], value, t.extractors.$1, t.types.$1),
+              ),
             ) :
           typeVar.arity === 0 && t.type === BINARY ?
             Z.lift2 (
               fromBinaryType (t),
               Z.filter (
                 isConsistent,
-                expandUnknown (env, [], value, t.extractors.$1, t.types.$1)
+                expandUnknown (env, [], value, t.extractors.$1, t.types.$1),
               ),
               Z.filter (
                 isConsistent,
-                expandUnknown (env, [], value, t.extractors.$2, t.types.$2)
-              )
+                expandUnknown (env, [], value, t.extractors.$2, t.types.$2),
+              ),
             ) :
           // else
             [t]
         ),
-        $typeVarMap[typeVar.name].types
+        $typeVarMap[typeVar.name].types,
       );
     });
 
@@ -1206,7 +1206,7 @@
     expType,        // :: Type
     index,          // :: Integer
     propPath,       // :: PropPath
-    values          // :: Array Any
+    values,         // :: Array Any
   ) => {
     const recur = satisfactoryTypes;
 
@@ -1218,7 +1218,7 @@
                         typeInfo,
                         index,
                         [...propPath, ...result.value.propPath],
-                        result.value.value)
+                        result.value.value),
         );
       }
     }
@@ -1239,8 +1239,8 @@
                     typeClasses[idx2],
                     index,
                     propPath,
-                    values[idx]
-                  )
+                    values[idx],
+                  ),
                 );
               }
             }
@@ -1263,8 +1263,8 @@
                 typeInfo,
                 index,
                 propPath,
-                typeVarMap$[typeVarName].valuesByPath
-              )
+                typeVarMap$[typeVarName].valuesByPath,
+              ),
             )
           : Z.reduce ((e, t) => (
               Z.chain (r => {
@@ -1283,7 +1283,7 @@
                       expType.types[k],
                       index,
                       [...propPath, k],
-                      [x]
+                      [x],
                     ), e)
                   ), e, Z.chain (extractor, values));
                 }, Right (r));
@@ -1300,7 +1300,7 @@
               /* istanbul ignore next */
               result.types.length > 0
               ? result.types
-              : [expType.types.$1]
+              : [expType.types.$1],
             ),
           }),
           recur (
@@ -1310,8 +1310,8 @@
             expType.types.$1,
             index,
             [...propPath, '$1'],
-            Z.chain (expType.extractors.$1, values)
-          )
+            Z.chain (expType.extractors.$1, values),
+          ),
         );
       }
       case BINARY: {
@@ -1337,8 +1337,8 @@
                 expType.types.$2,
                 index,
                 [...propPath, '$2'],
-                Z.chain (expType.extractors.$2, values)
-              )
+                Z.chain (expType.extractors.$2, values),
+              ),
             );
           },
           recur (
@@ -1348,8 +1348,8 @@
             expType.types.$1,
             index,
             [...propPath, '$1'],
-            Z.chain (expType.extractors.$1, values)
-          )
+            Z.chain (expType.extractors.$1, values),
+          ),
         );
       }
       case RECORD: {
@@ -1361,7 +1361,7 @@
             expType.types[k],
             index,
             [...propPath, k],
-            Z.chain (expType.extractors[k], values)
+            Z.chain (expType.extractors[k], values),
           ), e)
         ), Right ({typeVarMap, types: [expType]}), expType.keys);
       }
@@ -1793,7 +1793,7 @@
         for (const k in x) delete missing[k];
         return Z.size (missing) === 0;
       },
-      keys.map (k => [k, x => [x[k]], fields[k]])
+      keys.map (k => [k, x => [x[k]], fields[k]]),
     );
   };
 
@@ -1870,7 +1870,7 @@
         return Z.size (missing) === 0 &&
                keys.every (k => _test (env) (x[k]) (fields[k]));
       },
-      keys.map (k => [k, x => [x[k]], fields[k]])
+      keys.map (k => [k, x => [x[k]], fields[k]]),
     );
   };
 
@@ -2095,7 +2095,7 @@
   //.   'my-package/Semigroup',
   //.   'http://example.com/my-package#Semigroup',
   //.   [],
-  //.   x => x != null && typeof x.concat === 'function'
+  //.   x => x != null && typeof x.concat === 'function',
   //. );
   //.
   //. //    concat :: Semigroup a => a -> a -> a
@@ -2146,7 +2146,7 @@
         args.length === 0
         ? '.\n'
         : ':\n\n' + Z.foldMap (String, x => `  - ${show (x)}\n`, args)
-      }`
+      }`,
     )
   );
 
@@ -2154,15 +2154,15 @@
   const constraintsRepr = (
     constraints,    // :: StrMap (Array TypeClass)
     outer,          // :: String -> String
-    inner           // :: String -> TypeClass -> String -> String
+    inner,          // :: String -> TypeClass -> String -> String
   ) => {
     const reprs = Z.chain (
       k => (
         constraints[k].map (typeClass =>
-          inner (k) (typeClass) (`${stripNamespace (typeClass)} ${k}`)
+          inner (k) (typeClass) (`${stripNamespace (typeClass)} ${k}`),
         )
       ),
-      Object.keys (constraints)
+      Object.keys (constraints),
     );
     switch (reprs.length) {
       case 0:
@@ -2211,7 +2211,7 @@
     env,            // :: Array Type
     typeInfo,       // :: TypeInfo
     values,         // :: Array Any
-    pos             // :: Integer
+    pos,            // :: Integer
   ) => {
     const showType = showTypeWith (typeInfo.types);
     return `${
@@ -2245,7 +2245,7 @@
   const _underline = (
     t,              // :: Type
     propPath,       // :: PropPath
-    formatType3     // :: Type -> Array String -> String -> String
+    formatType3,    // :: Type -> Array String -> String -> String
   ) => (
     formatType3 (t)
                 (propPath)
@@ -2277,7 +2277,7 @@
         constraintsRepr (
           typeInfo.constraints,
           s => ' '.repeat (s.length),
-          underlineConstraint
+          underlineConstraint,
         )
       }${
         st.carets.join (' '.repeat (' -> '.length))
@@ -2287,7 +2287,7 @@
         constraintsRepr (
           typeInfo.constraints,
           s => ' '.repeat (s.length),
-          tvn => tc => s => ' '.repeat (s.length)
+          tvn => tc => s => ' '.repeat (s.length),
         )
       }${
         st.numbers.join (' '.repeat (' -> '.length))
@@ -2315,11 +2315,11 @@
     typeClass,      // :: TypeClass
     index,          // :: Integer
     propPath,       // :: PropPath
-    value           // :: Any
+    value,          // :: Any
   ) => {
     const expType = propPath.reduce (
       (t, prop) => t.types[prop],
-      typeInfo.types[index]
+      typeInfo.types[index],
     );
     return new TypeError (
       `Type-class constraint violation\n\n${
@@ -2347,7 +2347,7 @@
           } for information about the ${
             typeClass.name
           } type class.\n`
-      }`
+      }`,
     );
   };
 
@@ -2357,7 +2357,7 @@
     typeInfo,       // :: TypeInfo
     index,          // :: Integer
     propPath,       // :: PropPath
-    valuesByPath    // :: StrMap (Array Any)
+    valuesByPath,   // :: StrMap (Array Any)
   ) => {
     //  If we apply an ‘a -> a -> a -> a’ function to Left ('x'), Right (1),
     //  and Right (null) we'd like to avoid underlining the first argument
@@ -2385,7 +2385,7 @@
           keys.reduce (($valuesByPath, k) => ((
             $valuesByPath[k] = valuesByPath[k],
             $valuesByPath
-          )), {})
+          )), {}),
         )
       }\n${
         keys.reduce (({idx, s}, k) => {
@@ -2399,7 +2399,7 @@
         .s
       }` +
       'Since there is no type of which all the above values are ' +
-      'members, the type-variable constraint has been violated.\n'
+      'members, the type-variable constraint has been violated.\n',
     );
   };
 
@@ -2409,11 +2409,11 @@
     typeInfo,       // :: TypeInfo
     index,          // :: Integer
     propPath,       // :: PropPath
-    value           // :: Any
+    value,          // :: Any
   ) => {
     const t = propPath.reduce (
       (t, prop) => t.types[prop],
-      typeInfo.types[index]
+      typeInfo.types[index],
     );
     return new TypeError (
       t.type === VARIABLE &&
@@ -2432,7 +2432,7 @@
             Z.foldMap (
               String,
               t => `  - ${showTypeWith (typeInfo.types) (t)}\n`,
-              env
+              env,
             )
         }` :
       // else
@@ -2452,7 +2452,7 @@
             } ${
               t.arity > 0 ? 'type constructor' : 'type'
             }.\n`
-        }`
+        }`,
     );
   };
 
@@ -2465,7 +2465,7 @@
     typeInfo,           // :: TypeInfo
     index,              // :: Integer
     numArgsExpected,    // :: Integer
-    args                // :: Array Any
+    args,               // :: Array Any
   ) => (
     new TypeError (
       `‘${
@@ -2478,7 +2478,7 @@
                       index_ === index
                       ? t.format (
                           s => ' '.repeat (s.length),
-                          k => k === '$1' ? f : s => ' '.repeat (s.length)
+                          k => k === '$1' ? f : s => ' '.repeat (s.length),
                         )
                       : ' '.repeat (s.length))
       }\nExpected ${
@@ -2489,7 +2489,7 @@
         args.length === 0
         ? '.\n'
         : ':\n\n' + Z.foldMap (String, x => `  - ${show (x)}\n`, args)
-      }`
+      }`,
     )
   );
 
@@ -2503,7 +2503,7 @@
   const withTypeChecking = (
     env,            // :: Array Type
     typeInfo,       // :: TypeInfo
-    impl            // :: Function
+    impl,           // :: Function
   ) => {
     const n = typeInfo.types.length - 1;
 
@@ -2527,8 +2527,8 @@
                       typeInfo,
                       index,
                       propPath,
-                      typeVarMap[t.name].valuesByPath
-                    )
+                      typeVarMap[t.name].valuesByPath,
+                    ),
                   )
                 : Right (typeVarMap)
               ),
@@ -2537,7 +2537,7 @@
                                        t,
                                        index,
                                        propPath,
-                                       [x]))
+                                       [x])),
             ) :
           // else
             Z.map (
@@ -2548,7 +2548,7 @@
                                  t,
                                  index,
                                  propPath,
-                                 [x])
+                                 [x]),
             )
         );
       };
@@ -2569,11 +2569,11 @@
             (either, k, idx) => (
               Z.chain (
                 typeVarMap => checkValue (typeVarMap, index, k, args[idx]),
-                either
+                either,
               )
             ),
-            Right (typeVarMap)
-          )
+            Right (typeVarMap),
+          ),
         );
 
         const output = value.apply (this, args);
@@ -2596,14 +2596,14 @@
                            typeInfo.types[index],
                            index,
                            [],
-                           args)
+                           args),
       );
 
       const values = [..._values, ...args];
       if (index + 1 === n) {
         const value = values.reduce (
           (f, x, idx) => f (wrapFunctionCond (typeVarMap, idx, x)),
-          impl
+          impl,
         );
         ({typeVarMap} = assertRight (
           satisfactoryTypes (env,
@@ -2612,7 +2612,7 @@
                              typeInfo.types[n],
                              n,
                              [],
-                             [value])
+                             [value]),
         ));
         return wrapFunctionCond (typeVarMap, n, value);
       } else {
@@ -2633,7 +2633,7 @@
                              typeInfo.types[n],
                              n,
                              [],
-                             [value])
+                             [value]),
         );
         return wrapFunctionCond (typeVarMap, n, value);
       } :

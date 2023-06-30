@@ -3283,7 +3283,7 @@ See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#FiniteNumber 
                while (idx < xs.length && Z.lte (xs[idx], x)) idx += 1;
                xs.splice (idx, 0, x);
                return xs;
-             }, [], m)
+             }, [], m),
            );
          });
 
