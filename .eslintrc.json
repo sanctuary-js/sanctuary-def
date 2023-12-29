@@ -1,7 +1,7 @@
 {
   "root": true,
   "extends": ["./node_modules/sanctuary-style/eslint.json"],
-  "parserOptions": {"ecmaVersion": 2020},
+  "parserOptions": {"ecmaVersion": 2020, "sourceType": "module"},
   "overrides": [
     {
       "files": ["*.md"],
@@ -15,6 +15,7 @@
       "files": ["index.js"],
       "globals": {"globalThis": "readonly"},
       "rules": {
+        "comma-dangle": ["off"],
         "multiline-comment-style": ["off"]
       }
     }
