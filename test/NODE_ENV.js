@@ -1,9 +1,9 @@
-import {throws} from 'assert';
-import fs from 'fs';
-import module from 'module';
-import path from 'path';
-import url from 'url';
-import vm from 'vm';
+import {throws} from 'node:assert';
+import fs from 'node:fs';
+import module from 'node:module';
+import path from 'node:path';
+import url from 'node:url';
+import vm from 'node:vm';
 
 
 const require = module.createRequire (import.meta.url);
