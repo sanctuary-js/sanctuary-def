@@ -1,5 +1,6 @@
 'use strict';
 
+const {deepStrictEqual: eq, throws} = require ('assert');
 const util = require ('util');
 const vm = require ('vm');
 
@@ -15,9 +16,6 @@ const type = require ('sanctuary-type-identifiers');
 
 const $ = require ('..');
 const version = (require ('../package.json')).version;
-
-const eq = require ('./internal/eq');
-const throws = require ('./internal/throws');
 
 
 //    complement :: (a -> Boolean) -> a -> Boolean
@@ -82,35 +80,36 @@ def ('$26')
 suite ('env', () => {
 
   test ('is an array of types', () => {
-    eq ($.env)
-       ([$.AnyFunction,
-         $.Arguments,
-         $.Array ($.Unknown),
-         $.Array2 ($.Unknown) ($.Unknown),
-         $.Boolean,
-         $.Buffer,
-         $.Date,
-         $.Descending ($.Unknown),
-         $.Either ($.Unknown) ($.Unknown),
-         $.Error,
-         $.Fn ($.Unknown) ($.Unknown),
-         $.HtmlElement,
-         $.Identity ($.Unknown),
-         $.JsMap ($.Unknown) ($.Unknown),
-         $.JsSet ($.Unknown),
-         $.Maybe ($.Unknown),
-         $.Module,
-         $.Null,
-         $.Number,
-         $.Object,
-         $.Pair ($.Unknown) ($.Unknown),
-         $.RegExp,
-         $.StrMap ($.Unknown),
-         $.String,
-         $.Symbol,
-         $.Type,
-         $.TypeClass,
-         $.Undefined]);
+    eq ($.env, [
+      $.AnyFunction,
+      $.Arguments,
+      $.Array ($.Unknown),
+      $.Array2 ($.Unknown) ($.Unknown),
+      $.Boolean,
+      $.Buffer,
+      $.Date,
+      $.Descending ($.Unknown),
+      $.Either ($.Unknown) ($.Unknown),
+      $.Error,
+      $.Fn ($.Unknown) ($.Unknown),
+      $.HtmlElement,
+      $.Identity ($.Unknown),
+      $.JsMap ($.Unknown) ($.Unknown),
+      $.JsSet ($.Unknown),
+      $.Maybe ($.Unknown),
+      $.Module,
+      $.Null,
+      $.Number,
+      $.Object,
+      $.Pair ($.Unknown) ($.Unknown),
+      $.RegExp,
+      $.StrMap ($.Unknown),
+      $.String,
+      $.Symbol,
+      $.Type,
+      $.TypeClass,
+      $.Undefined,
+    ]);
   });
 
 });
@@ -118,13 +117,14 @@ suite ('env', () => {
 suite ('create', () => {
 
   test ('is a unary function', () => {
-    eq (typeof $.create) ('function');
-    eq ($.create.length) (1);
+    eq (typeof $.create, 'function');
+    eq ($.create.length, 1);
   });
 
   test ('type checks its arguments', () => {
-    throws (() => { $.create (true); })
-           (new TypeError (`Invalid value
+    throws (
+      () => { $.create (true); },
+      new TypeError (`Invalid value
 
 create :: { checkTypes :: Boolean, env :: Array Type } -> String -> StrMap (Array TypeClass) -> NonEmpty (Array Type) -> Function -> Function
           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -141,8 +141,9 @@ The value at position 1 is not a member of ‘{ checkTypes :: Boolean, env :: Ar
 suite ('def', () => {
 
   test ('type checks its arguments when checkTypes is true', () => {
-    throws (() => { def (null); })
-           (new TypeError (`Invalid value
+    throws (
+      () => { def (null); },
+      new TypeError (`Invalid value
 
 def :: String -> StrMap (Array TypeClass) -> NonEmpty (Array Type) -> Function -> Function
        ^^^^^^
@@ -155,8 +156,9 @@ The value at position 1 is not a member of ‘String’.
 See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#String for information about the String type.
 `));
 
-    throws (() => { def ('') (null); })
-           (new TypeError (`Invalid value
+    throws (
+      () => { def ('') (null); },
+      new TypeError (`Invalid value
 
 def :: String -> StrMap (Array TypeClass) -> NonEmpty (Array Type) -> Function -> Function
                  ^^^^^^^^^^^^^^^^^^^^^^^^
@@ -169,8 +171,9 @@ The value at position 1 is not a member of ‘StrMap (Array TypeClass)’.
 See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#StrMap for information about the StrMap type constructor.
 `));
 
-    throws (() => { def ('') ({}) ([]); })
-           (new TypeError (`Invalid value
+    throws (
+      () => { def ('') ({}) ([]); },
+      new TypeError (`Invalid value
 
 def :: String -> StrMap (Array TypeClass) -> NonEmpty (Array Type) -> Function -> Function
                                              ^^^^^^^^^^^^^^^^^^^^^
@@ -183,8 +186,9 @@ The value at position 1 is not a member of ‘NonEmpty (Array Type)’.
 See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#NonEmpty for information about the NonEmpty type constructor.
 `));
 
-    throws (() => { def ('') ({}) ([1, 2, 3]); })
-           (new TypeError (`Invalid value
+    throws (
+      () => { def ('') ({}) ([1, 2, 3]); },
+      new TypeError (`Invalid value
 
 def :: String -> StrMap (Array TypeClass) -> NonEmpty (Array Type) -> Function -> Function
                                                              ^^^^
@@ -197,8 +201,9 @@ The value at position 1 is not a member of ‘Type’.
 See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Type for information about the Type type.
 `));
 
-    throws (() => { def ('') ({}) ([$.Null]) (null); })
-           (new TypeError (`Invalid value
+    throws (
+      () => { def ('') ({}) ([$.Null]) (null); },
+      new TypeError (`Invalid value
 
 def :: String -> StrMap (Array TypeClass) -> NonEmpty (Array Type) -> Function -> Function
                                                                       ^^^^^^^^
@@ -222,18 +227,18 @@ See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Function for 
         ([$.Number, $.Number, $.Number])
         (x => y => x + y);
 
-    eq (add (42) (1)) (43);
-    eq (add (1) (2, 3, 4)) (3);
-    eq (add ('XXX') ({foo: 42})) ('XXX[object Object]');
-    eq (add ({foo: 42}) ('XXX')) ('[object Object]XXX');
+    eq (add (42) (1), 43);
+    eq (add (1) (2, 3, 4), 3);
+    eq (add ('XXX') ({foo: 42}), 'XXX[object Object]');
+    eq (add ({foo: 42}) ('XXX'), '[object Object]XXX');
   });
 
   test ('returns a function whose length is zero or one', () => {
-    eq ($0.length) (0);
-    eq ($1.length) (1);
-    eq ($2.length) (1);
-    eq ($3.length) (1);
-    eq ($26.length) (1);
+    eq ($0.length, 0);
+    eq ($1.length, 1);
+    eq ($2.length, 1);
+    eq ($3.length, 1);
+    eq ($26.length, 1);
   });
 
   test ('returns a function with "inspect" and "@@show" methods', () => {
@@ -244,28 +249,29 @@ See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Function for 
         ([$.Number, $.Number, $.Number])
         (x => y => x + y);
 
-    eq (util.inspect (add)) ('add :: Number -> Number -> Number');
-    eq (show (add)) ('add :: Number -> Number -> Number');
+    eq (util.inspect (add), 'add :: Number -> Number -> Number');
+    eq (show (add), 'add :: Number -> Number -> Number');
 
-    eq (show ($0)) ('$0 :: () -> Array a');
-    eq (show ($1)) ('$1 :: a -> Array a');
-    eq (show ($2)) ('$2 :: a -> a -> Array a');
-    eq (show ($3)) ('$3 :: a -> a -> a -> Array a');
-    eq (show ($26)) ('$26 :: a -> a -> a -> a -> a -> a -> a -> a -> a -> a -> a -> a -> a -> a -> a -> a -> a -> a -> a -> a -> a -> a -> a -> a -> a -> a -> Array a');
+    eq (show ($0), '$0 :: () -> Array a');
+    eq (show ($1), '$1 :: a -> Array a');
+    eq (show ($2), '$2 :: a -> a -> Array a');
+    eq (show ($3), '$3 :: a -> a -> a -> Array a');
+    eq (show ($26), '$26 :: a -> a -> a -> a -> a -> a -> a -> a -> a -> a -> a -> a -> a -> a -> a -> a -> a -> a -> a -> a -> a -> a -> a -> a -> a -> a -> Array a');
   });
 
   test ('returns a curried function', () => {
-    eq ($0 ()) ([]);
-    eq ($1 (1)) ([1]);
-    eq ($2 (1) (2)) ([1, 2]);
-    eq ($3 (1) (2) (3)) ([1, 2, 3]);
-    eq ($26 (1) (2) (3) (4) (5) (6) (7) (8) (9) (10) (11) (12) (13) (14) (15) (16) (17) (18) (19) (20) (21) (22) (23) (24) (25) (26))
-       ([1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26]);
+    eq ($0 (), []);
+    eq ($1 (1), [1]);
+    eq ($2 (1) (2), [1, 2]);
+    eq ($3 (1) (2) (3), [1, 2, 3]);
+    eq ($26 (1) (2) (3) (4) (5) (6) (7) (8) (9) (10) (11) (12) (13) (14) (15) (16) (17) (18) (19) (20) (21) (22) (23) (24) (25) (26),
+        [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26]);
   });
 
   test ('returns a function which throws if given too many args', () => {
-    throws (() => { $0 (1); })
-           (new TypeError (`‘$0’ applied to the wrong number of arguments
+    throws (
+      () => { $0 (1); },
+      new TypeError (`‘$0’ applied to the wrong number of arguments
 
 $0 :: () -> Array a
       ^^
@@ -276,8 +282,9 @@ Expected zero arguments but received one argument:
   - 1
 `));
 
-    throws (() => { $1 (1, 2); })
-           (new TypeError (`‘$1’ applied to the wrong number of arguments
+    throws (
+      () => { $1 (1, 2); },
+      new TypeError (`‘$1’ applied to the wrong number of arguments
 
 $1 :: a -> Array a
       ^
@@ -289,8 +296,9 @@ Expected one argument but received two arguments:
   - 2
 `));
 
-    throws (() => { $2 (1, 2, 3, 4, 5, 6, 7, 8, 9, 10); })
-           (new TypeError (`‘$2’ applied to the wrong number of arguments
+    throws (
+      () => { $2 (1, 2, 3, 4, 5, 6, 7, 8, 9, 10); },
+      new TypeError (`‘$2’ applied to the wrong number of arguments
 
 $2 :: a -> a -> Array a
       ^
@@ -327,8 +335,9 @@ Expected one argument but received 10 arguments:
           $.Array ($.Number)])
         (_1 => _2 => _3 => _4 => _5 => _6 => _7 => _8 => _9 => [_1, _2, _3, _4, _5, _6, _7, _8, _9]);
 
-    throws (() => { $9 ('X'); })
-           (new TypeError (`Invalid value
+    throws (
+      () => { $9 ('X'); },
+      new TypeError (`Invalid value
 
 $9 :: Number -> Number -> Number -> Number -> Number -> Number -> Number -> Number -> Number -> Array Number
       ^^^^^^
@@ -341,8 +350,9 @@ The value at position 1 is not a member of ‘Number’.
 See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Number for information about the Number type.
 `));
 
-    throws (() => { $9 (1) ('X'); })
-           (new TypeError (`Invalid value
+    throws (
+      () => { $9 (1) ('X'); },
+      new TypeError (`Invalid value
 
 $9 :: Number -> Number -> Number -> Number -> Number -> Number -> Number -> Number -> Number -> Array Number
                 ^^^^^^
@@ -355,8 +365,9 @@ The value at position 1 is not a member of ‘Number’.
 See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Number for information about the Number type.
 `));
 
-    throws (() => { $9 (1) (2) ('X'); })
-           (new TypeError (`Invalid value
+    throws (
+      () => { $9 (1) (2) ('X'); },
+      new TypeError (`Invalid value
 
 $9 :: Number -> Number -> Number -> Number -> Number -> Number -> Number -> Number -> Number -> Array Number
                           ^^^^^^
@@ -369,8 +380,9 @@ The value at position 1 is not a member of ‘Number’.
 See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Number for information about the Number type.
 `));
 
-    throws (() => { $9 (1) (2) (3) ('X'); })
-           (new TypeError (`Invalid value
+    throws (
+      () => { $9 (1) (2) (3) ('X'); },
+      new TypeError (`Invalid value
 
 $9 :: Number -> Number -> Number -> Number -> Number -> Number -> Number -> Number -> Number -> Array Number
                                     ^^^^^^
@@ -383,8 +395,9 @@ The value at position 1 is not a member of ‘Number’.
 See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Number for information about the Number type.
 `));
 
-    throws (() => { $9 (1) (2) (3) (4) ('X'); })
-           (new TypeError (`Invalid value
+    throws (
+      () => { $9 (1) (2) (3) (4) ('X'); },
+      new TypeError (`Invalid value
 
 $9 :: Number -> Number -> Number -> Number -> Number -> Number -> Number -> Number -> Number -> Array Number
                                               ^^^^^^
@@ -397,8 +410,9 @@ The value at position 1 is not a member of ‘Number’.
 See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Number for information about the Number type.
 `));
 
-    throws (() => { $9 (1) (2) (3) (4) (5) ('X'); })
-           (new TypeError (`Invalid value
+    throws (
+      () => { $9 (1) (2) (3) (4) (5) ('X'); },
+      new TypeError (`Invalid value
 
 $9 :: Number -> Number -> Number -> Number -> Number -> Number -> Number -> Number -> Number -> Array Number
                                                         ^^^^^^
@@ -411,8 +425,9 @@ The value at position 1 is not a member of ‘Number’.
 See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Number for information about the Number type.
 `));
 
-    throws (() => { $9 (1) (2) (3) (4) (5) (6) ('X'); })
-           (new TypeError (`Invalid value
+    throws (
+      () => { $9 (1) (2) (3) (4) (5) (6) ('X'); },
+      new TypeError (`Invalid value
 
 $9 :: Number -> Number -> Number -> Number -> Number -> Number -> Number -> Number -> Number -> Array Number
                                                                   ^^^^^^
@@ -425,8 +440,9 @@ The value at position 1 is not a member of ‘Number’.
 See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Number for information about the Number type.
 `));
 
-    throws (() => { $9 (1) (2) (3) (4) (5) (6) (7) ('X'); })
-           (new TypeError (`Invalid value
+    throws (
+      () => { $9 (1) (2) (3) (4) (5) (6) (7) ('X'); },
+      new TypeError (`Invalid value
 
 $9 :: Number -> Number -> Number -> Number -> Number -> Number -> Number -> Number -> Number -> Array Number
                                                                             ^^^^^^
@@ -439,8 +455,9 @@ The value at position 1 is not a member of ‘Number’.
 See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Number for information about the Number type.
 `));
 
-    throws (() => { $9 (1) (2) (3) (4) (5) (6) (7) (8) ('X'); })
-           (new TypeError (`Invalid value
+    throws (
+      () => { $9 (1) (2) (3) (4) (5) (6) (7) (8) ('X'); },
+      new TypeError (`Invalid value
 
 $9 :: Number -> Number -> Number -> Number -> Number -> Number -> Number -> Number -> Number -> Array Number
                                                                                       ^^^^^^
@@ -453,7 +470,7 @@ The value at position 1 is not a member of ‘Number’.
 See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Number for information about the Number type.
 `));
 
-    eq ($9 (1) (2) (3) (4) (5) (6) (7) (8) (9)) ([1, 2, 3, 4, 5, 6, 7, 8, 9]);
+    eq ($9 (1) (2) (3) (4) (5) (6) (7) (8) (9), [1, 2, 3, 4, 5, 6, 7, 8, 9]);
   });
 
   test ('reports type error correctly for null/undefined', () => {
@@ -464,10 +481,11 @@ See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Number for in
         ([$.Number, $.Number])
         (Math.sqrt);
 
-    eq (sqrt (25)) (5);
+    eq (sqrt (25), 5);
 
-    throws (() => { sqrt (null); })
-           (new TypeError (`Invalid value
+    throws (
+      () => { sqrt (null); },
+      new TypeError (`Invalid value
 
 sqrt :: Number -> Number
         ^^^^^^
@@ -480,8 +498,9 @@ The value at position 1 is not a member of ‘Number’.
 See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Number for information about the Number type.
 `));
 
-    throws (() => { sqrt (undefined); })
-           (new TypeError (`Invalid value
+    throws (
+      () => { sqrt (undefined); },
+      new TypeError (`Invalid value
 
 sqrt :: Number -> Number
         ^^^^^^
@@ -531,8 +550,9 @@ See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Number for in
         ([a, b, $.Either ($.Array ($.Array (a))) ($.Array (b)), a])
         (x => y => z => x);
 
-    throws (() => { a00 (1) ('a'); })
-           (new TypeError (`Type-variable constraint violation
+    throws (
+      () => { a00 (1) ('a'); },
+      new TypeError (`Type-variable constraint violation
 
 a00 :: a -> a -> a
        ^    ^
@@ -545,8 +565,9 @@ a00 :: a -> a -> a
 Since there is no type of which all the above values are members, the type-variable constraint has been violated.
 `));
 
-    throws (() => { a00 (1) (['a']); })
-           (new TypeError (`Type-variable constraint violation
+    throws (
+      () => { a00 (1) (['a']); },
+      new TypeError (`Type-variable constraint violation
 
 a00 :: a -> a -> a
        ^    ^
@@ -559,8 +580,9 @@ a00 :: a -> a -> a
 Since there is no type of which all the above values are members, the type-variable constraint has been violated.
 `));
 
-    throws (() => { a00 (1) (Just (1)); })
-           (new TypeError (`Type-variable constraint violation
+    throws (
+      () => { a00 (1) (Just (1)); },
+      new TypeError (`Type-variable constraint violation
 
 a00 :: a -> a -> a
        ^    ^
@@ -573,8 +595,9 @@ a00 :: a -> a -> a
 Since there is no type of which all the above values are members, the type-variable constraint has been violated.
 `));
 
-    throws (() => { a01 (1) (['a', 'b']); })
-           (new TypeError (`Type-variable constraint violation
+    throws (
+      () => { a01 (1) (['a', 'b']); },
+      new TypeError (`Type-variable constraint violation
 
 a01 :: a -> Array a -> a
        ^          ^
@@ -588,8 +611,9 @@ a01 :: a -> Array a -> a
 Since there is no type of which all the above values are members, the type-variable constraint has been violated.
 `));
 
-    throws (() => { a01 ([1, 2]) ([1, 2, 3, 4]); })
-           (new TypeError (`Type-variable constraint violation
+    throws (
+      () => { a01 ([1, 2]) ([1, 2, 3, 4]); },
+      new TypeError (`Type-variable constraint violation
 
 a01 :: a -> Array a -> a
        ^          ^
@@ -605,8 +629,9 @@ a01 :: a -> Array a -> a
 Since there is no type of which all the above values are members, the type-variable constraint has been violated.
 `));
 
-    throws (() => { a01 ([1, 2]) ([['a', 'b'], ['c', 'd']]); })
-           (new TypeError (`Type-variable constraint violation
+    throws (
+      () => { a01 ([1, 2]) ([['a', 'b'], ['c', 'd']]); },
+      new TypeError (`Type-variable constraint violation
 
 a01 :: a -> Array a -> a
        ^          ^
@@ -620,8 +645,9 @@ a01 :: a -> Array a -> a
 Since there is no type of which all the above values are members, the type-variable constraint has been violated.
 `));
 
-    throws (() => { a01 ([[1, 2], [3, 4]]) ([[1, 2], [3, 4]]); })
-           (new TypeError (`Type-variable constraint violation
+    throws (
+      () => { a01 ([[1, 2], [3, 4]]) ([[1, 2], [3, 4]]); },
+      new TypeError (`Type-variable constraint violation
 
 a01 :: a -> Array a -> a
        ^          ^
@@ -635,8 +661,9 @@ a01 :: a -> Array a -> a
 Since there is no type of which all the above values are members, the type-variable constraint has been violated.
 `));
 
-    throws (() => { a02 ([1, 2]) ([[1, 2], [3, 4, 5, 6]]); })
-           (new TypeError (`Type-variable constraint violation
+    throws (
+      () => { a02 ([1, 2]) ([[1, 2], [3, 4, 5, 6]]); },
+      new TypeError (`Type-variable constraint violation
 
 a02 :: a -> Array (Array a) -> a
        ^                 ^
@@ -654,8 +681,9 @@ a02 :: a -> Array (Array a) -> a
 Since there is no type of which all the above values are members, the type-variable constraint has been violated.
 `));
 
-    throws (() => { ab02e (1) ('x') ([[Left ('a'), Left ('b')], [Left ('c'), Left ('d')]]); })
-           (new TypeError (`Type-variable constraint violation
+    throws (
+      () => { ab02e (1) ('x') ([[Left ('a'), Left ('b')], [Left ('c'), Left ('d')]]); },
+      new TypeError (`Type-variable constraint violation
 
 ab02e :: a -> b -> Array (Array (Either a b)) -> a
          ^                              ^
@@ -671,8 +699,9 @@ ab02e :: a -> b -> Array (Array (Either a b)) -> a
 Since there is no type of which all the above values are members, the type-variable constraint has been violated.
 `));
 
-    throws (() => { ab02e (1) ('x') ([[Right (1), Right (2)], [Right (3), Right (4)]]); })
-           (new TypeError (`Type-variable constraint violation
+    throws (
+      () => { ab02e (1) ('x') ([[Right (1), Right (2)], [Right (3), Right (4)]]); },
+      new TypeError (`Type-variable constraint violation
 
 ab02e :: a -> b -> Array (Array (Either a b)) -> a
               ^                           ^
@@ -688,8 +717,9 @@ ab02e :: a -> b -> Array (Array (Either a b)) -> a
 Since there is no type of which all the above values are members, the type-variable constraint has been violated.
 `));
 
-    throws (() => { ab0e21 (1) ('x') (Left ([['a', 'b'], ['c', 'd']])); })
-           (new TypeError (`Type-variable constraint violation
+    throws (
+      () => { ab0e21 (1) ('x') (Left ([['a', 'b'], ['c', 'd']])); },
+      new TypeError (`Type-variable constraint violation
 
 ab0e21 :: a -> b -> Either (Array (Array a)) (Array b) -> a
           ^                              ^
@@ -705,8 +735,9 @@ ab0e21 :: a -> b -> Either (Array (Array a)) (Array b) -> a
 Since there is no type of which all the above values are members, the type-variable constraint has been violated.
 `));
 
-    throws (() => { ab0e21 (1) ('x') (Right ([1, 2])); })
-           (new TypeError (`Type-variable constraint violation
+    throws (
+      () => { ab0e21 (1) ('x') (Right ([1, 2])); },
+      new TypeError (`Type-variable constraint violation
 
 ab0e21 :: a -> b -> Either (Array (Array a)) (Array b) -> a
                ^                                    ^
@@ -732,8 +763,9 @@ Since there is no type of which all the above values are members, the type-varia
         ([a, a])
         (x => x);
 
-    throws (() => { id (/xxx/); })
-           (new TypeError (`Unrecognized value
+    throws (
+      () => { id (/xxx/); },
+      new TypeError (`Unrecognized value
 
 id :: a -> a
       ^
@@ -756,8 +788,9 @@ The environment is empty! Polymorphic functions require a non-empty environment.
         ([a, a])
         (x => x);
 
-    throws (() => { id (/xxx/); })
-           (new TypeError (`Unrecognized value
+    throws (
+      () => { id (/xxx/); },
+      new TypeError (`Unrecognized value
 
 id :: a -> a
       ^
@@ -784,8 +817,9 @@ The environment contains the following types:
         ([$.Number, $.Number, $.Number])
         (x => y => 'XXX');
 
-    throws (() => { add (2) (2); })
-           (new TypeError (`Invalid value
+    throws (
+      () => { add (2) (2); },
+      new TypeError (`Invalid value
 
 add :: Number -> Number -> Number
                            ^^^^^^
@@ -807,12 +841,13 @@ See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Number for in
         ([a, $.Fn (a) ($.Boolean)])
         (y => x => x < y);
 
-    eq (lt (1) (0)) (true);
-    eq (lt (1) (1)) (false);
-    eq (lt (1) (2)) (false);
+    eq (lt (1) (0), true);
+    eq (lt (1) (1), false);
+    eq (lt (1) (2), false);
 
-    throws (() => { lt (123) ('abc'); })
-           (new TypeError (`Type-variable constraint violation
+    throws (
+      () => { lt (123) ('abc'); },
+      new TypeError (`Type-variable constraint violation
 
 lt :: Ord a => a -> (a -> Boolean)
                ^     ^
@@ -834,8 +869,8 @@ Since there is no type of which all the above values are members, the type-varia
         ([$.Date, $.Date])
         (date => new Date (date.valueOf () + 1));
 
-    eq (inc (new Date (42))) (new Date (43));
-    eq (inc (vm.runInNewContext ('new Date(42)'))) (new Date (43));
+    eq (inc (new Date (42)), new Date (43));
+    eq (inc (vm.runInNewContext ('new Date(42)')), new Date (43));
 
     //    length :: Array String -> Number
     const length =
@@ -844,8 +879,8 @@ Since there is no type of which all the above values are members, the type-varia
         ([$.Array ($.String), $.Number])
         (xs => xs.length);
 
-    eq (length (['foo', 'bar', 'baz'])) (3);
-    eq (length (vm.runInNewContext ('["foo", "bar", "baz"]'))) (3);
+    eq (length (['foo', 'bar', 'baz']), 3);
+    eq (length (vm.runInNewContext ('["foo", "bar", "baz"]')), 3);
   });
 
   test ('accommodates circular references', () => {
@@ -861,13 +896,14 @@ Since there is no type of which all the above values are members, the type-varia
     x.y = y;
     y.x = x;
 
-    eq (id (x)) (x);
+    eq (id (x), x);
 
     const z = [];
     z.push (z);
 
-    throws (() => { id (z); })
-           (new TypeError (`Type-variable constraint violation
+    throws (
+      () => { id (z); },
+      new TypeError (`Type-variable constraint violation
 
 id :: a -> a
       ^
@@ -887,8 +923,9 @@ Since there is no type of which all the above values are members, the type-varia
         ([a, $.Maybe (a), a])
         (x => maybe => maybe.isJust ? maybe.value : x);
 
-    throws (() => { fromMaybe ('x') (Just (null)); })
-           (new TypeError (`Type-variable constraint violation
+    throws (
+      () => { fromMaybe ('x') (Just (null)); },
+      new TypeError (`Type-variable constraint violation
 
 fromMaybe :: a -> Maybe a -> a
              ^          ^
@@ -903,9 +940,9 @@ Since there is no type of which all the above values are members, the type-varia
   });
 
   test ('supports enumerated types', () => {
-    eq (typeof $.EnumType) ('function');
-    eq ($.EnumType.length) (1);
-    eq (show ($.EnumType)) ('EnumType :: String -> String -> Array Any -> Type');
+    eq (typeof $.EnumType, 'function');
+    eq ($.EnumType.length, 1);
+    eq (show ($.EnumType), 'EnumType :: String -> String -> Array Any -> Type');
 
     //    TimeUnit :: Type
     const TimeUnit = $.EnumType
@@ -929,8 +966,9 @@ Since there is no type of which all the above values are members, the type-varia
            };
          });
 
-    throws (() => { convertTo ('days') (new Date (0)); })
-           (new TypeError (`Invalid value
+    throws (
+      () => { convertTo ('days') (new Date (0)); },
+      new TypeError (`Invalid value
 
 convertTo :: TimeUnit -> ValidDate -> ValidNumber
              ^^^^^^^^
@@ -941,7 +979,7 @@ convertTo :: TimeUnit -> ValidDate -> ValidNumber
 The value at position 1 is not a member of ‘TimeUnit’.
 `));
 
-    eq (convertTo ('seconds') (new Date (1000))) (1);
+    eq (convertTo ('seconds') (new Date (1000)), 1);
 
     //    SillyType :: Type
     const SillyType = $.EnumType
@@ -959,17 +997,18 @@ The value at position 1 is not a member of ‘TimeUnit’.
          ([a, a])
          (x => x);
 
-    eq (id ('foo')) ('foo');
-    eq (id ('bar')) ('bar');
-    eq (id (true)) (true);
-    eq (id (false)) (false);
-    eq (id (42)) (42);
-    eq (id (-42)) (-42);
+    eq (id ('foo'), 'foo');
+    eq (id ('bar'), 'bar');
+    eq (id (true), true);
+    eq (id (false), false);
+    eq (id (42), 42);
+    eq (id (-42), -42);
 
-    eq (id (['foo', true, 42])) (['foo', true, 42]);
+    eq (id (['foo', true, 42]), ['foo', true, 42]);
 
-    throws (() => { id (['foo', false, 42]); })
-           (new TypeError (`Type-variable constraint violation
+    throws (
+      () => { id (['foo', false, 42]); },
+      new TypeError (`Type-variable constraint violation
 
 id :: a -> a
       ^
@@ -982,47 +1021,47 @@ Since there is no type of which all the above values are members, the type-varia
   });
 
   test ('supports anonymous record types', () => {
-    eq (typeof $.RecordType) ('function');
-    eq ($.RecordType.length) (1);
-    eq (show ($.RecordType)) ('RecordType :: StrMap Type -> Type');
-    eq (show ($.RecordType ({}))) ('{}');
-    eq (show ($.RecordType ({x: $.Number}))) ('{ x :: Number }');
-    eq (show ($.RecordType ({x: $.Number, y: $.Number}))) ('{ x :: Number, y :: Number }');
-    eq (show ($.RecordType ({_ABC: $.Number, $123: $.Number}))) ('{ _ABC :: Number, $123 :: Number }');
-    eq (show ($.RecordType ({0: $.Number, 1: $.Number}))) ('{ "0" :: Number, "1" :: Number }');
-    eq (show ($.RecordType ({'foo-bar': $.Number}))) ('{ "foo-bar" :: Number }');
-    eq (show ($.RecordType ({'foo bar': $.Number}))) ('{ "foo bar" :: Number }');
-    eq (show ($.RecordType ({'x "y" z': $.Number}))) ('{ "x \\"y\\" z" :: Number }');
+    eq (typeof $.RecordType, 'function');
+    eq ($.RecordType.length, 1);
+    eq (show ($.RecordType), 'RecordType :: StrMap Type -> Type');
+    eq (show ($.RecordType ({})), '{}');
+    eq (show ($.RecordType ({x: $.Number})), '{ x :: Number }');
+    eq (show ($.RecordType ({x: $.Number, y: $.Number})), '{ x :: Number, y :: Number }');
+    eq (show ($.RecordType ({_ABC: $.Number, $123: $.Number})), '{ _ABC :: Number, $123 :: Number }');
+    eq (show ($.RecordType ({0: $.Number, 1: $.Number})), '{ "0" :: Number, "1" :: Number }');
+    eq (show ($.RecordType ({'foo-bar': $.Number})), '{ "foo-bar" :: Number }');
+    eq (show ($.RecordType ({'foo bar': $.Number})), '{ "foo bar" :: Number }');
+    eq (show ($.RecordType ({'x "y" z': $.Number})), '{ "x \\"y\\" z" :: Number }');
 
     //  Field ordering:
-    eq (show ($.RecordType ({foo: $.Number, bar: $.Number}))) ('{ foo :: Number, bar :: Number }');
-    eq (show ($.RecordType ({bar: $.Number, foo: $.Number}))) ('{ bar :: Number, foo :: Number }');
+    eq (show ($.RecordType ({foo: $.Number, bar: $.Number})), '{ foo :: Number, bar :: Number }');
+    eq (show ($.RecordType ({bar: $.Number, foo: $.Number})), '{ bar :: Number, foo :: Number }');
 
     const pred = $.test ([]) ($.RecordType ({x: $.Number}));
 
     //  Own properties:
-    eq (pred ({x: 0})) (true);
-    eq (pred (Object.defineProperty ({}, 'x', {value: 0, enumerable: true}))) (true);
-    eq (pred (Object.defineProperty ({}, 'x', {value: 0, enumerable: false}))) (false);
+    eq (pred ({x: 0}), true);
+    eq (pred (Object.defineProperty ({}, 'x', {value: 0, enumerable: true})), true);
+    eq (pred (Object.defineProperty ({}, 'x', {value: 0, enumerable: false})), false);
 
     //  Inherited properties:
-    eq (pred (Object.create ({x: 0}))) (true);
-    eq (pred (Object.create (Object.defineProperty ({}, 'x', {value: 0, enumerable: true})))) (true);
-    eq (pred (Object.create (Object.defineProperty ({}, 'x', {value: 0, enumerable: false})))) (false);
+    eq (pred (Object.create ({x: 0})), true);
+    eq (pred (Object.create (Object.defineProperty ({}, 'x', {value: 0, enumerable: true}))), true);
+    eq (pred (Object.create (Object.defineProperty ({}, 'x', {value: 0, enumerable: false}))), false);
 
     //    Empty :: Type
     const Empty = $.RecordType ({});
 
-    eq ($.test ([]) (Empty) (null)) (false);
-    eq ($.test ([]) (Empty) (undefined)) (false);
-    eq ($.test ([]) (Empty) (false)) (true);
-    eq ($.test ([]) (Empty) (12.34)) (true);
-    eq ($.test ([]) (Empty) ('xyz')) (true);
-    eq ($.test ([]) (Empty) (new Boolean (true))) (true);
-    eq ($.test ([]) (Empty) (new Number (12.34))) (true);
-    eq ($.test ([]) (Empty) (new String ('xyz'))) (true);
-    eq ($.test ([]) (Empty) ([])) (true);
-    eq ($.test ([]) (Empty) ({})) (true);
+    eq ($.test ([]) (Empty) (null), false);
+    eq ($.test ([]) (Empty) (undefined), false);
+    eq ($.test ([]) (Empty) (false), true);
+    eq ($.test ([]) (Empty) (12.34), true);
+    eq ($.test ([]) (Empty) ('xyz'), true);
+    eq ($.test ([]) (Empty) (new Boolean (true)), true);
+    eq ($.test ([]) (Empty) (new Number (12.34)), true);
+    eq ($.test ([]) (Empty) (new String ('xyz')), true);
+    eq ($.test ([]) (Empty) ([]), true);
+    eq ($.test ([]) (Empty) ({}), true);
 
     //    Point :: Type
     const Point = $.RecordType ({x: $.Number, y: $.Number});
@@ -1045,16 +1084,17 @@ Since there is no type of which all the above values are members, the type-varia
         ([Line, $.Number])
         (line => dist (line.start) (line.end));
 
-    eq (dist ({x: 0, y: 0}) ({x: 0, y: 0})) (0);
-    eq (dist ({x: 0, y: 0}) ({x: 0, y: 0, color: 'red'})) (0);
-    eq (dist ({x: 1, y: 1}) ({x: 4, y: 5})) (5);
-    eq (dist ({x: 1, y: 1}) ({x: 4, y: 5, color: 'red'})) (5);
+    eq (dist ({x: 0, y: 0}) ({x: 0, y: 0}), 0);
+    eq (dist ({x: 0, y: 0}) ({x: 0, y: 0, color: 'red'}), 0);
+    eq (dist ({x: 1, y: 1}) ({x: 4, y: 5}), 5);
+    eq (dist ({x: 1, y: 1}) ({x: 4, y: 5, color: 'red'}), 5);
 
-    eq (length ({start: {x: 1, y: 1}, end: {x: 4, y: 5}})) (5);
-    eq (length ({start: {x: 1, y: 1}, end: {x: 4, y: 5, color: 'red'}})) (5);
+    eq (length ({start: {x: 1, y: 1}, end: {x: 4, y: 5}}), 5);
+    eq (length ({start: {x: 1, y: 1}, end: {x: 4, y: 5, color: 'red'}}), 5);
 
-    throws (() => { dist (null); })
-           (new TypeError (`Invalid value
+    throws (
+      () => { dist (null); },
+      new TypeError (`Invalid value
 
 dist :: { x :: Number, y :: Number } -> { x :: Number, y :: Number } -> Number
         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -1065,8 +1105,9 @@ dist :: { x :: Number, y :: Number } -> { x :: Number, y :: Number } -> Number
 The value at position 1 is not a member of ‘{ x :: Number, y :: Number }’.
 `));
 
-    throws (() => { dist ({}); })
-           (new TypeError (`Invalid value
+    throws (
+      () => { dist ({}); },
+      new TypeError (`Invalid value
 
 dist :: { x :: Number, y :: Number } -> { x :: Number, y :: Number } -> Number
         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -1077,8 +1118,9 @@ dist :: { x :: Number, y :: Number } -> { x :: Number, y :: Number } -> Number
 The value at position 1 is not a member of ‘{ x :: Number, y :: Number }’.
 `));
 
-    throws (() => { dist ({x: 0}); })
-           (new TypeError (`Invalid value
+    throws (
+      () => { dist ({x: 0}); },
+      new TypeError (`Invalid value
 
 dist :: { x :: Number, y :: Number } -> { x :: Number, y :: Number } -> Number
         ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -1089,8 +1131,9 @@ dist :: { x :: Number, y :: Number } -> { x :: Number, y :: Number } -> Number
 The value at position 1 is not a member of ‘{ x :: Number, y :: Number }’.
 `));
 
-    throws (() => { dist ({x: 0, y: null}); })
-           (new TypeError (`Invalid value
+    throws (
+      () => { dist ({x: 0, y: null}); },
+      new TypeError (`Invalid value
 
 dist :: { x :: Number, y :: Number } -> { x :: Number, y :: Number } -> Number
                             ^^^^^^
@@ -1103,8 +1146,9 @@ The value at position 1 is not a member of ‘Number’.
 See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Number for information about the Number type.
 `));
 
-    throws (() => { length ({start: 0, end: 0}); })
-           (new TypeError (`Invalid value
+    throws (
+      () => { length ({start: 0, end: 0}); },
+      new TypeError (`Invalid value
 
 length :: { start :: { x :: Number, y :: Number }, end :: { x :: Number, y :: Number } } -> Number
                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -1115,8 +1159,9 @@ length :: { start :: { x :: Number, y :: Number }, end :: { x :: Number, y :: Nu
 The value at position 1 is not a member of ‘{ x :: Number, y :: Number }’.
 `));
 
-    throws (() => { length ({start: {x: 0, y: 0}, end: {x: null, y: null}}); })
-           (new TypeError (`Invalid value
+    throws (
+      () => { length ({start: {x: 0, y: 0}, end: {x: null, y: null}}); },
+      new TypeError (`Invalid value
 
 length :: { start :: { x :: Number, y :: Number }, end :: { x :: Number, y :: Number } } -> Number
                                                                  ^^^^^^
@@ -1136,10 +1181,11 @@ See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Number for in
         ([a, a])
         (x => x);
 
-    eq (id ([{x: 0, y: 0}, {x: 1, y: 1}])) ([{x: 0, y: 0}, {x: 1, y: 1}]);
+    eq (id ([{x: 0, y: 0}, {x: 1, y: 1}]), [{x: 0, y: 0}, {x: 1, y: 1}]);
 
-    throws (() => { $.RecordType ({x: /XXX/, y: /XXX/, z: $.Any}); })
-           (new TypeError (`Invalid value
+    throws (
+      () => { $.RecordType ({x: /XXX/, y: /XXX/, z: $.Any}); },
+      new TypeError (`Invalid value
 
 RecordType :: StrMap Type -> Type
                      ^^^^
@@ -1162,10 +1208,11 @@ See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Type for info
         ([Foo, Foo])
         (foo => foo);
 
-    eq (foo ({x: 1, y: 2, z: 3})) ({x: 1, y: 2, z: 3});
+    eq (foo ({x: 1, y: 2, z: 3}), {x: 1, y: 2, z: 3});
 
-    throws (() => { foo ({x: 'abc', y: 123}); })
-           (new TypeError (`Type-variable constraint violation
+    throws (
+      () => { foo ({x: 'abc', y: 123}); },
+      new TypeError (`Type-variable constraint violation
 
 foo :: { x :: a, y :: a } -> { x :: a, y :: a }
               ^       ^
@@ -1185,10 +1232,11 @@ Since there is no type of which all the above values are members, the type-varia
         ([$.RecordType ({'foo "bar" baz': $.Number}), $.Number])
         (r => r['foo "bar" baz']);
 
-    eq (fooBarBaz ({'foo "bar" baz': 42})) (42);
+    eq (fooBarBaz ({'foo "bar" baz': 42}), 42);
 
-    throws (() => { fooBarBaz ({'foo "bar" baz': null}); })
-           (new TypeError (`Invalid value
+    throws (
+      () => { fooBarBaz ({'foo "bar" baz': null}); },
+      new TypeError (`Invalid value
 
 fooBarBaz :: { "foo \\"bar\\" baz" :: Number } -> Number
                                     ^^^^^^
@@ -1211,11 +1259,12 @@ See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Number for in
                      ([$.RecordType (singleton (name) (a)), a])
                      (r => r[name]));
 
-    eq (prop ('x') ({x: 1, y: 2})) (1);
-    eq (prop ('y') ({x: 1, y: 2})) (2);
+    eq (prop ('x') ({x: 1, y: 2}), 1);
+    eq (prop ('y') ({x: 1, y: 2}), 2);
 
-    throws (() => { prop ('z') ({x: 1, y: 2}); })
-           (new TypeError (`Invalid value
+    throws (
+      () => { prop ('z') ({x: 1, y: 2}); },
+      new TypeError (`Invalid value
 
 prop ("z") :: { z :: a } -> a
               ^^^^^^^^^^
@@ -1227,14 +1276,15 @@ The value at position 1 is not a member of ‘{ z :: a }’.
 `));
 
     const point = Object.create ({x: 0, y: 0});
-    eq (prop ('x') (point)) (0);
-    eq (prop ('y') (point)) (0);
+    eq (prop ('x') (point), 0);
+    eq (prop ('y') (point), 0);
 
-    eq (/x/g.global) (true);
-    eq ('global' in /x/g) (true);
+    eq (/x/g.global, true);
+    eq ('global' in /x/g, true);
 
-    throws (() => { prop ('global') (/x/g); })
-           (new TypeError (`Invalid value
+    throws (
+      () => { prop ('global') (/x/g); },
+      new TypeError (`Invalid value
 
 prop ("global") :: { global :: a } -> a
                    ^^^^^^^^^^^^^^^
@@ -1245,11 +1295,12 @@ prop ("global") :: { global :: a } -> a
 The value at position 1 is not a member of ‘{ global :: a }’.
 `));
 
-    eq (['x'].length) (1);
-    eq ('length' in ['x']) (true);
+    eq (['x'].length, 1);
+    eq ('length' in ['x'], true);
 
-    throws (() => { prop ('length') (['x']); })
-           (new TypeError (`Invalid value
+    throws (
+      () => { prop ('length') (['x']); },
+      new TypeError (`Invalid value
 
 prop ("length") :: { length :: a } -> a
                    ^^^^^^^^^^^^^^^
@@ -1262,27 +1313,28 @@ The value at position 1 is not a member of ‘{ length :: a }’.
   });
 
   test ('supports named record types', () => {
-    eq (typeof $.NamedRecordType) ('function');
-    eq ($.NamedRecordType.length) (1);
-    eq (show ($.NamedRecordType)) ('NamedRecordType :: NonEmpty String -> String -> Array Type -> StrMap Type -> Type');
-    eq (show ($.NamedRecordType ('Circle') ('') ([]) ({radius: $.PositiveFiniteNumber}))) ('Circle');
+    eq (typeof $.NamedRecordType, 'function');
+    eq ($.NamedRecordType.length, 1);
+    eq (show ($.NamedRecordType), 'NamedRecordType :: NonEmpty String -> String -> Array Type -> StrMap Type -> Type');
+    eq (show ($.NamedRecordType ('Circle') ('') ([]) ({radius: $.PositiveFiniteNumber})), 'Circle');
 
     //    Empty :: Type
     const Empty = $.NamedRecordType ('Empty') ('') ([]) ({});
 
-    eq ($.test ([]) (Empty) (null)) (false);
-    eq ($.test ([]) (Empty) (undefined)) (false);
-    eq ($.test ([]) (Empty) (false)) (true);
-    eq ($.test ([]) (Empty) (12.34)) (true);
-    eq ($.test ([]) (Empty) ('xyz')) (true);
-    eq ($.test ([]) (Empty) (new Boolean (true))) (true);
-    eq ($.test ([]) (Empty) (new Number (12.34))) (true);
-    eq ($.test ([]) (Empty) (new String ('xyz'))) (true);
-    eq ($.test ([]) (Empty) ([])) (true);
-    eq ($.test ([]) (Empty) ({})) (true);
+    eq ($.test ([]) (Empty) (null), false);
+    eq ($.test ([]) (Empty) (undefined), false);
+    eq ($.test ([]) (Empty) (false), true);
+    eq ($.test ([]) (Empty) (12.34), true);
+    eq ($.test ([]) (Empty) ('xyz'), true);
+    eq ($.test ([]) (Empty) (new Boolean (true)), true);
+    eq ($.test ([]) (Empty) (new Number (12.34)), true);
+    eq ($.test ([]) (Empty) (new String ('xyz')), true);
+    eq ($.test ([]) (Empty) ([]), true);
+    eq ($.test ([]) (Empty) ({}), true);
 
-    throws (() => { $.NamedRecordType ('Circle') ('') ([]) ({radius: Number}); })
-           (new TypeError (`Invalid value
+    throws (
+      () => { $.NamedRecordType ('Circle') ('') ([]) ({radius: Number}); },
+      new TypeError (`Invalid value
 
 NamedRecordType :: NonEmpty String -> String -> Array Type -> StrMap Type -> Type
                                                                      ^^^^
@@ -1310,26 +1362,26 @@ See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Type for info
       ({height: $.PositiveFiniteNumber});
 
     const isCircle = $.test ([]) (Circle);
-    eq (isCircle (null)) (false);
-    eq (isCircle ({})) (false);
-    eq (isCircle ({radius: null})) (false);
-    eq (isCircle ({radius: 0})) (false);
-    eq (isCircle ({radius: 1})) (true);
-    eq (isCircle ({radius: 1, height: 1})) (true);
+    eq (isCircle (null), false);
+    eq (isCircle ({}), false);
+    eq (isCircle ({radius: null}), false);
+    eq (isCircle ({radius: 0}), false);
+    eq (isCircle ({radius: 1}), true);
+    eq (isCircle ({radius: 1, height: 1}), true);
 
     const isCylinder = $.test ([]) (Cylinder);
-    eq (isCylinder (null)) (false);
-    eq (isCylinder ({})) (false);
-    eq (isCylinder ({radius: null})) (false);
-    eq (isCylinder ({height: null})) (false);
-    eq (isCylinder ({radius: 0})) (false);
-    eq (isCylinder ({height: 0})) (false);
-    eq (isCylinder ({radius: 1})) (false);
-    eq (isCylinder ({height: 1})) (false);
-    eq (isCylinder ({radius: 0, height: 0})) (false);
-    eq (isCylinder ({radius: 0, height: 1})) (false);
-    eq (isCylinder ({radius: 1, height: 0})) (false);
-    eq (isCylinder ({radius: 1, height: 1})) (true);
+    eq (isCylinder (null), false);
+    eq (isCylinder ({}), false);
+    eq (isCylinder ({radius: null}), false);
+    eq (isCylinder ({height: null}), false);
+    eq (isCylinder ({radius: 0}), false);
+    eq (isCylinder ({height: 0}), false);
+    eq (isCylinder ({radius: 1}), false);
+    eq (isCylinder ({height: 1}), false);
+    eq (isCylinder ({radius: 0, height: 0}), false);
+    eq (isCylinder ({radius: 0, height: 1}), false);
+    eq (isCylinder ({radius: 1, height: 0}), false);
+    eq (isCylinder ({radius: 1, height: 1}), true);
 
     //    area :: Circle -> PositiveFiniteNumber
     const area =
@@ -1338,11 +1390,12 @@ See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Type for info
         ([Circle, $.PositiveFiniteNumber])
         (circle => Math.PI * circle.radius * circle.radius);
 
-    eq (area ({radius: 1})) (3.141592653589793);
-    eq (area ({radius: 2})) (12.566370614359172);
+    eq (area ({radius: 1}), 3.141592653589793);
+    eq (area ({radius: 2}), 12.566370614359172);
 
-    throws (() => { area ({radius: 0}); })
-           (new TypeError (`Invalid value
+    throws (
+      () => { area ({radius: 0}); },
+      new TypeError (`Invalid value
 
 area :: Circle -> PositiveFiniteNumber
         ^^^^^^
@@ -1357,12 +1410,13 @@ See http://example.com/my-package#Circle for information about the Circle type.
   });
 
   test ('supports "nullable" types', () => {
-    eq (typeof $.Nullable) ('function');
-    eq ($.Nullable.length) (1);
-    eq (show ($.Nullable)) ('Nullable :: Type -> Type');
+    eq (typeof $.Nullable, 'function');
+    eq ($.Nullable.length, 1);
+    eq (show ($.Nullable), 'Nullable :: Type -> Type');
 
-    throws (() => { $.Nullable (null); })
-           (new TypeError (`Invalid value
+    throws (
+      () => { $.Nullable (null); },
+      new TypeError (`Invalid value
 
 Nullable :: Type -> Type
             ^^^^
@@ -1382,11 +1436,12 @@ See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Type for info
         ([$.Nullable ($.String), $.Nullable ($.String)])
         (ns => ns === null ? null : ns.toUpperCase ());  // eslint-disable-line eqeqeq
 
-    eq (toUpper (null)) (null);
-    eq (toUpper ('abc')) ('ABC');
+    eq (toUpper (null), null);
+    eq (toUpper ('abc'), 'ABC');
 
-    throws (() => { toUpper (['abc']); })
-           (new TypeError (`Invalid value
+    throws (
+      () => { toUpper (['abc']); },
+      new TypeError (`Invalid value
 
 toUpper :: Nullable String -> Nullable String
                     ^^^^^^
@@ -1406,11 +1461,12 @@ See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#String for in
         ([a, $.Nullable (a), a])
         (x => nullable => nullable === null ? x : nullable);  // eslint-disable-line eqeqeq
 
-    eq (defaultTo (0) (null)) (0);
-    eq (defaultTo (0) (42)) (42);
+    eq (defaultTo (0) (null), 0);
+    eq (defaultTo (0) (42), 42);
 
-    throws (() => { defaultTo (0) ('XXX'); })
-           (new TypeError (`Type-variable constraint violation
+    throws (
+      () => { defaultTo (0) ('XXX'); },
+      new TypeError (`Type-variable constraint violation
 
 defaultTo :: a -> Nullable a -> a
              ^             ^
@@ -1430,11 +1486,12 @@ Since there is no type of which all the above values are members, the type-varia
         ([$.Nullable (a), $.Nullable (a)])
         (x => 42);
 
-    eq (f (null)) (42);
-    eq (f (0)) (42);
+    eq (f (null), 42);
+    eq (f (0), 42);
 
-    throws (() => { f ('XXX'); })
-           (new TypeError (`Type-variable constraint violation
+    throws (
+      () => { f ('XXX'); },
+      new TypeError (`Type-variable constraint violation
 
 f :: Nullable a -> Nullable a
               ^             ^
@@ -1449,83 +1506,83 @@ Since there is no type of which all the above values are members, the type-varia
   });
 
   test ('provides the "Void" type', () => {
-    eq ($.Void.name) ('Void');
-    eq ($.Void.url) (`https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Void`);
-    eq ($.Void.supertypes) ([]);
+    eq ($.Void.name, 'Void');
+    eq ($.Void.url, `https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Void`);
+    eq ($.Void.supertypes, []);
 
     const isVoid = $.test ([]) ($.Void);
-    eq (isVoid (undefined)) (false);
-    eq (isVoid (null)) (false);
-    eq (isVoid (NaN)) (false);
-    eq (isVoid ('')) (false);
+    eq (isVoid (undefined), false);
+    eq (isVoid (null), false);
+    eq (isVoid (NaN), false);
+    eq (isVoid (''), false);
   });
 
   test ('provides the "Any" type', () => {
-    eq ($.Any.name) ('Any');
-    eq ($.Any.url) (`https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Any`);
-    eq ($.Any.supertypes) ([]);
+    eq ($.Any.name, 'Any');
+    eq ($.Any.url, `https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Any`);
+    eq ($.Any.supertypes, []);
   });
 
   test ('provides the "AnyFunction" type', () => {
-    eq ($.AnyFunction.name) ('Function');
-    eq ($.AnyFunction.url) (`https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Function`);
-    eq ($.AnyFunction.supertypes) ([]);
+    eq ($.AnyFunction.name, 'Function');
+    eq ($.AnyFunction.url, `https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Function`);
+    eq ($.AnyFunction.supertypes, []);
 
     const isAnyFunction = $.test ([]) ($.AnyFunction);
-    eq (isAnyFunction (null)) (false);
-    eq (isAnyFunction (Math.abs)) (true);
-    eq (isAnyFunction (function Identity(x) { this.value = x; })) (true);
-    eq (isAnyFunction (function* (x) { return x; })) (true);
+    eq (isAnyFunction (null), false);
+    eq (isAnyFunction (Math.abs), true);
+    eq (isAnyFunction (function Identity(x) { this.value = x; }), true);
+    eq (isAnyFunction (function* (x) { return x; }), true);
   });
 
   test ('provides the "Arguments" type', () => {
-    eq ($.Arguments.name) ('Arguments');
-    eq ($.Arguments.url) (`https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Arguments`);
-    eq ($.Arguments.supertypes) ([]);
+    eq ($.Arguments.name, 'Arguments');
+    eq ($.Arguments.url, `https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Arguments`);
+    eq ($.Arguments.supertypes, []);
   });
 
   test ('provides the "Array" type constructor', () => {
-    eq (($.Array (a)).name) ('Array');
-    eq (($.Array (a)).url) (`https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Array`);
-    eq (($.Array (a)).supertypes) ([]);
+    eq (($.Array (a)).name, 'Array');
+    eq (($.Array (a)).url, `https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Array`);
+    eq (($.Array (a)).supertypes, []);
   });
 
   test ('provides the "Array0" type', () => {
-    eq ($.Array0.name) ('Array0');
-    eq ($.Array0.url) (`https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Array0`);
-    eq ($.Array0.supertypes) ([$.Array ($.Unknown)]);
+    eq ($.Array0.name, 'Array0');
+    eq ($.Array0.url, `https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Array0`);
+    eq ($.Array0.supertypes, [$.Array ($.Unknown)]);
 
     const isEmptyArray = $.test ([]) ($.Array0);
-    eq (isEmptyArray (null)) (false);
-    eq (isEmptyArray ([])) (true);
-    eq (isEmptyArray ([0])) (false);
+    eq (isEmptyArray (null), false);
+    eq (isEmptyArray ([]), true);
+    eq (isEmptyArray ([0]), false);
   });
 
   test ('provides the "Array1" type constructor', () => {
-    eq (typeof $.Array1) ('function');
-    eq ($.Array1.length) (1);
-    eq (show ($.Array1)) ('Array1 :: Type -> Type');
-    eq (show ($.Array1 (a))) ('Array1 a');
-    eq (($.Array1 (a)).name) ('Array1');
-    eq (($.Array1 (a)).url) (`https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Array1`);
-    eq (($.Array1 (a)).supertypes) ([$.Array ($.Unknown)]);
+    eq (typeof $.Array1, 'function');
+    eq ($.Array1.length, 1);
+    eq (show ($.Array1), 'Array1 :: Type -> Type');
+    eq (show ($.Array1 (a)), 'Array1 a');
+    eq (($.Array1 (a)).name, 'Array1');
+    eq (($.Array1 (a)).url, `https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Array1`);
+    eq (($.Array1 (a)).supertypes, [$.Array ($.Unknown)]);
 
     const isSingletonStringArray = $.test ([]) ($.Array1 ($.String));
-    eq (isSingletonStringArray (null)) (false);
-    eq (isSingletonStringArray ([])) (false);
-    eq (isSingletonStringArray ([0])) (false);
-    eq (isSingletonStringArray (['x'])) (true);
-    eq (isSingletonStringArray (['x', 'y'])) (false);
+    eq (isSingletonStringArray (null), false);
+    eq (isSingletonStringArray ([]), false);
+    eq (isSingletonStringArray ([0]), false);
+    eq (isSingletonStringArray (['x']), true);
+    eq (isSingletonStringArray (['x', 'y']), false);
   });
 
   test ('provides the "Array2" type constructor', () => {
-    eq (typeof $.Array2) ('function');
-    eq ($.Array2.length) (1);
-    eq (show ($.Array2)) ('Array2 :: Type -> Type -> Type');
-    eq (show ($.Array2 (a) (b))) ('Array2 a b');
-    eq (($.Array2 (a) (b)).name) ('Array2');
-    eq (($.Array2 (a) (b)).url) (`https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Array2`);
-    eq (($.Array2 (a) (b)).supertypes) ([$.Array ($.Unknown)]);
+    eq (typeof $.Array2, 'function');
+    eq ($.Array2.length, 1);
+    eq (show ($.Array2), 'Array2 :: Type -> Type -> Type');
+    eq (show ($.Array2 (a) (b)), 'Array2 a b');
+    eq (($.Array2 (a) (b)).name, 'Array2');
+    eq (($.Array2 (a) (b)).url, `https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Array2`);
+    eq (($.Array2 (a) (b)).supertypes, [$.Array ($.Unknown)]);
 
     //    fst :: Array2 a b -> a
     const fst = def ('fst') ({}) ([$.Array2 (a) (b), a]) (array2 => array2[0]);
@@ -1533,11 +1590,12 @@ Since there is no type of which all the above values are members, the type-varia
     //    snd :: Array2 a b -> b
     const snd = def ('snd') ({}) ([$.Array2 (a) (b), b]) (array2 => array2[1]);
 
-    eq (fst (['foo', 42])) ('foo');
-    eq (snd (['foo', 42])) (42);
+    eq (fst (['foo', 42]), 'foo');
+    eq (snd (['foo', 42]), 42);
 
-    throws (() => { fst (['foo']); })
-           (new TypeError (`Invalid value
+    throws (
+      () => { fst (['foo']); },
+      new TypeError (`Invalid value
 
 fst :: Array2 a b -> a
        ^^^^^^^^^^
@@ -1552,26 +1610,26 @@ See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Array2 for in
   });
 
   test ('provides the "Boolean" type', () => {
-    eq ($.Boolean.name) ('Boolean');
-    eq ($.Boolean.url) (`https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Boolean`);
-    eq ($.Boolean.supertypes) ([]);
+    eq ($.Boolean.name, 'Boolean');
+    eq ($.Boolean.url, `https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Boolean`);
+    eq ($.Boolean.supertypes, []);
   });
 
   test ('provides the "Buffer" type', () => {
-    eq ($.Buffer.name) ('Buffer');
-    eq ($.Buffer.url) (`https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Buffer`);
-    eq ($.Buffer.supertypes) ([]);
+    eq ($.Buffer.name, 'Buffer');
+    eq ($.Buffer.url, `https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Buffer`);
+    eq ($.Buffer.supertypes, []);
 
     const isBuffer = $.test ([]) ($.Buffer);
-    eq (isBuffer (null)) (false);
-    eq (isBuffer (Buffer.from ([1, 2, 3]))) (true);
+    eq (isBuffer (null), false);
+    eq (isBuffer (Buffer.from ([1, 2, 3])), true);
 
     {
       const Buffer = global.Buffer;
       delete global.Buffer;
       try {
-        eq (isBuffer (null)) (false);
-        eq (isBuffer (Buffer.from ([1, 2, 3]))) (false);
+        eq (isBuffer (null), false);
+        eq (isBuffer (Buffer.from ([1, 2, 3])), false);
       } finally {
         global.Buffer = Buffer;
       }
@@ -1579,67 +1637,67 @@ See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Array2 for in
   });
 
   test ('provides the "Date" type', () => {
-    eq ($.Date.name) ('Date');
-    eq ($.Date.url) (`https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Date`);
-    eq ($.Date.supertypes) ([]);
+    eq ($.Date.name, 'Date');
+    eq ($.Date.url, `https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Date`);
+    eq ($.Date.supertypes, []);
   });
 
   test ('provides the "Descending" type constructor', () => {
-    eq (typeof $.Descending) ('function');
-    eq ($.Descending.length) (1);
-    eq (show ($.Descending)) ('Descending :: Type -> Type');
-    eq (show ($.Descending (a))) ('Descending a');
-    eq (($.Descending (a)).name) ('Descending');
-    eq (($.Descending (a)).url) (`https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Descending`);
-    eq (($.Descending (a)).supertypes) ([]);
+    eq (typeof $.Descending, 'function');
+    eq ($.Descending.length, 1);
+    eq (show ($.Descending), 'Descending :: Type -> Type');
+    eq (show ($.Descending (a)), 'Descending a');
+    eq (($.Descending (a)).name, 'Descending');
+    eq (($.Descending (a)).url, `https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Descending`);
+    eq (($.Descending (a)).supertypes, []);
 
     const isDescendingString = $.test ([]) ($.Descending ($.String));
-    eq (isDescendingString (null)) (false);
-    eq (isDescendingString (Descending (12.34))) (false);
-    eq (isDescendingString (Descending ('abc'))) (true);
+    eq (isDescendingString (null), false);
+    eq (isDescendingString (Descending (12.34)), false);
+    eq (isDescendingString (Descending ('abc')), true);
   });
 
   test ('provides the "Either" type constructor', () => {
-    eq (typeof $.Either) ('function');
-    eq ($.Either.length) (1);
-    eq (show ($.Either)) ('Either :: Type -> Type -> Type');
-    eq (show ($.Either (a) (b))) ('Either a b');
-    eq (($.Either (a) (b)).name) ('Either');
-    eq (($.Either (a) (b)).url) (`https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Either`);
-    eq (($.Either (a) (b)).supertypes) ([]);
+    eq (typeof $.Either, 'function');
+    eq ($.Either.length, 1);
+    eq (show ($.Either), 'Either :: Type -> Type -> Type');
+    eq (show ($.Either (a) (b)), 'Either a b');
+    eq (($.Either (a) (b)).name, 'Either');
+    eq (($.Either (a) (b)).url, `https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Either`);
+    eq (($.Either (a) (b)).supertypes, []);
 
     const isEitherStringNumber = $.test ([]) ($.Either ($.String) ($.Number));
-    eq (isEitherStringNumber (null)) (false);
-    eq (isEitherStringNumber (Left ('abc'))) (true);
-    eq (isEitherStringNumber (Left (/XXX/))) (false);
-    eq (isEitherStringNumber (Right (12.34))) (true);
-    eq (isEitherStringNumber (Right (/XXX/))) (false);
+    eq (isEitherStringNumber (null), false);
+    eq (isEitherStringNumber (Left ('abc')), true);
+    eq (isEitherStringNumber (Left (/XXX/)), false);
+    eq (isEitherStringNumber (Right (12.34)), true);
+    eq (isEitherStringNumber (Right (/XXX/)), false);
   });
 
   test ('provides the "Error" type', () => {
-    eq ($.Error.name) ('Error');
-    eq ($.Error.url) (`https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Error`);
-    eq ($.Error.supertypes) ([]);
+    eq ($.Error.name, 'Error');
+    eq ($.Error.url, `https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Error`);
+    eq ($.Error.supertypes, []);
   });
 
   test ('provides the "Fn" type constructor', () => {
-    eq (typeof $.Fn) ('function');
-    eq ($.Fn.length) (1);
-    eq (show ($.Fn)) ('Fn :: Type -> Type -> Type');
-    eq (show ($.Fn (a) (b))) ('a -> b');
-    eq (($.Fn (a) (b)).name) ('');
-    eq (($.Fn (a) (b)).url) ('');
-    eq (($.Fn (a) (b)).supertypes) ([$.AnyFunction]);
+    eq (typeof $.Fn, 'function');
+    eq ($.Fn.length, 1);
+    eq (show ($.Fn), 'Fn :: Type -> Type -> Type');
+    eq (show ($.Fn (a) (b)), 'a -> b');
+    eq (($.Fn (a) (b)).name, '');
+    eq (($.Fn (a) (b)).url, '');
+    eq (($.Fn (a) (b)).supertypes, [$.AnyFunction]);
   });
 
   test ('provides the "Function" type constructor', () => {
-    eq (typeof $.Function) ('function');
-    eq ($.Function.length) (1);
-    eq (show ($.Function)) ('Function :: NonEmpty (Array Type) -> Type');
-    eq (show ($.Function ([a, b]))) ('a -> b');
-    eq (($.Function ([a, b])).name) ('');
-    eq (($.Function ([a, b])).url) ('');
-    eq (($.Function ([a, b])).supertypes) ([$.AnyFunction]);
+    eq (typeof $.Function, 'function');
+    eq ($.Function.length, 1);
+    eq (show ($.Function), 'Function :: NonEmpty (Array Type) -> Type');
+    eq (show ($.Function ([a, b])), 'a -> b');
+    eq (($.Function ([a, b])).name, '');
+    eq (($.Function ([a, b])).url, '');
+    eq (($.Function ([a, b])).supertypes, [$.AnyFunction]);
 
     //  Fn :: Type -> Type -> Type
     function Fn($1) { return function($2) { return $.Function ([$1, $2]); }; }
@@ -1656,191 +1714,191 @@ See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Array2 for in
     const P = Fn (Fn (b) (Fn (b) (c))) (Fn (Fn (a) (b)) (Fn (a) (Fn (a) (c))));
     const Y = Fn (Fn (a) (a)) (a);
 
-    eq (show (I)) ('a -> a');
-    eq (show (K)) ('a -> b -> a');
-    eq (show (A)) ('(a -> b) -> a -> b');
-    eq (show (T)) ('a -> (a -> b) -> b');
-    eq (show (W)) ('(a -> a -> b) -> a -> b');
-    eq (show (C)) ('(a -> b -> c) -> b -> a -> c');
-    eq (show (B)) ('(b -> c) -> (a -> b) -> a -> c');
-    eq (show (S)) ('(a -> b -> c) -> (a -> b) -> a -> c');
-    eq (show (P)) ('(b -> b -> c) -> (a -> b) -> a -> a -> c');
-    eq (show (Y)) ('(a -> a) -> a');
+    eq (show (I), 'a -> a');
+    eq (show (K), 'a -> b -> a');
+    eq (show (A), '(a -> b) -> a -> b');
+    eq (show (T), 'a -> (a -> b) -> b');
+    eq (show (W), '(a -> a -> b) -> a -> b');
+    eq (show (C), '(a -> b -> c) -> b -> a -> c');
+    eq (show (B), '(b -> c) -> (a -> b) -> a -> c');
+    eq (show (S), '(a -> b -> c) -> (a -> b) -> a -> c');
+    eq (show (P), '(b -> b -> c) -> (a -> b) -> a -> a -> c');
+    eq (show (Y), '(a -> a) -> a');
   });
 
   test ('provides the "HtmlElement" type', () => {
-    eq ($.HtmlElement.name) ('HtmlElement');
-    eq ($.HtmlElement.url) (`https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#HtmlElement`);
-    eq ($.HtmlElement.supertypes) ([]);
+    eq ($.HtmlElement.name, 'HtmlElement');
+    eq ($.HtmlElement.url, `https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#HtmlElement`);
+    eq ($.HtmlElement.supertypes, []);
 
     const isHtmlElement = $.test ([]) ($.HtmlElement);
-    eq (isHtmlElement ({[Symbol.toStringTag]: 'HTMLDivElement'})) (true);
-    eq (isHtmlElement ({[Symbol.toStringTag]: 'HTMLElement'})) (true);
+    eq (isHtmlElement ({[Symbol.toStringTag]: 'HTMLDivElement'}), true);
+    eq (isHtmlElement ({[Symbol.toStringTag]: 'HTMLElement'}), true);
   });
 
   test ('provides the "Identity" type constructor', () => {
-    eq (typeof $.Identity) ('function');
-    eq ($.Identity.length) (1);
-    eq (show ($.Identity)) ('Identity :: Type -> Type');
-    eq (show ($.Identity (a))) ('Identity a');
-    eq (($.Identity (a)).name) ('Identity');
-    eq (($.Identity (a)).url) (`https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Identity`);
-    eq (($.Identity (a)).supertypes) ([]);
+    eq (typeof $.Identity, 'function');
+    eq ($.Identity.length, 1);
+    eq (show ($.Identity), 'Identity :: Type -> Type');
+    eq (show ($.Identity (a)), 'Identity a');
+    eq (($.Identity (a)).name, 'Identity');
+    eq (($.Identity (a)).url, `https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Identity`);
+    eq (($.Identity (a)).supertypes, []);
 
     const isIdentityString = $.test ([]) ($.Identity ($.String));
-    eq (isIdentityString (null)) (false);
-    eq (isIdentityString (Identity (12.34))) (false);
-    eq (isIdentityString (Identity ('abc'))) (true);
+    eq (isIdentityString (null), false);
+    eq (isIdentityString (Identity (12.34)), false);
+    eq (isIdentityString (Identity ('abc')), true);
   });
 
   test ('provides the "JsMap" type constructor', () => {
-    eq (typeof $.JsMap) ('function');
-    eq ($.JsMap.length) (1);
-    eq (show ($.JsMap)) ('JsMap :: Type -> Type -> Type');
-    eq (show ($.JsMap (a) (b))) ('JsMap a b');
-    eq (($.JsMap (a) (b)).name) ('JsMap');
-    eq (($.JsMap (a) (b)).url) (`https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#JsMap`);
-    eq (($.JsMap (a) (b)).supertypes) ([]);
+    eq (typeof $.JsMap, 'function');
+    eq ($.JsMap.length, 1);
+    eq (show ($.JsMap), 'JsMap :: Type -> Type -> Type');
+    eq (show ($.JsMap (a) (b)), 'JsMap a b');
+    eq (($.JsMap (a) (b)).name, 'JsMap');
+    eq (($.JsMap (a) (b)).url, `https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#JsMap`);
+    eq (($.JsMap (a) (b)).supertypes, []);
 
     const isJsMapNumberString = $.test ([]) ($.JsMap ($.Number) ($.String));
-    eq (isJsMapNumberString (null)) (false);
-    eq (isJsMapNumberString ({})) (false);
-    eq (isJsMapNumberString (new Map ([]))) (true);
-    eq (isJsMapNumberString (new Map ([[1, 'a'], [2, 'b'], [3, 'c']]))) (true);
-    eq (isJsMapNumberString (new Map ([['a', 1], ['b', 2], ['c', 3]]))) (false);
+    eq (isJsMapNumberString (null), false);
+    eq (isJsMapNumberString ({}), false);
+    eq (isJsMapNumberString (new Map ([])), true);
+    eq (isJsMapNumberString (new Map ([[1, 'a'], [2, 'b'], [3, 'c']])), true);
+    eq (isJsMapNumberString (new Map ([['a', 1], ['b', 2], ['c', 3]])), false);
   });
 
   test ('provides the "JsSet" type constructor', () => {
-    eq (typeof $.JsSet) ('function');
-    eq ($.JsSet.length) (1);
-    eq (show ($.JsSet)) ('JsSet :: Type -> Type');
-    eq (show ($.JsSet (a))) ('JsSet a');
-    eq (($.JsSet (a)).name) ('JsSet');
-    eq (($.JsSet (a)).url) (`https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#JsSet`);
-    eq (($.JsSet (a)).supertypes) ([]);
+    eq (typeof $.JsSet, 'function');
+    eq ($.JsSet.length, 1);
+    eq (show ($.JsSet), 'JsSet :: Type -> Type');
+    eq (show ($.JsSet (a)), 'JsSet a');
+    eq (($.JsSet (a)).name, 'JsSet');
+    eq (($.JsSet (a)).url, `https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#JsSet`);
+    eq (($.JsSet (a)).supertypes, []);
 
     const isJsSetNumber = $.test ([]) ($.JsSet ($.Number));
-    eq (isJsSetNumber (null)) (false);
-    eq (isJsSetNumber ([])) (false);
-    eq (isJsSetNumber (new Set ([]))) (true);
-    eq (isJsSetNumber (new Set ([1, 2, 3]))) (true);
-    eq (isJsSetNumber (new Set (['a', 'b', 'c']))) (false);
+    eq (isJsSetNumber (null), false);
+    eq (isJsSetNumber ([]), false);
+    eq (isJsSetNumber (new Set ([])), true);
+    eq (isJsSetNumber (new Set ([1, 2, 3])), true);
+    eq (isJsSetNumber (new Set (['a', 'b', 'c'])), false);
   });
 
   test ('provides the "Maybe" type constructor', () => {
-    eq (typeof $.Maybe) ('function');
-    eq ($.Maybe.length) (1);
-    eq (show ($.Maybe)) ('Maybe :: Type -> Type');
-    eq (show ($.Maybe (a))) ('Maybe a');
-    eq (($.Maybe (a)).name) ('Maybe');
-    eq (($.Maybe (a)).url) (`https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Maybe`);
-    eq (($.Maybe (a)).supertypes) ([]);
+    eq (typeof $.Maybe, 'function');
+    eq ($.Maybe.length, 1);
+    eq (show ($.Maybe), 'Maybe :: Type -> Type');
+    eq (show ($.Maybe (a)), 'Maybe a');
+    eq (($.Maybe (a)).name, 'Maybe');
+    eq (($.Maybe (a)).url, `https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Maybe`);
+    eq (($.Maybe (a)).supertypes, []);
 
     const isMaybeNumber = $.test ([]) ($.Maybe ($.Number));
-    eq (isMaybeNumber (null)) (false);
-    eq (isMaybeNumber (Nothing)) (true);
-    eq (isMaybeNumber (Just (12.34))) (true);
-    eq (isMaybeNumber (Just (/XXX/))) (false);
+    eq (isMaybeNumber (null), false);
+    eq (isMaybeNumber (Nothing), true);
+    eq (isMaybeNumber (Just (12.34)), true);
+    eq (isMaybeNumber (Just (/XXX/)), false);
   });
 
   test ('provides the "NonEmpty" type constructor', () => {
-    eq (($.NonEmpty ($.String)).name) ('NonEmpty');
-    eq (($.NonEmpty ($.String)).url) (`https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#NonEmpty`);
-    eq (($.NonEmpty ($.String)).supertypes) ([]);
+    eq (($.NonEmpty ($.String)).name, 'NonEmpty');
+    eq (($.NonEmpty ($.String)).url, `https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#NonEmpty`);
+    eq (($.NonEmpty ($.String)).supertypes, []);
 
     const isNonEmptyIntegerArray = $.test ([]) ($.NonEmpty ($.Array ($.Integer)));
-    eq (isNonEmptyIntegerArray ([])) (false);
-    eq (isNonEmptyIntegerArray ([0])) (true);
-    eq (isNonEmptyIntegerArray ([0.5])) (false);
+    eq (isNonEmptyIntegerArray ([]), false);
+    eq (isNonEmptyIntegerArray ([0]), true);
+    eq (isNonEmptyIntegerArray ([0.5]), false);
   });
 
   test ('provides the "Null" type', () => {
-    eq ($.Null.name) ('Null');
-    eq ($.Null.url) (`https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Null`);
-    eq ($.Null.supertypes) ([]);
+    eq ($.Null.name, 'Null');
+    eq ($.Null.url, `https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Null`);
+    eq ($.Null.supertypes, []);
   });
 
   test ('provides the "Nullable" type constructor', () => {
-    eq (($.Nullable (a)).name) ('Nullable');
-    eq (($.Nullable (a)).url) (`https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Nullable`);
-    eq (($.Nullable (a)).supertypes) ([]);
+    eq (($.Nullable (a)).name, 'Nullable');
+    eq (($.Nullable (a)).url, `https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Nullable`);
+    eq (($.Nullable (a)).supertypes, []);
   });
 
   test ('provides the "Number" type', () => {
-    eq ($.Number.name) ('Number');
-    eq ($.Number.url) (`https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Number`);
-    eq ($.Number.supertypes) ([]);
+    eq ($.Number.name, 'Number');
+    eq ($.Number.url, `https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Number`);
+    eq ($.Number.supertypes, []);
   });
 
   test ('provides the "Object" type', () => {
-    eq ($.Object.name) ('Object');
-    eq ($.Object.url) (`https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Object`);
-    eq ($.Object.supertypes) ([]);
+    eq ($.Object.name, 'Object');
+    eq ($.Object.url, `https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Object`);
+    eq ($.Object.supertypes, []);
   });
 
   test ('provides the "Pair" type constructor', () => {
-    eq (typeof $.Pair) ('function');
-    eq ($.Pair.length) (1);
-    eq (show ($.Pair)) ('Pair :: Type -> Type -> Type');
-    eq (show ($.Pair (a) (b))) ('Pair a b');
-    eq (($.Pair (a) (b)).name) ('Pair');
-    eq (($.Pair (a) (b)).url) (`https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Pair`);
-    eq (($.Pair (a) (b)).supertypes) ([]);
+    eq (typeof $.Pair, 'function');
+    eq ($.Pair.length, 1);
+    eq (show ($.Pair), 'Pair :: Type -> Type -> Type');
+    eq (show ($.Pair (a) (b)), 'Pair a b');
+    eq (($.Pair (a) (b)).name, 'Pair');
+    eq (($.Pair (a) (b)).url, `https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Pair`);
+    eq (($.Pair (a) (b)).supertypes, []);
 
     const isPairStringNumber = $.test ([]) ($.Pair ($.String) ($.Number));
-    eq (isPairStringNumber (null)) (false);
-    eq (isPairStringNumber (Pair ('abc') ('xyz'))) (false);
-    eq (isPairStringNumber (Pair ('abc') (67.89))) (true);
-    eq (isPairStringNumber (Pair (12.34) ('xyz'))) (false);
-    eq (isPairStringNumber (Pair (12.34) (67.89))) (false);
+    eq (isPairStringNumber (null), false);
+    eq (isPairStringNumber (Pair ('abc') ('xyz')), false);
+    eq (isPairStringNumber (Pair ('abc') (67.89)), true);
+    eq (isPairStringNumber (Pair (12.34) ('xyz')), false);
+    eq (isPairStringNumber (Pair (12.34) (67.89)), false);
   });
 
   test ('provides the "RegExp" type', () => {
-    eq ($.RegExp.name) ('RegExp');
-    eq ($.RegExp.url) (`https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#RegExp`);
-    eq ($.RegExp.supertypes) ([]);
+    eq ($.RegExp.name, 'RegExp');
+    eq ($.RegExp.url, `https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#RegExp`);
+    eq ($.RegExp.supertypes, []);
   });
 
   test ('provides the "String" type', () => {
-    eq ($.String.name) ('String');
-    eq ($.String.url) (`https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#String`);
-    eq ($.String.supertypes) ([]);
+    eq ($.String.name, 'String');
+    eq ($.String.url, `https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#String`);
+    eq ($.String.supertypes, []);
   });
 
   test ('provides the "Symbol" type', () => {
-    eq ($.Symbol.name) ('Symbol');
-    eq ($.Symbol.url) (`https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Symbol`);
-    eq ($.Symbol.supertypes) ([]);
+    eq ($.Symbol.name, 'Symbol');
+    eq ($.Symbol.url, `https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Symbol`);
+    eq ($.Symbol.supertypes, []);
   });
 
   test ('provides the "Type" type', () => {
-    eq ($.Type.name) ('Type');
-    eq ($.Type.url) (`https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Type`);
-    eq ($.Type.supertypes) ([]);
+    eq ($.Type.name, 'Type');
+    eq ($.Type.url, `https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Type`);
+    eq ($.Type.supertypes, []);
   });
 
   test ('provides the "TypeClass" type', () => {
-    eq ($.TypeClass.name) ('TypeClass');
-    eq ($.TypeClass.url) (`https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#TypeClass`);
-    eq ($.TypeClass.supertypes) ([]);
+    eq ($.TypeClass.name, 'TypeClass');
+    eq ($.TypeClass.url, `https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#TypeClass`);
+    eq ($.TypeClass.supertypes, []);
   });
 
   test ('provides the "Undefined" type', () => {
-    eq ($.Undefined.name) ('Undefined');
-    eq ($.Undefined.url) (`https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Undefined`);
-    eq ($.Undefined.supertypes) ([]);
+    eq ($.Undefined.name, 'Undefined');
+    eq ($.Undefined.url, `https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Undefined`);
+    eq ($.Undefined.supertypes, []);
   });
 
   test ('provides the "Unknown" type', () => {
-    eq ($.Unknown.name) ('');
-    eq ($.Unknown.url) ('');
-    eq ($.Unknown.supertypes) ([]);
+    eq ($.Unknown.name, '');
+    eq ($.Unknown.url, '');
+    eq ($.Unknown.supertypes, []);
   });
 
   test ('provides the "ValidDate" type', () => {
-    eq ($.ValidDate.name) ('ValidDate');
-    eq ($.ValidDate.url) (`https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#ValidDate`);
-    eq ($.ValidDate.supertypes) ([$.Date]);
+    eq ($.ValidDate.name, 'ValidDate');
+    eq ($.ValidDate.url, `https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#ValidDate`);
+    eq ($.ValidDate.supertypes, [$.Date]);
 
     //    sinceEpoch :: ValidDate -> Number
     const sinceEpoch =
@@ -1849,8 +1907,9 @@ See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Array2 for in
         ([$.ValidDate, $.Number])
         (date => date.valueOf () / 1000);
 
-    throws (() => { sinceEpoch (new Date ('foo')); })
-           (new TypeError (`Invalid value
+    throws (
+      () => { sinceEpoch (new Date ('foo')); },
+      new TypeError (`Invalid value
 
 sinceEpoch :: ValidDate -> Number
               ^^^^^^^^^
@@ -1863,252 +1922,252 @@ The value at position 1 is not a member of ‘ValidDate’.
 See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#ValidDate for information about the ValidDate type.
 `));
 
-    eq (sinceEpoch (new Date (123456))) (123.456);
+    eq (sinceEpoch (new Date (123456)), 123.456);
   });
 
   test ('provides the "PositiveNumber" type', () => {
-    eq ($.PositiveNumber.name) ('PositiveNumber');
-    eq ($.PositiveNumber.url) (`https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#PositiveNumber`);
-    eq ($.PositiveNumber.supertypes) ([$.Number]);
+    eq ($.PositiveNumber.name, 'PositiveNumber');
+    eq ($.PositiveNumber.url, `https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#PositiveNumber`);
+    eq ($.PositiveNumber.supertypes, [$.Number]);
 
     const isPositiveNumber = $.test ([]) ($.PositiveNumber);
-    eq (isPositiveNumber (null)) (false);
-    eq (isPositiveNumber (NaN)) (false);
-    eq (isPositiveNumber (-1)) (false);
-    eq (isPositiveNumber (0)) (false);
-    eq (isPositiveNumber (-0)) (false);
-    eq (isPositiveNumber (0.5)) (true);
-    eq (isPositiveNumber (Infinity)) (true);
-    eq (isPositiveNumber (new Number (Infinity))) (false);
+    eq (isPositiveNumber (null), false);
+    eq (isPositiveNumber (NaN), false);
+    eq (isPositiveNumber (-1), false);
+    eq (isPositiveNumber (0), false);
+    eq (isPositiveNumber (-0), false);
+    eq (isPositiveNumber (0.5), true);
+    eq (isPositiveNumber (Infinity), true);
+    eq (isPositiveNumber (new Number (Infinity)), false);
   });
 
   test ('provides the "NegativeNumber" type', () => {
-    eq ($.NegativeNumber.name) ('NegativeNumber');
-    eq ($.NegativeNumber.url) (`https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#NegativeNumber`);
-    eq ($.NegativeNumber.supertypes) ([$.Number]);
+    eq ($.NegativeNumber.name, 'NegativeNumber');
+    eq ($.NegativeNumber.url, `https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#NegativeNumber`);
+    eq ($.NegativeNumber.supertypes, [$.Number]);
 
     const isNegativeNumber = $.test ([]) ($.NegativeNumber);
-    eq (isNegativeNumber (null)) (false);
-    eq (isNegativeNumber (NaN)) (false);
-    eq (isNegativeNumber (1)) (false);
-    eq (isNegativeNumber (0)) (false);
-    eq (isNegativeNumber (-0)) (false);
-    eq (isNegativeNumber (-0.5)) (true);
-    eq (isNegativeNumber (-Infinity)) (true);
-    eq (isNegativeNumber (new Number (-Infinity))) (false);
+    eq (isNegativeNumber (null), false);
+    eq (isNegativeNumber (NaN), false);
+    eq (isNegativeNumber (1), false);
+    eq (isNegativeNumber (0), false);
+    eq (isNegativeNumber (-0), false);
+    eq (isNegativeNumber (-0.5), true);
+    eq (isNegativeNumber (-Infinity), true);
+    eq (isNegativeNumber (new Number (-Infinity)), false);
   });
 
   test ('provides the "ValidNumber" type', () => {
-    eq ($.ValidNumber.name) ('ValidNumber');
-    eq ($.ValidNumber.url) (`https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#ValidNumber`);
-    eq ($.ValidNumber.supertypes) ([$.Number]);
+    eq ($.ValidNumber.name, 'ValidNumber');
+    eq ($.ValidNumber.url, `https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#ValidNumber`);
+    eq ($.ValidNumber.supertypes, [$.Number]);
 
     const isValidNumber = $.test ([]) ($.ValidNumber);
-    eq (isValidNumber (NaN)) (false);
-    eq (isValidNumber (1)) (true);
-    eq (isValidNumber (new Number (1))) (false);
+    eq (isValidNumber (NaN), false);
+    eq (isValidNumber (1), true);
+    eq (isValidNumber (new Number (1)), false);
   });
 
   test ('provides the "NonZeroValidNumber" type', () => {
-    eq ($.NonZeroValidNumber.name) ('NonZeroValidNumber');
-    eq ($.NonZeroValidNumber.url) (`https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#NonZeroValidNumber`);
-    eq ($.NonZeroValidNumber.supertypes) ([$.ValidNumber]);
+    eq ($.NonZeroValidNumber.name, 'NonZeroValidNumber');
+    eq ($.NonZeroValidNumber.url, `https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#NonZeroValidNumber`);
+    eq ($.NonZeroValidNumber.supertypes, [$.ValidNumber]);
 
     const isNonZeroValidNumber = $.test ([]) ($.NonZeroValidNumber);
-    eq (isNonZeroValidNumber (0)) (false);
-    eq (isNonZeroValidNumber (-0)) (false);
-    eq (isNonZeroValidNumber (1)) (true);
-    eq (isNonZeroValidNumber (new Number (1))) (false);
+    eq (isNonZeroValidNumber (0), false);
+    eq (isNonZeroValidNumber (-0), false);
+    eq (isNonZeroValidNumber (1), true);
+    eq (isNonZeroValidNumber (new Number (1)), false);
   });
 
   test ('provides the "FiniteNumber" type', () => {
-    eq ($.FiniteNumber.name) ('FiniteNumber');
-    eq ($.FiniteNumber.url) (`https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#FiniteNumber`);
-    eq ($.FiniteNumber.supertypes) ([$.ValidNumber]);
+    eq ($.FiniteNumber.name, 'FiniteNumber');
+    eq ($.FiniteNumber.url, `https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#FiniteNumber`);
+    eq ($.FiniteNumber.supertypes, [$.ValidNumber]);
 
     const isFiniteNumber = $.test ([]) ($.FiniteNumber);
-    eq (isFiniteNumber (Infinity)) (false);
-    eq (isFiniteNumber (-Infinity)) (false);
-    eq (isFiniteNumber (1)) (true);
-    eq (isFiniteNumber (new Number (1))) (false);
+    eq (isFiniteNumber (Infinity), false);
+    eq (isFiniteNumber (-Infinity), false);
+    eq (isFiniteNumber (1), true);
+    eq (isFiniteNumber (new Number (1)), false);
   });
 
   test ('provides the "PositiveFiniteNumber" type', () => {
-    eq ($.PositiveFiniteNumber.name) ('PositiveFiniteNumber');
-    eq ($.PositiveFiniteNumber.url) (`https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#PositiveFiniteNumber`);
-    eq ($.PositiveFiniteNumber.supertypes) ([$.FiniteNumber]);
+    eq ($.PositiveFiniteNumber.name, 'PositiveFiniteNumber');
+    eq ($.PositiveFiniteNumber.url, `https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#PositiveFiniteNumber`);
+    eq ($.PositiveFiniteNumber.supertypes, [$.FiniteNumber]);
 
     const isPositiveFiniteNumber = $.test ([]) ($.PositiveFiniteNumber);
-    eq (isPositiveFiniteNumber (null)) (false);
-    eq (isPositiveFiniteNumber (NaN)) (false);
-    eq (isPositiveFiniteNumber (Infinity)) (false);
-    eq (isPositiveFiniteNumber (-1)) (false);
-    eq (isPositiveFiniteNumber (0)) (false);
-    eq (isPositiveFiniteNumber (-0)) (false);
-    eq (isPositiveFiniteNumber (0.5)) (true);
-    eq (isPositiveFiniteNumber (new Number (0.5))) (false);
+    eq (isPositiveFiniteNumber (null), false);
+    eq (isPositiveFiniteNumber (NaN), false);
+    eq (isPositiveFiniteNumber (Infinity), false);
+    eq (isPositiveFiniteNumber (-1), false);
+    eq (isPositiveFiniteNumber (0), false);
+    eq (isPositiveFiniteNumber (-0), false);
+    eq (isPositiveFiniteNumber (0.5), true);
+    eq (isPositiveFiniteNumber (new Number (0.5)), false);
   });
 
   test ('provides the "NegativeFiniteNumber" type', () => {
-    eq ($.NegativeFiniteNumber.name) ('NegativeFiniteNumber');
-    eq ($.NegativeFiniteNumber.url) (`https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#NegativeFiniteNumber`);
-    eq ($.NegativeFiniteNumber.supertypes) ([$.FiniteNumber]);
+    eq ($.NegativeFiniteNumber.name, 'NegativeFiniteNumber');
+    eq ($.NegativeFiniteNumber.url, `https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#NegativeFiniteNumber`);
+    eq ($.NegativeFiniteNumber.supertypes, [$.FiniteNumber]);
 
     const isNegativeFiniteNumber = $.test ([]) ($.NegativeFiniteNumber);
-    eq (isNegativeFiniteNumber (null)) (false);
-    eq (isNegativeFiniteNumber (NaN)) (false);
-    eq (isNegativeFiniteNumber (-Infinity)) (false);
-    eq (isNegativeFiniteNumber (1)) (false);
-    eq (isNegativeFiniteNumber (0)) (false);
-    eq (isNegativeFiniteNumber (-0)) (false);
-    eq (isNegativeFiniteNumber (-0.5)) (true);
-    eq (isNegativeFiniteNumber (new Number (-0.5))) (false);
+    eq (isNegativeFiniteNumber (null), false);
+    eq (isNegativeFiniteNumber (NaN), false);
+    eq (isNegativeFiniteNumber (-Infinity), false);
+    eq (isNegativeFiniteNumber (1), false);
+    eq (isNegativeFiniteNumber (0), false);
+    eq (isNegativeFiniteNumber (-0), false);
+    eq (isNegativeFiniteNumber (-0.5), true);
+    eq (isNegativeFiniteNumber (new Number (-0.5)), false);
   });
 
   test ('provides the "NonZeroFiniteNumber" type', () => {
-    eq ($.NonZeroFiniteNumber.name) ('NonZeroFiniteNumber');
-    eq ($.NonZeroFiniteNumber.url) (`https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#NonZeroFiniteNumber`);
-    eq ($.NonZeroFiniteNumber.supertypes) ([$.FiniteNumber]);
+    eq ($.NonZeroFiniteNumber.name, 'NonZeroFiniteNumber');
+    eq ($.NonZeroFiniteNumber.url, `https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#NonZeroFiniteNumber`);
+    eq ($.NonZeroFiniteNumber.supertypes, [$.FiniteNumber]);
 
     const isNonZeroFiniteNumber = $.test ([]) ($.NonZeroFiniteNumber);
-    eq (isNonZeroFiniteNumber (0)) (false);
-    eq (isNonZeroFiniteNumber (-0)) (false);
-    eq (isNonZeroFiniteNumber (Infinity)) (false);
-    eq (isNonZeroFiniteNumber (-Infinity)) (false);
-    eq (isNonZeroFiniteNumber (1)) (true);
-    eq (isNonZeroFiniteNumber (new Number (1))) (false);
+    eq (isNonZeroFiniteNumber (0), false);
+    eq (isNonZeroFiniteNumber (-0), false);
+    eq (isNonZeroFiniteNumber (Infinity), false);
+    eq (isNonZeroFiniteNumber (-Infinity), false);
+    eq (isNonZeroFiniteNumber (1), true);
+    eq (isNonZeroFiniteNumber (new Number (1)), false);
   });
 
   test ('provides the "Integer" type', () => {
-    eq ($.Integer.name) ('Integer');
-    eq ($.Integer.url) (`https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Integer`);
-    eq ($.Integer.supertypes) ([$.ValidNumber]);
+    eq ($.Integer.name, 'Integer');
+    eq ($.Integer.url, `https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Integer`);
+    eq ($.Integer.supertypes, [$.ValidNumber]);
 
     const isInteger = $.test ([]) ($.Integer);
-    eq (isInteger (3.14)) (false);
-    eq (isInteger (9007199254740992)) (false);
-    eq (isInteger (-9007199254740992)) (false);
-    eq (isInteger (1)) (true);
-    eq (isInteger (new Number (1))) (false);
+    eq (isInteger (3.14), false);
+    eq (isInteger (9007199254740992), false);
+    eq (isInteger (-9007199254740992), false);
+    eq (isInteger (1), true);
+    eq (isInteger (new Number (1)), false);
   });
 
   test ('provides the "NonZeroInteger" type', () => {
-    eq ($.NonZeroInteger.name) ('NonZeroInteger');
-    eq ($.NonZeroInteger.url) (`https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#NonZeroInteger`);
-    eq ($.NonZeroInteger.supertypes) ([$.Integer]);
+    eq ($.NonZeroInteger.name, 'NonZeroInteger');
+    eq ($.NonZeroInteger.url, `https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#NonZeroInteger`);
+    eq ($.NonZeroInteger.supertypes, [$.Integer]);
 
     const isNonZeroInteger = $.test ([]) ($.NonZeroInteger);
-    eq (isNonZeroInteger (0)) (false);
-    eq (isNonZeroInteger (-0)) (false);
-    eq (isNonZeroInteger (3.14)) (false);
-    eq (isNonZeroInteger (1)) (true);
-    eq (isNonZeroInteger (new Number (1))) (false);
+    eq (isNonZeroInteger (0), false);
+    eq (isNonZeroInteger (-0), false);
+    eq (isNonZeroInteger (3.14), false);
+    eq (isNonZeroInteger (1), true);
+    eq (isNonZeroInteger (new Number (1)), false);
   });
 
   test ('provides the "NonNegativeInteger" type', () => {
-    eq ($.NonNegativeInteger.name) ('NonNegativeInteger');
-    eq ($.NonNegativeInteger.url) (`https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#NonNegativeInteger`);
-    eq ($.NonNegativeInteger.supertypes) ([$.Integer]);
+    eq ($.NonNegativeInteger.name, 'NonNegativeInteger');
+    eq ($.NonNegativeInteger.url, `https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#NonNegativeInteger`);
+    eq ($.NonNegativeInteger.supertypes, [$.Integer]);
 
     const isNonNegativeInteger = $.test ([]) ($.NonNegativeInteger);
-    eq (isNonNegativeInteger (0)) (true);
-    eq (isNonNegativeInteger (-0)) (true);
-    eq (isNonNegativeInteger (1)) (true);
-    eq (isNonNegativeInteger (-1)) (false);
-    eq (isNonNegativeInteger (3.14)) (false);
-    eq (isNonNegativeInteger (new Number (1))) (false);
+    eq (isNonNegativeInteger (0), true);
+    eq (isNonNegativeInteger (-0), true);
+    eq (isNonNegativeInteger (1), true);
+    eq (isNonNegativeInteger (-1), false);
+    eq (isNonNegativeInteger (3.14), false);
+    eq (isNonNegativeInteger (new Number (1)), false);
   });
 
   test ('provides the "PositiveInteger" type', () => {
-    eq ($.PositiveInteger.name) ('PositiveInteger');
-    eq ($.PositiveInteger.url) (`https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#PositiveInteger`);
-    eq ($.PositiveInteger.supertypes) ([$.Integer]);
+    eq ($.PositiveInteger.name, 'PositiveInteger');
+    eq ($.PositiveInteger.url, `https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#PositiveInteger`);
+    eq ($.PositiveInteger.supertypes, [$.Integer]);
 
     const isPositiveInteger = $.test ([]) ($.PositiveInteger);
-    eq (isPositiveInteger (1.5)) (false);
-    eq (isPositiveInteger (-1)) (false);
-    eq (isPositiveInteger (1)) (true);
-    eq (isPositiveInteger (new Number (1))) (false);
+    eq (isPositiveInteger (1.5), false);
+    eq (isPositiveInteger (-1), false);
+    eq (isPositiveInteger (1), true);
+    eq (isPositiveInteger (new Number (1)), false);
   });
 
   test ('provides the "NegativeInteger" type', () => {
-    eq ($.NegativeInteger.name) ('NegativeInteger');
-    eq ($.NegativeInteger.url) (`https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#NegativeInteger`);
-    eq ($.NegativeInteger.supertypes) ([$.Integer]);
+    eq ($.NegativeInteger.name, 'NegativeInteger');
+    eq ($.NegativeInteger.url, `https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#NegativeInteger`);
+    eq ($.NegativeInteger.supertypes, [$.Integer]);
 
     const isNegativeInteger = $.test ([]) ($.NegativeInteger);
-    eq (isNegativeInteger (-1.5)) (false);
-    eq (isNegativeInteger (1)) (false);
-    eq (isNegativeInteger (-1)) (true);
-    eq (isNegativeInteger (new Number (-1))) (false);
+    eq (isNegativeInteger (-1.5), false);
+    eq (isNegativeInteger (1), false);
+    eq (isNegativeInteger (-1), true);
+    eq (isNegativeInteger (new Number (-1)), false);
   });
 
   test ('provides the "GlobalRegExp" type', () => {
-    eq ($.GlobalRegExp.name) ('GlobalRegExp');
-    eq ($.GlobalRegExp.url) (`https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#GlobalRegExp`);
-    eq ($.GlobalRegExp.supertypes) ([$.RegExp]);
+    eq ($.GlobalRegExp.name, 'GlobalRegExp');
+    eq ($.GlobalRegExp.url, `https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#GlobalRegExp`);
+    eq ($.GlobalRegExp.supertypes, [$.RegExp]);
 
     const isGlobalRegExp = $.test ([]) ($.GlobalRegExp);
-    eq (isGlobalRegExp (null)) (false);
-    eq (isGlobalRegExp ({global: true})) (false);
-    eq (isGlobalRegExp (/x/)) (false);
-    eq (isGlobalRegExp (/x/i)) (false);
-    eq (isGlobalRegExp (/x/m)) (false);
-    eq (isGlobalRegExp (/x/im)) (false);
-    eq (isGlobalRegExp (/x/g)) (true);
-    eq (isGlobalRegExp (/x/gi)) (true);
-    eq (isGlobalRegExp (/x/gm)) (true);
-    eq (isGlobalRegExp (/x/gim)) (true);
+    eq (isGlobalRegExp (null), false);
+    eq (isGlobalRegExp ({global: true}), false);
+    eq (isGlobalRegExp (/x/), false);
+    eq (isGlobalRegExp (/x/i), false);
+    eq (isGlobalRegExp (/x/m), false);
+    eq (isGlobalRegExp (/x/im), false);
+    eq (isGlobalRegExp (/x/g), true);
+    eq (isGlobalRegExp (/x/gi), true);
+    eq (isGlobalRegExp (/x/gm), true);
+    eq (isGlobalRegExp (/x/gim), true);
   });
 
   test ('provides the "NonGlobalRegExp" type', () => {
-    eq ($.NonGlobalRegExp.name) ('NonGlobalRegExp');
-    eq ($.NonGlobalRegExp.url) (`https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#NonGlobalRegExp`);
-    eq ($.NonGlobalRegExp.supertypes) ([$.RegExp]);
+    eq ($.NonGlobalRegExp.name, 'NonGlobalRegExp');
+    eq ($.NonGlobalRegExp.url, `https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#NonGlobalRegExp`);
+    eq ($.NonGlobalRegExp.supertypes, [$.RegExp]);
 
     const isNonGlobalRegExp = $.test ([]) ($.NonGlobalRegExp);
-    eq (isNonGlobalRegExp (null)) (false);
-    eq (isNonGlobalRegExp ({global: false})) (false);
-    eq (isNonGlobalRegExp (/x/g)) (false);
-    eq (isNonGlobalRegExp (/x/gi)) (false);
-    eq (isNonGlobalRegExp (/x/gm)) (false);
-    eq (isNonGlobalRegExp (/x/gim)) (false);
-    eq (isNonGlobalRegExp (/x/)) (true);
-    eq (isNonGlobalRegExp (/x/i)) (true);
-    eq (isNonGlobalRegExp (/x/m)) (true);
-    eq (isNonGlobalRegExp (/x/im)) (true);
+    eq (isNonGlobalRegExp (null), false);
+    eq (isNonGlobalRegExp ({global: false}), false);
+    eq (isNonGlobalRegExp (/x/g), false);
+    eq (isNonGlobalRegExp (/x/gi), false);
+    eq (isNonGlobalRegExp (/x/gm), false);
+    eq (isNonGlobalRegExp (/x/gim), false);
+    eq (isNonGlobalRegExp (/x/), true);
+    eq (isNonGlobalRegExp (/x/i), true);
+    eq (isNonGlobalRegExp (/x/m), true);
+    eq (isNonGlobalRegExp (/x/im), true);
   });
 
   test ('provides the "RegexFlags" type', () => {
-    eq ($.RegexFlags.name) ('RegexFlags');
-    eq ($.RegexFlags.url) (`https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#RegexFlags`);
-    eq ($.RegexFlags.supertypes) ([$.String]);
+    eq ($.RegexFlags.name, 'RegexFlags');
+    eq ($.RegexFlags.url, `https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#RegexFlags`);
+    eq ($.RegexFlags.supertypes, [$.String]);
 
     const isRegexFlags = $.test ([]) ($.RegexFlags);
-    eq (isRegexFlags ('')) (true);
-    eq (isRegexFlags ('g')) (true);
-    eq (isRegexFlags ('i')) (true);
-    eq (isRegexFlags ('m')) (true);
-    eq (isRegexFlags ('gi')) (true);
-    eq (isRegexFlags ('gm')) (true);
-    eq (isRegexFlags ('im')) (true);
-    eq (isRegexFlags ('gim')) (true);
+    eq (isRegexFlags (''), true);
+    eq (isRegexFlags ('g'), true);
+    eq (isRegexFlags ('i'), true);
+    eq (isRegexFlags ('m'), true);
+    eq (isRegexFlags ('gi'), true);
+    eq (isRegexFlags ('gm'), true);
+    eq (isRegexFlags ('im'), true);
+    eq (isRegexFlags ('gim'), true);
     //  String objects are not acceptable.
-    eq (isRegexFlags (new String (''))) (false);
+    eq (isRegexFlags (new String ('')), false);
     //  Flags must be alphabetically ordered.
-    eq (isRegexFlags ('mg')) (false);
+    eq (isRegexFlags ('mg'), false);
     //  "Sticky" flag is not acceptable.
-    eq (isRegexFlags ('y')) (false);
+    eq (isRegexFlags ('y'), false);
   });
 
   test ('provides the "StrMap" type constructor', () => {
-    eq (typeof $.StrMap) ('function');
-    eq ($.StrMap.length) (1);
-    eq (show ($.StrMap)) ('StrMap :: Type -> Type');
-    eq (show ($.StrMap (a))) ('StrMap a');
-    eq (($.StrMap (a)).name) ('StrMap');
-    eq (($.StrMap (a)).url) (`https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#StrMap`);
-    eq (($.StrMap (a)).supertypes) ([$.Object]);
+    eq (typeof $.StrMap, 'function');
+    eq ($.StrMap.length, 1);
+    eq (show ($.StrMap), 'StrMap :: Type -> Type');
+    eq (show ($.StrMap (a)), 'StrMap a');
+    eq (($.StrMap (a)).name, 'StrMap');
+    eq (($.StrMap (a)).url, `https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#StrMap`);
+    eq (($.StrMap (a)).supertypes, [$.Object]);
 
     //    id :: a -> a
     const id =
@@ -2136,17 +2195,18 @@ See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#ValidDate for
     o.y = 2;
     o.z = 3;
 
-    eq (id ({})) ({});
-    eq (id ({x: 1, y: 2, z: 3})) ({x: 1, y: 2, z: 3});
-    eq (id (o)) ({x: 1, y: 2, z: 3});
-    eq (id ({a: 1, b: 'XXX'})) ({a: 1, b: 'XXX'});
+    eq (id ({}), {});
+    eq (id ({x: 1, y: 2, z: 3}), {x: 1, y: 2, z: 3});
+    eq (id (o), Object.assign (Object.create (null), {x: 1, y: 2, z: 3}));
+    eq (id ({a: 1, b: 'XXX'}), {a: 1, b: 'XXX'});
 
-    eq (keys ({})) ([]);
-    eq (keys ({x: 1, y: 2, z: 3})) (['x', 'y', 'z']);
-    eq (keys (o)) (['x', 'y', 'z']);
+    eq (keys ({}), []);
+    eq (keys ({x: 1, y: 2, z: 3}), ['x', 'y', 'z']);
+    eq (keys (o), ['x', 'y', 'z']);
 
-    throws (() => { keys ({a: 1, b: 'XXX'}); })
-           (new TypeError (`Type-variable constraint violation
+    throws (
+      () => { keys ({a: 1, b: 'XXX'}); },
+      new TypeError (`Type-variable constraint violation
 
 keys :: StrMap a -> Array String
                ^
@@ -2158,12 +2218,13 @@ keys :: StrMap a -> Array String
 Since there is no type of which all the above values are members, the type-variable constraint has been violated.
 `));
 
-    eq (values ({})) ([]);
-    eq (values ({x: 1, y: 2, z: 3})) ([1, 2, 3]);
-    eq (values (o)) ([1, 2, 3]);
+    eq (values ({}), []);
+    eq (values ({x: 1, y: 2, z: 3}), [1, 2, 3]);
+    eq (values (o), [1, 2, 3]);
 
-    throws (() => { values ({a: 1, b: 'XXX'}); })
-           (new TypeError (`Type-variable constraint violation
+    throws (
+      () => { values ({a: 1, b: 'XXX'}); },
+      new TypeError (`Type-variable constraint violation
 
 values :: StrMap a -> Array a
                  ^
@@ -2182,10 +2243,11 @@ Since there is no type of which all the above values are members, the type-varia
         ([$.Array ($.StrMap ($.Number)), $.Array ($.StrMap ($.Number))])
         (xs => xs);
 
-    eq (testUnaryType ([{x: 1}, {y: 2}, {z: 3}])) ([{x: 1}, {y: 2}, {z: 3}]);
+    eq (testUnaryType ([{x: 1}, {y: 2}, {z: 3}]), [{x: 1}, {y: 2}, {z: 3}]);
 
-    throws (() => { testUnaryType ([{x: /xxx/}]); })
-           (new TypeError (`Invalid value
+    throws (
+      () => { testUnaryType ([{x: /xxx/}]); },
+      new TypeError (`Invalid value
 
 testUnaryType :: Array (StrMap Number) -> Array (StrMap Number)
                                ^^^^^^
@@ -2205,11 +2267,12 @@ See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Number for in
         ([$.Either (a) ($.StrMap (b)), $.Either (a) ($.StrMap (b))])
         (e => e);
 
-    eq (testBinaryType (Left ('XXX'))) (Left ('XXX'));
-    eq (testBinaryType (Right ({x: 1, y: 2, z: 3}))) (Right ({x: 1, y: 2, z: 3}));
+    eq (testBinaryType (Left ('XXX')), Left ('XXX'));
+    eq (testBinaryType (Right ({x: 1, y: 2, z: 3})), Right ({x: 1, y: 2, z: 3}));
 
-    throws (() => { testBinaryType (Right ({x: ['foo', false, 42]})); })
-           (new TypeError (`Type-variable constraint violation
+    throws (
+      () => { testBinaryType (Right ({x: ['foo', false, 42]})); },
+      new TypeError (`Type-variable constraint violation
 
 testBinaryType :: Either a (StrMap b) -> Either a (StrMap b)
                                    ^
@@ -2258,8 +2321,9 @@ Since there is no type of which all the above values are members, the type-varia
     values.forEach (pair => {
       const x = pair[0];
       const types = pair[1];
-      throws (() => { f (x); })
-             (new TypeError (`Invalid value
+      throws (
+        () => { f (x); },
+        new TypeError (`Invalid value
 
 f :: Null -> Null
      ^^^^
@@ -2285,8 +2349,9 @@ See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Null for info
         ([$.Number, $.Number, $.Number])
         (x => y => x + y);
 
-    throws (() => { add ([[1], [2]]); })
-           (new TypeError (`Invalid value
+    throws (
+      () => { add ([[1], [2]]); },
+      new TypeError (`Invalid value
 
 add :: Number -> Number -> Number
        ^^^^^^
@@ -2315,15 +2380,16 @@ See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Number for in
         ([a, b, $.Pair (a) (b)])
         (Pair);
 
-    eq (aa (0) (1)) (Pair (0) (1));
-    eq (aa (1) (0)) (Pair (1) (0));
-    eq (ab (0) (1)) (Pair (0) (1));
-    eq (ab (1) (0)) (Pair (1) (0));
-    eq (ab (0) (false)) (Pair (0) (false));
-    eq (ab (false) (0)) (Pair (false) (0));
+    eq (aa (0) (1), Pair (0) (1));
+    eq (aa (1) (0), Pair (1) (0));
+    eq (ab (0) (1), Pair (0) (1));
+    eq (ab (1) (0), Pair (1) (0));
+    eq (ab (0) (false), Pair (0) (false));
+    eq (ab (false) (0), Pair (false) (0));
 
-    throws (() => { aa (0) (/x/); })
-           (new TypeError (`Type-variable constraint violation
+    throws (
+      () => { aa (0) (/x/); },
+      new TypeError (`Type-variable constraint violation
 
 aa :: a -> a -> Pair a a
       ^    ^
@@ -2336,8 +2402,9 @@ aa :: a -> a -> Pair a a
 Since there is no type of which all the above values are members, the type-variable constraint has been violated.
 `));
 
-    throws (() => { aa ([Left ('XXX'), false, 42]); })
-           (new TypeError (`Type-variable constraint violation
+    throws (
+      () => { aa ([Left ('XXX'), false, 42]); },
+      new TypeError (`Type-variable constraint violation
 
 aa :: a -> a -> Pair a a
       ^
@@ -2355,11 +2422,12 @@ Since there is no type of which all the above values are members, the type-varia
         ([a, $.Maybe (a), a])
         (x => maybe => maybe.isJust ? maybe.value : x);
 
-    eq (fromMaybe (0) (Nothing)) (0);
-    eq (fromMaybe (0) (Just (42))) (42);
+    eq (fromMaybe (0) (Nothing), 0);
+    eq (fromMaybe (0) (Just (42)), 42);
 
-    throws (() => { fromMaybe (0) ([1, 2, 3]); })
-           (new TypeError (`Invalid value
+    throws (
+      () => { fromMaybe (0) ([1, 2, 3]); },
+      new TypeError (`Invalid value
 
 fromMaybe :: a -> Maybe a -> a
                   ^^^^^^^
@@ -2379,10 +2447,11 @@ See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Maybe for inf
         ([$.Pair (a) (b), a])
         (pair => pair.fst);
 
-    eq (fst (Pair ('XXX') (42))) ('XXX');
+    eq (fst (Pair ('XXX') (42)), 'XXX');
 
-    throws (() => { fst (['XXX', 42]); })
-           (new TypeError (`Invalid value
+    throws (
+      () => { fst (['XXX', 42]); },
+      new TypeError (`Invalid value
 
 fst :: Pair a b -> a
        ^^^^^^^^
@@ -2402,11 +2471,12 @@ See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Pair for info
         ([$.Pair (a) (a), $.Boolean])
         (pair => Z.equals (pair.fst, pair.snd));
 
-    eq (twin (Pair (42) (42))) (true);
-    eq (twin (Pair (42) (99))) (false);
+    eq (twin (Pair (42) (42)), true);
+    eq (twin (Pair (42) (99)), false);
 
-    throws (() => { twin (Pair (42) ('XXX')); })
-           (new TypeError (`Type-variable constraint violation
+    throws (
+      () => { twin (Pair (42) ('XXX')); },
+      new TypeError (`Type-variable constraint violation
 
 twin :: Pair a a -> Boolean
              ^ ^
@@ -2426,13 +2496,14 @@ Since there is no type of which all the above values are members, the type-varia
         ([$.Either (a) (b), $.Either (a) (b), $.Either (a) (b)])
         (curry2 (Z.concat));
 
-    eq (concat (Left ('abc')) (Left ('def'))) (Left ('abcdef'));
-    eq (concat (Left ('abc')) (Right ('ABC'))) (Right ('ABC'));
-    eq (concat (Right ('ABC')) (Left ('abc'))) (Right ('ABC'));
-    eq (concat (Right ('ABC')) (Right ('DEF'))) (Right ('ABCDEF'));
+    eq (concat (Left ('abc')) (Left ('def')), Left ('abcdef'));
+    eq (concat (Left ('abc')) (Right ('ABC')), Right ('ABC'));
+    eq (concat (Right ('ABC')) (Left ('abc')), Right ('ABC'));
+    eq (concat (Right ('ABC')) (Right ('DEF')), Right ('ABCDEF'));
 
-    throws (() => { concat (Left ('abc')) (Left ([1, 2, 3])); })
-           (new TypeError (`Type-variable constraint violation
+    throws (
+      () => { concat (Left ('abc')) (Left ([1, 2, 3])); },
+      new TypeError (`Type-variable constraint violation
 
 concat :: Either a b -> Either a b -> Either a b
                  ^             ^
@@ -2445,8 +2516,9 @@ concat :: Either a b -> Either a b -> Either a b
 Since there is no type of which all the above values are members, the type-variable constraint has been violated.
 `));
 
-    throws (() => { concat (Right ('abc')) (Right ([1, 2, 3])); })
-           (new TypeError (`Type-variable constraint violation
+    throws (
+      () => { concat (Right ('abc')) (Right ([1, 2, 3])); },
+      new TypeError (`Type-variable constraint violation
 
 concat :: Either a b -> Either a b -> Either a b
                    ^             ^
@@ -2466,10 +2538,11 @@ Since there is no type of which all the above values are members, the type-varia
         ([a, a, a, a])
         (x => y => z => x);
 
-    eq (f (1) (2) (3)) (1);
+    eq (f (1) (2) (3), 1);
 
-    throws (() => { f (Left ('abc')) (Left (/XXX/)); })
-           (new TypeError (`Type-variable constraint violation
+    throws (
+      () => { f (Left ('abc')) (Left (/XXX/)); },
+      new TypeError (`Type-variable constraint violation
 
 f :: a -> a -> a -> a
      ^    ^
@@ -2482,8 +2555,9 @@ f :: a -> a -> a -> a
 Since there is no type of which all the above values are members, the type-variable constraint has been violated.
 `));
 
-    throws (() => { f (Right (123)) (Right (/XXX/)); })
-           (new TypeError (`Type-variable constraint violation
+    throws (
+      () => { f (Right (123)) (Right (/XXX/)); },
+      new TypeError (`Type-variable constraint violation
 
 f :: a -> a -> a -> a
      ^    ^
@@ -2496,8 +2570,9 @@ f :: a -> a -> a -> a
 Since there is no type of which all the above values are members, the type-variable constraint has been violated.
 `));
 
-    throws (() => { f (Left ('abc')) (Right (123)) (Left (/XXX/)); })
-           (new TypeError (`Type-variable constraint violation
+    throws (
+      () => { f (Left ('abc')) (Right (123)) (Left (/XXX/)); },
+      new TypeError (`Type-variable constraint violation
 
 f :: a -> a -> a -> a
      ^         ^
@@ -2510,8 +2585,9 @@ f :: a -> a -> a -> a
 Since there is no type of which all the above values are members, the type-variable constraint has been violated.
 `));
 
-    throws (() => { f (Left ('abc')) (Right (123)) (Right (/XXX/)); })
-           (new TypeError (`Type-variable constraint violation
+    throws (
+      () => { f (Left ('abc')) (Right (123)) (Right (/XXX/)); },
+      new TypeError (`Type-variable constraint violation
 
 f :: a -> a -> a -> a
           ^    ^
@@ -2533,11 +2609,12 @@ Since there is no type of which all the above values are members, the type-varia
         ([$.Array ($.Array (a)), $.Array (a)])
         (xss => Z.chain (xs => xs, xss));
 
-    eq (unnest ([[1, 2], [3, 4], [5, 6]])) ([1, 2, 3, 4, 5, 6]);
-    eq (unnest ([[null], [null], [null]])) ([null, null, null]);
+    eq (unnest ([[1, 2], [3, 4], [5, 6]]), [1, 2, 3, 4, 5, 6]);
+    eq (unnest ([[null], [null], [null]]), [null, null, null]);
 
-    throws (() => { unnest ([1, 2, 3]); })
-           (new TypeError (`Invalid value
+    throws (
+      () => { unnest ([1, 2, 3]); },
+      new TypeError (`Invalid value
 
 unnest :: Array (Array a) -> Array a
                  ^^^^^^^
@@ -2559,8 +2636,9 @@ See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Array for inf
           $.Array ($.Either ($.String) ($.Integer))])
         (xs => ys => [Left (/xxx/)]);
 
-    throws (() => { concatComplex ([Left (/xxx/), Right (0), Right (0.1), Right (0.2)]); })
-           (new TypeError (`Invalid value
+    throws (
+      () => { concatComplex ([Left (/xxx/), Right (0), Right (0.1), Right (0.2)]); },
+      new TypeError (`Invalid value
 
 concatComplex :: Array (Either String Integer) -> Array (Either String Integer) -> Array (Either String Integer)
                                ^^^^^^
@@ -2573,8 +2651,9 @@ The value at position 1 is not a member of ‘String’.
 See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#String for information about the String type.
 `));
 
-    throws (() => { concatComplex ([Left ('abc'), Right (0), Right (0.1), Right (0.2)]); })
-           (new TypeError (`Invalid value
+    throws (
+      () => { concatComplex ([Left ('abc'), Right (0), Right (0.1), Right (0.2)]); },
+      new TypeError (`Invalid value
 
 concatComplex :: Array (Either String Integer) -> Array (Either String Integer) -> Array (Either String Integer)
                                       ^^^^^^^
@@ -2587,8 +2666,9 @@ The value at position 1 is not a member of ‘Integer’.
 See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Integer for information about the Integer type.
 `));
 
-    throws (() => { concatComplex ([]) ([Left (/xxx/), Right (0), Right (0.1), Right (0.2)]); })
-           (new TypeError (`Invalid value
+    throws (
+      () => { concatComplex ([]) ([Left (/xxx/), Right (0), Right (0.1), Right (0.2)]); },
+      new TypeError (`Invalid value
 
 concatComplex :: Array (Either String Integer) -> Array (Either String Integer) -> Array (Either String Integer)
                                                                 ^^^^^^
@@ -2601,8 +2681,9 @@ The value at position 1 is not a member of ‘String’.
 See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#String for information about the String type.
 `));
 
-    throws (() => { concatComplex ([]) ([Left ('abc'), Right (0), Right (0.1), Right (0.2)]); })
-           (new TypeError (`Invalid value
+    throws (
+      () => { concatComplex ([]) ([Left ('abc'), Right (0), Right (0.1), Right (0.2)]); },
+      new TypeError (`Invalid value
 
 concatComplex :: Array (Either String Integer) -> Array (Either String Integer) -> Array (Either String Integer)
                                                                        ^^^^^^^
@@ -2615,8 +2696,9 @@ The value at position 1 is not a member of ‘Integer’.
 See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Integer for information about the Integer type.
 `));
 
-    throws (() => { concatComplex ([]) ([]); })
-           (new TypeError (`Invalid value
+    throws (
+      () => { concatComplex ([]) ([]); },
+      new TypeError (`Invalid value
 
 concatComplex :: Array (Either String Integer) -> Array (Either String Integer) -> Array (Either String Integer)
                                                                                                  ^^^^^^
@@ -2638,14 +2720,15 @@ See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#String for in
         ([$.Array (a), $.Array (a), $.Array (a)])
         (curry2 (Z.concat));
 
-    eq (concat ([]) ([])) ([]);
-    eq (concat ([]) ([1, 2, 3])) ([1, 2, 3]);
-    eq (concat ([1, 2, 3]) ([])) ([1, 2, 3]);
-    eq (concat ([1, 2, 3]) ([4, 5, 6])) ([1, 2, 3, 4, 5, 6]);
-    eq (concat ([Left ('XXX')]) ([Right (42)])) ([Left ('XXX'), Right (42)]);
+    eq (concat ([]) ([]), []);
+    eq (concat ([]) ([1, 2, 3]), [1, 2, 3]);
+    eq (concat ([1, 2, 3]) ([]), [1, 2, 3]);
+    eq (concat ([1, 2, 3]) ([4, 5, 6]), [1, 2, 3, 4, 5, 6]);
+    eq (concat ([Left ('XXX')]) ([Right (42)]), [Left ('XXX'), Right (42)]);
 
-    throws (() => { concat ([[1, 2, 3], [Left ('XXX'), Right (42)]]); })
-           (new TypeError (`Type-variable constraint violation
+    throws (
+      () => { concat ([[1, 2, 3], [Left ('XXX'), Right (42)]]); },
+      new TypeError (`Type-variable constraint violation
 
 concat :: Array a -> Array a -> Array a
                 ^
@@ -2657,8 +2740,9 @@ concat :: Array a -> Array a -> Array a
 Since there is no type of which all the above values are members, the type-variable constraint has been violated.
 `));
 
-    throws (() => { concat ([[1, 2, 3], [Right (42), Left ('XXX')]]); })
-           (new TypeError (`Type-variable constraint violation
+    throws (
+      () => { concat ([[1, 2, 3], [Right (42), Left ('XXX')]]); },
+      new TypeError (`Type-variable constraint violation
 
 concat :: Array a -> Array a -> Array a
                 ^
@@ -2677,8 +2761,9 @@ Since there is no type of which all the above values are members, the type-varia
         ([$.Array ($.Array (a)), $.Array ($.Array (a)), $.Array ($.Array (a))])
         (xss => yss => [['a', 'b', 'c'], [1, 2, 3]]);
 
-    throws (() => { concatNested ([['a', 'b', 'c'], [1, 2, 3]]); })
-           (new TypeError (`Type-variable constraint violation
+    throws (
+      () => { concatNested ([['a', 'b', 'c'], [1, 2, 3]]); },
+      new TypeError (`Type-variable constraint violation
 
 concatNested :: Array (Array a) -> Array (Array a) -> Array (Array a)
                              ^
@@ -2694,8 +2779,9 @@ concatNested :: Array (Array a) -> Array (Array a) -> Array (Array a)
 Since there is no type of which all the above values are members, the type-variable constraint has been violated.
 `));
 
-    throws (() => { concatNested ([]) ([['a', 'b', 'c'], [1, 2, 3]]); })
-           (new TypeError (`Type-variable constraint violation
+    throws (
+      () => { concatNested ([]) ([['a', 'b', 'c'], [1, 2, 3]]); },
+      new TypeError (`Type-variable constraint violation
 
 concatNested :: Array (Array a) -> Array (Array a) -> Array (Array a)
                                                 ^
@@ -2711,8 +2797,9 @@ concatNested :: Array (Array a) -> Array (Array a) -> Array (Array a)
 Since there is no type of which all the above values are members, the type-variable constraint has been violated.
 `));
 
-    throws (() => { concatNested ([]) ([]); })
-           (new TypeError (`Type-variable constraint violation
+    throws (
+      () => { concatNested ([]) ([]); },
+      new TypeError (`Type-variable constraint violation
 
 concatNested :: Array (Array a) -> Array (Array a) -> Array (Array a)
                                                                    ^
@@ -2744,10 +2831,11 @@ Since there is no type of which all the above values are members, the type-varia
         ([$.Fn ($.String) ($.Number), $.Array ($.String), $.Array ($.Number)])
         (f => xs => f (xs));
 
-    eq (f (s => s.length) (['foo', 'bar', 'baz', 'quux'])) ([3, 3, 3, 4]);
+    eq (f (s => s.length) (['foo', 'bar', 'baz', 'quux']), [3, 3, 3, 4]);
 
-    throws (() => { g (/xxx/); })
-           (new TypeError (`Invalid value
+    throws (
+      () => { g (/xxx/); },
+      new TypeError (`Invalid value
 
 g :: (String -> Number) -> Array String -> Array Number
       ^^^^^^^^^^^^^^^^
@@ -2758,8 +2846,9 @@ g :: (String -> Number) -> Array String -> Array Number
 The value at position 1 is not a member of ‘String -> Number’.
 `));
 
-    throws (() => { g (s => s.length) (['a', 'b', 'c']); })
-           (new TypeError (`Invalid value
+    throws (
+      () => { g (s => s.length) (['a', 'b', 'c']); },
+      new TypeError (`Invalid value
 
 g :: (String -> Number) -> Array String -> Array Number
       ^^^^^^
@@ -2772,8 +2861,9 @@ The value at position 1 is not a member of ‘String’.
 See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#String for information about the String type.
 `));
 
-    throws (() => { f (x => x) (['a', 'b', 'c']); })
-           (new TypeError (`Invalid value
+    throws (
+      () => { f (x => x) (['a', 'b', 'c']); },
+      new TypeError (`Invalid value
 
 f :: (String -> Number) -> Array String -> Array Number
                 ^^^^^^
@@ -2799,10 +2889,11 @@ See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Number for in
            return result;
          });
 
-    eq (map (s => s.length) (['foo', 'bar'])) ([3, 3]);
+    eq (map (s => s.length) (['foo', 'bar']), [3, 3]);
 
-    throws (() => { map (s => s.length) (['foo', 'bar', 'baz', 'quux']); })
-           (new TypeError (`Type-variable constraint violation
+    throws (
+      () => { map (s => s.length) (['foo', 'bar', 'baz', 'quux']); },
+      new TypeError (`Type-variable constraint violation
 
 map :: (a -> b) -> Array a -> Array b
         ^                ^
@@ -2821,8 +2912,9 @@ map :: (a -> b) -> Array a -> Array b
 Since there is no type of which all the above values are members, the type-variable constraint has been violated.
 `));
 
-    throws (() => { map (s => s === 'baz' ? null : s.length) (['foo', 'bar', 'baz']); })
-           (new TypeError (`Type-variable constraint violation
+    throws (
+      () => { map (s => s === 'baz' ? null : s.length) (['foo', 'bar', 'baz']); },
+      new TypeError (`Type-variable constraint violation
 
 map :: (a -> b) -> Array a -> Array b
              ^
@@ -2842,10 +2934,11 @@ Since there is no type of which all the above values are members, the type-varia
         ([$.Function ([a, b, a]), a, $.Array (b), a])
         (curry3 (Z.reduce));
 
-    eq (reduce_ ((x, y) => x + y) (0) ([1, 2, 3, 4, 5, 6])) (21);
+    eq (reduce_ ((x, y) => x + y) (0) ([1, 2, 3, 4, 5, 6]), 21);
 
-    throws (() => { reduce_ (null); })
-           (new TypeError (`Invalid value
+    throws (
+      () => { reduce_ (null); },
+      new TypeError (`Invalid value
 
 reduce_ :: ((a, b) -> a) -> a -> Array b -> a
             ^^^^^^^^^^^
@@ -2872,12 +2965,13 @@ The value at position 1 is not a member of ‘(a, b) -> a’.
     //    h :: Integer -> Maybe (Array2 Integer Integer)
     const h = n => n >= 5 ? Nothing : Just ([n, n + 1]);
 
-    eq (unfoldr (h) (5)) ([]);
-    eq (unfoldr (h) (4)) ([4]);
-    eq (unfoldr (h) (1)) ([1, 2, 3, 4]);
+    eq (unfoldr (h) (5), []);
+    eq (unfoldr (h) (4), [4]);
+    eq (unfoldr (h) (1), [1, 2, 3, 4]);
 
-    throws (() => { unfoldr (null); })
-           (new TypeError (`Invalid value
+    throws (
+      () => { unfoldr (null); },
+      new TypeError (`Invalid value
 
 unfoldr :: (b -> Maybe (Array2 a b)) -> b -> Array a
             ^^^^^^^^^^^^^^^^^^^^^^^
@@ -2888,8 +2982,9 @@ unfoldr :: (b -> Maybe (Array2 a b)) -> b -> Array a
 The value at position 1 is not a member of ‘b -> Maybe (Array2 a b)’.
 `));
 
-    throws (() => { unfoldr (n => n >= 5 ? Nothing : Just (n)) (1); })
-           (new TypeError (`Invalid value
+    throws (
+      () => { unfoldr (n => n >= 5 ? Nothing : Just (n)) (1); },
+      new TypeError (`Invalid value
 
 unfoldr :: (b -> Maybe (Array2 a b)) -> b -> Array a
                         ^^^^^^^^^^
@@ -2902,8 +2997,9 @@ The value at position 1 is not a member of ‘Array2 a b’.
 See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Array2 for information about the Array2 type constructor.
 `));
 
-    throws (() => { unfoldr (n => n >= 5 ? Nothing : Just ([null, 'XXX'])) (1); })
-           (new TypeError (`Type-variable constraint violation
+    throws (
+      () => { unfoldr (n => n >= 5 ? Nothing : Just ([null, 'XXX'])) (1); },
+      new TypeError (`Type-variable constraint violation
 
 unfoldr :: (b -> Maybe (Array2 a b)) -> b -> Array a
             ^                    ^      ^
@@ -2925,8 +3021,9 @@ Since there is no type of which all the above values are members, the type-varia
         ([a, $.Fn (a) (b), b])
         (x => f => f (/* x */));
 
-    throws (() => { T (100) (Math.sqrt); })
-           (new TypeError (`‘T’ applied ‘a -> b’ to the wrong number of arguments
+    throws (
+      () => { T (100) (Math.sqrt); },
+      new TypeError (`‘T’ applied ‘a -> b’ to the wrong number of arguments
 
 T :: a -> (a -> b) -> b
            ^
@@ -2935,8 +3032,9 @@ T :: a -> (a -> b) -> b
 Expected one argument but received zero arguments.
 `));
 
-    throws (() => { def ('once') ({}) ([$.Fn (a) (b), a, b]) (f => x => f (x)) (null); })
-           (new TypeError (`Invalid value
+    throws (
+      () => { def ('once') ({}) ([$.Fn (a) (b), a, b]) (f => x => f (x)) (null); },
+      new TypeError (`Invalid value
 
 once :: (a -> b) -> a -> b
          ^^^^^^
@@ -2947,8 +3045,9 @@ once :: (a -> b) -> a -> b
 The value at position 1 is not a member of ‘a -> b’.
 `));
 
-    throws (() => { def ('twice') ({}) ([$.Fn (a) ($.Fn (a) (b)), a, b]) (f => x => f (x) (x)) (null); })
-           (new TypeError (`Invalid value
+    throws (
+      () => { def ('twice') ({}) ([$.Fn (a) ($.Fn (a) (b)), a, b]) (f => x => f (x) (x)) (null); },
+      new TypeError (`Invalid value
 
 twice :: (a -> a -> b) -> a -> b
           ^^^^^^^^^^^
@@ -2959,8 +3058,9 @@ twice :: (a -> a -> b) -> a -> b
 The value at position 1 is not a member of ‘a -> a -> b’.
 `));
 
-    throws (() => { def ('thrice') ({}) ([$.Fn (a) ($.Fn (a) ($.Fn (a) (b))), a, b]) (f => x => f (x) (x) (x)) (null); })
-           (new TypeError (`Invalid value
+    throws (
+      () => { def ('thrice') ({}) ([$.Fn (a) ($.Fn (a) ($.Fn (a) (b))), a, b]) (f => x => f (x) (x) (x)) (null); },
+      new TypeError (`Invalid value
 
 thrice :: (a -> a -> a -> b) -> a -> b
            ^^^^^^^^^^^^^^^^
@@ -2980,28 +3080,28 @@ The value at position 1 is not a member of ‘a -> a -> a -> b’.
         ([f (a), f (a), f (a)])
         (curry2 (Z.alt));
 
-    eq (alt ([]) ([])) ([]);
-    eq (alt ({}) ({})) ({});
-    eq (alt (Nothing) (Nothing)) (Nothing);
-    eq (alt (Nothing) (Just (1))) (Just (1));
-    eq (alt (Just (2)) (Nothing)) (Just (2));
-    eq (alt (Just (3)) (Just (4))) (Just (3));
-    eq (alt (Left (1)) (Left (2))) (Left (2));
-    eq (alt (Left (3)) (Right (4))) (Right (4));
-    eq (alt (Right (5)) (Left (6))) (Right (5));
-    eq (alt (Right (7)) (Right (8))) (Right (7));
+    eq (alt ([]) ([]), []);
+    eq (alt ({}) ({}), {});
+    eq (alt (Nothing) (Nothing), Nothing);
+    eq (alt (Nothing) (Just (1)), Just (1));
+    eq (alt (Just (2)) (Nothing), Just (2));
+    eq (alt (Just (3)) (Just (4)), Just (3));
+    eq (alt (Left (1)) (Left (2)), Left (2));
+    eq (alt (Left (3)) (Right (4)), Right (4));
+    eq (alt (Right (5)) (Left (6)), Right (5));
+    eq (alt (Right (7)) (Right (8)), Right (7));
 
     //  Constraint ordering:
     eq (show (def ('elem')
                   ({a: [Z.Setoid], f: [Z.Foldable]})
                   ([a, f (a), $.Boolean])
-                  (curry2 (Z.elem))))
-       ('elem :: (Setoid a, Foldable f) => a -> f a -> Boolean');
+                  (curry2 (Z.elem))),
+        'elem :: (Setoid a, Foldable f) => a -> f a -> Boolean');
     eq (show (def ('elem')
                   ({f: [Z.Foldable], a: [Z.Setoid]})
                   ([a, f (a), $.Boolean])
-                  (curry2 (Z.elem))))
-       ('elem :: (Foldable f, Setoid a) => a -> f a -> Boolean');
+                  (curry2 (Z.elem))),
+        'elem :: (Foldable f, Setoid a) => a -> f a -> Boolean');
 
     //    concat :: Semigroup a => a -> a -> a
     const concat =
@@ -3010,11 +3110,12 @@ The value at position 1 is not a member of ‘a -> a -> a -> b’.
         ([a, a, a])
         (curry2 (Z.concat));
 
-    eq (concat ([1, 2, 3]) ([4, 5, 6])) ([1, 2, 3, 4, 5, 6]);
-    eq (concat ('abc') ('def')) ('abcdef');
+    eq (concat ([1, 2, 3]) ([4, 5, 6]), [1, 2, 3, 4, 5, 6]);
+    eq (concat ('abc') ('def'), 'abcdef');
 
-    throws (() => { concat (/x/); })
-           (new TypeError (`Type-class constraint violation
+    throws (
+      () => { concat (/x/); },
+      new TypeError (`Type-class constraint violation
 
 concat :: Semigroup a => a -> a -> a
           ^^^^^^^^^^^    ^
@@ -3027,8 +3128,9 @@ concat :: Semigroup a => a -> a -> a
 See https://github.com/sanctuary-js/sanctuary-type-classes/tree/v${Z$version}#Semigroup for information about the sanctuary-type-classes/Semigroup type class.
 `));
 
-    throws (() => { concat ([]) (''); })
-           (new TypeError (`Type-variable constraint violation
+    throws (
+      () => { concat ([]) (''); },
+      new TypeError (`Type-variable constraint violation
 
 concat :: Semigroup a => a -> a -> a
                          ^    ^
@@ -3041,8 +3143,9 @@ concat :: Semigroup a => a -> a -> a
 Since there is no type of which all the above values are members, the type-variable constraint has been violated.
 `));
 
-    throws (() => { concat ('') ([]); })
-           (new TypeError (`Type-variable constraint violation
+    throws (
+      () => { concat ('') ([]); },
+      new TypeError (`Type-variable constraint violation
 
 concat :: Semigroup a => a -> a -> a
                          ^    ^
@@ -3065,12 +3168,13 @@ Since there is no type of which all the above values are members, the type-varia
     //    even :: Integer -> Boolean
     const even = x => x % 2 === 0;
 
-    eq (filter (even) (Nothing)) (Nothing);
-    eq (filter (even) (Just (9))) (Nothing);
-    eq (filter (even) (Just (4))) (Just (4));
+    eq (filter (even) (Nothing), Nothing);
+    eq (filter (even) (Just (9)), Nothing);
+    eq (filter (even) (Just (4)), Just (4));
 
-    throws (() => { filter (even) (Right (42)); })
-           (new TypeError (`Type-class constraint violation
+    throws (
+      () => { filter (even) (Right (42)); },
+      new TypeError (`Type-class constraint violation
 
 filter :: Filterable f => (a -> Boolean) -> f a -> f a
           ^^^^^^^^^^^^                      ^^^
@@ -3090,8 +3194,9 @@ See https://github.com/sanctuary-js/sanctuary-type-classes/tree/v${Z$version}#Fi
         ([$.Maybe (a), $.Maybe (a), $.Maybe (a)])
         (m => n => Just (/xxx/));
 
-    throws (() => { concatMaybes (Just (/xxx/)); })
-           (new TypeError (`Type-class constraint violation
+    throws (
+      () => { concatMaybes (Just (/xxx/)); },
+      new TypeError (`Type-class constraint violation
 
 concatMaybes :: Semigroup a => Maybe a -> Maybe a -> Maybe a
                 ^^^^^^^^^^^          ^
@@ -3104,8 +3209,9 @@ concatMaybes :: Semigroup a => Maybe a -> Maybe a -> Maybe a
 See https://github.com/sanctuary-js/sanctuary-type-classes/tree/v${Z$version}#Semigroup for information about the sanctuary-type-classes/Semigroup type class.
 `));
 
-    throws (() => { concatMaybes (Just ('abc')) (Just (/xxx/)); })
-           (new TypeError (`Type-class constraint violation
+    throws (
+      () => { concatMaybes (Just ('abc')) (Just (/xxx/)); },
+      new TypeError (`Type-class constraint violation
 
 concatMaybes :: Semigroup a => Maybe a -> Maybe a -> Maybe a
                 ^^^^^^^^^^^                     ^
@@ -3118,8 +3224,9 @@ concatMaybes :: Semigroup a => Maybe a -> Maybe a -> Maybe a
 See https://github.com/sanctuary-js/sanctuary-type-classes/tree/v${Z$version}#Semigroup for information about the sanctuary-type-classes/Semigroup type class.
 `));
 
-    throws (() => { concatMaybes (Just ('abc')) (Just ('def')); })
-           (new TypeError (`Type-class constraint violation
+    throws (
+      () => { concatMaybes (Just ('abc')) (Just ('def')); },
+      new TypeError (`Type-class constraint violation
 
 concatMaybes :: Semigroup a => Maybe a -> Maybe a -> Maybe a
                 ^^^^^^^^^^^                                ^
@@ -3139,10 +3246,11 @@ See https://github.com/sanctuary-js/sanctuary-type-classes/tree/v${Z$version}#Se
         ([a, b, a])
         (x => y => x);
 
-    eq (sillyConst (Just (42)) ([1, 2, 3])) (Just (42));
+    eq (sillyConst (Just (42)) ([1, 2, 3]), Just (42));
 
-    throws (() => { sillyConst (true); })
-           (new TypeError (`Type-class constraint violation
+    throws (
+      () => { sillyConst (true); },
+      new TypeError (`Type-class constraint violation
 
 sillyConst :: (Alternative a, Semigroup b) => a -> b -> a
                ^^^^^^^^^^^^^                  ^
@@ -3182,16 +3290,17 @@ See https://github.com/sanctuary-js/sanctuary-type-classes/tree/v${Z$version}#Al
         ([$.Fn (a) (b), f (a), f (b)])
         (curry2 (Z.map));
 
-    eq (map (Math.sqrt) (Nothing)) (Nothing);
-    eq (map (Math.sqrt) (Just (9))) (Just (3));
+    eq (map (Math.sqrt) (Nothing), Nothing);
+    eq (map (Math.sqrt) (Just (9)), Just (3));
 
-    eq (map (Math.sqrt) (Math.sqrt) (625)) (5);
+    eq (map (Math.sqrt) (Math.sqrt) (625), 5);
 
     const xs = [1, 4, 9];
     xs['fantasy-land/map'] = xs.map;
 
-    throws (() => { map (Math.sqrt) (xs); })
-           (new TypeError (`‘map’ applied ‘a -> b’ to the wrong number of arguments
+    throws (
+      () => { map (Math.sqrt) (xs); },
+      new TypeError (`‘map’ applied ‘a -> b’ to the wrong number of arguments
 
 map :: Functor f => (a -> b) -> f a -> f b
                      ^
@@ -3211,14 +3320,15 @@ Expected one argument but received three arguments:
         ([f ($.FiniteNumber), $.FiniteNumber])
         (foldable => Z.reduce ((x, y) => x + y, 0, foldable));
 
-    eq (sum ([1, 2, 3, 4, 5])) (15);
-    eq (sum (Nothing)) (0);
-    eq (sum (Just (42))) (42);
-    eq (sum (Left ('XXX'))) (0);
-    eq (sum (Right (42))) (42);
+    eq (sum ([1, 2, 3, 4, 5]), 15);
+    eq (sum (Nothing), 0);
+    eq (sum (Just (42)), 42);
+    eq (sum (Left ('XXX')), 0);
+    eq (sum (Right (42)), 42);
 
-    throws (() => { sum (42); })
-           (new TypeError (`Invalid value
+    throws (
+      () => { sum (42); },
+      new TypeError (`Invalid value
 
 sum :: Foldable f => f FiniteNumber -> FiniteNumber
                      ^^^^^^^^^^^^^^
@@ -3229,8 +3339,9 @@ sum :: Foldable f => f FiniteNumber -> FiniteNumber
 The value at position 1 is not a member of ‘f FiniteNumber’.
 `));
 
-    throws (() => { sum (Box (42)); })
-           (new TypeError (`Type-class constraint violation
+    throws (
+      () => { sum (Box (42)); },
+      new TypeError (`Type-class constraint violation
 
 sum :: Foldable f => f FiniteNumber -> FiniteNumber
        ^^^^^^^^^^    ^^^^^^^^^^^^^^
@@ -3243,8 +3354,9 @@ sum :: Foldable f => f FiniteNumber -> FiniteNumber
 See https://github.com/sanctuary-js/sanctuary-type-classes/tree/v${Z$version}#Foldable for information about the sanctuary-type-classes/Foldable type class.
 `));
 
-    throws (() => { sum (Just (Infinity)); })
-           (new TypeError (`Invalid value
+    throws (
+      () => { sum (Just (Infinity)); },
+      new TypeError (`Invalid value
 
 sum :: Foldable f => f FiniteNumber -> FiniteNumber
                        ^^^^^^^^^^^^
@@ -3276,10 +3388,11 @@ See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#FiniteNumber 
            );
          });
 
-    eq (sort (['foo', 'bar', 'baz'])) (['bar', 'baz', 'foo']);
+    eq (sort (['foo', 'bar', 'baz']), ['bar', 'baz', 'foo']);
 
-    throws (() => { sort (['foo', true, 42]); })
-           (new TypeError (`Type-variable constraint violation
+    throws (
+      () => { sort (['foo', true, 42]); },
+      new TypeError (`Type-variable constraint violation
 
 sort :: (Ord a, Applicative f, Foldable f, Monoid f) => f a -> f a
                                                           ^
@@ -3291,8 +3404,9 @@ sort :: (Ord a, Applicative f, Foldable f, Monoid f) => f a -> f a
 Since there is no type of which all the above values are members, the type-variable constraint has been violated.
 `));
 
-    throws (() => { sort ([Math.sin, Math.cos]); })
-           (new TypeError (`Type-class constraint violation
+    throws (
+      () => { sort ([Math.sin, Math.cos]); },
+      new TypeError (`Type-class constraint violation
 
 sort :: (Ord a, Applicative f, Foldable f, Monoid f) => f a -> f a
          ^^^^^                                            ^
@@ -3308,13 +3422,14 @@ See https://github.com/sanctuary-js/sanctuary-type-classes/tree/v${Z$version}#Or
     //    xxx :: f String -> Null
     const xxx = def ('xxx') ({}) ([f ($.String), $.Null]) (x => null);
 
-    eq (xxx ([])) (null);
-    eq (xxx (['foo'])) (null);
-    eq (xxx (['foo', 'bar'])) (null);
-    eq (xxx (['foo', 'bar', 'baz'])) (null);
+    eq (xxx ([]), null);
+    eq (xxx (['foo']), null);
+    eq (xxx (['foo', 'bar']), null);
+    eq (xxx (['foo', 'bar', 'baz']), null);
 
-    throws (() => { xxx ('XXX'); })
-           (new TypeError (`Invalid value
+    throws (
+      () => { xxx ('XXX'); },
+      new TypeError (`Invalid value
 
 xxx :: f String -> Null
        ^^^^^^^^
@@ -3325,8 +3440,9 @@ xxx :: f String -> Null
 The value at position 1 is not a member of ‘f String’.
 `));
 
-    throws (() => { xxx ([1, 2, 3]); })
-           (new TypeError (`Invalid value
+    throws (
+      () => { xxx ([1, 2, 3]); },
+      new TypeError (`Invalid value
 
 xxx :: f String -> Null
          ^^^^^^
@@ -3351,11 +3467,12 @@ See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#String for in
         ([$.Fn (a) (b), $.Fn (c) (d), f (a) (c), f (b) (d)])
         (curry3 (Z.bimap));
 
-    eq (show (bimap)) ('bimap :: Bifunctor f => (a -> b) -> (c -> d) -> f a c -> f b d');
-    eq (bimap (s => s.length) (Math.sqrt) (Pair ('Sanctuary') (25))) (Pair (9) (5));
+    eq (show (bimap), 'bimap :: Bifunctor f => (a -> b) -> (c -> d) -> f a c -> f b d');
+    eq (bimap (s => s.length) (Math.sqrt) (Pair ('Sanctuary') (25)), Pair (9) (5));
 
-    throws (() => { bimap (xs => xs.length) (Math.sqrt) (Pair (['foo', true, 42]) (null)); })
-           (new TypeError (`Type-variable constraint violation
+    throws (
+      () => { bimap (xs => xs.length) (Math.sqrt) (Pair (['foo', true, 42]) (null)); },
+      new TypeError (`Type-variable constraint violation
 
 bimap :: Bifunctor f => (a -> b) -> (c -> d) -> f a c -> f b d
                                                   ^
@@ -3373,8 +3490,9 @@ Since there is no type of which all the above values are members, the type-varia
         ([$.Fn (a) (m (b)), m (a), m (b)])
         (curry2 (Z.chain));
 
-    throws (() => { chain (Left) (Just ('x')); })
-           (new TypeError (`Type-variable constraint violation
+    throws (
+      () => { chain (Left) (Just ('x')); },
+      new TypeError (`Type-variable constraint violation
 
 chain :: Chain m => (a -> m b) -> m a -> m b
                           ^^^     ^^^
@@ -3390,12 +3508,13 @@ Since there is no type of which all the above values are members, the type-varia
     //    xxx :: f String Number -> Null
     const xxx = def ('xxx') ({}) ([f ($.String) ($.Number), $.Null]) (x => null);
 
-    eq (xxx (Pair ('abc') (123))) (null);
-    eq (xxx (Left ('abc'))) (null);
-    eq (xxx (Right (123))) (null);
+    eq (xxx (Pair ('abc') (123)), null);
+    eq (xxx (Left ('abc')), null);
+    eq (xxx (Right (123)), null);
 
-    throws (() => { xxx (/XXX/); })
-           (new TypeError (`Invalid value
+    throws (
+      () => { xxx (/XXX/); },
+      new TypeError (`Invalid value
 
 xxx :: f String Number -> Null
        ^^^^^^^^^^^^^^^
@@ -3406,8 +3525,9 @@ xxx :: f String Number -> Null
 The value at position 1 is not a member of ‘f String Number’.
 `));
 
-    throws (() => { xxx (Left (/XXX/)); })
-           (new TypeError (`Invalid value
+    throws (
+      () => { xxx (Left (/XXX/)); },
+      new TypeError (`Invalid value
 
 xxx :: f String Number -> Null
          ^^^^^^
@@ -3420,8 +3540,9 @@ The value at position 1 is not a member of ‘String’.
 See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#String for information about the String type.
 `));
 
-    throws (() => { xxx (Right (/XXX/)); })
-           (new TypeError (`Invalid value
+    throws (
+      () => { xxx (Right (/XXX/)); },
+      new TypeError (`Invalid value
 
 xxx :: f String Number -> Null
                 ^^^^^^
@@ -3456,10 +3577,10 @@ See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Number for in
         ([$.Array (a), $.Maybe (a)])
         (xs => xs.length > 0 ? Just (xs[0]) : Nothing);
 
-    eq (head ([])) (Nothing);
-    eq (count) (0);
-    eq (head ([1, 2, 3])) (Just (1));
-    eq (count) (1);
+    eq (head ([]), Nothing);
+    eq (count, 0);
+    eq (head ([1, 2, 3]), Just (1));
+    eq (count, 1);
   });
 
   test ('replaces Unknowns with free type variables', () => {
@@ -3470,8 +3591,9 @@ See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Number for in
         ([$.Fn (a) (b), f (a), f (b)])
         (curry2 (Z.map));
 
-    throws (() => { map (Right (Right (Right (Right (0))))); })
-           (new TypeError (`Invalid value
+    throws (
+      () => { map (Right (Right (Right (Right (0))))); },
+      new TypeError (`Invalid value
 
 map :: Functor f => (a -> b) -> f a -> f b
                      ^^^^^^
@@ -3488,44 +3610,44 @@ The value at position 1 is not a member of ‘a -> b’.
 suite ('test', () => {
 
   test ('is a ternary function', () => {
-    eq (typeof $.test) ('function');
-    eq ($.test.length) (1);
-    eq (show ($.test)) ('test :: Array Type -> Type -> Any -> Boolean');
+    eq (typeof $.test, 'function');
+    eq ($.test.length, 1);
+    eq (show ($.test), 'test :: Array Type -> Type -> Any -> Boolean');
   });
 
   test ('supports nullary types', () => {
-    eq ($.test ([]) ($.Number) (null)) (false);
-    eq ($.test ([]) ($.Number) ('42')) (false);
-    eq ($.test ([]) ($.Number) (42)) (true);
+    eq ($.test ([]) ($.Number) (null), false);
+    eq ($.test ([]) ($.Number) ('42'), false);
+    eq ($.test ([]) ($.Number) (42), true);
   });
 
   test ('supports unary types', () => {
-    eq ($.test ([]) ($.Array ($.Number)) (null)) (false);
-    eq ($.test ([]) ($.Array ($.Number)) ('42')) (false);
-    eq ($.test ([]) ($.Array ($.Number)) ([1, 2, '3'])) (false);
-    eq ($.test ([]) ($.Array ($.Number)) (['42'])) (false);
-    eq ($.test ([]) ($.Array ($.Number)) ([])) (true);
-    eq ($.test ([]) ($.Array ($.Number)) ([1, 2, 3])) (true);
+    eq ($.test ([]) ($.Array ($.Number)) (null), false);
+    eq ($.test ([]) ($.Array ($.Number)) ('42'), false);
+    eq ($.test ([]) ($.Array ($.Number)) ([1, 2, '3']), false);
+    eq ($.test ([]) ($.Array ($.Number)) (['42']), false);
+    eq ($.test ([]) ($.Array ($.Number)) ([]), true);
+    eq ($.test ([]) ($.Array ($.Number)) ([1, 2, 3]), true);
   });
 
   test ('supports binary types', () => {
-    eq ($.test ([]) ($.Pair ($.Number) ($.String)) (Pair (42) (42))) (false);
-    eq ($.test ([]) ($.Pair ($.Number) ($.String)) (Pair ('') (''))) (false);
-    eq ($.test ([]) ($.Pair ($.Number) ($.String)) (Pair ('') (42))) (false);
-    eq ($.test ([]) ($.Pair ($.Number) ($.String)) (Pair (42) (''))) (true);
+    eq ($.test ([]) ($.Pair ($.Number) ($.String)) (Pair (42) (42)), false);
+    eq ($.test ([]) ($.Pair ($.Number) ($.String)) (Pair ('') ('')), false);
+    eq ($.test ([]) ($.Pair ($.Number) ($.String)) (Pair ('') (42)), false);
+    eq ($.test ([]) ($.Pair ($.Number) ($.String)) (Pair (42) ('')), true);
   });
 
   test ('supports type variables', () => {
-    eq ($.test ($.env) ($.Array (a)) (null)) (false);
-    eq ($.test ($.env) ($.Array (a)) ('42')) (false);
-    eq ($.test ($.env) ($.Array (a)) ([1, 2, '3'])) (false);
-    eq ($.test ($.env) ($.Array (a)) (['42'])) (true);
-    eq ($.test ($.env) ($.Array (a)) ([])) (true);
-    eq ($.test ($.env) ($.Array (a)) ([1, 2, 3])) (true);
+    eq ($.test ($.env) ($.Array (a)) (null), false);
+    eq ($.test ($.env) ($.Array (a)) ('42'), false);
+    eq ($.test ($.env) ($.Array (a)) ([1, 2, '3']), false);
+    eq ($.test ($.env) ($.Array (a)) (['42']), true);
+    eq ($.test ($.env) ($.Array (a)) ([]), true);
+    eq ($.test ($.env) ($.Array (a)) ([1, 2, 3]), true);
 
-    eq ($.test ($.env) ($.Pair (a) (a)) (Pair ('foo') (42))) (false);
-    eq ($.test ($.env) ($.Pair (a) (a)) (Pair ('foo') ('bar'))) (true);
-    eq ($.test ($.env) ($.Pair (a) (b)) (Pair ('foo') (42))) (true);
+    eq ($.test ($.env) ($.Pair (a) (a)) (Pair ('foo') (42)), false);
+    eq ($.test ($.env) ($.Pair (a) (a)) (Pair ('foo') ('bar')), true);
+    eq ($.test ($.env) ($.Pair (a) (b)) (Pair ('foo') (42)), true);
   });
 
 });
@@ -3533,9 +3655,9 @@ suite ('test', () => {
 suite ('NullaryType', () => {
 
   test ('is a ternary function', () => {
-    eq (typeof $.NullaryType) ('function');
-    eq ($.NullaryType.length) (1);
-    eq (show ($.NullaryType)) ('NullaryType :: String -> String -> Array Type -> (Any -> Boolean) -> Type');
+    eq (typeof $.NullaryType, 'function');
+    eq ($.NullaryType.length, 1);
+    eq (show ($.NullaryType), 'NullaryType :: String -> String -> Array Type -> (Any -> Boolean) -> Type');
   });
 
   test ('supports subtyping', () => {
@@ -3560,15 +3682,15 @@ suite ('NullaryType', () => {
       ([ValidNumber])
       (isFinite);
 
-    eq ($.test ([]) (Number_) (null)) (false);
-    eq ($.test ([]) (Number_) (NaN)) (true);
-    eq ($.test ([]) (ValidNumber) (null)) (false);
-    eq ($.test ([]) (ValidNumber) (NaN)) (false);
-    eq ($.test ([]) (ValidNumber) (Infinity)) (true);
-    eq ($.test ([]) (FiniteNumber) (null)) (false);
-    eq ($.test ([]) (FiniteNumber) (NaN)) (false);
-    eq ($.test ([]) (FiniteNumber) (Infinity)) (false);
-    eq ($.test ([]) (FiniteNumber) (0)) (true);
+    eq ($.test ([]) (Number_) (null), false);
+    eq ($.test ([]) (Number_) (NaN), true);
+    eq ($.test ([]) (ValidNumber) (null), false);
+    eq ($.test ([]) (ValidNumber) (NaN), false);
+    eq ($.test ([]) (ValidNumber) (Infinity), true);
+    eq ($.test ([]) (FiniteNumber) (null), false);
+    eq ($.test ([]) (FiniteNumber) (NaN), false);
+    eq ($.test ([]) (FiniteNumber) (Infinity), false);
+    eq ($.test ([]) (FiniteNumber) (0), true);
   });
 
 });
@@ -3576,9 +3698,9 @@ suite ('NullaryType', () => {
 suite ('UnaryType', () => {
 
   test ('is a quaternary function', () => {
-    eq (typeof $.UnaryType) ('function');
-    eq ($.UnaryType.length) (1);
-    eq (show ($.UnaryType)) ('UnaryType :: Foldable f => String -> String -> Array Type -> (Any -> Boolean) -> (t a -> f a) -> Type -> Type');
+    eq (typeof $.UnaryType, 'function');
+    eq ($.UnaryType.length, 1);
+    eq (show ($.UnaryType), 'UnaryType :: Foldable f => String -> String -> Array Type -> (Any -> Boolean) -> (t a -> f a) -> Type -> Type');
   });
 
   test ('returns a type constructor which type checks its arguments', () => {
@@ -3593,11 +3715,12 @@ suite ('UnaryType', () => {
     eq (show (def ('f')
                   ({})
                   ([MyUnaryType ($.RecordType ({x: $.Number, y: $.Number}))])
-                  (() => {})))
-       ('f :: () -> MyUnaryType { x :: Number, y :: Number }');
+                  (() => {})),
+        'f :: () -> MyUnaryType { x :: Number, y :: Number }');
 
-    throws (() => { MyUnaryType ({x: $.Number, y: $.Number}); })
-           (new TypeError (`Invalid value
+    throws (
+      () => { MyUnaryType ({x: $.Number, y: $.Number}); },
+      new TypeError (`Invalid value
 
 MyUnaryType :: Type -> Type
                ^^^^
@@ -3620,12 +3743,12 @@ See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Type for info
       (xs => Z.equals (xs, Z.reverse (xs)))
       (palindrome => palindrome);
 
-    eq ($.test ([]) (Palindrome ($.Number)) (null)) (false);
-    eq ($.test ([]) (Palindrome ($.Number)) ([])) (true);
-    eq ($.test ([]) (Palindrome ($.Number)) ([1])) (true);
-    eq ($.test ([]) (Palindrome ($.Number)) ([1, 2, 3])) (false);
-    eq ($.test ([]) (Palindrome ($.Number)) ([1, 2, 1])) (true);
-    eq ($.test ([]) (Palindrome ($.Number)) (['foo', 'bar', 'foo'])) (false);
+    eq ($.test ([]) (Palindrome ($.Number)) (null), false);
+    eq ($.test ([]) (Palindrome ($.Number)) ([]), true);
+    eq ($.test ([]) (Palindrome ($.Number)) ([1]), true);
+    eq ($.test ([]) (Palindrome ($.Number)) ([1, 2, 3]), false);
+    eq ($.test ([]) (Palindrome ($.Number)) ([1, 2, 1]), true);
+    eq ($.test ([]) (Palindrome ($.Number)) (['foo', 'bar', 'foo']), false);
   });
 
 });
@@ -3633,9 +3756,9 @@ See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Type for info
 suite ('BinaryType', () => {
 
   test ('is a quinary function', () => {
-    eq (typeof $.BinaryType) ('function');
-    eq ($.BinaryType.length) (1);
-    eq (show ($.BinaryType)) ('BinaryType :: Foldable f => String -> String -> Array Type -> (Any -> Boolean) -> (t a b -> f a) -> (t a b -> f b) -> Type -> Type -> Type');
+    eq (typeof $.BinaryType, 'function');
+    eq ($.BinaryType.length, 1);
+    eq (show ($.BinaryType), 'BinaryType :: Foldable f => String -> String -> Array Type -> (Any -> Boolean) -> (t a b -> f a) -> (t a b -> f b) -> Type -> Type -> Type');
   });
 
   test ('returns a type constructor which type checks its arguments', () => {
@@ -3648,8 +3771,9 @@ suite ('BinaryType', () => {
       (_ => [])
       (_ => []);
 
-    throws (() => { MyBinaryType ($.Number) ({x: $.Number, y: $.Number}); })
-           (new TypeError (`Invalid value
+    throws (
+      () => { MyBinaryType ($.Number) ({x: $.Number, y: $.Number}); },
+      new TypeError (`Invalid value
 
 MyBinaryType :: Type -> Type -> Type
                         ^^^^
@@ -3673,11 +3797,11 @@ See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Type for info
       (different => [different[0]])
       (different => [different[1]]);
 
-    eq ($.test ([]) (Different ($.String) ($.String)) ([null, null])) (false);
-    eq ($.test ([]) (Different ($.String) ($.String)) ([null, 'foo'])) (false);
-    eq ($.test ([]) (Different ($.String) ($.String)) (['foo', null])) (false);
-    eq ($.test ([]) (Different ($.String) ($.String)) (['foo', 'foo'])) (false);
-    eq ($.test ([]) (Different ($.String) ($.String)) (['foo', 'bar'])) (true);
+    eq ($.test ([]) (Different ($.String) ($.String)) ([null, null]), false);
+    eq ($.test ([]) (Different ($.String) ($.String)) ([null, 'foo']), false);
+    eq ($.test ([]) (Different ($.String) ($.String)) (['foo', null]), false);
+    eq ($.test ([]) (Different ($.String) ($.String)) (['foo', 'foo']), false);
+    eq ($.test ([]) (Different ($.String) ($.String)) (['foo', 'bar']), true);
   });
 
 });
@@ -3685,9 +3809,9 @@ See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Type for info
 suite ('TypeVariable', () => {
 
   test ('is a unary function', () => {
-    eq (typeof $.TypeVariable) ('function');
-    eq ($.TypeVariable.length) (1);
-    eq (show ($.TypeVariable)) ('TypeVariable :: String -> Type');
+    eq (typeof $.TypeVariable, 'function');
+    eq ($.TypeVariable.length, 1);
+    eq (show ($.TypeVariable), 'TypeVariable :: String -> Type');
   });
 
 });
@@ -3695,22 +3819,23 @@ suite ('TypeVariable', () => {
 suite ('UnaryTypeVariable', () => {
 
   test ('is a unary function', () => {
-    eq (typeof $.UnaryTypeVariable) ('function');
-    eq ($.UnaryTypeVariable.length) (1);
-    eq (show ($.UnaryTypeVariable)) ('UnaryTypeVariable :: String -> Type -> Type');
+    eq (typeof $.UnaryTypeVariable, 'function');
+    eq ($.UnaryTypeVariable.length, 1);
+    eq (show ($.UnaryTypeVariable), 'UnaryTypeVariable :: String -> Type -> Type');
   });
 
   test ('returns a function which type checks its arguments', () => {
     //    f :: Type -> Type
     const f = $.UnaryTypeVariable ('f');
 
-    eq (typeof f) ('function');
-    eq (f.length) (1);
-    eq (show (f)) ('f :: Type -> Type');
-    eq (show (f (a))) ('f a');
+    eq (typeof f, 'function');
+    eq (f.length, 1);
+    eq (show (f), 'f :: Type -> Type');
+    eq (show (f (a)), 'f a');
 
-    throws (() => { f (Number); })
-           (new TypeError (`Invalid value
+    throws (
+      () => { f (Number); },
+      new TypeError (`Invalid value
 
 f :: Type -> Type
      ^^^^
@@ -3729,22 +3854,23 @@ See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Type for info
 suite ('BinaryTypeVariable', () => {
 
   test ('is a unary function', () => {
-    eq (typeof $.BinaryTypeVariable) ('function');
-    eq ($.BinaryTypeVariable.length) (1);
-    eq (show ($.BinaryTypeVariable)) ('BinaryTypeVariable :: String -> Type -> Type -> Type');
+    eq (typeof $.BinaryTypeVariable, 'function');
+    eq ($.BinaryTypeVariable.length, 1);
+    eq (show ($.BinaryTypeVariable), 'BinaryTypeVariable :: String -> Type -> Type -> Type');
   });
 
   test ('returns a function which type checks its arguments', () => {
     //    p :: Type -> Type -> Type
     const p = $.BinaryTypeVariable ('p');
 
-    eq (typeof p) ('function');
-    eq (p.length) (1);
-    eq (show (p)) ('p :: Type -> Type -> Type');
-    eq (show (p (a) (b))) ('p a b');
+    eq (typeof p, 'function');
+    eq (p.length, 1);
+    eq (show (p), 'p :: Type -> Type -> Type');
+    eq (show (p (a) (b)), 'p a b');
 
-    throws (() => { p (Number); })
-           (new TypeError (`Invalid value
+    throws (
+      () => { p (Number); },
+      new TypeError (`Invalid value
 
 p :: Type -> Type -> Type
      ^^^^
@@ -3763,12 +3889,12 @@ See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Type for info
 suite ('Thunk', () => {
 
   test ('is a unary function', () => {
-    eq (typeof $.Thunk) ('function');
-    eq ($.Thunk.length) (1);
-    eq (show ($.Thunk)) ('Thunk :: Type -> Type');
-    eq (show ($.Thunk (a))) ('() -> a');
-    eq (show ($.Thunk ($.Thunk (a)))) ('() -> () -> a');
-    eq (show ($.Thunk ($.Thunk ($.Thunk (a))))) ('() -> () -> () -> a');
+    eq (typeof $.Thunk, 'function');
+    eq ($.Thunk.length, 1);
+    eq (show ($.Thunk), 'Thunk :: Type -> Type');
+    eq (show ($.Thunk (a)), '() -> a');
+    eq (show ($.Thunk ($.Thunk (a))), '() -> () -> a');
+    eq (show ($.Thunk ($.Thunk ($.Thunk (a)))), '() -> () -> () -> a');
   });
 
   test ('is short for `t => $.Function ([t])`', () => {
@@ -3779,10 +3905,11 @@ suite ('Thunk', () => {
         ([$.Thunk ($.Integer), $.Integer])
         (thunk => thunk ());
 
-    eq (why (() => 42)) (42);
+    eq (why (() => 42), 42);
 
-    throws (() => { why (() => 'Who knows?'); })
-           (new TypeError (`Invalid value
+    throws (
+      () => { why (() => 'Who knows?'); },
+      new TypeError (`Invalid value
 
 why :: (() -> Integer) -> Integer
               ^^^^^^^
@@ -3801,12 +3928,12 @@ See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Integer for i
 suite ('Predicate', () => {
 
   test ('is a unary function', () => {
-    eq (typeof $.Predicate) ('function');
-    eq ($.Predicate.length) (1);
-    eq (show ($.Predicate)) ('Predicate :: Type -> Type');
-    eq (show ($.Predicate (a))) ('a -> Boolean');
-    eq (show ($.Predicate ($.Predicate (a)))) ('(a -> Boolean) -> Boolean');
-    eq (show ($.Predicate ($.Predicate ($.Predicate (a))))) ('((a -> Boolean) -> Boolean) -> Boolean');
+    eq (typeof $.Predicate, 'function');
+    eq ($.Predicate.length, 1);
+    eq (show ($.Predicate), 'Predicate :: Type -> Type');
+    eq (show ($.Predicate (a)), 'a -> Boolean');
+    eq (show ($.Predicate ($.Predicate (a))), '(a -> Boolean) -> Boolean');
+    eq (show ($.Predicate ($.Predicate ($.Predicate (a)))), '((a -> Boolean) -> Boolean) -> Boolean');
   });
 
   test ('is short for `t => $.Fn (t) ($.Boolean)`', () => {
@@ -3820,11 +3947,12 @@ suite ('Predicate', () => {
     //    abs :: Number -> Number
     const abs = when (x => x < 0) (x => -x);
 
-    eq (abs (42)) (42);
-    eq (abs (-1)) (1);
+    eq (abs (42), 42);
+    eq (abs (-1), 1);
 
-    throws (() => { when (x => x) (x => x) ('foo'); })
-           (new TypeError (`Invalid value
+    throws (
+      () => { when (x => x) (x => x) ('foo'); },
+      new TypeError (`Invalid value
 
 when :: (a -> Boolean) -> (a -> a) -> a -> a
               ^^^^^^^
@@ -3843,42 +3971,42 @@ See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#Boolean for i
 suite ('interoperability', () => {
 
   test ('Z.equals can operate on ‘Type’ values', () => {
-    eq (Z.equals ($.Number, $.Number)) (true);
-    eq (Z.equals ($.Number, $.String)) (false);
-    eq (Z.equals ($.Array ($.Number), $.Array ($.Number))) (true);
-    eq (Z.equals ($.Array ($.Number), $.Array ($.String))) (false);
-    eq (Z.equals ($.RecordType ({x: $.Number}), $.RecordType ({x: $.Number}))) (true);
-    eq (Z.equals ($.RecordType ({x: $.Number}), $.RecordType ({y: $.Number}))) (false);
-    eq (Z.equals ($.RecordType ({x: $.Number}), $.RecordType ({x: $.String}))) (false);
+    eq (Z.equals ($.Number, $.Number), true);
+    eq (Z.equals ($.Number, $.String), false);
+    eq (Z.equals ($.Array ($.Number), $.Array ($.Number)), true);
+    eq (Z.equals ($.Array ($.Number), $.Array ($.String)), false);
+    eq (Z.equals ($.RecordType ({x: $.Number}), $.RecordType ({x: $.Number})), true);
+    eq (Z.equals ($.RecordType ({x: $.Number}), $.RecordType ({y: $.Number})), false);
+    eq (Z.equals ($.RecordType ({x: $.Number}), $.RecordType ({x: $.String})), false);
     eq (Z.equals ($.NullaryType ('X') ('') ([$.Number]) (x => true),
-                  $.NullaryType ('X') ('') ([$.Number]) (x => true)))
-       (true);
+                  $.NullaryType ('X') ('') ([$.Number]) (x => true)),
+        true);
     eq (Z.equals ($.NullaryType ('X') ('') ([$.Number]) (x => true),
-                  $.NullaryType ('X') ('') ([$.String]) (x => true)))
-       (false);
+                  $.NullaryType ('X') ('') ([$.String]) (x => true)),
+        false);
     eq (Z.equals ($.NullaryType ('X') ('') ([]) (x => true),
-                  $.NullaryType ('X') ('') ([]) (x => true)))
-       (true);
+                  $.NullaryType ('X') ('') ([]) (x => true)),
+        true);
     eq (Z.equals ($.NullaryType ('X') ('') ([]) (x => true),
-                  $.NullaryType ('Y') ('') ([]) (x => true)))
-       (false);
+                  $.NullaryType ('Y') ('') ([]) (x => true)),
+        false);
     eq (Z.equals ($.NullaryType ('X') ('') ([]) (x => true),
-                  $.NullaryType ('X') ('') ([]) (x => false)))
-       (true);
+                  $.NullaryType ('X') ('') ([]) (x => false)),
+        true);
     eq (Z.equals ($.Array ($.NullaryType ('X') ('http://x.com/') ([]) (x => true)),
-                  $.Array ($.NullaryType ('X') ('http://x.com/') ([]) (x => true))))
-       (true);
+                  $.Array ($.NullaryType ('X') ('http://x.com/') ([]) (x => true))),
+        true);
     eq (Z.equals ($.Array ($.NullaryType ('X') ('http://x.com/') ([]) (x => true)),
-                  $.Array ($.NullaryType ('X') ('http://x.org/') ([]) (x => true))))
-       (false);
+                  $.Array ($.NullaryType ('X') ('http://x.org/') ([]) (x => true))),
+        false);
 
     //  Field ordering:
     eq (Z.equals ($.RecordType ({foo: $.Number, bar: $.Number}),
-                  $.RecordType ({foo: $.Number, bar: $.Number})))
-       (true);
+                  $.RecordType ({foo: $.Number, bar: $.Number})),
+        true);
     eq (Z.equals ($.RecordType ({foo: $.Number, bar: $.Number}),
-                  $.RecordType ({bar: $.Number, foo: $.Number})))
-       (true);
+                  $.RecordType ({bar: $.Number, foo: $.Number})),
+        true);
   });
 
 });

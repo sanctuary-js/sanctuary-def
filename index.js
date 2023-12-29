@@ -288,35 +288,48 @@
     supertypes, // :: Array Type
     test,       // :: Array Type -> Any -> Boolean
     tuples      // :: Array (Array3 String (a -> Array b) Type)
-  ) => {
-    const t = Object.create (Type$prototype);
-    t._test = test;
-    t._extractors = tuples.reduce (
-      (_extractors, [k, e]) => ((_extractors[k] = e, _extractors)),
-      {}
-    );
-    t.arity = arity;  // number of type parameters
-    t.extractors = Z.map (B (toArray), t._extractors);
-    t.format = format || ((outer, inner) =>
-      outer (name) +
-      Z.foldMap (
-        String,
-        ([k, , t]) => (
-          t.arity > 0
-          ? outer (' ') + outer ('(') + inner (k) (show (t)) + outer (')')
-          : outer (' ')               + inner (k) (show (t))
+  ) => Object.assign (
+    Object.create (Type$prototype, {
+      _extractors: {
+        value: tuples.reduce ((extractors, [k, e]) => ((
+          extractors[k] = e,
+          extractors
+        )), {}),
+      },
+      _test: {
+        value: test,
+      },
+      extractors: {
+        value: tuples.reduce ((extractors, [k, e]) => ((
+          extractors[k] = x => toArray (e (x)),
+          extractors
+        )), {}),
+      },
+      format: {
+        value: format || ((outer, inner) =>
+          outer (name) +
+          Z.foldMap (
+            String,
+            ([k, , t]) => (
+              t.arity > 0
+              ? outer (' ') + outer ('(') + inner (k) (show (t)) + outer (')')
+              : outer (' ')               + inner (k) (show (t))
+            ),
+            tuples
+          )
         ),
-        tuples
-      )
-    );
-    t.keys = tuples.map (([k]) => k);
-    t.name = name;
-    t.supertypes = supertypes;
-    t.type = type;
-    t.types = tuples.reduce ((types, [k, , t]) => ((types[k] = t, types)), {});
-    t.url = url;
-    return t;
-  };
+      },
+    }),
+    {
+      arity,  // number of type parameters
+      keys: tuples.map (([k]) => k),
+      name,
+      supertypes,
+      type,
+      types: tuples.reduce ((types, [k, , t]) => ((types[k] = t, types)), {}),
+      url,
+    }
+  );
 
   const BINARY        = 'BINARY';
   const FUNCTION      = 'FUNCTION';

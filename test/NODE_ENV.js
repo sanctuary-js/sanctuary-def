@@ -1,11 +1,11 @@
 'use strict';
 
+const {throws} = require ('assert');
 const fs = require ('fs');
 const path = require ('path');
 const vm = require ('vm');
 
 const version = (require ('../package.json')).version;
-const throws = require ('./internal/throws');
 
 
 suite ('NODE_ENV', () => {
@@ -32,7 +32,7 @@ See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#String for in
     };
     vm.runInNewContext (source, context);
 
-    throws (() => { context.module.exports.NullaryType (null); }) (invalid);
+    throws (() => { context.module.exports.NullaryType (null); }, invalid);
   });
 
   test ('typeof process !== "undefined" && process == null', () => {
@@ -43,7 +43,7 @@ See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#String for in
     };
     vm.runInNewContext (source, context);
 
-    throws (() => { context.module.exports.NullaryType (null); }) (invalid);
+    throws (() => { context.module.exports.NullaryType (null); }, invalid);
   });
 
   test ('typeof process !== "undefined" && process != null && process.env == null', () => {
@@ -54,7 +54,7 @@ See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#String for in
     };
     vm.runInNewContext (source, context);
 
-    throws (() => { context.module.exports.NullaryType (null); }) (invalid);
+    throws (() => { context.module.exports.NullaryType (null); }, invalid);
   });
 
   test ('typeof process !== "undefined" && process != null && process.env != null && process.env.NODE_ENV == null', () => {
@@ -65,7 +65,7 @@ See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#String for in
     };
     vm.runInNewContext (source, context);
 
-    throws (() => { context.module.exports.NullaryType (null); }) (invalid);
+    throws (() => { context.module.exports.NullaryType (null); }, invalid);
   });
 
   test ('typeof process !== "undefined" && process != null && process.env != null && process.env.NODE_ENV !== "production"', () => {
@@ -76,7 +76,7 @@ See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#String for in
     };
     vm.runInNewContext (source, context);
 
-    throws (() => { context.module.exports.NullaryType (null); }) (invalid);
+    throws (() => { context.module.exports.NullaryType (null); }, invalid);
   });
 
   test ('typeof process !== "undefined" && process != null && process.env != null && process.env.NODE_ENV === "production"', () => {
