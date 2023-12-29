@@ -1,7 +1,7 @@
-import {deepStrictEqual as eq, throws} from 'assert';
-import module from 'module';
-import util from 'util';
-import vm from 'vm';
+import {deepStrictEqual as eq, throws} from 'node:assert';
+import module from 'node:module';
+import util from 'node:util';
+import vm from 'node:vm';
 
 import Descending from 'sanctuary-descending';
 import Either from 'sanctuary-either';
