@@ -1,16 +1,18 @@
-'use strict';
+import {throws} from 'assert';
+import fs from 'fs';
+import module from 'module';
+import path from 'path';
+import url from 'url';
+import vm from 'vm';
 
-const {throws} = require ('assert');
-const fs = require ('fs');
-const path = require ('path');
-const vm = require ('vm');
 
-const version = (require ('../package.json')).version;
+const require = module.createRequire (import.meta.url);
+const {version} = require ('../package.json');
 
 
 suite ('NODE_ENV', () => {
 
-  const source = fs.readFileSync (path.join (__dirname, '..', 'index.js'), 'utf8');
+  const source = fs.readFileSync (path.join (url.fileURLToPath (import.meta.url), '..', '..', 'index.js'), 'utf8');
 
   const invalid = new TypeError (`Invalid value
 
