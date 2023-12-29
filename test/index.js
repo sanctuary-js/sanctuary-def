@@ -1,22 +1,27 @@
-'use strict';
+import {deepStrictEqual as eq, throws} from 'assert';
+import module from 'module';
+import util from 'util';
+import vm from 'vm';
 
-const {deepStrictEqual: eq, throws} = require ('assert');
-const util = require ('util');
-const vm = require ('vm');
+import Descending from 'sanctuary-descending';
+import Either from 'sanctuary-either';
+import Identity from 'sanctuary-identity';
+import Maybe from 'sanctuary-maybe';
+import Pair from 'sanctuary-pair';
+import show from 'sanctuary-show';
+import Z from 'sanctuary-type-classes';
+import type from 'sanctuary-type-identifiers';
 
-const Descending = require ('sanctuary-descending');
-const {Left, Right} = require ('sanctuary-either');
-const Identity = require ('sanctuary-identity');
-const {Nothing, Just} = require ('sanctuary-maybe');
-const Pair = require ('sanctuary-pair');
-const show = require ('sanctuary-show');
-const Z = require ('sanctuary-type-classes');
-const Z$version = (require ('sanctuary-type-classes/package.json')).version;
-const type = require ('sanctuary-type-identifiers');
+import $ from '../index.js';
 
-const $ = require ('..');
-const version = (require ('../package.json')).version;
 
+const require = module.createRequire (import.meta.url);
+const {version: Z$version} = require ('sanctuary-type-classes/package.json');
+const {version} = require ('../package.json');
+
+
+const {Left, Right} = Either;
+const {Nothing, Just} = Maybe;
 
 //    complement :: (a -> Boolean) -> a -> Boolean
 const complement = pred => x => !(pred (x));
