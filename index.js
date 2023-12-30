@@ -505,8 +505,7 @@
   const Buffer_ = NullaryTypeWithUrl
     ('Buffer')
     ([])
-    // eslint-disable-next-line no-undef
-    (x => typeof Buffer !== 'undefined' && Buffer.isBuffer (x));
+    (x => globalThis.Buffer != null && globalThis.Buffer.isBuffer (x));
 
   //# Date :: Type
   //.
@@ -996,12 +995,7 @@
   const Unchecked = s => NullaryType (s) ('') ([]) (x => true);
 
   //  production :: Boolean
-  const production =
-    typeof process !== 'undefined' &&
-    /* global process:false */
-    process != null &&
-    process.env != null &&
-    process.env.NODE_ENV === 'production';
+  const production = globalThis.process?.env?.NODE_ENV === 'production';
 
   //  numbers :: Array String
   const numbers = [
@@ -2644,17 +2638,12 @@
 
     wrapped.toString = () => typeSignature (typeInfo);
     /* istanbul ignore else */
-    if (
-      typeof process !== 'undefined' &&
-      process != null &&
-      process.versions != null &&
-      process.versions.node != null
-    ) wrapped[Symbol.for ('nodejs.util.inspect.custom')] = wrapped.toString;
+    if (globalThis.process?.versions?.node != null) {
+      wrapped[Symbol.for ('nodejs.util.inspect.custom')] = wrapped.toString;
+    }
     /* istanbul ignore if */
-    if (typeof Deno !== 'undefined') {
-      if (Deno != null && typeof Deno.customInspect === 'symbol') {
-        wrapped[Deno.customInspect] = wrapped.toString;
-      }
+    if (typeof globalThis.Deno?.customInspect === 'symbol') {
+      wrapped[globalThis.Deno.customInspect] = wrapped.toString;
     }
 
     return wrapped;
