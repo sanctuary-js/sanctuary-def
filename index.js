@@ -203,13 +203,13 @@
                            self.sanctuaryTypeIdentifiers);
   }
 
-}) ((Either, show, Z, type) => {
+}) ((E, show, Z, type) => {
 
   'use strict';
 
-  const {hasOwnProperty, toString} = Object.prototype;
+  const {hasOwnProperty, toString} = globalThis.Object.prototype;
 
-  const {Left, Right} = Either;
+  const {Left, Right} = E;
 
   //  B :: (b -> c) -> (a -> b) -> a -> c
   const B = f => g => x => f (g (x));
@@ -228,7 +228,7 @@
 
   //  toArray :: Foldable f => f a -> Array a
   const toArray = foldable => (
-    Array.isArray (foldable)
+    globalThis.Array.isArray (foldable)
     ? foldable
     : Z.reduce ((xs, x) => ((xs.push (x), xs)), [], foldable)
   );
@@ -288,8 +288,8 @@
     supertypes, // :: Array Type
     test,       // :: Array Type -> Any -> Boolean
     tuples      // :: Array (Array3 String (a -> Array b) Type)
-  ) => Object.assign (
-    Object.create (Type$prototype, {
+  ) => globalThis.Object.assign (
+    globalThis.Object.create (Type$prototype, {
       _extractors: {
         value: tuples.reduce ((extractors, [k, e]) => ((
           extractors[k] = e,
@@ -309,7 +309,7 @@
         value: format || ((outer, inner) =>
           outer (name) +
           Z.foldMap (
-            String,
+            globalThis.String,
             ([k, , t]) => (
               t.arity > 0
               ? outer (' ') + outer ('(') + inner (k) (show (t)) + outer (')')
@@ -457,7 +457,7 @@
   //# Array :: Type -> Type
   //.
   //. Constructor for homogeneous Array types.
-  const Array_ = UnaryTypeWithUrl
+  const Array = UnaryTypeWithUrl
     ('Array')
     ([])
     (typeEq ('Array'))
@@ -468,7 +468,7 @@
   //. Type whose sole member is `[]`.
   const Array0 = NullaryTypeWithUrl
     ('Array0')
-    ([Array_ (Unknown)])
+    ([Array (Unknown)])
     (array => array.length === 0);
 
   //# Array1 :: Type -> Type
@@ -476,7 +476,7 @@
   //. Constructor for singleton Array types.
   const Array1 = UnaryTypeWithUrl
     ('Array1')
-    ([Array_ (Unknown)])
+    ([Array (Unknown)])
     (array => array.length === 1)
     (array1 => array1);
 
@@ -486,7 +486,7 @@
   //. a member of `Array2 String Boolean`.
   const Array2 = BinaryTypeWithUrl
     ('Array2')
-    ([Array_ (Unknown)])
+    ([Array (Unknown)])
     (array => array.length === 2)
     (array2 => [array2[0]])
     (array2 => [array2[1]]);
@@ -494,7 +494,7 @@
   //# Boolean :: Type
   //.
   //. Type comprising `true` and `false`.
-  const Boolean_ = NullaryTypeWithUrl
+  const Boolean = NullaryTypeWithUrl
     ('Boolean')
     ([])
     (typeofEq ('boolean'));
@@ -502,7 +502,7 @@
   //# Buffer :: Type
   //.
   //. Type comprising every [Buffer][] object.
-  const Buffer_ = NullaryTypeWithUrl
+  const Buffer = NullaryTypeWithUrl
     ('Buffer')
     ([])
     (x => globalThis.Buffer != null && globalThis.Buffer.isBuffer (x));
@@ -510,7 +510,7 @@
   //# Date :: Type
   //.
   //. Type comprising every Date value.
-  const Date_ = NullaryTypeWithUrl
+  const Date = NullaryTypeWithUrl
     ('Date')
     ([])
     (typeEq ('Date'));
@@ -520,8 +520,8 @@
   //. Type comprising every [`Date`][] value except `new Date (NaN)`.
   const ValidDate = NullaryTypeWithUrl
     ('ValidDate')
-    ([Date_])
-    (B (complement (Number.isNaN)) (Number));
+    ([Date])
+    (date => !(globalThis.Number.isNaN (date.valueOf ())));
 
   //# Descending :: Type -> Type
   //.
@@ -535,7 +535,7 @@
   //# Either :: Type -> Type -> Type
   //.
   //. [Either][] type constructor.
-  const Either_ = BinaryTypeWithUrl
+  const Either = BinaryTypeWithUrl
     ('Either')
     ([])
     (typeEq ('sanctuary-either/Either@1'))
@@ -546,7 +546,7 @@
   //.
   //. Type comprising every Error value, including values of more specific
   //. constructors such as [`SyntaxError`][] and [`TypeError`][].
-  const Error_ = NullaryTypeWithUrl
+  const Error = NullaryTypeWithUrl
     ('Error')
     ([])
     (typeEq ('Error'));
@@ -556,7 +556,7 @@
   //. Binary type constructor for unary function types. `$.Fn (I) (O)`
   //. represents `I -> O`, the type of functions that take a value of
   //. type `I` and return a value of type `O`.
-  const Fn = $1 => $2 => Function_ ([$1, $2]);
+  const Fn = $1 => $2 => Function ([$1, $2]);
 
   //# Function :: NonEmpty (Array Type) -> Type
   //.
@@ -567,7 +567,7 @@
   //.   - `$.Function ([$.Date, $.String])` represents the `Date -> String`
   //.     type; and
   //.   - `$.Function ([a, b, a])` represents the `(a, b) -> a` type.
-  const Function_ = types => (
+  const Function = types => (
     _Type (
       FUNCTION,
       '',
@@ -623,8 +623,8 @@
     ('JsMap')
     ([])
     (x => toString.call (x) === '[object Map]')
-    (jsMap => Array.from (jsMap.keys ()))
-    (jsMap => Array.from (jsMap.values ()));
+    (jsMap => globalThis.Array.from (jsMap.keys ()))
+    (jsMap => globalThis.Array.from (jsMap.values ()));
 
   //# JsSet :: Type -> Type
   //.
@@ -634,7 +634,7 @@
     ('JsSet')
     ([])
     (x => toString.call (x) === '[object Set]')
-    (jsSet => Array.from (jsSet.values ()));
+    (jsSet => globalThis.Array.from (jsSet.values ()));
 
   //# Maybe :: Type -> Type
   //.
@@ -688,7 +688,7 @@
   //# Number :: Type
   //.
   //. Type comprising every primitive Number value (including `NaN`).
-  const Number_ = NullaryTypeWithUrl
+  const Number = NullaryTypeWithUrl
     ('Number')
     ([])
     (typeofEq ('number'));
@@ -703,7 +703,7 @@
   //. Type comprising every [`Number`][] value greater than zero.
   const PositiveNumber = NullaryTypeWithUrl
     ('PositiveNumber')
-    ([Number_])
+    ([Number])
     (positive);
 
   //# NegativeNumber :: Type
@@ -711,7 +711,7 @@
   //. Type comprising every [`Number`][] value less than zero.
   const NegativeNumber = NullaryTypeWithUrl
     ('NegativeNumber')
-    ([Number_])
+    ([Number])
     (negative);
 
   //# ValidNumber :: Type
@@ -719,8 +719,8 @@
   //. Type comprising every [`Number`][] value except `NaN`.
   const ValidNumber = NullaryTypeWithUrl
     ('ValidNumber')
-    ([Number_])
-    (complement (Number.isNaN));
+    ([Number])
+    (complement (globalThis.Number.isNaN));
 
   //# NonZeroValidNumber :: Type
   //.
@@ -771,8 +771,8 @@
     ('Integer')
     ([ValidNumber])
     (x => Math.floor (x) === x &&
-          x >= Number.MIN_SAFE_INTEGER &&
-          x <= Number.MAX_SAFE_INTEGER);
+          x >= globalThis.Number.MIN_SAFE_INTEGER &&
+          x <= globalThis.Number.MAX_SAFE_INTEGER);
 
   //# NonZeroInteger :: Type
   //.
@@ -816,7 +816,7 @@
   //.   - [`Object.create`][]; or
   //.   - the `new` operator in conjunction with `Object` or a custom
   //.     constructor function.
-  const Object_ = NullaryTypeWithUrl
+  const Object = NullaryTypeWithUrl
     ('Object')
     ([])
     (typeEq ('Object'));
@@ -834,7 +834,7 @@
   //# RegExp :: Type
   //.
   //. Type comprising every RegExp value.
-  const RegExp_ = NullaryTypeWithUrl
+  const RegExp = NullaryTypeWithUrl
     ('RegExp')
     ([])
     (typeEq ('RegExp'));
@@ -846,7 +846,7 @@
   //. See also [`NonGlobalRegExp`][].
   const GlobalRegExp = NullaryTypeWithUrl
     ('GlobalRegExp')
-    ([RegExp_])
+    ([RegExp])
     (regexp => regexp.global);
 
   //# NonGlobalRegExp :: Type
@@ -856,7 +856,7 @@
   //. See also [`GlobalRegExp`][].
   const NonGlobalRegExp = NullaryTypeWithUrl
     ('NonGlobalRegExp')
-    ([RegExp_])
+    ([RegExp])
     (regexp => !regexp.global);
 
   //# StrMap :: Type -> Type
@@ -867,14 +867,14 @@
   //. `{foo: 1, bar: 2, baz: 'XXX'}` is not.
   const StrMap = UnaryTypeWithUrl
     ('StrMap')
-    ([Object_])
+    ([Object])
     (x => true)
     (strMap => strMap);
 
   //# String :: Type
   //.
   //. Type comprising every primitive String value.
-  const String_ = NullaryTypeWithUrl
+  const String = NullaryTypeWithUrl
     ('String')
     ([])
     (typeofEq ('string'));
@@ -893,13 +893,13 @@
   //.   - `'gim'`
   const RegexFlags = NullaryTypeWithUrl
     ('RegexFlags')
-    ([String_])
+    ([String])
     (s => /^g?i?m?$/.test (s));
 
   //# Symbol :: Type
   //.
   //. Type comprising every Symbol value.
-  const Symbol_ = NullaryTypeWithUrl
+  const Symbol = NullaryTypeWithUrl
     ('Symbol')
     ([])
     (typeofEq ('symbol'));
@@ -963,14 +963,14 @@
   const env = [
     AnyFunction,
     Arguments,
-    Array_ (Unknown),
+    Array (Unknown),
     Array2 (Unknown) (Unknown),
-    Boolean_,
-    Buffer_,
-    Date_,
+    Boolean,
+    Buffer,
+    Date,
     Descending (Unknown),
-    Either_ (Unknown) (Unknown),
-    Error_,
+    Either (Unknown) (Unknown),
+    Error,
     Fn (Unknown) (Unknown),
     HtmlElement,
     Identity (Unknown),
@@ -979,13 +979,13 @@
     Maybe (Unknown),
     Module,
     Null,
-    Number_,
-    Object_,
+    Number,
+    Object,
     Pair (Unknown) (Unknown),
-    RegExp_,
+    RegExp,
     StrMap (Unknown),
-    String_,
-    Symbol_,
+    String,
+    Symbol,
     Type,
     TypeClass,
     Undefined,
@@ -1178,7 +1178,10 @@
   const underlineTypeVars = (typeInfo, valuesByPath) => {
     //  Note: Sorting these keys lexicographically is not "correct", but it
     //  does the right thing for indexes less than 10.
-    const paths = Z.map (JSON.parse, Z.sort (Object.keys (valuesByPath)));
+    const paths = Z.map (
+      JSON.parse,
+      Z.sort (globalThis.Object.keys (valuesByPath))
+    );
     return (
       underline_ (typeInfo)
                  (index => f => t => propPath => s => {
@@ -1765,7 +1768,7 @@
   //. //   The value at position 1 is not a member of ‘{ x :: FiniteNumber, y :: FiniteNumber }’.
   //. ```
   const RecordType = fields => {
-    const keys = Object.keys (fields);
+    const keys = globalThis.Object.keys (fields);
     return _Type (
       RECORD,
       '',
@@ -1851,7 +1854,7 @@
   //. //   See http://example.com/my-package#Cylinder for information about the Cylinder type.
   //. ```
   const NamedRecordType = name => url => supertypes => fields => {
-    const keys = Z.sort (Object.keys (fields));
+    const keys = Z.sort (globalThis.Object.keys (fields));
     return _Type (
       RECORD,
       name,
@@ -2025,13 +2028,13 @@
   //.
   //. `$.Thunk (T)` is shorthand for `$.Function ([T])`, the type comprising
   //. every nullary function (thunk) that returns a value of type `T`.
-  const Thunk = t => Function_ ([t]);
+  const Thunk = t => Function ([t]);
 
   //# Predicate :: Type -> Type
   //.
   //. `$.Predicate (T)` is shorthand for `$.Fn (T) ($.Boolean)`, the type
   //. comprising every predicate function that takes a value of type `T`.
-  const Predicate = t => Fn (t) (Boolean_);
+  const Predicate = t => Fn (t) (Boolean);
 
   //. ### Type classes
   //.
@@ -2140,9 +2143,11 @@
         numArgs (args.length)
       }${
         /* istanbul ignore next */
-        args.length === 0
-        ? '.\n'
-        : ':\n\n' + Z.foldMap (String, x => `  - ${show (x)}\n`, args)
+        args.length === 0 ? '.\n' : ':\n\n' + Z.foldMap (
+          globalThis.String,
+          x => `  - ${show (x)}\n`,
+          args
+        )
       }`
     )
   );
@@ -2159,7 +2164,7 @@
           inner (k) (typeClass) (`${stripNamespace (typeClass)} ${k}`)
         )
       ),
-      Object.keys (constraints)
+      globalThis.Object.keys (constraints)
     );
     switch (reprs.length) {
       case 0:
@@ -2194,7 +2199,7 @@
         .replace (/\bUnknown\b/g, () => {
           let name;
           // eslint-disable-next-line no-plusplus
-          do name = String.fromCharCode (code++);
+          do name = globalThis.String.fromCharCode (code++);
           while (names.indexOf (name) >= 0);
           return name;
         })
@@ -2373,7 +2378,7 @@
         (determineActualTypesStrict (env, [...values, ...values_])).length
           === 0
       );
-    }, Z.sort (Object.keys (valuesByPath)));
+    }, Z.sort (globalThis.Object.keys (valuesByPath)));
 
     return new TypeError (
       `Type-variable constraint violation\n\n${
@@ -2427,7 +2432,7 @@
             'the environment.\n\n' +
             'The environment contains the following types:\n\n' +
             Z.foldMap (
-              String,
+              globalThis.String,
               t => `  - ${showTypeWith (typeInfo.types) (t)}\n`,
               env
             )
@@ -2483,9 +2488,11 @@
       } but received ${
         numArgs (args.length)
       }${
-        args.length === 0
-        ? '.\n'
-        : ':\n\n' + Z.foldMap (String, x => `  - ${show (x)}\n`, args)
+        args.length === 0 ? '.\n' : ':\n\n' + Z.foldMap (
+          globalThis.String,
+          x => `  - ${show (x)}\n`,
+          args
+        )
       }`
     )
   );
@@ -2639,11 +2646,13 @@
     wrapped.toString = () => typeSignature (typeInfo);
     /* istanbul ignore else */
     if (globalThis.process?.versions?.node != null) {
-      wrapped[Symbol.for ('nodejs.util.inspect.custom')] = wrapped.toString;
+      const inspect = globalThis.Symbol.for ('nodejs.util.inspect.custom');
+      wrapped[inspect] = wrapped.toString;
     }
     /* istanbul ignore if */
     if (typeof globalThis.Deno?.customInspect === 'symbol') {
-      wrapped[globalThis.Deno.customInspect] = wrapped.toString;
+      const inspect = globalThis.Deno.customInspect;
+      wrapped[inspect] = wrapped.toString;
     }
 
     return wrapped;
@@ -2651,9 +2660,9 @@
 
   //  defTypes :: NonEmpty (Array Type)
   const defTypes = [
-    String_,
-    StrMap (Array_ (TypeClass)),
-    NonEmpty (Array_ (Type)),
+    String,
+    StrMap (Array (TypeClass)),
+    NonEmpty (Array (Type)),
     AnyFunction,
     AnyFunction,
   ];
@@ -2691,17 +2700,17 @@
     Any,
     AnyFunction,
     Arguments,
-    Array: fromUncheckedUnaryType (Array_),
+    Array: fromUncheckedUnaryType (Array),
     Array0,
     Array1: fromUncheckedUnaryType (Array1),
     Array2: fromUncheckedBinaryType (Array2),
-    Boolean: Boolean_,
-    Buffer: Buffer_,
-    Date: Date_,
+    Boolean,
+    Buffer,
+    Date,
     ValidDate,
     Descending: fromUncheckedUnaryType (Descending),
-    Either: fromUncheckedBinaryType (Either_),
-    Error: Error_,
+    Either: fromUncheckedBinaryType (Either),
+    Error,
     Fn:
       def ('Fn')
           ({})
@@ -2710,8 +2719,8 @@
     Function:
       def ('Function')
           ({})
-          ([NonEmpty (Array_ (Type)), Type])
-          (Function_),
+          ([NonEmpty (Array (Type)), Type])
+          (Function),
     HtmlElement,
     Identity: fromUncheckedUnaryType (Identity),
     JsMap: fromUncheckedBinaryType (JsMap),
@@ -2721,7 +2730,7 @@
     NonEmpty,
     Null,
     Nullable: fromUncheckedUnaryType (Nullable),
-    Number: Number_,
+    Number,
     PositiveNumber,
     NegativeNumber,
     ValidNumber,
@@ -2735,15 +2744,15 @@
     NonNegativeInteger,
     PositiveInteger,
     NegativeInteger,
-    Object: Object_,
+    Object,
     Pair: fromUncheckedBinaryType (Pair),
-    RegExp: RegExp_,
+    RegExp,
     GlobalRegExp,
     NonGlobalRegExp,
     RegexFlags,
     StrMap: fromUncheckedUnaryType (StrMap),
-    String: String_,
-    Symbol: Symbol_,
+    String,
+    Symbol,
     Type,
     TypeClass,
     Undefined,
@@ -2753,29 +2762,29 @@
     create:
       def ('create')
           ({})
-          ([RecordType ({checkTypes: Boolean_, env: Array_ (Type)}),
+          ([RecordType ({checkTypes: Boolean, env: Array (Type)}),
             Unchecked ((defTypes.map (show)).join (' -> '))])
           (create),
     test:
       def ('test')
           ({})
-          ([Array_ (Type), Type, Any, Boolean_])
+          ([Array (Type), Type, Any, Boolean])
           (test),
     NullaryType:
       def ('NullaryType')
           ({})
-          ([String_,
-            String_,
-            Array_ (Type),
+          ([String,
+            String,
+            Array (Type),
             Unchecked ('(Any -> Boolean)'),
             Type])
           (NullaryType),
     UnaryType:
       def ('UnaryType')
           ({f: [Z.Foldable]})
-          ([String_,
-            String_,
-            Array_ (Type),
+          ([String,
+            String,
+            Array (Type),
             Unchecked ('(Any -> Boolean)'),
             Unchecked ('(t a -> f a)'),
             Unchecked ('Type -> Type')])
@@ -2784,9 +2793,9 @@
     BinaryType:
       def ('BinaryType')
           ({f: [Z.Foldable]})
-          ([String_,
-            String_,
-            Array_ (Type),
+          ([String,
+            String,
+            Array (Type),
             Unchecked ('(Any -> Boolean)'),
             Unchecked ('(t a b -> f a)'),
             Unchecked ('(t a b -> f b)'),
@@ -2796,7 +2805,7 @@
     EnumType:
       def ('EnumType')
           ({})
-          ([String_, String_, Array_ (Any), Type])
+          ([String, String, Array (Any), Type])
           (EnumType),
     RecordType:
       def ('RecordType')
@@ -2806,17 +2815,17 @@
     NamedRecordType:
       def ('NamedRecordType')
           ({})
-          ([NonEmpty (String_), String_, Array_ (Type), StrMap (Type), Type])
+          ([NonEmpty (String), String, Array (Type), StrMap (Type), Type])
           (NamedRecordType),
     TypeVariable:
       def ('TypeVariable')
           ({})
-          ([String_, Type])
+          ([String, Type])
           (TypeVariable),
     UnaryTypeVariable:
       def ('UnaryTypeVariable')
           ({})
-          ([String_, Unchecked ('Type -> Type')])
+          ([String, Unchecked ('Type -> Type')])
           (name => def (name)
                        ({})
                        ([Type, Type])
@@ -2824,7 +2833,7 @@
     BinaryTypeVariable:
       def ('BinaryTypeVariable')
           ({})
-          ([String_, Unchecked ('Type -> Type -> Type')])
+          ([String, Unchecked ('Type -> Type -> Type')])
           (name => def (name)
                        ({})
                        ([Type, Type, Type])
