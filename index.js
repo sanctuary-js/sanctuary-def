@@ -896,16 +896,15 @@ export const String = NullaryTypeWithUrl
 
 //# RegexFlags :: Type
 //.
-//. Type comprising the canonical RegExp flags *recognized by the runtime*.
-//. Characters must be alphabetically ordered. Repeated characters are not
-//. permitted. Invalid combinations (such as `'uv'`) are not permitted.
+//. Type comprising the RegExp flags *accepted by the runtime*.
+//. Repeated characters are not permitted. Invalid combinations
+//. (such as `'uv'`) are not permitted.
 export const RegexFlags = NullaryTypeWithUrl
   ('RegexFlags')
   ([String])
   (s => {
-     let regex;
-     try { regex = globalThis.RegExp ('', s); } catch { return false; }
-     return regex.flags === s;
+     try { globalThis.RegExp ('', s); } catch { return false; }
+     return true;
    });
 
 //# Symbol :: Type

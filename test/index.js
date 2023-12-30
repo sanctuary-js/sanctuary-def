@@ -2165,8 +2165,8 @@ See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#ValidDate for
     eq (isRegexFlags ('dgimsvy'), parseInt (process.versions.node, 10) >= 20);
     //  String objects are not acceptable.
     eq (isRegexFlags (new String ('')), false);
-    //  Flags must be alphabetically ordered.
-    eq (isRegexFlags ('mg'), false);
+    //  Flags need not be alphabetically ordered.
+    eq (isRegexFlags ('mg'), true);
     //  Flags cannot contain repeated characters.
     eq (isRegexFlags ('gg'), false);
     //  Flags cannot contain both 'u' and 'v'.
