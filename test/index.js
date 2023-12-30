@@ -1,5 +1,6 @@
 import {deepStrictEqual as eq, throws} from 'node:assert';
 import module from 'node:module';
+import process from 'node:process';
 import util from 'node:util';
 import vm from 'node:vm';
 
@@ -2160,12 +2161,16 @@ See https://github.com/sanctuary-js/sanctuary-def/tree/v${version}#ValidDate for
     eq (isRegexFlags ('gm'), true);
     eq (isRegexFlags ('im'), true);
     eq (isRegexFlags ('gim'), true);
+    eq (isRegexFlags ('dgimsuy'), true);
+    eq (isRegexFlags ('dgimsvy'), parseInt (process.versions.node, 10) >= 20);
     //  String objects are not acceptable.
     eq (isRegexFlags (new String ('')), false);
     //  Flags must be alphabetically ordered.
     eq (isRegexFlags ('mg'), false);
-    //  "Sticky" flag is not acceptable.
-    eq (isRegexFlags ('y'), false);
+    //  Flags cannot contain repeated characters.
+    eq (isRegexFlags ('gg'), false);
+    //  Flags cannot contain both 'u' and 'v'.
+    eq (isRegexFlags ('uv'), false);
   });
 
   test ('provides the "StrMap" type constructor', () => {
