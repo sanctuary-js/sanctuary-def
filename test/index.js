@@ -3,6 +3,7 @@ import module from 'node:module';
 import util from 'node:util';
 import vm from 'node:vm';
 
+import test from 'oletus';
 import Descending from 'sanctuary-descending';
 import Either from 'sanctuary-either';
 import Identity from 'sanctuary-identity';
@@ -12,7 +13,7 @@ import show from 'sanctuary-show';
 import Z from 'sanctuary-type-classes';
 import type from 'sanctuary-type-identifiers';
 
-import $ from '../index.js';
+import * as $ from 'sanctuary-def';
 
 
 const require = module.createRequire (import.meta.url);
@@ -80,6 +81,8 @@ def ('$26')
     ([a, a, a, a, a, a, a, a, a, a, a, a, a, a, a, a, a, a, a, a, a, a, a, a, a, a, $.Array (a)])
     (a => b => c => d => e => f => g => h => i => j => k => l => m => n => o => p => q => r => s => t => u => v => w => x => y => z =>
        [a, b, c, d, e, f, g, h, i, j, k, l, m, n, o, p, q, r, s, t, u, v, w, x, y, z]);
+
+const suite = (_, run) => run ();
 
 
 suite ('env', () => {

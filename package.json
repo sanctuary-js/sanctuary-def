@@ -7,6 +7,11 @@
     "type": "git",
     "url": "git://github.com/sanctuary-js/sanctuary-def.git"
   },
+  "type": "module",
+  "exports": {
+    ".": "./index.js",
+    "./package.json": "./package.json"
+  },
   "scripts": {
     "doctest": "sanctuary-doctest",
     "lint": "sanctuary-lint",
@@ -23,6 +28,8 @@
     "sanctuary-type-identifiers": "3.0.0"
   },
   "devDependencies": {
+    "c8": "8.0.x",
+    "oletus": "4.0.x",
     "sanctuary-descending": "2.1.0",
     "sanctuary-identity": "2.1.0",
     "sanctuary-maybe": "2.1.0",
@@ -34,8 +41,5 @@
     "/README.md",
     "/index.js",
     "/package.json"
-  ],
-  "mocha": {
-    "ui": "tdd"
-  }
+  ]
 }
