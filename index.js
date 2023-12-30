@@ -365,14 +365,6 @@
     []
   );
 
-  //  typeEq :: String -> a -> Boolean
-  const typeEq = name => x => type (x) === name;
-
-  //  typeofEq :: String -> a -> Boolean
-  const typeofEq = typeof_ => x => (
-    typeof x === typeof_  // eslint-disable-line valid-typeof
-  );
-
   //  functionUrl :: String -> String
   const functionUrl = name => {
     const version = '0.22.0';  // updated programmatically
@@ -444,7 +436,7 @@
   const AnyFunction = NullaryTypeWithUrl
     ('Function')
     ([])
-    (typeofEq ('function'));
+    (x => typeof x === 'function');
 
   //# Arguments :: Type
   //.
@@ -452,7 +444,7 @@
   const Arguments = NullaryTypeWithUrl
     ('Arguments')
     ([])
-    (typeEq ('Arguments'));
+    (x => type (x) === 'Arguments');
 
   //# Array :: Type -> Type
   //.
@@ -460,7 +452,7 @@
   const Array = UnaryTypeWithUrl
     ('Array')
     ([])
-    (typeEq ('Array'))
+    (x => type (x) === 'Array')
     (array => array);
 
   //# Array0 :: Type
@@ -497,7 +489,7 @@
   const Boolean = NullaryTypeWithUrl
     ('Boolean')
     ([])
-    (typeofEq ('boolean'));
+    (x => typeof x === 'boolean');
 
   //# Buffer :: Type
   //.
@@ -513,7 +505,7 @@
   const Date = NullaryTypeWithUrl
     ('Date')
     ([])
-    (typeEq ('Date'));
+    (x => type (x) === 'Date');
 
   //# ValidDate :: Type
   //.
@@ -529,7 +521,7 @@
   const Descending = UnaryTypeWithUrl
     ('Descending')
     ([])
-    (typeEq ('sanctuary-descending/Descending@1'))
+    (x => type (x) === 'sanctuary-descending/Descending@1')
     (descending => descending);
 
   //# Either :: Type -> Type -> Type
@@ -538,7 +530,7 @@
   const Either = BinaryTypeWithUrl
     ('Either')
     ([])
-    (typeEq ('sanctuary-either/Either@1'))
+    (x => type (x) === 'sanctuary-either/Either@1')
     (either => either.isLeft ? [either.value] : [])
     (either => either.isLeft ? [] : [either.value]);
 
@@ -549,7 +541,7 @@
   const Error = NullaryTypeWithUrl
     ('Error')
     ([])
-    (typeEq ('Error'));
+    (x => type (x) === 'Error');
 
   //# Fn :: Type -> Type -> Type
   //.
@@ -611,7 +603,7 @@
   const Identity = UnaryTypeWithUrl
     ('Identity')
     ([])
-    (typeEq ('sanctuary-identity/Identity@1'))
+    (x => type (x) === 'sanctuary-identity/Identity@1')
     (identity => identity);
 
   //# JsMap :: Type -> Type -> Type
@@ -642,7 +634,7 @@
   const Maybe = UnaryTypeWithUrl
     ('Maybe')
     ([])
-    (typeEq ('sanctuary-maybe/Maybe@1'))
+    (x => type (x) === 'sanctuary-maybe/Maybe@1')
     (maybe => maybe);
 
   //# Module :: Type
@@ -673,7 +665,7 @@
   const Null = NullaryTypeWithUrl
     ('Null')
     ([])
-    (typeEq ('Null'));
+    (x => type (x) === 'Null');
 
   //# Nullable :: Type -> Type
   //.
@@ -691,7 +683,7 @@
   const Number = NullaryTypeWithUrl
     ('Number')
     ([])
-    (typeofEq ('number'));
+    (x => typeof x === 'number');
 
   const nonZero = x => x !== 0;
   const nonNegative = x => x >= 0;
@@ -819,7 +811,7 @@
   const Object = NullaryTypeWithUrl
     ('Object')
     ([])
-    (typeEq ('Object'));
+    (x => type (x) === 'Object');
 
   //# Pair :: Type -> Type -> Type
   //.
@@ -827,7 +819,7 @@
   const Pair = BinaryTypeWithUrl
     ('Pair')
     ([])
-    (typeEq ('sanctuary-pair/Pair@1'))
+    (x => type (x) === 'sanctuary-pair/Pair@1')
     (pair => [pair.fst])
     (pair => [pair.snd]);
 
@@ -837,7 +829,7 @@
   const RegExp = NullaryTypeWithUrl
     ('RegExp')
     ([])
-    (typeEq ('RegExp'));
+    (x => type (x) === 'RegExp');
 
   //# GlobalRegExp :: Type
   //.
@@ -877,7 +869,7 @@
   const String = NullaryTypeWithUrl
     ('String')
     ([])
-    (typeofEq ('string'));
+    (x => typeof x === 'string');
 
   //# RegexFlags :: Type
   //.
@@ -902,7 +894,7 @@
   const Symbol = NullaryTypeWithUrl
     ('Symbol')
     ([])
-    (typeofEq ('symbol'));
+    (x => typeof x === 'symbol');
 
   //# Type :: Type
   //.
@@ -910,7 +902,7 @@
   const Type = NullaryTypeWithUrl
     ('Type')
     ([])
-    (typeEq ('sanctuary-def/Type@1'));
+    (x => type (x) === 'sanctuary-def/Type@1');
 
   //# TypeClass :: Type
   //.
@@ -918,7 +910,7 @@
   const TypeClass = NullaryTypeWithUrl
     ('TypeClass')
     ([])
-    (typeEq ('sanctuary-type-classes/TypeClass@1'));
+    (x => type (x) === 'sanctuary-type-classes/TypeClass@1');
 
   //# Undefined :: Type
   //.
@@ -926,7 +918,7 @@
   const Undefined = NullaryTypeWithUrl
     ('Undefined')
     ([])
-    (typeEq ('Undefined'));
+    (x => type (x) === 'Undefined');
 
   //# env :: Array Type
   //.
