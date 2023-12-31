@@ -896,20 +896,16 @@ export const String = NullaryTypeWithUrl
 
 //# RegexFlags :: Type
 //.
-//. Type comprising the canonical RegExp flags:
-//.
-//.   - `''`
-//.   - `'g'`
-//.   - `'i'`
-//.   - `'m'`
-//.   - `'gi'`
-//.   - `'gm'`
-//.   - `'im'`
-//.   - `'gim'`
+//. Type comprising the RegExp flags *accepted by the runtime*.
+//. Repeated characters are not permitted. Invalid combinations
+//. (such as `'uv'`) are not permitted.
 export const RegexFlags = NullaryTypeWithUrl
   ('RegexFlags')
   ([String])
-  (s => /^g?i?m?$/.test (s));
+  (s => {
+     try { globalThis.RegExp ('', s); } catch { return false; }
+     return true;
+   });
 
 //# Symbol :: Type
 //.
