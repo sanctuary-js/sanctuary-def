@@ -8,19 +8,8 @@
   },
   "overrides": [
     {
-      "files": ["*.md"],
-      "rules": {
-        "max-len": ["off"],
-        "no-undef": ["off"],
-        "no-unused-vars": ["off"]
-      }
-    },
-    {
       "files": ["index.js"],
-      "globals": {"globalThis": "readonly"},
-      "rules": {
-        "multiline-comment-style": ["off"]
-      }
+      "globals": {"globalThis": "readonly"}
     }
   ]
 }
