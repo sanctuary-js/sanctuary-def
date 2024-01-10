@@ -14,7 +14,7 @@ import show from 'sanctuary-show';
 import Z from 'sanctuary-type-classes';
 import type from 'sanctuary-type-identifiers';
 
-import * as $ from 'sanctuary-def';
+import * as $ from '../index.js';
 
 
 const require = module.createRequire (import.meta.url);
